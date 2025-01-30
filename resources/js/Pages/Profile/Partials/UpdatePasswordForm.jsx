@@ -5,6 +5,7 @@ import TextInput from '@/Components/TextInput';
 import { Transition } from '@headlessui/react';
 import { useForm } from '@inertiajs/react';
 import { useRef } from 'react';
+import {Button, CircularProgress, TextField} from "@mui/material";
 
 export default function UpdatePasswordForm({ className = '' }) {
     const passwordInput = useRef();
@@ -47,24 +48,18 @@ export default function UpdatePasswordForm({ className = '' }) {
     return (
         <section className={className}>
             <header>
-                <h2 className="text-lg font-medium text-gray-900">
-                    Update Password
-                </h2>
-
-                <p className="mt-1 text-sm text-gray-600">
-                    Ensure your account is using a long, random password to stay
-                    secure.
-                </p>
+                <h2 className="text-lg font-medium text-gray-900">อัปเดตรหัสผ่าน</h2>
+                <p className="mt-1 text-sm text-gray-600">ตรวจสอบให้แน่ใจว่าบัญชีของคุณใช้รหัสผ่านแบบสุ่มที่ยาวเพื่อความปลอดภัย</p>
             </header>
 
             <form onSubmit={updatePassword} className="mt-6 space-y-6">
                 <div>
                     <InputLabel
                         htmlFor="current_password"
-                        value="Current Password"
+                        value="รหัสผ่านปัจจุบัน"
                     />
 
-                    <TextInput
+                    <TextField
                         id="current_password"
                         ref={currentPasswordInput}
                         value={data.current_password}
@@ -72,8 +67,8 @@ export default function UpdatePasswordForm({ className = '' }) {
                             setData('current_password', e.target.value)
                         }
                         type="password"
-                        className="mt-1 block w-full"
-                        autoComplete="current-password"
+                        fullWidth
+                        size='small'
                     />
 
                     <InputError
@@ -83,16 +78,18 @@ export default function UpdatePasswordForm({ className = '' }) {
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="password" value="New Password" />
+                    <InputLabel htmlFor="password" value="รหัสผ่านใหม่" />
 
-                    <TextInput
+                    <TextField
                         id="password"
                         ref={passwordInput}
                         value={data.password}
-                        onChange={(e) => setData('password', e.target.value)}
+                        onChange={(e) =>
+                            setData('password', e.target.value)
+                        }
                         type="password"
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
+                        fullWidth
+                        size='small'
                     />
 
                     <InputError message={errors.password} className="mt-2" />
@@ -101,18 +98,18 @@ export default function UpdatePasswordForm({ className = '' }) {
                 <div>
                     <InputLabel
                         htmlFor="password_confirmation"
-                        value="Confirm Password"
+                        value="ยืนยันรหัสผ่าน"
                     />
 
-                    <TextInput
+                    <TextField
                         id="password_confirmation"
                         value={data.password_confirmation}
                         onChange={(e) =>
                             setData('password_confirmation', e.target.value)
                         }
                         type="password"
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
+                        fullWidth
+                        size='small'
                     />
 
                     <InputError
@@ -122,8 +119,10 @@ export default function UpdatePasswordForm({ className = '' }) {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>Save</PrimaryButton>
 
+                    <Button variant='contained' disabled={processing} startIcon={processing && <CircularProgress size={20}/>} type='submit'>
+                        บันทึก
+                    </Button>
                     <Transition
                         show={recentlySuccessful}
                         enter="transition ease-in-out"
@@ -132,7 +131,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                         leaveTo="opacity-0"
                     >
                         <p className="text-sm text-gray-600">
-                            Saved.
+                            บันทึกสำเร็จ
                         </p>
                     </Transition>
                 </div>

@@ -49,19 +49,16 @@ export default function DeleteUserForm({ className = '' }) {
         <section className={`space-y-6 ${className}`}>
             <header>
                 <h2 className="text-lg font-medium text-gray-900">
-                    Delete Account
+                    ลบบัญชี
                 </h2>
 
                 <p className="mt-1 text-sm text-gray-600">
-                    Once your account is deleted, all of its resources and data
-                    will be permanently deleted. Before deleting your account,
-                    please download any data or information that you wish to
-                    retain.
+                    เมื่อบัญชีของคุณถูกลบแล้ว ทรัพยากรและข้อมูลทั้งหมดจะถูกลบออกอย่างถาวร ก่อนที่จะลบบัญชีของคุณ โปรดดาวน์โหลดข้อมูลใดๆ ที่คุณต้องการเก็บไว้
                 </p>
             </header>
 
             <DangerButton onClick={confirmUserDeletion}>
-                Delete Account
+                ลบบัญชี
             </DangerButton>
 
             <Modal show={confirmingUserDeletion} onClose={closeModal}>
