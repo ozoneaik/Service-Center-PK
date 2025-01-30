@@ -15,8 +15,36 @@ class SearchController extends Controller
             'sn' => $request->sn,
             'views' => $request->views,
         ]);
+        $searchResults = $response->json();
+        $groupedData = [];
+        foreach ($searchResults['assets'][0]['listbehavior'] as $key=>$item) {
+            $behaviorName = $item['behaviorname'];
+
+            // ถ้ายังไม่มี behaviorname นี้ใน groupedData ให้เพิ่มเข้าไป
+            if (!isset($groupedData[$behaviorName])) {
+                $groupedData[$behaviorName] = [];
+            }
+
+            // เพิ่มข้อมูลลงในกลุ่ม
+            $groupedData[$behaviorName][] = [
+                'catalog' => $item['catalog'],
+                'subcatalog' => $item['subcatalog'],
+                'causecode' => $item['causecode'],
+                'causename' => $item['causename']
+            ];
+        }
+
+        $groupedDataArray = [];
+        $count = 0;
+        foreach ($groupedData as $behaviorName => $items) {
+            $groupedDataArray[$count]['groupName'] = $behaviorName;
+                $groupedDataArray[$count]['items'] = $items;
+                $count++;
+        }
+
+        $searchResults['assets'][0]['listbehavior'] = $groupedDataArray;
         return Inertia::render('Dashboard', [
-            'searchResults' =>  $response->json(),
+            'searchResults' =>  $searchResults
         ]);
     }
 }

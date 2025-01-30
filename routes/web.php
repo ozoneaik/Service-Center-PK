@@ -32,7 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/search',[SearchController::class,'detail'])->name('search');
 
     Route::prefix('reportRepair')->group(function (){
-       Route::get('/show',[ReportRepairController::class,'show'])->name('reportRepair.show');
+       Route::post('/show',[ReportRepairController::class,'show'])->name('reportRepair.show');
     });
 });
 

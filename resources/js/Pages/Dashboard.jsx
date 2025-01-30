@@ -38,7 +38,7 @@ export default function Dashboard() {
 
     const ButtonList = () => (
         <Stack direction={{xs: 'column', sm: 'row'}} spacing={2} justifyContent='center' alignItems='center'>
-            <Link href='reportRepair/show' data={detail}>
+            <Link href='reportRepair/show' method='post' data={detail}>
                 <Button variant='contained' color='primary'>แจ้งซ่อม</Button>
             </Link>
             <Button variant='contained' color='primary'>กำลังดำเนินการ</Button>
