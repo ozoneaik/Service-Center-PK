@@ -29,7 +29,6 @@ export default function FormRepair({detail}) {
                                 </Grid2>
                                 <Grid2 size={{sm: 12, md: 6}}>
                                     <Typography variant='h6'>เลือกอะไหล่</Typography>
-
                                 </Grid2>
                             </Grid2>
                         </Grid2>
