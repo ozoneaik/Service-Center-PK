@@ -16,16 +16,24 @@ class SearchController extends Controller
             'views' => $request->views,
         ]);
         $searchResults = $response->json();
-        $groupedData = [];
-        foreach ($searchResults['assets'][0]['listbehavior'] as $key=>$item) {
-            $behaviorName = $item['behaviorname'];
 
-            // ถ้ายังไม่มี behaviorname นี้ใน groupedData ให้เพิ่มเข้าไป
+        $listBehavior = $searchResults['assets'][0]['listbehavior'];
+        $sp = $searchResults['assets'][0]['sp'];
+        $searchResults['assets'][0]['sp'] = $this->formatSp($sp);
+        $searchResults['assets'][0]['listbehavior'] = $this->formatListBehavior($listBehavior);
+        return Inertia::render('Dashboard', [
+            'searchResults' => $searchResults
+        ]);
+    }
+
+    public function formatListBehavior($data): array
+    {
+        $groupedData = [];
+        foreach ($data as $key => $item) {
+            $behaviorName = $item['behaviorname'];
             if (!isset($groupedData[$behaviorName])) {
                 $groupedData[$behaviorName] = [];
             }
-
-            // เพิ่มข้อมูลลงในกลุ่ม
             $groupedData[$behaviorName][] = [
                 'catalog' => $item['catalog'],
                 'subcatalog' => $item['subcatalog'],
@@ -33,18 +41,31 @@ class SearchController extends Controller
                 'causename' => $item['causename']
             ];
         }
-
         $groupedDataArray = [];
         $count = 0;
         foreach ($groupedData as $behaviorName => $items) {
             $groupedDataArray[$count]['groupName'] = $behaviorName;
-                $groupedDataArray[$count]['items'] = $items;
-                $count++;
+            $groupedDataArray[$count]['items'] = $items;
+            $count++;
+        }
+        return $groupedDataArray;
+    }
+
+    public function formatSp($data) : array{
+        $count = 0;
+        $new_format = [];
+        foreach ($data as $key=>$d) {
+            $parts = explode('|', $d);
+            $new_format[$count] = [
+                'key' => $key,
+                'sp_code' => $parts[0],
+                'name' => $parts[1],
+                'z' => isset($parts[3]) ? $parts[3] : '',
+                'status' => end($parts)
+            ];
+            $count++;
         }
 
-        $searchResults['assets'][0]['listbehavior'] = $groupedDataArray;
-        return Inertia::render('Dashboard', [
-            'searchResults' =>  $searchResults
-        ]);
+        return $new_format;
     }
 }

@@ -1,7 +1,18 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import {Head} from "@inertiajs/react";
 import ProductDetail from "@/Components/ProductDetail.jsx";
-import {Box, Button, Checkbox, Divider, FormControlLabel, Grid2, Stack, Typography} from "@mui/material";
+import {
+    Box,
+    Button,
+    Card,
+    Checkbox,
+    Divider,
+    FormControlLabel,
+    Grid2,
+    Stack,
+    TextField,
+    Typography
+} from "@mui/material";
 import UploadImages from "@/Components/UploadImages.jsx";
 import {useState} from "react";
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
@@ -10,9 +21,11 @@ import SaveIcon from '@mui/icons-material/Save';
 import EditIcon from '@mui/icons-material/Edit';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckIcon from '@mui/icons-material/Check';
+import CircleIcon from '@mui/icons-material/Circle';
 
 export default function FormRepair({detail}) {
     const [listBehavior, setListBehavior] = useState(detail.listbehavior)
+    const [sp, setSp] = useState(detail.sp);
     const HeadTitle = ({title, icon = <FormatListBulletedIcon/>}) => (
         <Typography variant='h6' fontWeight='bold' sx={{
             display: 'flex',
@@ -73,7 +86,30 @@ export default function FormRepair({detail}) {
                                 </Grid2>
                                 <Grid2 size={{sm: 12, md: 6}}>
                                     <HeadTitle title={'เลือกอะไหล่'}/>
-                                </Grid2>~
+                                    <Box maxHeight={400} sx={{overflowY: 'scroll'}}>
+                                    {sp.map((item, index) => (
+                                        <Card variant='outlined' key={index} sx={{mt : 2,p : 1,display : 'flex' ,justifyContent : 'space-between' , alignItems : 'center'}}>
+                                            <div>
+                                                <Typography fontWeight='bold'>{item.sp_code}</Typography>
+                                                <Typography color='gray'>{item.name}</Typography>
+                                            </div>
+                                            <Stack direction='row' spacing={2} alignItems='center'>
+                                                <Typography>10</Typography>
+                                                <TextField type='number' size='small' sx={{minWidth : 80}}/>
+                                                <Typography>0</Typography>
+                                            </Stack>
+                                        </Card>
+                                    ))}
+                                    </Box>
+                                    <Card color='primary' variant='outlined' sx={{mt : 2,p : 1,display : 'flex' ,justifyContent : 'space-between' , alignItems : 'center'}}>
+                                        <div>
+                                            <Typography fontWeight='bold'>ยอดรวม</Typography>
+                                        </div>
+                                        <Stack direction='row' spacing={2} alignItems='center'>
+                                            <Typography color='#ee5924' fontWeight='bold'>10</Typography>
+                                        </Stack>
+                                    </Card>
+                                </Grid2>
                             </Grid2>
                         </Grid2>
                         <Grid2 size={12}>
