@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HistoryRepairController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportRepairController;
 use App\Http\Controllers\SearchController;
@@ -33,6 +34,9 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('reportRepair')->group(function (){
        Route::post('/show',[ReportRepairController::class,'show'])->name('reportRepair.show');
+    });
+    Route::prefix('historyRepair')->group(function (){
+       Route::post('list',[HistoryRepairController::class,'list'])->name('historyRepair.list');
     });
 });
 

@@ -14,3 +14,9 @@
 a{
     text-decoration: none !important;
 }
+
+#LinkInertia{
+    background: none;
+    border: none;
+    border-radius: 0;
+}

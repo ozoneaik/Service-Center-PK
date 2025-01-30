@@ -38,10 +38,16 @@ export default function Dashboard() {
 
     const ButtonList = () => (
         <Stack direction={{xs: 'column', sm: 'row'}} spacing={2} justifyContent='center' alignItems='center'>
-            <Link href='reportRepair/show' method='post' data={detail}>
-                <Button variant='contained' color='primary'>แจ้งซ่อม</Button>
+            <Link href='reportRepair/show' method='post' data={detail} id='LinkInertia'>
+                <Button component='a' variant='contained' color='primary'>
+                    แจ้งซ่อม
+                </Button>
             </Link>
-            <Button variant='contained' color='primary'>กำลังดำเนินการ</Button>
+            <Link href='historyRepair/list' method='post' data={detail} id='LinkInertia'>
+                <Button component='a' variant='contained' color='primary'>
+                    กำลังดำเนินการ
+                </Button>
+            </Link>
             <Button variant='contained' color='primary'>ดูประวัติการซ่อม</Button>
         </Stack>
     )

@@ -57,11 +57,11 @@ export default function FormRepair({detail}) {
                     <ProductDetail {...detail} />
                     <Divider/>
                     <Grid2 container spacing={2}>
-                        <Grid2 size={{sm: 12, md: 4}}>
+                        <Grid2 size={{sm: 12, md: 3}}>
                             <UploadImages title={'รูปกลุ่มที่  1'}/>
                             <UploadImages title={'รูปกลุ่มที่ 2'}/>
                         </Grid2>
-                        <Grid2 size={{sm: 12, md: 8}}>
+                        <Grid2 size={{sm: 12, md: 9}}>
                             <Grid2 container spacing={2}>
                                 <Grid2 size={12}>
                                     <HeadTitle title={'หมายเหตุ'}/>
@@ -77,7 +77,7 @@ export default function FormRepair({detail}) {
                                                     {items.groupName}
                                                 </Typography>
                                                 {items.items.map((item, i) => (
-                                                    <FormControlLabel control={<Checkbox/>} label={item.causename}/>
+                                                        <FormControlLabel key={i} control={<Checkbox/>} label={item.causename}/>
                                                 ))}
                                                 <Divider/>
                                             </Box>
@@ -89,10 +89,13 @@ export default function FormRepair({detail}) {
                                     <Box maxHeight={400} sx={{overflowY: 'scroll'}}>
                                     {sp.map((item, index) => (
                                         <Card variant='outlined' key={index} sx={{mt : 2,p : 1,display : 'flex' ,justifyContent : 'space-between' , alignItems : 'center'}}>
-                                            <div>
-                                                <Typography fontWeight='bold'>{item.sp_code}</Typography>
-                                                <Typography color='gray'>{item.name}</Typography>
-                                            </div>
+                                            <Stack direction='row' spacing={1} alignItems='center'>
+                                                <img src="https://images.pumpkin.tools/A%20%E0%B9%80%E0%B8%84%E0%B8%A3%E0%B8%B7%E0%B9%88%E0%B8%AD%E0%B8%87%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B9%84%E0%B8%9F%E0%B8%9F%E0%B9%89%E0%B8%B2%20%E0%B9%81%E0%B8%A5%E0%B8%B0%20%E0%B9%80%E0%B8%84%E0%B8%A3%E0%B8%B7%E0%B9%88%E0%B8%AD%E0%B8%87%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B9%84%E0%B8%9F%E0%B8%9F%E0%B9%89%E0%B8%B2%E0%B9%84%E0%B8%A3%E0%B9%89%E0%B8%AA%E0%B8%B2%E0%B8%A2/50277/SP50277-01.jpg" height={60} width={60} alt=""/>
+                                                <div>
+                                                    <Typography fontWeight='bold'>{item.sp_code}</Typography>
+                                                    <Typography color='gray'>{item.name}</Typography>
+                                                </div>
+                                            </Stack>
                                             <Stack direction='row' spacing={2} alignItems='center'>
                                                 <Typography>10</Typography>
                                                 <TextField type='number' size='small' sx={{minWidth : 80}}/>
