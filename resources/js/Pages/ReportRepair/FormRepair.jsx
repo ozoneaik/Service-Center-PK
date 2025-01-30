@@ -14,11 +14,11 @@ import CheckIcon from '@mui/icons-material/Check';
 export default function FormRepair({detail}) {
     const [listBehavior, setListBehavior] = useState(detail.listbehavior)
     const HeadTitle = ({title, icon = <FormatListBulletedIcon/>}) => (
-        <Typography variant='h6' sx={{color: '#ef5a24'}} fontWeight='bold' sx={{
+        <Typography variant='h6' fontWeight='bold' sx={{
             display: 'flex',
             alignItems: 'center',
-            color: '#ef5a24',
             fontWeight: 'bold',
+            color : '#ef5a24'
         }}>
             {icon}&nbsp;{title}
         </Typography>
