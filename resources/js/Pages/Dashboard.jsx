@@ -48,7 +48,7 @@ export default function Dashboard() {
 
     return (
         <AuthenticatedLayout>
-            <Head title="หน้าหลัก"/>
+            <Head title="หน้าหลัก updated"/>
             <div className="bg-white mt-4 p-4 ">
                 <Stack direction='column' spacing={2}>
                     <form onSubmit={searchDetail}>
