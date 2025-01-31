@@ -16,7 +16,7 @@ export default function ProductDetail({serial = 'ไม่พบ', imagesku, pna
     )
     return (
         <Grid2 container spacing={3} direction={{lg : 'row', xs : 'column-reverse'}}>
-            <Grid2 size={{xs: 12, md: 8}}>
+            <Grid2 size={{xs: 12, lg: 8}}>
                 <Stack direction='column' spacing={2} mb={3}>
                     <Typography variant="subtitle1">รายละเอียด</Typography>
                     <Typography variant='h5' fontWeight='bold'>{pid} {pname}</Typography>

@@ -1,11 +1,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import {Head, Link, router, useForm} from '@inertiajs/react';
+import {Head} from '@inertiajs/react';
 import {Button, Container, Grid2, Stack, TextField} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ProductDetail from '@/Components/ProductDetail';
 import {useState} from 'react';
 import Progress from "@/Components/Progress.jsx";
-import {AlertDialog, AlertWithFormDialog} from "@/Components/AlertDialog.js";
+import {AlertDialog} from "@/Components/AlertDialog.js";
 import EditIcon from '@mui/icons-material/Edit';
 import SyncIcon from '@mui/icons-material/Sync';
 import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
@@ -33,7 +33,7 @@ export default function Dashboard() {
             setDetail();
             console.log(err)
             AlertDialog({
-                title: 'เกิดข้อผิดพลาด', text: 'ไม่พบข้อมูล', onPassed: () => {
+                title: 'เกิดข้อผิดพลาด', text: err.response.data.message, onPassed: () => {
                 }
             })
         } finally {

@@ -12,18 +12,34 @@ class SearchController extends Controller
 {
     public function detail(Request $request)
     {
-        $response = Http::post(env('API_DETAIL'), [
-            'sn' => $request->sn,
-            'views' => $request->views,
-        ]);
-        $searchResults = $response->json();
-//        $listBehavior = $searchResults['assets'][0]['listbehavior'];
-//        $sp = $searchResults['assets'][0]['sp'];
-//        $searchResults['assets'][0]['sp'] = $this->formatSp($sp);
-//        $searchResults['assets'][0]['listbehavior'] = $this->formatListBehavior($listBehavior);
-        return response()->json([
-            'searchResults' => $searchResults
-        ]);
+        try {
+            $response = Http::post(env('APP_DETAIL'), [
+                'sn' => $request->sn,
+                'views' => $request->views,
+            ]);
+            if ($response->status() === 200) {
+                $searchResults = $response->json();
+                if ($searchResults['status'] !== 'SUCCESS') {
+                    throw new \Exception('ไม่พบ้อมูล');
+                }
+            } else {
+                $searchResults = [];
+                throw new \Exception('ไม่พบข้อมูล');
+            }
+            //        $listBehavior = $searchResults['assets'][0]['listbehavior'];
+            //        $sp = $searchResults['assets'][0]['sp'];
+            //        $searchResults['assets'][0]['sp'] = $this->formatSp($sp);
+            //        $searchResults['assets'][0]['listbehavior'] = $this->formatListBehavior($listBehavior);
+            return response()->json([
+                'searchResults' => $searchResults,
+                'message' => 'success'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'searchResults' => [],
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
 
     public function formatListBehavior($data): array
@@ -51,11 +67,12 @@ class SearchController extends Controller
         return $groupedDataArray;
     }
 
-    public function formatSp($data) : array{
+    public function formatSp($data): array
+    {
 
         $count = 0;
         $new_format = [];
-        foreach ($data as $key=>$d) {
+        foreach ($data as $key => $d) {
             $parts = explode('|', $d);
             $new_format[$count] = [
                 'key' => $key,
