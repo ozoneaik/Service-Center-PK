@@ -4,16 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Redirect;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class SearchController extends Controller
 {
     public function detail(Request $request)
     {
         try {
-            $response = Http::post(env('APP_DETAIL'), [
+            $response = Http::post(env('API_DETAIL'), [
                 'sn' => $request->sn,
                 'views' => $request->views,
             ]);
