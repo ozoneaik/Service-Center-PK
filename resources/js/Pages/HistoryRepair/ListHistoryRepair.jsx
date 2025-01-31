@@ -19,11 +19,7 @@ const HeadTitle = ({endService, Remark}) => (
 export default function ListHistoryRepair({detail}) {
     const [history, setHistory] = useState(detail.history);
     return (
-        <AuthenticatedLayout header={
-            <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                ประวัติการซ่อม
-            </h2>
-        }>
+        <AuthenticatedLayout>
             <Head title="ประวัติการซ่อม"/>
 
             <div className="bg-white mt-4 p-4 ">

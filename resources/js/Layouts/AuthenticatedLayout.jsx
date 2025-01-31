@@ -2,35 +2,38 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import {Link, usePage} from '@inertiajs/react';
+import {useState} from 'react';
+import icon from '../assets/images/logo.png'
+import {Avatar, Container, Typography} from "@mui/material";
+import cover from '../assets/images/cover.png'
+import NavBar from "@/Layouts/NavBar.jsx";
 
-export default function AuthenticatedLayout({ header, children }) {
+const backgroundCover = {
+    backgroundImage: `url(${cover})`,
+    backgroundRepeat : 'no-repeat',
+    backgroundSize: '100% auto',
+    backgroundPosition: 'top'
+
+}
+export default function AuthenticatedLayout({header, children}) {
     const user = usePage().props.auth.user;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <nav className="border-b border-gray-100 bg-white">
-                <div className="px-3 bg-slate-800">
+        <div className="min-h-screen " style={backgroundCover}>
+            <nav className="fixed w-full z-50 border-b border-gray-100 bg-orange/75 backdrop-blur-sm">
+                <div className="px-3 bg-black/75">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
-                            <div className="flex shrink-0 items-center text-white">
-                                Service Center System
-                                {/* <Link href="/">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
-                                </Link> */}
+                            <div className="flex shrink-0 items-center gap-2 text-white font-bold">
+                                <Avatar src={icon || ''}/>
+                                SERVICE CENTER PK
                             </div>
-
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
-                                >
-                                    หน้าหลัก
-                                </NavLink>
+                                <NavBar/>
                             </div>
                         </div>
 
@@ -164,14 +167,16 @@ export default function AuthenticatedLayout({ header, children }) {
             </nav>
 
             {header && (
-                <header className="bg-white shadow">
+                <header className="bg-white shadow pt-16">
                     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                         {header}
                     </div>
                 </header>
             )}
 
-            <main>{children}</main>
+            <main className="pt-16">
+                    {children}
+            </main>
         </div>
     );
 }

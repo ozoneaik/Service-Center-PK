@@ -4,24 +4,24 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class SearchController extends Controller
 {
-    public function detail(Request $request): Response
+    public function detail(Request $request)
     {
         $response = Http::post(env('API_DETAIL'), [
             'sn' => $request->sn,
             'views' => $request->views,
         ]);
         $searchResults = $response->json();
-
-        $listBehavior = $searchResults['assets'][0]['listbehavior'];
-        $sp = $searchResults['assets'][0]['sp'];
-        $searchResults['assets'][0]['sp'] = $this->formatSp($sp);
-        $searchResults['assets'][0]['listbehavior'] = $this->formatListBehavior($listBehavior);
-        return Inertia::render('Dashboard', [
+//        $listBehavior = $searchResults['assets'][0]['listbehavior'];
+//        $sp = $searchResults['assets'][0]['sp'];
+//        $searchResults['assets'][0]['sp'] = $this->formatSp($sp);
+//        $searchResults['assets'][0]['listbehavior'] = $this->formatListBehavior($listBehavior);
+        return response()->json([
             'searchResults' => $searchResults
         ]);
     }
@@ -52,6 +52,7 @@ class SearchController extends Controller
     }
 
     public function formatSp($data) : array{
+
         $count = 0;
         $new_format = [];
         foreach ($data as $key=>$d) {

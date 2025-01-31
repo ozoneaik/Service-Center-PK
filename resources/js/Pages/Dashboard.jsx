@@ -1,82 +1,110 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import {Head, Link, useForm} from '@inertiajs/react';
-import {Button, Grid2, Stack, TextField} from '@mui/material';
+import {Head, Link, router, useForm} from '@inertiajs/react';
+import {Button, Container, Grid2, Stack, TextField} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ProductDetail from '@/Components/ProductDetail';
 import {useState} from 'react';
 import Progress from "@/Components/Progress.jsx";
 import {AlertDialog, AlertWithFormDialog} from "@/Components/AlertDialog.js";
+import EditIcon from '@mui/icons-material/Edit';
+import SyncIcon from '@mui/icons-material/Sync';
+import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
+import FormRepair from "@/Pages/ReportRepair/FormRepair.jsx";
+import {PathDetail} from "@/Components/PathDetail.jsx";
 
 export default function Dashboard() {
     const [detail, setDetail] = useState();
-    const {data, setData, post, processing, errors, reset} = useForm({
-        sn: '',
-        views: 'single'
-    })
-
+    const [processing, setProcessing] = useState(false);
+    const [sn, setSn] = useState();
+    const [showContent, setShowContent] = useState();
     const searchDetail = async (e) => {
         e.preventDefault();
-        post(route('search'), {
-            onSuccess: ({props}) => {
-                if (props.searchResults.message === 'SUCCESS') {
-                    const result = props.searchResults.assets[0];
-                    console.log(result)
-                    setDetail(result);
-                } else {
-                    setDetail();
-                    AlertWithFormDialog({
-                        text: 'ไม่พบซีเรียลนี้ในระบบ กรุณากรอกรหัสสินค้าแทน',
-                        title: 'เกิดข้อผิดพลาด',
-                        res: (confirm, value) => {
-                            console.log(confirm, value)
-                        }
-                    })
-                }
+        setProcessing(true)
+        try {
+
+            const {data, status} = await axios.post('/search', {sn, views: 'single'});
+            if (data.searchResults.message === 'SUCCESS') {
+                console.log(data.searchResults.assets[0])
+                setDetail(data.searchResults.assets[0])
+            }else{
+                throw 'error';
             }
-        });
+        } catch (err) {
+            setDetail();
+            console.log(err)
+            AlertDialog({
+                title: 'เกิดข้อผิดพลาด', text: 'ไม่พบข้อมูล', onPassed: () => {
+                }
+            })
+        } finally {
+            setProcessing(false);
+            setShowContent();
+        }
     }
 
+    const ButtonLink = ({url, data, icon, title, color, menu}) => (
+        // <Link href={url} method='post' data={data} id='LinkInertia'>
+        <Button disabled={showContent === menu} onClick={() => setShowContent(menu)} component='a' variant='contained'
+                color={color} sx={{width: 150}}>
+            <Stack direction='column' justifyContent='center' alignItems='center'>
+                {icon}
+                {title}
+            </Stack>
+        </Button>
+        // </Link>
+    )
+
     const ButtonList = () => (
-        <Stack direction={{xs: 'column', sm: 'row'}} spacing={2} justifyContent='center' alignItems='center'>
-            <Link href='reportRepair/show' method='post' data={detail} id='LinkInertia'>
-                <Button component='a' variant='contained' color='primary'>
-                    แจ้งซ่อม
-                </Button>
-            </Link>
-            <Link href='historyRepair/list' method='post' data={detail} id='LinkInertia'>
-                <Button component='a' variant='contained' color='primary'>
-                    กำลังดำเนินการ
-                </Button>
-            </Link>
-            <Button variant='contained' color='primary'>ดูประวัติการซ่อม</Button>
+        <Stack direction={{xs: 'column', sm: 'row'}} spacing={2} justifyContent='start' alignItems='center'>
+            <ButtonLink url={'reportRepair/show'} menu={1} icon={<EditIcon/>} title={'แจ้งซ่อม'} data={detail}
+                        color='primary'/>
+            <ButtonLink url={'historyRepair/list'} menu={2} icon={<SyncIcon/>} title={'กำลังดำเนินการ'} data={detail}
+                        color='warning'/>
+            <ButtonLink url={'historyRepair/list'} menu={3} icon={<ManageHistoryIcon/>} title={'ดูประวัติการซ่อม'}
+                        data={detail} color='secondary'/>
         </Stack>
     )
 
     return (
         <AuthenticatedLayout>
             <Head title="หน้าหลัก"/>
-            <div className="bg-white mt-4 p-4 ">
-                <Stack direction='column' spacing={2}>
-                    <form onSubmit={searchDetail}>
-                        <Grid2 container spacing={2}>
-                            <Grid2 size={12}>
-                                <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>
-                                    <TextField placeholder='ค้นหาหมายเลขซีเรียล' fullWidth size='small'
-                                               onChange={(e) => setData('sn', e.target.value)}/>
-                                    <Button disabled={processing} type='submit' size='small' variant='contained'
-                                            startIcon={<SearchIcon/>}>
-                                        {processing && 'กำลัง'}ค้นหา
-                                    </Button>
-                                </Stack>
+            <Container>
+                <div className=" mt-4 p-4 ">
+                    <Stack direction='column' spacing={1}>
+                        <form onSubmit={searchDetail}>
+                            <Grid2 container spacing={2}>
+                                <Grid2 size={12} mb={10}>
+                                    <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>
+                                        <TextField sx={{backgroundColor: 'white'}} placeholder='ค้นหาหมายเลขซีเรียล'
+                                                   fullWidth
+                                                   onChange={(e) => setSn(e.target.value)}/>
+                                        <Button sx={{minWidth: 100}} disabled={processing || !sn} type='submit'
+                                                size='small' variant='contained'
+                                                startIcon={<SearchIcon/>}>
+                                            {processing && 'กำลัง'}ค้นหา
+                                        </Button>
+                                    </Stack>
+                                    <Stack mt={2} direction='row' justifyContent='end' spacing={2}>
+                                        path/path/path
+                                    </Stack>
+                                </Grid2>
                             </Grid2>
-                        </Grid2>
-                    </form>
-                    {detail && !processing && <ProductDetail {...detail} />}
-                    {processing && <Progress/>}
-                    {detail && !processing && <ButtonList/>}
+                        </form>
+                        {!processing ? (
+                            <>
+                                {detail && <ProductDetail {...detail} />}
+                                {detail && !processing && <ButtonList/>}
+                                {detail && showContent && <PathDetail/>}
+                                {detail && showContent === 1 && <FormRepair detail={detail}/>}
+                            </>
+                        ) : <Progress/>
+                        }
+                        {/*{detail && !processing && <ProductDetail {...detail} />}*/}
+                        {/*{processing && <Progress/>}*/}
 
-                </Stack>
-            </div>
+                    </Stack>
+                </div>
+            </Container>
         </AuthenticatedLayout>
     );
 }
