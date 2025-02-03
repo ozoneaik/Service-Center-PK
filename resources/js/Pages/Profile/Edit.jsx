@@ -8,13 +8,7 @@ import { useState } from 'react';
 export default function Edit({ mustVerifyEmail, status }) {
     const [test, setTest] = useState('update');
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    ข้อมูลส่วนตัว
-                </h2>
-            }
-        >
+        <AuthenticatedLayout>
             <Head title="ข้อมูลส่วนตัว" />
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">

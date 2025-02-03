@@ -11,8 +11,10 @@ import SyncIcon from '@mui/icons-material/Sync';
 import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
 import FormRepair from "@/Pages/ReportRepair/FormRepair.jsx";
 import {PathDetail} from "@/Components/PathDetail.jsx";
+import ListHistoryRepair from "@/Pages/HistoryRepair/ListHistoryRepair.jsx";
 
 export default function Dashboard() {
+    const [check, setCheck] = useState('before');
     const [detail, setDetail] = useState();
     const [processing, setProcessing] = useState(false);
     const [sn, setSn] = useState();
@@ -26,7 +28,7 @@ export default function Dashboard() {
             if (data.searchResults.message === 'SUCCESS') {
                 console.log(data.searchResults.assets[0])
                 setDetail(data.searchResults.assets[0])
-            }else{
+            } else {
                 throw 'error';
             }
         } catch (err) {
@@ -56,11 +58,9 @@ export default function Dashboard() {
 
     const ButtonList = () => (
         <Stack direction={{xs: 'column', sm: 'row'}} spacing={2} justifyContent='start' alignItems='center'>
-            <ButtonLink url={'reportRepair/show'} menu={1} icon={<EditIcon/>} title={'แจ้งซ่อม'} data={detail}
+            <ButtonLink menu={1} icon={<EditIcon/>} title={'แจ้งซ่อม'} data={detail}
                         color='primary'/>
-            <ButtonLink url={'historyRepair/list'} menu={2} icon={<SyncIcon/>} title={'กำลังดำเนินการ'} data={detail}
-                        color='warning'/>
-            <ButtonLink url={'historyRepair/list'} menu={3} icon={<ManageHistoryIcon/>} title={'ดูประวัติการซ่อม'}
+            <ButtonLink menu={2} icon={<ManageHistoryIcon/>} title={'ดูประวัติการซ่อม'}
                         data={detail} color='secondary'/>
         </Stack>
     )
@@ -94,8 +94,14 @@ export default function Dashboard() {
                             <>
                                 {detail && <ProductDetail {...detail} />}
                                 {detail && !processing && <ButtonList/>}
-                                {detail && showContent && <PathDetail/>}
-                                {detail && showContent === 1 && <FormRepair detail={detail}/>}
+                                {detail && showContent &&
+                                    <PathDetail
+                                        name={showContent === 1 ? 'แจ้งซ่อม' : 'ดูประวัติการซ่อม'}
+                                        Sn={detail.serial}
+                                    />
+                                }
+                                {detail && showContent === 1 && <FormRepair detail={detail} setDetail={setDetail} check={check} setCheck={setCheck}/>}
+                                {detail && showContent === 2 && <ListHistoryRepair detail={detail} setDetail={setDetail} check={check} setCheck={setCheck}/>}
                             </>
                         ) : <Progress/>
                         }
