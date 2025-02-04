@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\MenuFileUpload;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -30,6 +31,20 @@ class DatabaseSeeder extends Seeder
             'name' => 'John Doe',
             'role' => 'user',
             'is_code_cust_id' => 'IS-CODE-0014144-875412'
+        ]);
+
+        MenuFileUpload::query()->create([
+           'menu_name' => 'สถาพสินค้าก่อนซ่อม'
+        ]);
+
+        MenuFileUpload::query()->create([
+            'menu_name' => 'สถาพสินค้าหลังซ่อม'
+        ]);
+        MenuFileUpload::query()->create([
+            'menu_name' => 'ภาพอะไหล่ที่เสีย'
+        ]);
+        MenuFileUpload::query()->create([
+            'menu_name' => 'ภาพอะไหล่ที่เปลี่ยน'
         ]);
     }
 }
