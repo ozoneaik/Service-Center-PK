@@ -11,7 +11,7 @@ export const UploadFile = ({detail, setDetail}) => {
     }, []);
     const fetchMenu = async () => {
         try {
-            const {data, status} = await axios.get('api/admin/menu-upload-file/show');
+            const {data, status} = await axios.get('menu-upload-file/show');
             console.log(data, status)
             setMenuList(data.list);
         }catch (error){
