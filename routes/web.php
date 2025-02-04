@@ -41,8 +41,8 @@ Route::middleware('auth')->group(function () {
 
     // Behavior
     Route::prefix('behavior')->group(function (){
-        Rotue::get('/show/{serial_id}',[BehaviorController::class,'show'])->name('behavior.show');
-        Rotue::post('/store',[BehaviorController::class,'store'])->name('behavior.store');
+        Route::get('/show/{serial_id}',[BehaviorController::class,'show'])->name('behavior.show');
+        Route::post('/store',[BehaviorController::class,'store'])->name('behavior.store');
     });
 
     // SparePart Warranty

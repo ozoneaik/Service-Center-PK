@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {Head} from '@inertiajs/react';
-import {Button, Container, Grid2, Stack, TextField} from '@mui/material';
+import {Breadcrumbs, Button, Container, Grid2, Stack, TextField, Typography} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ProductDetail from '@/Components/ProductDetail';
 import {useState} from 'react';
@@ -85,8 +85,12 @@ export default function Dashboard() {
                                             {processing && 'กำลัง'}ค้นหา
                                         </Button>
                                     </Stack>
-                                    <Stack mt={2} direction='row' justifyContent='end' spacing={2}>
-                                        path/path/path
+                                    <Stack direction='row-reverse' mt={2}>
+                                        <Breadcrumbs>
+                                            <Typography sx={{ color: 'text.primary' }}>Breadcrumbs2</Typography>
+                                            <Typography sx={{ color: 'text.primary' }}>Breadcrumbs3</Typography>
+                                            <Typography sx={{ color: 'text.primary' }}>Breadcrumbs4</Typography>
+                                        </Breadcrumbs>
                                     </Stack>
                                 </Grid2>
                             </Grid2>

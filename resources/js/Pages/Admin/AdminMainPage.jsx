@@ -4,7 +4,7 @@ import {Container} from "@mui/material";
 export default function AdminMainPage(){
     return (
         <AuthenticatedLayout>
-            <Container maxWidth>
+            <Container maxWidth={'lg'}>
                 df
             </Container>
         </AuthenticatedLayout>
