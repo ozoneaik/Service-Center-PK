@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('file_uploads', function (Blueprint $table) {
             $table->id();
+            $table->string('serial_id')->comment('รหัสอ้างอิงซีเรียลสินค้า');
+            $table->bigInteger('menu_id')->comment('รหัสอ้างอิงเมนูรูปภาพ');
+            $table->string('file_path')->unique()->comment('ที่อยู่รูปภาพ');
             $table->timestamps();
         });
     }

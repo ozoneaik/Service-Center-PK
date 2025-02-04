@@ -15,8 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('role')->default('user')->comment('สิทธิ์');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('is_code_cust_id')->nullable()->comment('รหัสลูกค้า ISCode');
             $table->rememberToken();
             $table->timestamps();
         });

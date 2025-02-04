@@ -15,6 +15,7 @@ import 'react-photo-view/dist/react-photo-view.css';
 import Checkbox from "@mui/material/Checkbox";
 import {useState} from "react";
 import useMediaQuery from '@mui/material/useMediaQuery';
+import {ImagePreview} from "@/Components/ImagePreview.jsx";
 
 
 const imagePath = 'https://images.pumpkin.tools/A%20%e0%b9%80%e0%b8%84%e0%b8%a3%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%87%e0%b8%a1%e0%b8%b7%e0%b8%ad%e0%b9%84%e0%b8%9f%e0%b8%9f%e0%b9%89%e0%b8%b2%20%e0%b9%81%e0%b8%a5%e0%b8%b0%20%e0%b9%80%e0%b8%84%e0%b8%a3%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%87%e0%b8%a1%e0%b8%b7%e0%b8%ad%e0%b9%84%e0%b8%9f%e0%b8%9f%e0%b9%89%e0%b8%b2%e0%b9%84%e0%b8%a3%e0%b9%89%e0%b8%aa%e0%b8%b2%e0%b8%a2/50349/Diagrams_50349-DM01.jpg';
@@ -49,7 +50,7 @@ function SimpleDialog(props) {
                                         <Checkbox/>
                                     </TableCell>
                                     <TableCell>
-                                        <ImageShow src={spPath}/>
+                                        <ImagePreview src={spPath}/>
                                     </TableCell>
                                     <TableCell>
                                         <Typography>sdfs</Typography>
@@ -96,18 +97,6 @@ function SimpleDialog(props) {
     )
 }
 
-function ImageShow({src}) {
-    return (
-        <PhotoProvider>
-            <div className="foo">
-                <PhotoView src={src}>
-                    <img src={src} alt="" width='50'/>
-                </PhotoView>
-            </div>
-        </PhotoProvider>
-    )
-}
-
 export const AddSp = ({detail}) => {
     const [open, setOpen] = useState(false)
 
@@ -128,7 +117,7 @@ export const AddSp = ({detail}) => {
                             <Checkbox/>
                         </TableCell>
                         <TableCell>
-                            <ImageShow src={spPath}/>
+                            <ImagePreview src={spPath}/>
                         </TableCell>
                         <TableCell>
                             <Typography>{item.spcode}</Typography>

@@ -6,6 +6,7 @@ const list = [
     {title: 'ลงทะเบียนรับประกัน', url: 'dashboard'},
     {title: 'แจ้งเคลมอะไหล่', url: 'dashboard'},
     {title: 'สั่งซื้ออะไหล่', url: 'dashboard'},
+    {title: 'ผู้ดูแลระบบ', url: 'admin.show'},
 ]
 
 

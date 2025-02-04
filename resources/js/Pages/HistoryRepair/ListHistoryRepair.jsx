@@ -1,7 +1,4 @@
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {Head} from "@inertiajs/react";
 import {Accordion, AccordionDetails, AccordionSummary, Divider, Grid2, Stack, Typography} from "@mui/material";
-import ProductDetail from "@/Components/ProductDetail.jsx";
 import TableSpList from "@/Pages/HistoryRepair/TableSpList.jsx";
 import {useState} from "react";
 import ListBehavior from "@/Pages/HistoryRepair/ListBehavior.jsx";
@@ -11,7 +8,6 @@ const HeadTitle = ({endService}) => (
         <Stack direction='row' spacing={1}>
             <Typography color='#f05f29' variant='h6' fontWeight='bold'>{endService}</Typography>
         </Stack>
-        {/*<Typography component="span" fontSize={18} fontWeight='bold'>หมายเหตุ : {Remark}</Typography>*/}
     </Stack>
 )
 
@@ -35,7 +31,7 @@ export default function ListHistoryRepair({detail}) {
                                     </Stack>
                                 </AccordionSummary>
                                 <AccordionDetails>
-                                    <Stack direction={{xs : 'column' , md : 'row'}} spacing={1} mb={2}>
+                                    <Stack direction={{xs: 'column', md: 'row'}} spacing={1} mb={2}>
                                         <Typography fontWeight='bold' color='#f05f29'>หมายเหตุ</Typography>
                                         <Typography>{item.remark}</Typography>
                                     </Stack>

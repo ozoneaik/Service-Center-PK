@@ -56,7 +56,7 @@ export default function FormRepair({detail, setDetail,check, setCheck}) {
                     </Grid2>
                     <Grid2 size={12}>
                         {showDetail === 1 && <SummaryForm check={check} setCheck={setCheck}/>}
-                        {showDetail === 2 && <UploadFile/>}
+                        {showDetail === 2 && <UploadFile detail={detail} setDetail={setDetail}/>}
                         {showDetail === 3 && <AddBehavior detail={detail} setDetail={setDetail}/>}
                         {showDetail === 4 && <AddSp detail={detail}/>}
                         {showDetail === 5 && <AddMore/>}

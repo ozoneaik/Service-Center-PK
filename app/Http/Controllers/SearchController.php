@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class SearchController extends Controller
 {
-    public function detail(Request $request)
+    public function detail(Request $request): JsonResponse
     {
         try {
             $response = Http::post(env('API_DETAIL'), [
@@ -20,67 +22,20 @@ class SearchController extends Controller
                     throw new \Exception('ไม่พบ้อมูล');
                 }
             } else {
-                $searchResults = [];
                 throw new \Exception('ไม่พบข้อมูล');
             }
-            //        $listBehavior = $searchResults['assets'][0]['listbehavior'];
-            //        $sp = $searchResults['assets'][0]['sp'];
-            //        $searchResults['assets'][0]['sp'] = $this->formatSp($sp);
-            //        $searchResults['assets'][0]['listbehavior'] = $this->formatListBehavior($listBehavior);
             return response()->json([
                 'searchResults' => $searchResults,
-                'message' => 'success'
+                'message' => 'success',
+                'time' => Carbon::now()
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'searchResults' => [],
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'time' => Carbon::now()
             ], 400);
         }
     }
 
-    public function formatListBehavior($data): array
-    {
-        $groupedData = [];
-        foreach ($data as $key => $item) {
-            $behaviorName = $item['behaviorname'];
-            if (!isset($groupedData[$behaviorName])) {
-                $groupedData[$behaviorName] = [];
-            }
-            $groupedData[$behaviorName][] = [
-                'catalog' => $item['catalog'],
-                'subcatalog' => $item['subcatalog'],
-                'causecode' => $item['causecode'],
-                'causename' => $item['causename']
-            ];
-        }
-        $groupedDataArray = [];
-        $count = 0;
-        foreach ($groupedData as $behaviorName => $items) {
-            $groupedDataArray[$count]['groupName'] = $behaviorName;
-            $groupedDataArray[$count]['items'] = $items;
-            $count++;
-        }
-        return $groupedDataArray;
-    }
-
-    public function formatSp($data): array
-    {
-
-        $count = 0;
-        $new_format = [];
-        foreach ($data as $key => $d) {
-            $parts = explode('|', $d);
-            $new_format[$count] = [
-                'key' => $key,
-                'sp_code' => $parts[0],
-                'name' => $parts[1],
-                'z' => isset($parts[3]) ? $parts[3] : '',
-                'status' => end($parts)
-            ];
-            $count++;
-        }
-
-        return $new_format;
-    }
 }

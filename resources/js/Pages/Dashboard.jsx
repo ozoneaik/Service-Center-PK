@@ -25,6 +25,7 @@ export default function Dashboard() {
         try {
 
             const {data, status} = await axios.post('/search', {sn, views: 'single'});
+            console.log(data,status)
             if (data.searchResults.message === 'SUCCESS') {
                 console.log(data.searchResults.assets[0])
                 setDetail(data.searchResults.assets[0])

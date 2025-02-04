@@ -2,7 +2,6 @@ import {Button, Stack} from "@mui/material"
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import {useState} from "react";
 
 export const SummaryForm = ({check, setCheck}) => {
 
