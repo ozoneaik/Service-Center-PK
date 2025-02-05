@@ -1,16 +1,15 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
-import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import {Link, usePage} from '@inertiajs/react';
+import {usePage} from '@inertiajs/react';
 import {useState} from 'react';
 import icon from '../assets/images/logo.png'
-import {Avatar, Container, Typography} from "@mui/material";
+import {Avatar} from "@mui/material";
 import cover from '../assets/images/cover.png'
+import background from '../assets/images/background.jpg'
 import NavBar from "@/Layouts/NavBar.jsx";
 
 const backgroundCover = {
-    backgroundImage: `url(${cover})`,
+    backgroundImage: `url(${background})`,
     backgroundRepeat : 'no-repeat',
     backgroundSize: '100% auto',
     backgroundPosition: 'top'
@@ -18,10 +17,7 @@ const backgroundCover = {
 }
 export default function AuthenticatedLayout({header, children}) {
     const user = usePage().props.auth.user;
-
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
-
+    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     return (
         <div className="min-h-screen " style={backgroundCover}>
             <nav className="fixed w-full z-50 border-b border-gray-100 bg-orange/75 backdrop-blur-sm">

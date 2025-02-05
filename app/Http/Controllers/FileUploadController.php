@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UploadFileRequest;
 use App\Models\FileUpload;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class FileUploadController extends Controller
 {
@@ -24,20 +25,14 @@ class FileUploadController extends Controller
         }
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(UploadFileRequest $request)
     {
-        try {
-            return response()->json([
-                'message' => 'success',
-            ]);
-        } catch (\Exception $exception) {
-            return response()->json([
-                'message' => $exception->getMessage(),
-            ], 400);
-        }
+        $list = $request->file('list');
+        $menu = $request->input('list');
+        dump($list);
     }
 
-    private function UploadFile(){
+    private function UploadFile($files){
 
     }
 }

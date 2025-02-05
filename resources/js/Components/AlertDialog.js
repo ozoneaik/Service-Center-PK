@@ -5,6 +5,7 @@ const options = {
     cancelButtonText: 'ยกเลิก',
     confirmButtonText: 'ตกลง',
     allowOutsideClick : false,
+    confirmButtonColor: '#f15922',
 }
 
 export function AlertDialog({title, text, icon = 'error', onPassed}) {

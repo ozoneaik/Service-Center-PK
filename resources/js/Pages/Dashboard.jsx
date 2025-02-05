@@ -1,13 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {Head} from '@inertiajs/react';
-import {Breadcrumbs, Button, Container, Grid2, Stack, TextField, Typography} from '@mui/material';
+import {Breadcrumbs, Button, Container, Grid2, Stack, TextField, Typography, useStepContext} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ProductDetail from '@/Components/ProductDetail';
 import {useState} from 'react';
 import Progress from "@/Components/Progress.jsx";
 import {AlertDialog} from "@/Components/AlertDialog.js";
 import EditIcon from '@mui/icons-material/Edit';
-import SyncIcon from '@mui/icons-material/Sync';
 import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
 import FormRepair from "@/Pages/ReportRepair/FormRepair.jsx";
 import {PathDetail} from "@/Components/PathDetail.jsx";
@@ -16,6 +15,7 @@ import ListHistoryRepair from "@/Pages/HistoryRepair/ListHistoryRepair.jsx";
 export default function Dashboard() {
     const [check, setCheck] = useState('before');
     const [detail, setDetail] = useState();
+    const [newData, setNewData] = useState();
     const [processing, setProcessing] = useState(false);
     const [sn, setSn] = useState();
     const [showContent, setShowContent] = useState();
@@ -30,7 +30,7 @@ export default function Dashboard() {
                 console.log(data.searchResults.assets[0])
                 setDetail(data.searchResults.assets[0])
             } else {
-                throw 'error';
+                throw 'error'
             }
         } catch (err) {
             setDetail();

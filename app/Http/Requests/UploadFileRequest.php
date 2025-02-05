@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class RemarkRequest extends FormRequest
+class UploadFileRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,16 +23,17 @@ class RemarkRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'remark' => 'required',
             'serial_id' => 'required',
+            'list' => 'required | array',
         ];
     }
 
-    public function messages() : array
+    public function messages(): array
     {
         return [
-            'remark.required' => 'remark is required.',
-            'serial_id.required' => 'ไม่พบซีเรียลที่ต้องการสร้างหรืออัพเดท',
+            'serial_id.required' => 'Serial ID is required.',
+            'list.required' => 'List is required.',
+            'list.array' => 'List must be an array.',
         ];
     }
 }

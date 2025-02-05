@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RemarkRequest;
 use App\Models\Remark;
 use Illuminate\Http\JsonResponse;
+use Exception;
 
 class RemarkController extends Controller
 {
@@ -12,11 +13,12 @@ class RemarkController extends Controller
     public function show($serial_id) : JsonResponse{
         try {
             $data = Remark::query()->where('serial_id', $serial_id)->first();
+            is_null($data) ?? throw new Exception('Remark not found');
             return response()->json([
                 'message' => 'fetch data success',
                 'data' => $data
             ]);
-        }catch (\Exception $e){
+        }catch (Exception $e){
             return response()->json([
                 "message"=>$e->getMessage(),
                 'data' => []
@@ -27,14 +29,11 @@ class RemarkController extends Controller
     public function storeOrUpdate(RemarkRequest $request): JsonResponse
     {
         try {
-            $request->validate([
-                'remark' => 'required', 'serial_id' => 'required'
-            ]);
             $serial_id = $request->input('serial_id');
             $findPrevRemark = Remark::query()->where('serial_id', $serial_id)->first();
             if ($findPrevRemark) {
                 $data = Remark::query()->update([
-                    'remark' => $request->input('remark'),
+                    'remark' => $request->input('remark')
                 ]);
             } else {
                 $data = Remark::query()->create([
@@ -46,7 +45,7 @@ class RemarkController extends Controller
                 'message' => "Remark Updated",
                 'remark' => $data,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
                 'remark' => []

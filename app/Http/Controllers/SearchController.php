@@ -18,9 +18,8 @@ class SearchController extends Controller
             ]);
             if ($response->status() === 200) {
                 $searchResults = $response->json();
-                if ($searchResults['status'] !== 'SUCCESS') {
-                    throw new \Exception('ไม่พบ้อมูล');
-                }
+                $searchResults['status'] !== 'SUCCESS' ?? throw new \Exception('ไม่พบ้อมูล');
+
             } else {
                 throw new \Exception('ไม่พบข้อมูล');
             }

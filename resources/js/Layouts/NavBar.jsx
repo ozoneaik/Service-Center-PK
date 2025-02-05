@@ -4,7 +4,7 @@ const list = [
     {title: 'แจ้งซ่อม', url: 'dashboard'},
     {title: 'ประวัติซ่อม', url: 'dashboard'},
     {title: 'ลงทะเบียนรับประกัน', url: 'dashboard'},
-    {title: 'แจ้งเคลมอะไหล่', url: 'dashboard'},
+    {title: 'แจ้งเคลมอะไหล่', url: 'spareClaim.index'},
     {title: 'สั่งซื้ออะไหล่', url: 'dashboard'},
     {title: 'ผู้ดูแลระบบ', url: 'admin.show'},
 ]

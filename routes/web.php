@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RemarkController;
 use App\Http\Controllers\ReportRepairController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SpareClaimController;
 use App\Http\Controllers\SparePartController;
 use App\Http\Controllers\SparePartWarrantyController;
 use Illuminate\Support\Facades\Auth;
@@ -37,6 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/menu-upload-file/show', [MenuFileUploadController::class, 'show'])->name('menuFileUpload.show');
     Route::prefix('upload-file')->group(function (){
        Route::get('/list', [FileUploadController::class,'list'])->name('uploadFile.show');
+       Route::post('/store', [FileUploadController::class,'store'])->name('uploadFile.store');
     });
 
     // Behavior
@@ -61,6 +63,11 @@ Route::middleware('auth')->group(function () {
     Route::prefix('remark')->group(function () {
         Route::get('/show/{serial_id}', [RemarkController::class, 'show'])->name('remark.show');
         Route::post('/storeOrUpdate', [RemarkController::class, 'storeOrUpdate'])->name('remark.store');
+    });
+
+    Route::prefix('spare-claim')->group(function(){
+        Route::get('/index',[SpareClaimController::class,'index'])->name('spareClaim.index');
+        Route::get('/history',[SpareClaimController::class,'historyShow'])->name('spareClaim.historyShow');
     });
 
     // Admin Only
