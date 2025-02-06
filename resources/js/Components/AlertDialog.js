@@ -1,18 +1,18 @@
 import Swal from "sweetalert2";
 
 const options = {
-    showCancelButton: true,
     cancelButtonText: 'ยกเลิก',
     confirmButtonText: 'ตกลง',
     allowOutsideClick : false,
     confirmButtonColor: '#f15922',
 }
 
-export function AlertDialog({title, text, icon = 'error', onPassed}) {
+export function AlertDialog({title, text, icon = 'error', onPassed,showCancelButton = true}) {
     Swal.fire({
         icon,
         title,
         text,
+        showCancelButton,
         ...options
     }).then((result) => {
         onPassed(result.isConfirmed)

@@ -1,19 +1,23 @@
 import {useEffect, useState} from "react";
-import {Box, Button, Grid2, Stack, Typography} from "@mui/material";
+import {Button, Grid2, Stack, Typography} from "@mui/material";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
+import Progress from "@/Components/Progress.jsx";
+import {AlertDialog} from "@/Components/AlertDialog.js";
 
-export const AddBehavior = ({detail, setDetail}) => {
+export const AddBehavior = ({detail,setDetail}) => {
     const [loading, setLoading] = useState(false);
-    const [listBehavior, setListBehavior] = useState(detail.listbehavior);
     const [groupedBehavior, setGroupedBehavior] = useState([]);
+    const [selected, setSelected] = useState(detail.selected.behavior);
 
     useEffect(() => {
         setLoading(true);
-        const grouped = listBehavior.reduce((acc, item) => {
+        const grouped = detail.listbehavior.reduce((acc, item) => {
             const existingGroup = acc.find(group => group.behaviorname === item.behaviorname);
             if (existingGroup) {
                 existingGroup.list.push({
+                    subcatalog: item.subcatalog,
+                    catalog: item.catalog,
                     causename: item.causename,
                     causecode: item.causecode
                 });
@@ -21,8 +25,10 @@ export const AddBehavior = ({detail, setDetail}) => {
                 acc.push({
                     behaviorname: item.behaviorname,
                     list: [{
+                        subcatalog: item.subcatalog,
+                        catalog: item.catalog,
                         causename: item.causename,
-                        causecode: item.causecode
+                        causecode: item.causecode,
                     }]
                 });
             }
@@ -31,25 +37,103 @@ export const AddBehavior = ({detail, setDetail}) => {
         setGroupedBehavior(grouped);
         setLoading(false);
     }, []);
+
+    const onSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        console.log(selected)
+        AlertDialog({
+            icon: 'question',
+            title: 'บันทึก',
+            text: 'กดตกลงเพื่อบันทึกข้อมูล',
+            onPassed: async (confirm) => {
+                if (confirm) {
+                    try {
+                        const {data, status} = await axios.post('/behavior/store', {
+                            serial_id: detail.serial,
+                            list: selected
+                        });
+                        console.log(data, status)
+                        setSelected(data.request);
+                        AlertDialog({
+                            icon: 'success',
+                            title: 'สำเร็จ',
+                            text: data.message,
+                            showCancelButton: false,
+                            onPassed: () => {}
+                        })
+                        setDetail(prevDetail => ({
+                            ...prevDetail,
+                            selected: {
+                                ...prevDetail.selected,
+                                behavior: selected
+                            }
+                        }));
+                    } catch (error) {
+                        AlertDialog({
+                            title: `เกิดข้อผิดพลาด`,
+                            text: error.response.data.message + ` (code : ${error.status})`,
+                            showCancelButton: false,
+                            onPassed: (confirm) => console.log(confirm)
+                        });
+                    }
+                } else console.log('ยกเลิกแล้ว');
+            }
+        })
+
+        setLoading(false)
+
+    }
+    const handleChange = (cause, event, group) => {
+        const checked = event.target.checked;
+        const newValue = {
+            behaviorname: group.behaviorname,
+            ...cause
+        }
+        setSelected(prevSelected =>
+            checked
+                ? [...prevSelected, newValue]  // ถ้า checked = true, เพิ่ม cause เข้าไป
+                : prevSelected.filter(item =>
+                    !(item.behaviorname === newValue.behaviorname && item.causecode === newValue.causecode) // ใช้ value-based comparison
+                ) // ถ้า unchecked, เอา cause ออก
+        );
+    }
     return (
         <>
-
-            {groupedBehavior.map((group, index) => (
-                <Stack direction='column' key={index}>
-                    <Typography variant='h6' color='#f15922' fontWeight='bold'>{group.behaviorname}</Typography>
-                    <Grid2 container>
-                        {group.list.map((cause, i) => (
-                            <Grid2 size={{xs: 12,md : 4, lg: 3}} key={i}>
-                                <FormControlLabel key={i} control={<Checkbox/>} label={cause.causename}/>
+            {!loading ? (
+                <>
+                    {groupedBehavior.map((group, index) => (
+                        <Stack direction='column' key={index}>
+                            <Typography variant='h6' color='#f15922' fontWeight='bold'>{group.behaviorname}</Typography>
+                            <Grid2 container>
+                                {group.list.map((cause, i) => (
+                                    <Grid2 size={{xs: 12, md: 4, lg: 3}} key={i}>
+                                        <FormControlLabel
+                                            key={i}
+                                            control={
+                                                <Checkbox
+                                                    checked={selected.some(item =>
+                                                        item.behaviorname === group.behaviorname && item.causecode === cause.causecode
+                                                    )}
+                                                    onChange={(e) => handleChange(cause, e, group)}
+                                                />
+                                            }
+                                            label={cause.causename}
+                                        />
+                                    </Grid2>
+                                ))}
                             </Grid2>
-                        ))}
-                    </Grid2>
-                </Stack>
-            ))}
-            <Stack direction='row' justifyContent='end' spacing={2}>
-                <Button variant='contained' color='primary'>บันทึก</Button>
-                <Button variant='contained' color='secondary'>ยกเลิก</Button>
-            </Stack>
+                        </Stack>
+                    ))}
+                    <form onSubmit={onSubmit}>
+                        < Stack direction='row' justifyContent='end' spacing={2}>
+                            <Button variant='contained' color='primary' type='submit'>บันทึก</Button>
+                            <Button onClick={() => console.log(detail, groupedBehavior)} variant='contained'
+                                    color='secondary'>ยกเลิก</Button>
+                        </Stack>
+                    </form>
+                </>
+            ) : <Progress/>}
         </>
     );
 };

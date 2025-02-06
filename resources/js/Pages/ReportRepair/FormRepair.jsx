@@ -1,9 +1,9 @@
-import {Box, Button, Card, Divider, Grid2, Stack, Typography} from "@mui/material";
+import { Button, Grid2, Stack, Typography} from "@mui/material";
 import {useState} from "react";
 import {SummaryForm} from "./SummaryForm";
 import {UploadFile} from "./UploadFile";
 import {AddBehavior} from "./AddBehavior";
-import {AddSp} from "./AddSp";
+import {AddSp} from "./Sp/AddSp.jsx";
 import {AddMore} from "./AddMore";
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import ViewListIcon from '@mui/icons-material/ViewList';
@@ -58,7 +58,7 @@ export default function FormRepair({detail, setDetail,check, setCheck}) {
                         {showDetail === 1 && <SummaryForm check={check} setCheck={setCheck}/>}
                         {showDetail === 2 && <UploadFile detail={detail} setDetail={setDetail}/>}
                         {showDetail === 3 && <AddBehavior detail={detail} setDetail={setDetail}/>}
-                        {showDetail === 4 && <AddSp detail={detail}/>}
+                        {showDetail === 4 && <AddSp detail={detail} setDetail={setDetail}/>}
                         {showDetail === 5 && <AddMore detail={detail} setDetail={setDetail}/>}
                     </Grid2>
                 </Grid2>

@@ -50,7 +50,7 @@ Route::middleware('auth')->group(function () {
     // SparePart Warranty
     Route::prefix('spare-path-warranty')->group(function (){
         Route::get('/show/{serial_id}',[SparePartWarrantyController::class,'show'])->name('sparePartWarranty.show');
-        Route::post('/store',[SparePartController::class,'store'])->name('sparePartWarranty.store');
+        Route::post('/store',[SparePartWarrantyController::class,'store'])->name('sparePartWarranty.store');
     });
 
     // SparePart

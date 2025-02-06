@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\BehaviorRequest;
 use App\Models\Behavior;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class BehaviorController extends Controller
 {
@@ -26,6 +27,7 @@ class BehaviorController extends Controller
     public function store(BehaviorRequest $request) : JsonResponse
     {
         try {
+            DB::beginTransaction();
             $serial_id = $request->input('serial_id');
             $list = $request->input('list');
             $this->delete($serial_id);
@@ -39,12 +41,14 @@ class BehaviorController extends Controller
                     'cause_name' => $item['causename'],
                 ]);
             }, $list);
-
+            DB::commit();
             return response()->json([
                 'message' => 'success',
-                'data' => $data,
+                'new_data' => $data,
+                'request' => $request->input('list'),
             ]);
         }catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' => $e->getMessage(),
                 'data' => []

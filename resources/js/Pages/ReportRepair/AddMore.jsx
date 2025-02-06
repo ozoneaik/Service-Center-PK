@@ -7,7 +7,8 @@ export const AddMore = ({detail, setDetail}) => {
     const [loading, setLoading] = useState(true);
     const [remark, setRemark] = useState('');
     useEffect(() => {
-        fetchRemark().then(() => setLoading(false));
+        fetchRemark();
+        setLoading(false);
     }, []);
 
     const fetchRemark = async () => {
@@ -50,7 +51,6 @@ export const AddMore = ({detail, setDetail}) => {
                             <Button color='secondary' variant='contained'>ยกเลิก</Button>
                             <Button disabled={remark === ''} type='submit' color='primary' variant='contained'>บันทึก</Button>
                         </Stack>
-
                     </Stack>
                 </form>
             )}

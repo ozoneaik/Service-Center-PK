@@ -12,7 +12,7 @@ class BehaviorRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,16 +24,17 @@ class BehaviorRequest extends FormRequest
     {
         return [
             'serial_id' => 'required',
-            'list' => 'required | array',
+            'list' => 'required | array | min:1',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'serial_id.required' => 'serial_id is required',
-            'list.required' => 'list is required',
-            'list.array' => 'list must be an array',
+            'serial_id.required' => 'ไม่พบซีเรียลนี้',
+            'list.required' => 'ไม่พบฟอร์ม กรุณาเลือกรายการอย่างน้อย 1 รายการ',
+            'list.array' => 'ฟอร์มมีค่าว่าง กรุณาเลือกรายการอย่างน้อย 1 รายการ',
+            'list.min' => 'กรุณาเลือกอาการอย่างน้อย 1 อาการ'
         ];
     }
 }

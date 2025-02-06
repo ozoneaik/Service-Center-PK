@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UploadFileRequest;
 use App\Models\FileUpload;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
 
 class FileUploadController extends Controller
 {
@@ -19,7 +18,7 @@ class FileUploadController extends Controller
             ]);
         } catch (\Exception $exception) {
             return response()->json([
-                'message' => $exception->getMessage(),
+                'message' => $exception->geextMessage(),
                 'data' => []
             ], 400);
         }
