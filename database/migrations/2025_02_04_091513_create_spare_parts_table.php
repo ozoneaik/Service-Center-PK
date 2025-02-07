@@ -16,8 +16,9 @@ return new class extends Migration
             $table->string('serial_id')->comment('รหัสอ้างอิงซีเรียลสินค้า');
             $table->string('sp_code')->comment('รหัสอะไหล่');
             $table->string('sp_name')->comment('ชื่ออะไหล่');
-            $table->string('price_per_unit')->default(0)->comment('ราคาต่อหน่วย');
-            $table->string('qty')->default(0)->comment('จำนวนอะไร');
+            $table->float('price_per_unit')->default(0)->comment('ราคาต่อหน่วย');
+            $table->bigInteger('qty')->default(0)->comment('จำนวนอะไร');
+            $table->string('sp_unit',10)->default('อัน')->comment('หน่วย');
             $table->timestamps();
         });
     }

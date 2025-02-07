@@ -4,10 +4,8 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\MenuFileUploadController;
 use App\Http\Controllers\BehaviorController;
 use App\Http\Controllers\FileUploadController;
-use App\Http\Controllers\HistoryRepairController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RemarkController;
-use App\Http\Controllers\ReportRepairController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SpareClaimController;
 use App\Http\Controllers\SparePartController;
@@ -86,5 +84,15 @@ Route::middleware('auth')->group(function () {
 Route::get('/Unauthorized', function () {
     return Inertia::render('Unauthorized');
 })->name('unauthorized');
+
+
+Route::get('/testFIle', function () {
+    $path = storage_path("app/public/upload/1234.jpg");
+    return response()->file($path);
+});
+
+Route::get('/home',function () {
+    return view('home');
+})->name('home');
 
 require __DIR__ . '/auth.php';

@@ -4,17 +4,8 @@ import Progress from "@/Components/Progress.jsx";
 import {AlertDialog} from "@/Components/AlertDialog.js";
 
 export const AddMore = ({detail, setDetail}) => {
-    const [loading, setLoading] = useState(true);
-    const [remark, setRemark] = useState('');
-    useEffect(() => {
-        fetchRemark();
-        setLoading(false);
-    }, []);
-
-    const fetchRemark = async () => {
-        const {data, status} = await axios.get(`remark/show/${detail.serial}`);
-        setRemark(data.data.remark)
-    }
+    const [loading, setLoading] = useState(false);
+    const [remark, setRemark] = useState(detail.selected.remark);
     const onSubmit = async (e) => {
         e.preventDefault();
         console.log(detail.serial, remark)
@@ -27,7 +18,15 @@ export const AddMore = ({detail, setDetail}) => {
                 icon : 'success',
                 title : 'สำเร็จ',
                 text : data.message,
-                onPassed : ()=>console.log('onPassed')
+                onPassed : ()=>{
+                    setDetail(prevDetail => ({
+                        ...prevDetail,
+                        selected: {
+                            ...prevDetail.selected,
+                            remark
+                        }
+                    }));
+                }
             })
         } catch (error) {
             AlertDialog({

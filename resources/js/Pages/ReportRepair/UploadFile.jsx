@@ -2,10 +2,12 @@ import {Button, Card, Grid2, Stack, Typography} from "@mui/material";
 import {useEffect, useState} from "react";
 import Progress from "@/Components/Progress.jsx";
 import {ImagePreview} from "@/Components/ImagePreview.jsx";
+import {AlertDialog} from "@/Components/AlertDialog.js";
 
 export const UploadFile = ({detail, setDetail}) => {
     const [loading, setLoading] = useState(true);
     const [menuList, setMenuList] = useState([]);
+    const [selected, setSelected] = useState(detail.selected.fileUpload);
 
     useEffect(() => {
         fetchMenu().then();
@@ -14,10 +16,7 @@ export const UploadFile = ({detail, setDetail}) => {
     const fetchMenu = async () => {
         try {
             const {data, status} = await axios.get('menu-upload-file/show');
-            const menuWithImages = data.list.map(menu => ({
-                ...menu,
-                list: []
-            }));
+            const menuWithImages = data.list.map(menu => ({...menu, list: []}));
             setMenuList(menuWithImages);
         } catch (error) {
             console.log(error);
@@ -28,8 +27,7 @@ export const UploadFile = ({detail, setDetail}) => {
     const handleImageUpload = (menuId, event) => {
         const file = event.target.files[0];
         if (!file) return;
-
-        setMenuList(prevList => {
+        setSelected(prevList => {
             return prevList.map(menu => {
                 if (menu.id === menuId) {
                     const newImageId = menu.list.length + 1;
@@ -40,40 +38,56 @@ export const UploadFile = ({detail, setDetail}) => {
                             {
                                 id: newImageId,
                                 image: file,
-                                preview: URL.createObjectURL(file)
+                                full_file_path: URL.createObjectURL(file)
                             }
                         ]
                     };
-                }
+                }else{}
                 return menu;
             });
         });
     };
 
     const removeImage = (menuId, imageId) => {
-        setMenuList(prevList => {
+        setSelected(prevList => {
             return prevList.map(menu => {
                 if (menu.id === menuId) {
                     return {
                         ...menu,
                         list: menu.list.filter(img => img.id !== imageId)
                     };
-                }
+                }else{}
                 return menu;
             });
         });
     };
 
     const handleSave = async () => {
-        console.log(menuList)
+        console.log(selected)
         try {
             const {data, status} = await axios.post('/upload-file/store', {
-                serial_id: 'test',
-                list: menuList
+                serial_id: detail.serial,
+                list: selected
             }, {headers: {"Content-Type": 'multipart/form-data'}});
             console.log(data, status)
+            setSelected(data.data)
+            setDetail(prevDetail => ({
+                ...prevDetail,
+                selected: {
+                    ...prevDetail.selected,
+                    fileUpload: data.data
+                }
+            }));
+            AlertDialog({
+                icon : "success",
+                title : 'สำเร็จ',
+                text : data.message
+            })
         } catch (error) {
-            console.error(error.response.data.message);
+            AlertDialog({
+                title : 'เกิดข้อผิดพลาด',
+                text : error.response.data.message
+            })
         }
     };
 
@@ -81,17 +95,15 @@ export const UploadFile = ({detail, setDetail}) => {
         <>
             {!loading ? (
                 <Grid2 container spacing={4}>
-                    {menuList.map((item) => (
+                    {selected.map((item) => (
                         <Grid2 size={12} key={item.id}>
-                            <Typography fontWeight='bold'>{item.menu_name}</Typography>
+                            <Typography fontWeight='bold'>{item.menu_name}{item.id}</Typography>
                             <Stack direction='row' spacing={2} sx={{flexWrap: 'wrap', gap: 2}}>
                                 {item.list.map((image) => (
                                     <Card key={image.id} sx={{width: 150, height: 150, position: 'relative'}}>
-                                        <ImagePreview src={image.preview} width='100%' height='100%'/>
+                                        <ImagePreview src={image.full_file_path} width='100%' height='100%'/>
                                         <Button
-                                            variant='contained'
-                                            size="small"
-                                            color="error"
+                                            variant='contained' size="small" color="error"
                                             onClick={() => removeImage(item.id, image.id)}
                                             sx={{position: 'absolute', top: 0, right: 0}}
                                         >
@@ -99,15 +111,10 @@ export const UploadFile = ({detail, setDetail}) => {
                                         </Button>
                                     </Card>
                                 ))}
-                                <Button
-                                    variant="outlined"
-                                    component="label"
-                                    sx={{width: 150, height: 150}}
-                                >
+                                <Button variant="outlined" component="label" sx={{width: 150, height: 150}}>
                                     + เพิ่มรูปภาพ
                                     <input
-                                        type="file"
-                                        hidden
+                                        type="file" hidden
                                         accept="image/*"
                                         onChange={(e) => handleImageUpload(item.id, e)}
                                     />

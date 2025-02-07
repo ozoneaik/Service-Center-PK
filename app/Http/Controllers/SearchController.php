@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Behavior;
+use App\Models\FileUpload;
+use App\Models\JobList;
+use App\Models\MenuFileUpload;
 use App\Models\Remark;
 use App\Models\SparePart;
 use App\Models\SparePartWarranty;
@@ -18,14 +21,15 @@ class SearchController extends Controller
     {
         try {
             $response = Http::post(env('API_DETAIL'), [
-                'sn' => $request->sn,
-                'views' => $request->views,
+                'sn' => $request->sn, 'views' => $request->views,
             ]);
             if ($response->status() === 200) {
                 $searchResults = $response->json();
                     $searchResults['status'] !== 'SUCCESS' ?? throw new \Exception('ไม่พบ้อมูล');
+                $searchResults['assets'][0]['job'] = $this->storeJob($searchResults['assets'][0]);
                 $searchResults['assets'][0]['selected']['behavior'] = $this->BehaviorSelected($request->sn);
                 $searchResults['assets'][0]['selected']['remark'] = $this->RemarkSelected($request->sn);
+                $searchResults['assets'][0]['selected']['fileUpload'] = $this->FileSelected($request->sn);
                 $sp = $this->SpSelected($request->sn);
                 $searchResults['assets'][0]['selected']['sp_warranty'] = $sp['sp_warranty'];
                 $searchResults['assets'][0]['selected']['sp'] = $sp['sp'];
@@ -66,7 +70,7 @@ class SearchController extends Controller
     private function RemarkSelected($sn)
     {
         $remark = Remark::query()->where('serial_id', $sn)->first();
-        return $remark->remark;
+        return $remark ? $remark->remark : '';
     }
 
     private function SpSelected($sn): array
@@ -91,5 +95,35 @@ class SearchController extends Controller
             'sp_warranty' => $warranty,
             'sp' => $not_warranty,
         ];
+    }
+
+    private function storeJob($data)
+    {
+        $job = JobList::query()->where('serial_id', $data['serial'])->first();
+        if (!$job) {
+            $job = JobList::query()->create([
+                'serial_id' => $data['serial'],
+                'job_id' => "JOB".Carbon::now()->timestamp,
+                'pid' => $data['pid'],
+                'p_name' => $data['pname'],
+                'p_base_unit' => $data['pbaseunit'],
+                'p_cat_id' => $data['pcatid'],
+                'p_cat_name' => $data['pCatName'],
+                'p_sub_cat_name' => $data['pSubCatName'],
+                'fac_model' => $data['facmodel'],
+                'image_sku' => $data['imagesku'],
+                'status' => 'pending',
+            ]);
+        }
+        return $job;
+    }
+
+    private function FileSelected($sn){
+        $lists = MenuFileUpload::query()->select('menu_name','id')->get();
+        foreach ($lists as $list){
+            $files = FileUpload::query()->where('serial_id', $sn)->where('menu_id',$list->id)->get();
+            $list['list'] = $files;
+        }
+        return $lists;
     }
 }

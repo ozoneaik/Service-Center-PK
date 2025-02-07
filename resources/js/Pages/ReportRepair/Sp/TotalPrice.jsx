@@ -143,14 +143,14 @@ export default function TotalPrice(props) {
                                         <TableCell>
                                             <TextField
                                                 type="number"
-                                                value={quantities[item.spcode] || item.qty}
+                                                value={quantities[item.spcode] || item.qty || 0}
                                                 onChange={(e) => {
                                                     handleQuantityChange(e, item, selected.sp_warranty.includes(item) ? 'sp_warranty' : 'sp')
                                                 }}
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <Typography>{item.unit ?? 'อัน'}</Typography>
+                                            <Typography>{item.spunit ?? 'อัน'}</Typography>
                                         </TableCell>
                                         <TableCell>
                                             <Typography>{getItemTotal(item)} บาท</Typography>

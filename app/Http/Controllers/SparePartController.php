@@ -39,8 +39,9 @@ class SparePartController extends Controller
                     'serial_id' => $serial_id,
                     'sp_code' => $item['spcode'],
                     'sp_name' => $item['spname'],
-                    'price_per_unit' => $item['price_per_unit'] ?? 0,
+                    'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
                     'qty' => $item['qty'] ?? 0,
+                    'sp_unit' => $item['spunit'] ?? 'อัน',
                 ]);
             }, $list['sp']);
             $data['sp_warranty'] = array_map(function ($item) use ($serial_id) {
@@ -48,8 +49,9 @@ class SparePartController extends Controller
                     'serial_id' => $serial_id,
                     'sp_code' => $item['spcode'],
                     'sp_name' => $item['spname'],
-                    'price_per_unit' => $item['price_per_unit'] ?? 0,
+                    'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
                     'qty' => $item['qty'] ?? 0,
+                    'sp_unit' => $item['spunit'] ?? 'อัน',
                 ]);
             }, $list['sp_warranty']);
 

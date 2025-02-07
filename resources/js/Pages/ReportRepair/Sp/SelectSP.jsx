@@ -8,7 +8,10 @@ export default function SelectSP({list, selected, setSelected, warranty = false}
 
     const handleOnChange = (item, e) => {
         const checked = e.target.checked;
-        item.price_per_unit = Math.floor(Math.random() * 10);
+        if (warranty){
+            item.price_per_unit = 0
+            item.spunit = 'อัน'
+        }
         if (!warranty) { // add to sp
             setSelected(prevSelected =>
                 checked
