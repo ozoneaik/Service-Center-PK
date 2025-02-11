@@ -116,7 +116,7 @@ class SearchController extends Controller
                 'p_sub_cat_name' => $data['pSubCatName'],
                 'fac_model' => $data['facmodel'],
                 'image_sku' => $data['imagesku'],
-                'user_id' => \auth()->user()->id,
+                'user_id' => \auth()->user()->is_code_cust_id,
                 'status' => 'pending',
             ]);
         } else {

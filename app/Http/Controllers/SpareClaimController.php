@@ -15,7 +15,7 @@ class SpareClaimController extends Controller
             ->leftJoin('job_lists', 'job_lists.job_id', '=', 'spare_part_warranties.job_id')
             ->where('spare_part_warranties.status', 'like', 'pending')
             ->where('job_lists.status', 'like', 'success')
-            ->where('job_lists.user_id', auth()->user()->id)
+            ->where('job_lists.user_id', auth()->user()->is_code_cust_id)
             ->groupBy('sp_code', 'sp_name', 'sp_unit')
             ->get();
         foreach ($spareParts as $key => $sp) {
@@ -24,7 +24,7 @@ class SpareClaimController extends Controller
                 ->where('sp_code', $sp['sp_code'])
                 ->where('spare_part_warranties.status', 'pending')
                 ->where('job_lists.status', 'success')
-                ->where('job_lists.user_id', auth()->user()->id)
+                ->where('job_lists.user_id', auth()->user()->is_code_cust_id)
                 ->get();
         }
         return Inertia::render('SpareClaim/ClaimPending', ['spareParts' => $spareParts]);
