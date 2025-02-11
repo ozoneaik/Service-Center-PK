@@ -17,6 +17,7 @@ class JobList extends Model
         'fac_model',
         'serial_id',
         'image_sku',
-        'status'
+        'status',
+        'user_id',
     ];
 }

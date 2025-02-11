@@ -6,23 +6,10 @@ use Illuminate\Console\Command;
 
 class ClearLogs extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'logs:clear {--file=}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Clear logs from storage/logs';
 
-    /**
-     * Execute the console command.
-     */
     public function handle(): void
     {
         $file = $this->option('file');
@@ -43,7 +30,6 @@ class ClearLogs extends Command
                         $this->error("file NO.$key >> No logs to clear!");
                     }
                 }
-                return;
             } else {
                 $logPath = storage_path("logs/$file");
                 if (file_exists($logPath)) {

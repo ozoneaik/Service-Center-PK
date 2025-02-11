@@ -1,4 +1,4 @@
-import { Button, Grid2, Stack, Typography} from "@mui/material";
+import {Button, Grid2, Stack, Typography} from "@mui/material";
 import {useState} from "react";
 import {SummaryForm} from "./SummaryForm";
 import {UploadFile} from "./UploadFile";
@@ -12,10 +12,23 @@ import PsychologyIcon from '@mui/icons-material/Psychology';
 import BuildIcon from '@mui/icons-material/Build';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 
-export default function FormRepair({detail, setDetail,check, setCheck}) {
-    const [showDetail, setShowDetail] = useState();
-    const ButtonStyle = ({title, action,icon}) => (
-        <Button sx={{height : {lg: 80}}} onClick={() => setShowDetail(action)}
+export default function FormRepair({detail, setDetail, check, setCheck}) {
+    const [showDetail, setShowDetail] = useState(1);
+    const [headTitle , setHeadTitle] = useState('สรุปการทำงาน');
+
+
+
+    const handelChangeMenu = ({action}) => {
+        setShowDetail(action);
+        if (action === 1) setHeadTitle('สรุปการทำงาน');
+        else if(action === 2) setHeadTitle('รูปภาพ');
+        else if(action === 3) setHeadTitle('อาการ/สาเหตุ');
+        else if(action === 4) setHeadTitle('อะไหล่');
+        else setHeadTitle('เพิ่มเติม');
+    }
+
+    const ButtonStyle = ({title, action, icon}) => (
+        <Button sx={{height: {lg: 80}}} onClick={()=>handelChangeMenu({action})}
                 variant={action === showDetail ? 'contained' : 'outlined'}>
             <Stack direction='column' spacing={2} alignItems='center'>
                 {icon}
@@ -24,10 +37,10 @@ export default function FormRepair({detail, setDetail,check, setCheck}) {
         </Button>
     )
 
-    const HeadTitle = ({title, icon}) => (
+    const HeadTitle = ({title}) => (
         <>
-            <Stack direction='row' spacing={2} alignItems='center' mb={2} >
-                <Typography variant='h5' fontWeight='bold' sx={{textDecoration : 'underline'}}>
+            <Stack direction='row' spacing={2} alignItems='center' mb={2}>
+                <Typography variant='h5' fontWeight='bold' sx={{textDecoration: 'underline'}}>
                     <ChecklistIcon/>&nbsp;{title}
                 </Typography>
             </Stack>
@@ -36,8 +49,8 @@ export default function FormRepair({detail, setDetail,check, setCheck}) {
 
     return (
         <Grid2 container spacing={2}>
-            <Grid2 size={{xs : 12, lg : 2}}>
-                <Stack direction={{xs : 'row' , lg : 'column'}} spacing={2}>
+            <Grid2 size={{xs: 12, lg: 2}}>
+                <Stack direction={{xs: 'row', lg: 'column'}} spacing={2}>
                     <ButtonStyle action={1} title={'สรุปการทำงาน'} icon={<ViewListIcon/>}/>
                     <ButtonStyle action={2} title={'รูปภาพ'} icon={<CameraAltIcon/>}/>
                     <ButtonStyle action={3} title={'อาการ/สาเหตุ'} icon={<PsychologyIcon/>}/>
@@ -45,24 +58,19 @@ export default function FormRepair({detail, setDetail,check, setCheck}) {
                     <ButtonStyle action={5} title={'เพิ่มเติม'} icon={<MoreHorizIcon/>}/>
                 </Stack>
             </Grid2>
-            <Grid2 size={10}>
+            <Grid2 size={{xs: 12, lg: 10}}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
-                        {showDetail === 1 && <HeadTitle title={'สรุปการทำงาน'} />}
-                        {showDetail === 2 && <HeadTitle title={'รูปภาพ'}/>}
-                        {showDetail === 3 && <HeadTitle title={'อาการ/สาเหตุ'}/>}
-                        {showDetail === 4 && <HeadTitle title={'อะไหล่'}/>}
-                        {showDetail === 5 && <HeadTitle title={'เพิ่มเติม'}/>}
+                        <HeadTitle title={headTitle}/>
                     </Grid2>
                     <Grid2 size={12}>
-                        {showDetail === 1 && <SummaryForm check={check} setCheck={setCheck}/>}
+                        {showDetail === 1 && <SummaryForm detail={detail} setDetail={setDetail}/>}
                         {showDetail === 2 && <UploadFile detail={detail} setDetail={setDetail}/>}
                         {showDetail === 3 && <AddBehavior detail={detail} setDetail={setDetail}/>}
                         {showDetail === 4 && <AddSp detail={detail} setDetail={setDetail}/>}
                         {showDetail === 5 && <AddMore detail={detail} setDetail={setDetail}/>}
                     </Grid2>
                 </Grid2>
-
             </Grid2>
         </Grid2>
     )

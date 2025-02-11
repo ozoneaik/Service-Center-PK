@@ -3,7 +3,9 @@
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\MenuFileUploadController;
 use App\Http\Controllers\BehaviorController;
+use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\FileUploadController;
+use App\Http\Controllers\JobController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RemarkController;
 use App\Http\Controllers\SearchController;
@@ -31,6 +33,11 @@ Route::middleware('auth')->group(function () {
     // Search from API outsource
     Route::post('/search', [SearchController::class, 'detail'])->name('search');
 
+
+    // ปืดงานซ่อม
+    Route::prefix('jobs')->group(function () {
+       Route::post('/update',[JobController::class,'update'])->name('jobs.update');
+    });
 
     // Upload File and Menu Upload File
     Route::get('/menu-upload-file/show', [MenuFileUploadController::class, 'show'])->name('menuFileUpload.show');
@@ -68,6 +75,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/history',[SpareClaimController::class,'historyShow'])->name('spareClaim.historyShow');
     });
 
+    // สร้างเอกสารเคลม
+    Route::post('/claim/store',[ClaimController::class,'store'])->name('claim.store');
+
     // Admin Only
     Route::middleware('adminPermission')->group(function () {
         Route::prefix('admin')->group(function () {
@@ -79,6 +89,7 @@ Route::middleware('auth')->group(function () {
             });
         });
     });
+
 });
 
 Route::get('/Unauthorized', function () {

@@ -25,6 +25,7 @@ class BehaviorRequest extends FormRequest
         return [
             'serial_id' => 'required',
             'list' => 'required | array | min:1',
+            'job_id' => 'required',
         ];
     }
 
@@ -32,6 +33,7 @@ class BehaviorRequest extends FormRequest
     {
         return [
             'serial_id.required' => 'ไม่พบซีเรียลนี้',
+            'job_id.required' => 'ไม่พบรหัส job นี้',
             'list.required' => 'ไม่พบฟอร์ม กรุณาเลือกรายการอย่างน้อย 1 รายการ',
             'list.array' => 'ฟอร์มมีค่าว่าง กรุณาเลือกรายการอย่างน้อย 1 รายการ',
             'list.min' => 'กรุณาเลือกอาการอย่างน้อย 1 อาการ'

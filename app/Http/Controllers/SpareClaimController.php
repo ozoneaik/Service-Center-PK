@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SparePartWarranty;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -9,10 +11,26 @@ class SpareClaimController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('SpareClaim/ClaimPending');
+        $spareParts = SparePartWarranty::query()->select('sp_code', 'sp_name', DB::raw('SUM(qty) as qty'), 'sp_unit')
+            ->leftJoin('job_lists', 'job_lists.job_id', '=', 'spare_part_warranties.job_id')
+            ->where('spare_part_warranties.status', 'like', 'pending')
+            ->where('job_lists.status', 'like', 'success')
+            ->where('job_lists.user_id', auth()->user()->id)
+            ->groupBy('sp_code', 'sp_name', 'sp_unit')
+            ->get();
+        foreach ($spareParts as $key => $sp) {
+            $sp['detail'] = SparePartWarranty::query()
+                ->leftJoin('job_lists','job_lists.job_id','spare_part_warranties.job_id')
+                ->where('sp_code', $sp['sp_code'])
+                ->where('spare_part_warranties.status', 'pending')
+                ->where('job_lists.status', 'success')
+                ->where('job_lists.user_id', auth()->user()->id)
+                ->get();
+        }
+        return Inertia::render('SpareClaim/ClaimPending', ['spareParts' => $spareParts]);
     }
 
-    public function historyShow() : Response
+    public function historyShow(): Response
     {
         return Inertia::render('SpareClaim/HistoryClaim');
     }

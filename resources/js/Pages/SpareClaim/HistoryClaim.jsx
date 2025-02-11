@@ -29,12 +29,12 @@ export default function HistoryClaim() {
                         <Stack direction='row-reverse' spacing={2} mb={2}>
                             <Button
                                 component={Link} href={'/spare-claim/index'}
-                                variant='contained'>
+                                variant={route().current() === 'spareClaim.index' ? 'contained' : 'outlined'}>
                                 สร้างเอกสารเคลม
                             </Button>
                             <Button
                                 component={Link} href={'/spare-claim/history'}
-                                variant='contained'>
+                                variant={route().current() === 'spareClaim.historyShow' ? 'contained' : 'outlined'}>
                                 ประวัติเคลม
                             </Button>
                         </Stack>

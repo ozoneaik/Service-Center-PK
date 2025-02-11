@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UploadFileRequest extends FormRequest
+class JobRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,19 +23,13 @@ class UploadFileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'serial_id' => 'required',
             'job_id' => 'required',
-            'list' => 'required | array',
         ];
     }
 
-    public function messages(): array
-    {
+    public function messages(): array{
         return [
-            'serial_id.required' => 'Serial ID is required.',
-            'job_id.required' => 'Job ID is required.',
-            'list.required' => 'List is required.',
-            'list.array' => 'List must be an array.',
+            'job_id.required' => 'job_id is required',
         ];
     }
 }

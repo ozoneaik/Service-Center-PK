@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('serial_id')->comment('รหัสอ้างอิงซีเรียลสินค้า');
             $table->string('remark')->nullable()->comment('หมายเหตุ');
+            $table->string('job_id')->comment('รหัสจ็อบ');
             $table->timestamps();
         });
     }

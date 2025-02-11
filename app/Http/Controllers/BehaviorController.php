@@ -30,10 +30,12 @@ class BehaviorController extends Controller
             DB::beginTransaction();
             $serial_id = $request->input('serial_id');
             $list = $request->input('list');
-            $this->delete($serial_id);
-            $data = array_map(function ($item) use ($serial_id) {
+            $job_id = $request->input('job_id');
+            $this->delete($job_id);
+            $data = array_map(function ($item) use ($serial_id,$job_id) {
                 return Behavior::query()->create([
                     'serial_id' => $serial_id,
+                    'job_id' => $job_id,
                     'behavior_name' => $item['behaviorname'],
                     'catalog' => $item['catalog'],
                     'sub_catalog' => $item['subcatalog'],
@@ -56,7 +58,7 @@ class BehaviorController extends Controller
         }
     }
 
-    protected function delete($serial_id) {
-        return Behavior::query()->where('serial_id', $serial_id)->delete();
+    protected function delete($job_id) {
+        return Behavior::query()->where('job_id', $job_id)->delete();
     }
 }

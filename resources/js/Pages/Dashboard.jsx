@@ -86,9 +86,9 @@ export default function Dashboard() {
                                     </Stack>
                                     <Stack direction='row-reverse' mt={2}>
                                         <Breadcrumbs>
-                                            <Typography sx={{ color: 'text.primary' }}>Breadcrumbs2</Typography>
-                                            <Typography sx={{ color: 'text.primary' }}>Breadcrumbs3</Typography>
-                                            <Typography sx={{ color: 'text.primary' }}>Breadcrumbs4</Typography>
+                                            <Typography sx={{color: 'text.primary'}}>Breadcrumbs2</Typography>
+                                            <Typography sx={{color: 'text.primary'}}>Breadcrumbs3</Typography>
+                                            <Typography sx={{color: 'text.primary'}}>Breadcrumbs4</Typography>
                                         </Breadcrumbs>
                                     </Stack>
                                 </Grid2>
@@ -104,12 +104,21 @@ export default function Dashboard() {
                                         Sn={detail.serial}
                                     />
                                 }
-                                {detail && showContent === 1 && <FormRepair detail={detail} setDetail={setDetail} check={check} setCheck={setCheck}/>}
-                                {detail && showContent === 2 && <ListHistoryRepair detail={detail} setDetail={setDetail} check={check} setCheck={setCheck}/>}
+                                {detail && showContent === 1 &&
+                                    <FormRepair
+                                        detail={detail} setDetail={setDetail}
+                                        check={check} setCheck={setCheck}
+                                    />
+                                }
+                                {detail && showContent === 2 &&
+                                    <ListHistoryRepair
+                                        detail={detail} setDetail={setDetail}
+                                        check={check} setCheck={setCheck}
+                                    />
+                                }
                             </>
                         ) : <Progress/>
                         }
-
                     </Stack>
                 </div>
             </Container>

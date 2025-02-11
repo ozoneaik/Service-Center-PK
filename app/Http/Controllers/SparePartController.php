@@ -32,11 +32,13 @@ class SparePartController extends Controller
         try {
             DB::beginTransaction();
             $serial_id = $request->input('serial_id');
+            $job_id = $request->input('job_id');
             $list = $request->input('list');
-            $this->delete($serial_id);
-            $data['sp'] = array_map(function ($item) use ($serial_id) {
+            $this->delete($job_id);
+            $data['sp'] = array_map(function ($item) use ($serial_id,$job_id) {
                 return SparePart::query()->create([
                     'serial_id' => $serial_id,
+                    'job_id' => $job_id,
                     'sp_code' => $item['spcode'],
                     'sp_name' => $item['spname'],
                     'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
@@ -44,14 +46,16 @@ class SparePartController extends Controller
                     'sp_unit' => $item['spunit'] ?? 'อัน',
                 ]);
             }, $list['sp']);
-            $data['sp_warranty'] = array_map(function ($item) use ($serial_id) {
+            $data['sp_warranty'] = array_map(function ($item) use ($serial_id,$job_id) {
                 return SparePartWarranty::query()->create([
                     'serial_id' => $serial_id,
+                    'job_id' => $job_id,
                     'sp_code' => $item['spcode'],
                     'sp_name' => $item['spname'],
                     'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
                     'qty' => $item['qty'] ?? 0,
                     'sp_unit' => $item['spunit'] ?? 'อัน',
+                    'status' => 'pending',
                 ]);
             }, $list['sp_warranty']);
 
@@ -69,9 +73,9 @@ class SparePartController extends Controller
         }
     }
 
-    private function delete($serial_id): void
+    private function delete($job_id): void
     {
-        SparePart::query()->where('serial_id', $serial_id)->delete();
-        SparePartWarranty::query()->where('serial_id', $serial_id)->delete();
+        SparePart::query()->where('job_id', $job_id)->delete();
+        SparePartWarranty::query()->where('job_id', $job_id)->delete();
     }
 }

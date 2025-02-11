@@ -10,7 +10,8 @@ import {
 import AlreadyClaim from "@/Pages/SpareClaim/AlreadyClaim.jsx";
 import {Link} from "@inertiajs/react";
 
-export default function ClaimPending() {
+export default function ClaimPending({spareParts}) {
+
     return (
         <AuthenticatedLayout>
             <Container>
@@ -25,17 +26,18 @@ export default function ClaimPending() {
                         <Stack direction='row-reverse' spacing={2} mb={2}>
                             <Button
                                 component={Link} href={'/spare-claim/index'}
-                                variant='contained'>
+                                variant={route().current() === 'spareClaim.index' ? 'contained' : 'outlined'}>
                                 สร้างเอกสารเคลม
                             </Button>
                             <Button
                                 component={Link} href={'/spare-claim/history'}
-                                variant='contained'>
+                                variant={route().current() === 'spareClaim.historyShow' ? 'contained' : 'outlined'}>
                                 ประวัติเคลม
                             </Button>
+                            <button onClick={()=>console.log(spareParts)}>Click</button>
                         </Stack>
                         <Card>
-                            <AlreadyClaim/>
+                            <AlreadyClaim spareParts={spareParts}/>
                         </Card>
                     </Grid2>
                 </Grid2>

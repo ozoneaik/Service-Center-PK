@@ -13,7 +13,7 @@ export default function TableSpList({sparePart}){
             </TableHead>
             <TableBody>
                 {sparePart.map((item, index) => (
-                    <TableRow>
+                    <TableRow key={index}>
                         <TableCell>{item.spcode}</TableCell>
                         <TableCell>{item.spname}</TableCell>
                         <TableCell>{item.qty}</TableCell>

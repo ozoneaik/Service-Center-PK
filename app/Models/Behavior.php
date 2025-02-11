@@ -8,6 +8,7 @@ class Behavior extends Model
 {
     protected $fillable = [
         'serial_id',
+        'job_id',
         'catalog',
         'sub_catalog',
         'behavior_name',

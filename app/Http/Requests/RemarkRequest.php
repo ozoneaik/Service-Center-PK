@@ -24,6 +24,7 @@ class RemarkRequest extends FormRequest
     {
         return [
             'remark' => 'required',
+            'job_id' => 'required',
             'serial_id' => 'required',
         ];
     }
@@ -32,6 +33,7 @@ class RemarkRequest extends FormRequest
     {
         return [
             'remark.required' => 'remark is required.',
+            'job_id.required' => 'job is required.',
             'serial_id.required' => 'ไม่พบซีเรียลที่ต้องการสร้างหรืออัพเดท',
         ];
     }

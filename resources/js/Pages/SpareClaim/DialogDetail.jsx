@@ -10,7 +10,7 @@ import {
 import React from "react";
 import CloseIcon from '@mui/icons-material/Close';
 
-export default function DialogDetail({open , setOpen, data}){
+export default function DialogDetail({open , setOpen, data,sparePartsDetail}){
     return (
         <Dialog fullWidth maxWidth='lg' open={open} onClose={()=>setOpen(false)}>
             <AppBar sx={{ position: 'relative' }}>
@@ -26,11 +26,6 @@ export default function DialogDetail({open , setOpen, data}){
             <DialogContent>
                 <Table>
                     <TableHead>
-                        <TableRow sx={{backgroundColor : '#eff0f1'}}>
-                            <TableCell sx={{fontWeight : 'bold'}} colSpan={7}>
-                                รายการอะไหล่
-                            </TableCell>
-                        </TableRow>
                         <TableRow>
                             <TableCell>Job</TableCell>
                             <TableCell>Serial</TableCell>
@@ -42,20 +37,22 @@ export default function DialogDetail({open , setOpen, data}){
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        <TableRow>
-                            <TableCell>Job</TableCell>
-                            <TableCell>Serial</TableCell>
-                            <TableCell>รหัสสินค้า</TableCell>
-                            <TableCell>รหัสอะไหล่</TableCell>
-                            <TableCell>ชื่ออะไหล่</TableCell>
-                            <TableCell>จำนวน</TableCell>
-                            <TableCell>หน่วย</TableCell>
-                        </TableRow>
+                        {sparePartsDetail.map((item, index) => (
+                            <TableRow key={index}>
+                                <TableCell>{item.job_id}</TableCell>
+                                <TableCell>{item.serial_id}</TableCell>
+                                <TableCell>{item.p_name}</TableCell>
+                                <TableCell>{item.sp_code}</TableCell>
+                                <TableCell>{item.sp_name}</TableCell>
+                                <TableCell>{item.qty}</TableCell>
+                                <TableCell>{item.sp_unit}</TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
-                <Stack direction='row-reverse' mt={2}>
-                    <Button color='error' variant='contained'>ยกเลิก</Button>
-                </Stack>
+                {/*<Stack direction='row-reverse' mt={2}>*/}
+                {/*    <Button color='error' variant='contained'>ปิด</Button>*/}
+                {/*</Stack>*/}
             </DialogContent>
         </Dialog>
     )

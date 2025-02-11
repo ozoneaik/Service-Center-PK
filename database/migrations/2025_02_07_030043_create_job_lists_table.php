@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('fac_model')->nullable();
             $table->string('image_sku')->nullable();
             $table->string('status')->default('pending');
+            $table->string('user_id')->comment('ผู้สร้าง job');
             $table->timestamps();
         });
     }

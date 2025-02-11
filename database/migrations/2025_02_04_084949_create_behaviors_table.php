@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('behaviors', function (Blueprint $table) {
             $table->id();
             $table->string('serial_id')->comment('รหัสอ้างอิงซีเรียลสินค้า');
+            $table->string('job_id')->comment('รหัสจ็อบ');
             $table->string('catalog')->comment('แคตตาล็อคหลัก');
             $table->string('sub_catalog')->comment('แคตตาล็อครอง');
             $table->string('behavior_name')->comment('ชื่ออาการ');

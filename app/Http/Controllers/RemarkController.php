@@ -30,6 +30,7 @@ class RemarkController extends Controller
     {
         try {
             $serial_id = $request->input('serial_id');
+            $job_id = $request->input('job_id');
             $findPrevRemark = Remark::query()->where('serial_id', $serial_id)->first();
             if ($findPrevRemark) {
                 $data = Remark::query()->update([
@@ -39,6 +40,7 @@ class RemarkController extends Controller
                 $data = Remark::query()->create([
                     'remark' => $request->input('remark'),
                     'serial_id' => $serial_id,
+                    'job_id' => $job_id
                 ]);
             }
             return response()->json([

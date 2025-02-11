@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
 class SearchController extends Controller
@@ -21,11 +22,14 @@ class SearchController extends Controller
     {
         try {
             $response = Http::post(env('API_DETAIL'), [
-                'sn' => $request->sn, 'views' => $request->views,
+                'sn' => $request->sn,
+                'views' => $request->views,
             ]);
             if ($response->status() === 200) {
                 $searchResults = $response->json();
-                    $searchResults['status'] !== 'SUCCESS' ?? throw new \Exception('ไม่พบ้อมูล');
+                if ($searchResults['status'] === 'Fail') {
+                    throw new \Exception('ไม่พบข้อมูลซีเรียล : '.$request->sn);
+                }
                 $searchResults['assets'][0]['job'] = $this->storeJob($searchResults['assets'][0]);
                 $searchResults['assets'][0]['selected']['behavior'] = $this->BehaviorSelected($request->sn);
                 $searchResults['assets'][0]['selected']['remark'] = $this->RemarkSelected($request->sn);
@@ -103,7 +107,7 @@ class SearchController extends Controller
         if (!$job) {
             $job = JobList::query()->create([
                 'serial_id' => $data['serial'],
-                'job_id' => "JOB".Carbon::now()->timestamp,
+                'job_id' => "JOB-" . Carbon::now()->timestamp,
                 'pid' => $data['pid'],
                 'p_name' => $data['pname'],
                 'p_base_unit' => $data['pbaseunit'],
@@ -112,16 +116,22 @@ class SearchController extends Controller
                 'p_sub_cat_name' => $data['pSubCatName'],
                 'fac_model' => $data['facmodel'],
                 'image_sku' => $data['imagesku'],
+                'user_id' => \auth()->user()->id,
                 'status' => 'pending',
             ]);
+        } else {
+            if ($job->status === 'success') {
+
+            }
         }
         return $job;
     }
 
-    private function FileSelected($sn){
-        $lists = MenuFileUpload::query()->select('menu_name','id')->get();
-        foreach ($lists as $list){
-            $files = FileUpload::query()->where('serial_id', $sn)->where('menu_id',$list->id)->get();
+    private function FileSelected($sn): Collection
+    {
+        $lists = MenuFileUpload::query()->select('menu_name', 'id')->get();
+        foreach ($lists as $list) {
+            $files = FileUpload::query()->where('serial_id', $sn)->where('menu_id', $list->id)->get();
             $list['list'] = $files;
         }
         return $lists;

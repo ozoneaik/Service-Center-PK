@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UploadFileRequest;
 use App\Models\FileUpload;
 use App\Models\MenuFileUpload;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 
@@ -26,9 +27,10 @@ class FileUploadController extends Controller
         }
     }
 
-    public function store(UploadFileRequest $request)
+    public function store(UploadFileRequest $request): JsonResponse
     {
         $serial_id = $request->input('serial_id');
+        $job_id = $request->input('job_id');
         $list = $request->file('list');
         $menu = $request->input('list');
         $keep = [];
@@ -45,7 +47,7 @@ class FileUploadController extends Controller
             }
         }
 
-        $this->deleteFile($serial_id, $keep);
+        $this->deleteFile($job_id, $keep);
 //        dd($keep); // [4,5]
 
         if (isset($list) && count($list) > 0){
@@ -60,6 +62,7 @@ class FileUploadController extends Controller
 
                         // แสดง path ของไฟล์ที่ถูกบันทึก
                         FileUpload::query()->create([
+                            'job_id' => $job_id,
                             'menu_id' => $menu[$key]['id'],
                             'file_path' => $filePath,
                             'serial_id' => $serial_id
@@ -69,7 +72,7 @@ class FileUploadController extends Controller
                 }
             }
         }
-        $new_data = $this->FileSelected($serial_id);
+        $new_data = $this->FileSelected($job_id);
         return response()->json([
            'message' => 'success',
            'data' => $new_data
@@ -81,14 +84,16 @@ class FileUploadController extends Controller
 
     }
 
-    private function deleteFile($sn,$keep){
-        FileUpload::query()->where('serial_id', $sn)->whereNotIn('id', $keep)->delete();
+    private function deleteFile($job_id,$keep): void
+    {
+        FileUpload::query()->where('job_id', $job_id)->whereNotIn('id', $keep)->delete();
     }
 
-    private function FileSelected($sn){
+    private function FileSelected($job_id): Collection
+    {
         $lists = MenuFileUpload::query()->select('menu_name','id')->get();
         foreach ($lists as $list){
-            $files = FileUpload::query()->where('serial_id', $sn)->where('menu_id',$list->id)->get();
+            $files = FileUpload::query()->where('job_id', $job_id)->where('menu_id',$list->id)->get();
             $list['list'] = $files;
         }
         return $lists;

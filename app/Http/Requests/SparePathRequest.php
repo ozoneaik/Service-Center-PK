@@ -25,6 +25,7 @@ class SparePathRequest extends FormRequest
     {
         return [
             'serial_id' => 'required',
+            'job_id' => 'required',
             'list' => 'required | array',
         ];
     }
@@ -33,6 +34,7 @@ class SparePathRequest extends FormRequest
         return [
             'serial_id.required' => 'Serial ID is required.',
             'list.required' => 'List is required.',
+            'job_id.required' => 'Job is required.',
             'list.array' => 'List must be an array.',
         ];
     }

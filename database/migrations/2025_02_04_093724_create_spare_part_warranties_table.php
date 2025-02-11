@@ -19,6 +19,8 @@ return new class extends Migration
             $table->float('price_per_unit')->default(0)->comment('ราคาต่อหน่วย');
             $table->bigInteger('qty')->default(0)->comment('จำนวนอะไร');
             $table->string('sp_unit',10)->default('อัน')->comment('หน่วย');
+            $table->string('job_id')->comment('รหัส job');
+            $table->string('status')->comment('สถานะการเคลม');
             $table->timestamps();
         });
     }

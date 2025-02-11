@@ -26,7 +26,7 @@ const theadStyle = {
 }
 
 export default function TotalPrice(props) {
-    const {open, setOpen, selected, setSelected, serial_id,setDetail} = props
+    const {open, setOpen, selected, setSelected, serial_id,setDetail,detail} = props
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -68,7 +68,8 @@ export default function TotalPrice(props) {
         try {
             const {data,status} = await axios.post('/spare-part/store', {
                 serial_id,
-                list: selected
+                list: selected,
+                job_id : detail.job.job_id
             })
             AlertDialog({
                 icon : 'success',

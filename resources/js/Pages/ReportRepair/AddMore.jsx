@@ -12,7 +12,8 @@ export const AddMore = ({detail, setDetail}) => {
         try {
             const {data, status} = await axios.post('/remark/storeOrUpdate', {
                 remark: remark,
-                serial_id: detail.serial
+                serial_id: detail.serial,
+                job_id: detail.job.job_id
             })
             AlertDialog({
                 icon : 'success',
@@ -48,7 +49,7 @@ export const AddMore = ({detail, setDetail}) => {
                         />
                         <Stack direction='row' justifyContent='end' spacing={2}>
                             <Button color='secondary' variant='contained'>ยกเลิก</Button>
-                            <Button disabled={remark === ''} type='submit' color='primary' variant='contained'>บันทึก</Button>
+                            <Button disabled={remark === ''} disabled={detail.job.status === 'success'} type='submit' color='primary' variant='contained'>บันทึก</Button>
                         </Stack>
                     </Stack>
                 </form>

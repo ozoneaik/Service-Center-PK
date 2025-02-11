@@ -67,7 +67,8 @@ export const UploadFile = ({detail, setDetail}) => {
         try {
             const {data, status} = await axios.post('/upload-file/store', {
                 serial_id: detail.serial,
-                list: selected
+                list: selected,
+                job_id : detail.job.job_id
             }, {headers: {"Content-Type": 'multipart/form-data'}});
             console.log(data, status)
             setSelected(data.data)
@@ -124,8 +125,8 @@ export const UploadFile = ({detail, setDetail}) => {
                     ))}
                     <Grid2 size={12}>
                         <Stack direction='row' justifyContent='end' spacing={2}>
-                            <Button onClick={handleSave} variant='contained'>บันทึก</Button>
-                            <Button variant='contained' color='secondary'>ยกเลิก</Button>
+                            <Button onClick={handleSave} disabled={detail.job.status === 'success'} variant='contained'>บันทึก</Button>
+                            <Button variant='contained' disabled={detail.job.status === 'success'} color='secondary'>ยกเลิก</Button>
                         </Stack>
                     </Grid2>
                 </Grid2>

@@ -51,7 +51,8 @@ export const AddBehavior = ({detail,setDetail}) => {
                     try {
                         const {data, status} = await axios.post('/behavior/store', {
                             serial_id: detail.serial,
-                            list: selected
+                            list: selected,
+                            job_id: detail.job.job_id
                         });
                         console.log(data, status)
                         setSelected(data.request);
@@ -127,9 +128,10 @@ export const AddBehavior = ({detail,setDetail}) => {
                     ))}
                     <form onSubmit={onSubmit}>
                         < Stack direction='row' justifyContent='end' spacing={2}>
-                            <Button variant='contained' color='primary' type='submit'>บันทึก</Button>
+                            <Button variant='contained'  disabled={detail.job.status === 'success'} color='primary' type='submit'>บันทึก</Button>
                             <Button onClick={() => console.log(detail, groupedBehavior)} variant='contained'
-                                    color='secondary'>ยกเลิก</Button>
+                                    color='secondary'
+                            >ยกเลิก</Button>
                         </Stack>
                     </form>
                 </>
