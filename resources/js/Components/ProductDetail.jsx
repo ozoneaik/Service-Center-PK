@@ -1,7 +1,7 @@
 import {Card, Grid2, Stack, Typography} from "@mui/material";
 
 
-export default function ProductDetail({serial = 'ไม่พบ', imagesku, pname = 'ไม่พบ', pid = 'ไม่พบ'}) {
+export default function ProductDetail({serial = 'ไม่พบ', imagesku, pname = 'ไม่พบ', pid = 'ไม่พบ',warranty = true}) {
     const Detail = ({value, title, Color = '#f55721'}) => (
         <Typography fontWeight='bold' variant="subtitle1" sx={{color: 'black'}}>
             {title} : <span style={{color: Color, fontWeight: 'normal'}}>{value}</span>
@@ -26,8 +26,12 @@ export default function ProductDetail({serial = 'ไม่พบ', imagesku, pna
                     <Detail title={'ระยะเวลารับประกัน (เดือน)'} value={12}/>
                     <Detail title={'เงื่อนไขการรับประกัน'} value={'รับประกันเฉพาะมอเตอร์ (ทุ่นและสตอร์เท่านั้น)'}/>
                     <Detail title={'หมายเหตุรับประกัน'} value={'การรับประกันไม่รวม ความเสียหายที่เกิดจากการใช้งานและเก็บรักษา ตามเงื่อนไขบนใบรับประกัน'}/>
-                    <DetailWarranty title={'ระยะประกัน'} to={'23-01-2024'} start={'23-01-2025'}/>
-                    <Detail title={'สถานะรับประกัน'} value={'อยู่ในประกัน'} Color='green'/>
+                    {warranty && (
+                        <>
+                            <DetailWarranty title={'ระยะประกัน'} to={'23-01-2024'} start={'23-01-2025'}/>
+                            <Detail title={'สถานะรับประกัน'} value={'อยู่ในประกัน'} Color='green'/>
+                        </>
+                    )}
                 </Stack>
 
             </Grid2>

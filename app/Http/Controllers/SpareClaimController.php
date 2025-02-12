@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Claim;
+use App\Models\ClaimDetail;
 use App\Models\SparePartWarranty;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -32,6 +34,14 @@ class SpareClaimController extends Controller
 
     public function historyShow(): Response
     {
-        return Inertia::render('SpareClaim/HistoryClaim');
+        $history = Claim::query()->where('user_id',auth()->user()->is_code_cust_id)->orderByDesc('created_at')->get();
+        foreach ($history as $h) {
+            $h['list'] = ClaimDetail::query()
+                ->where('claim_details.claim_id', $h->claim_id)
+                ->get();
+        }
+        return Inertia::render('SpareClaim/HistoryClaim',[
+            'history' => $history
+        ]);
     }
 }

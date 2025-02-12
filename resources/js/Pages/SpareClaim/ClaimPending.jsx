@@ -14,12 +14,12 @@ export default function ClaimPending({spareParts}) {
 
     return (
         <AuthenticatedLayout>
-            <Container>
+            <Container maxWidth>
                 <Grid2 container spacing={2} mt={3}>
                     <Grid2 size={12}>
                         <Breadcrumbs>
-                            <Typography sx={{color: 'text.primary'}}>Home</Typography>
-                            <Typography sx={{color: 'text.primary'}}>เคลมอะไหล่</Typography>
+                            <Typography sx={{color: 'text.primary'}}>แจ้งเคลมอะไหล่</Typography>
+                            <Typography sx={{color: 'text.primary'}}>สร้างเอกสารเคลม</Typography>
                         </Breadcrumbs>
                     </Grid2>
                     <Grid2 size={12}>
@@ -34,7 +34,6 @@ export default function ClaimPending({spareParts}) {
                                 variant={route().current() === 'spareClaim.historyShow' ? 'contained' : 'outlined'}>
                                 ประวัติเคลม
                             </Button>
-                            <button onClick={()=>console.log(spareParts)}>Click</button>
                         </Stack>
                         <Card>
                             <AlreadyClaim spareParts={spareParts}/>

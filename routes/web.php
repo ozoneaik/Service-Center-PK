@@ -12,6 +12,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SpareClaimController;
 use App\Http\Controllers\SparePartController;
 use App\Http\Controllers\SparePartWarrantyController;
+use App\Http\Controllers\WarrantyProductController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -72,7 +73,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('spare-claim')->group(function(){
         Route::get('/index',[SpareClaimController::class,'index'])->name('spareClaim.index');
-        Route::get('/history',[SpareClaimController::class,'historyShow'])->name('spareClaim.historyShow');
+        Route::get('/history',[SpareClaimController::class,'historyShow'])->name('spareClaim.history');
     });
 
     // สร้างเอกสารเคลม
@@ -90,17 +91,19 @@ Route::middleware('auth')->group(function () {
         });
     });
 
+    // ลงทะเบียนรับประกัน
+    Route::prefix('warranty')->group(function(){
+       Route::get('/index',function (){
+           return Inertia::render('Warranty/Form');
+       })->name('warranty.index');
+       Route::post('/store',[WarrantyProductController::class, 'store'])->name('warranty.store');
+    });
+
 });
 
 Route::get('/Unauthorized', function () {
     return Inertia::render('Unauthorized');
 })->name('unauthorized');
-
-
-Route::get('/testFIle', function () {
-    $path = storage_path("app/public/upload/1234.jpg");
-    return response()->file($path);
-});
 
 Route::get('/home',function () {
     return view('home');

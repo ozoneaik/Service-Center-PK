@@ -6,6 +6,7 @@
     <title>Document</title>
 </head>
 <body>
-Home Page
+<iframe width="100%" height="500px" src="https://ass.pumpkin.co.th/maps/"></iframe>
+<iframe width="100%" height="500px" src="https://maps.google.com?q=51.03841,-114.01679"></iframe>
 </body>
 </html>

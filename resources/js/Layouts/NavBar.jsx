@@ -1,23 +1,18 @@
 import NavLink from "@/Components/NavLink.jsx";
 
-const list = [
-    {title: 'แจ้งซ่อม', url: 'dashboard'},
-    {title: 'ประวัติซ่อม', url: 'dashboard'},
-    {title: 'ลงทะเบียนรับประกัน', url: 'dashboard'},
-    {title: 'แจ้งเคลมอะไหล่', url: 'spareClaim.index'},
-    {title: 'สั่งซื้ออะไหล่', url: 'dashboard'},
-    {title: 'ผู้ดูแลระบบ', url: 'admin.show'},
-]
-
-
-export default function NavBar() {
+export default function NavBar({user}) {
     return (
         <>
-            {list.map((item, index) => (
-                <NavLink key={index} href={route(item.url)} active={route().current(item.url)}>
-                    {item.title}
-                </NavLink>
-            ))}
+            <NavLink href={route('dashboard')} active={route().current('dashboard')}>แจ้งซ่อม</NavLink>
+            <NavLink href={route('dashboard')} active={route().current('dashboard')}>ประวัติซ่อม</NavLink>
+            <NavLink href={route('warranty.index')} active={route().current('warranty.index')}>ลงทะเบียนรับประกัน</NavLink>
+            <NavLink href={route('spareClaim.index')} active={route().current('spareClaim.index') || route().current('spareClaim.history')}>แจ้งเคลมอะไหล่</NavLink>
+            <NavLink href={route('dashboard')} active={route().current('dashboard')}>สั่งซื้ออะไหล่</NavLink>
+            {user.role === 'admin' && (
+                <>
+                <NavLink href={route('admin.show')} active={route().current('admin.show')}>ผู้ดูแลระบบ</NavLink>
+                </>
+            )}
         </>
     )
 }

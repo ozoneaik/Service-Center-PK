@@ -67,12 +67,8 @@ export default function SelectSP({list, selected, setSelected, warranty = false}
                         <TableCell>
                             <ImagePreview src={spPath}/>
                         </TableCell>
-                        <TableCell>
-                            <Typography>{item.spcode}</Typography>
-                        </TableCell>
-                        <TableCell>
-                            <Typography onClick={()=>console.log(selected.sp_warranty)}>{item.spname}</Typography>
-                        </TableCell>
+                        <TableCell>{item.spcode}</TableCell>
+                        <TableCell>{item.spname}</TableCell>
                     </TableRow>
                 ))}
             </TableBody>

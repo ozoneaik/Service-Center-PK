@@ -29,7 +29,7 @@ export default function AuthenticatedLayout({header, children}) {
                                 SERVICE CENTER PK
                             </div>
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavBar/>
+                                <NavBar user={user}/>
                             </div>
                         </div>
 

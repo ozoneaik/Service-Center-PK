@@ -80,11 +80,6 @@ export default function AlreadyClaim({spareParts}) {
             <Table>
                 <TableHead>
                     <TableRow>
-                        <TableCell sx={{fontWeight: 'bold'}} colSpan={6}>
-                            รายการอะไหล่พร้อมเคลม
-                        </TableCell>
-                    </TableRow>
-                    <TableRow>
                         <TableCell>
                             <Checkbox onChange={selectAll} checked={selected.every(item => item.checked)}/>
                         </TableCell>
@@ -97,7 +92,7 @@ export default function AlreadyClaim({spareParts}) {
                 </TableHead>
                 <TableBody>
                     {selected.map((item, index) => (
-                        <TableRow key={index}>
+                        <TableRow key={index} sx={{backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'transparent'}}>
                             <TableCell>
                                 <Checkbox
                                     checked={item.checked}
