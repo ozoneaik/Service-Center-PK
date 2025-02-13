@@ -34,7 +34,7 @@ class WarrantyProductRequest extends FormRequest
     public function messages(): array{
         return [
             'serial_id.required' => 'serial id is required',
-            'serial_id.unique' => 'เคยบันทึกข้แมูลนี้ไว้แล้ว กดตกลงเพื่อ อัพเดทข้อมูล',
+            'serial_id.unique' => 'เคยบันทึกข้อมูลนี้ไว้แล้ว กดตกลงเพื่อ อัพเดทข้อมูล',
             'pid.required' => 'Pid is required',
             'p_name.required' => 'Pid is required',
             'date_warranty.required' => 'date warranty is required',

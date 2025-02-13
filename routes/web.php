@@ -97,6 +97,13 @@ Route::middleware('auth')->group(function () {
            return Inertia::render('Warranty/Form');
        })->name('warranty.index');
        Route::post('/store',[WarrantyProductController::class, 'store'])->name('warranty.store');
+       Route::put('/update',[WarrantyProductController::class, 'update'])->name('warranty.update');
+    });
+
+    Route::prefix('orders')->group(function(){
+       Route::get('/list',function (){
+           return Inertia::render('Orders/OrderList');
+       })->name('orders.list');
     });
 
 });

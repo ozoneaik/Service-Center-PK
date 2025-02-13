@@ -2,19 +2,27 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {Head} from "@inertiajs/react";
 import {Button, CircularProgress, Container, Grid2, Stack, TextField} from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
-import {useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {AlertDialog} from "@/Components/AlertDialog.js";
 import ProductDetail from "@/Components/ProductDetail.jsx";
+import axios from "axios";
+import {useProductTarget} from "@/Context/ProductContext.jsx";
 
 export default function FormWarranty() {
     const search = useRef(null);
+    const {productTarget} = useProductTarget();
     const inputDate = useRef(null);
     const [loading, setLoading] = useState(false);
     const [detail, setDetail] = useState();
 
-    const handelSearch = async (e) => {
-        e.preventDefault()
-        const sn = search.current.value;
+    useEffect(() => {
+        if (productTarget){
+            fetchData(productTarget.serial).then()
+        }
+    }, []);
+
+    const fetchData = async (sn) => {
+
         try {
             setLoading(true);
             const {data, status} = await axios.post('/search', {sn, views: 'single'});
@@ -36,6 +44,12 @@ export default function FormWarranty() {
         }
     }
 
+    const handelSearch = async (e) => {
+        e.preventDefault()
+        const sn = search.current.value;
+        await fetchData(sn)
+    }
+
 
     const handelSubmit = async (e) => {
         e.preventDefault();
@@ -53,7 +67,21 @@ export default function FormWarranty() {
             })
         } catch (error) {
             AlertDialog({
-                text: error.response.data.message
+                text: error.response.data.message,
+                onPassed: async () => {
+                    if (error.response.data.message === 'เคยบันทึกข้อมูลนี้ไว้แล้ว กดตกลงเพื่อ อัพเดทข้อมูล') {
+                        const {data, status} = await axios.put('/warranty/update', {
+                            serial_id: detail.serial,
+                            date_warranty: inputDate.current.value
+                        });
+                        AlertDialog({
+                            icon: status === 200 ? 'success' : 'error',
+                            title: status === 200 ? 'สำเร็จ' : 'error',
+                            text: data.message ?? 'no content',
+                            onPassed : () => {}
+                        })
+                    }
+                }
             })
         }
     }

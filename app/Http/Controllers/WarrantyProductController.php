@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\WarrantyProductRequest;
 use App\Models\WarrantyProduct;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class WarrantyProductController extends Controller
@@ -39,7 +40,20 @@ class WarrantyProductController extends Controller
         }
     }
 
-    public function update(){
+    public function update(Request $request): JsonResponse
+    {
+        $request->validate([
+           'serial_id' => 'required',
+           'date_warranty' => 'required',
+        ]);
+        $serial_id = $request->input('serial_id');
+        $pid = $request->input('pid');
+        WarrantyProduct::query()->where('serial_id', $serial_id)->update([
+            'date_warranty' => $request->input('date_warranty'),
+        ]);
 
+        return response()->json([
+            'message' => 'success',
+        ]);
     }
 }

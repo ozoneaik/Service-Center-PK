@@ -3,7 +3,7 @@ import {Head} from '@inertiajs/react';
 import {Breadcrumbs, Button, Container, Grid2, Stack, TextField, Typography, useStepContext} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ProductDetail from '@/Components/ProductDetail';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import Progress from "@/Components/Progress.jsx";
 import {AlertDialog} from "@/Components/AlertDialog.js";
 import EditIcon from '@mui/icons-material/Edit';
@@ -11,23 +11,32 @@ import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
 import FormRepair from "@/Pages/ReportRepair/FormRepair.jsx";
 import {PathDetail} from "@/Components/PathDetail.jsx";
 import ListHistoryRepair from "@/Pages/HistoryRepair/ListHistoryRepair.jsx";
+import {useProductTarget} from "@/Context/ProductContext.jsx";
 
 export default function Dashboard() {
+    const {productTarget, setProductTarget} = useProductTarget();
     const [check, setCheck] = useState('before');
     const [detail, setDetail] = useState();
     const [newData, setNewData] = useState();
     const [processing, setProcessing] = useState(false);
     const [sn, setSn] = useState();
     const [showContent, setShowContent] = useState();
-    const searchDetail = async (e) => {
-        e.preventDefault();
+
+    useEffect(() => {
+        if (productTarget){
+            fetchData(productTarget.serial).then();
+        }
+    }, []);
+
+    const fetchData = async (ser) => {
         setProcessing(true)
         try {
-
-            const {data, status} = await axios.post('/search', {sn, views: 'single'});
+            const {data, status} = await axios.post('/search', {sn : ser, views: 'single'});
             if (data.searchResults.message === 'SUCCESS') {
-                console.log(data.searchResults.assets[0])
-                setDetail(data.searchResults.assets[0])
+                const responseData = data.searchResults.assets[0];
+                console.log(responseData)
+                setDetail(responseData)
+                setProductTarget(responseData)
             } else {
                 throw 'error'
             }
@@ -42,6 +51,11 @@ export default function Dashboard() {
             setProcessing(false);
             setShowContent();
         }
+    }
+
+    const searchDetail = async (e) => {
+        e.preventDefault();
+        await fetchData(sn);
     }
 
     const ButtonLink = ({url, data, icon, title, color, menu}) => (

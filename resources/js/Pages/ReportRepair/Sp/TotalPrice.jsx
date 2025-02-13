@@ -27,6 +27,7 @@ const theadStyle = {
 
 export default function TotalPrice(props) {
     const {open, setOpen, selected, setSelected, serial_id,setDetail,detail} = props
+    const {setBtnSelected,btnSelected} = props;
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -84,6 +85,7 @@ export default function TotalPrice(props) {
                             sp : selected.sp
                         }
                     }));
+                    setBtnSelected(1);
                 }
             })
         } catch (error) {
