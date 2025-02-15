@@ -2,24 +2,24 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {Head} from "@inertiajs/react";
 import {Button, CircularProgress, Container, Grid2, Stack, TextField} from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
-import {useEffect, useRef, useState} from "react";
+import {useRef, useState} from "react";
 import {AlertDialog} from "@/Components/AlertDialog.js";
 import ProductDetail from "@/Components/ProductDetail.jsx";
 import axios from "axios";
-import {useProductTarget} from "@/Context/ProductContext.jsx";
+import {Datepicker, Toast} from "flowbite-react";
 
 export default function FormWarranty() {
+
+
+    const today = new Date();
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 7);
+
+
     const search = useRef(null);
-    const {productTarget} = useProductTarget();
     const inputDate = useRef(null);
     const [loading, setLoading] = useState(false);
     const [detail, setDetail] = useState();
-
-    useEffect(() => {
-        if (productTarget){
-            fetchData(productTarget.serial).then()
-        }
-    }, []);
 
     const fetchData = async (sn) => {
 
@@ -78,7 +78,8 @@ export default function FormWarranty() {
                             icon: status === 200 ? 'success' : 'error',
                             title: status === 200 ? 'สำเร็จ' : 'error',
                             text: data.message ?? 'no content',
-                            onPassed : () => {}
+                            onPassed: () => {
+                            }
                         })
                     }
                 }
@@ -94,13 +95,16 @@ export default function FormWarranty() {
                     <Grid2 size={12}>
                         <form onSubmit={handelSearch}>
                             <Stack direction='row' spacing={2}>
-                                <input style={{
-                                    borderRadius: 5,
-                                    border: '1px black solid',
-                                    width: '100%',
-                                    padding: 12,
-                                    fontSize: 18
-                                }} ref={search} placeholder='ค้นหาหมายเลขซีเรียล'/>
+                                <Datepicker
+                                    className={'w-full'} language="th-TH"
+                                    // onChange={(date) => console.log(new Date(date))}
+                                />
+
+                                <input type="date" onChange={(e)=> console.log(e.target.value)}/>
+                                {/*<input min="2014-05-11" max="2014-05-20" style={{*/}
+                                {/*    borderRadius: 5, border: '1px black solid',*/}
+                                {/*    width: '100%', padding: 12, fontSize: 18*/}
+                                {/*}} ref={search} placeholder='ค้นหาหมายเลขซีเรียล'/>*/}
                                 <Button type='submit' variant='contained' startIcon={<SearchIcon/>}>
                                     ค้นหา
                                 </Button>
@@ -114,9 +118,8 @@ export default function FormWarranty() {
                         <form onSubmit={handelSubmit}>
                             <Stack direction='row' spacing={2}>
                                 <input type='date' style={{
-                                    minWidth: 300,
+                                    minWidth: 300, padding: 12, fontSize: 18,
                                     borderRadius: 5, border: '1px black solid',
-                                    padding: 12, fontSize: 18
                                 }} ref={inputDate} placeholder='ค้นหาหมายเลขซีเรียล'/>
                                 <Button type='submit' variant='contained'>บันทึก</Button>
                             </Stack>

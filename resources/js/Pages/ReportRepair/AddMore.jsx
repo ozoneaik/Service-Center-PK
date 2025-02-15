@@ -49,7 +49,7 @@ export const AddMore = ({detail, setDetail}) => {
                         />
                         <Stack direction='row' justifyContent='end' spacing={2}>
                             <Button color='secondary' variant='contained'>ยกเลิก</Button>
-                            <Button disabled={remark === ''} disabled={detail.job.status === 'success'} type='submit' color='primary' variant='contained'>บันทึก</Button>
+                            <Button disabled={detail.job.status === 'success' || remark === ''} type='submit' color='primary' variant='contained'>บันทึก</Button>
                         </Stack>
                     </Stack>
                 </form>

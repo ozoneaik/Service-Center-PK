@@ -20,6 +20,7 @@ return new class extends Migration
             $table->bigInteger('qty')->default(0)->comment('จำนวนอะไร');
             $table->string('sp_unit',10)->default('อัน')->comment('หน่วย');
             $table->string('job_id')->comment('รหัส job');
+            $table->string('status')->default('pending')->comment('สถานะการเคลม');
             $table->timestamps();
         });
     }

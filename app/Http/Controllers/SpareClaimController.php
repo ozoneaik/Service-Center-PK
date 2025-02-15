@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Claim;
 use App\Models\ClaimDetail;
+use App\Models\SparePart;
 use App\Models\SparePartWarranty;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -15,7 +16,7 @@ class SpareClaimController extends Controller
     {
         $spareParts = SparePartWarranty::query()->select('sp_code', 'sp_name', DB::raw('SUM(qty) as qty'), 'sp_unit')
             ->leftJoin('job_lists', 'job_lists.job_id', '=', 'spare_part_warranties.job_id')
-            ->where('spare_part_warranties.status', 'like', 'pending')
+            ->where('spare_part_warranties.status', 'pending')
             ->where('job_lists.status', 'like', 'success')
             ->where('job_lists.user_id', auth()->user()->is_code_cust_id)
             ->groupBy('sp_code', 'sp_name', 'sp_unit')

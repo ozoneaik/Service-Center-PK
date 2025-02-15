@@ -105,7 +105,7 @@ export default function TotalPrice(props) {
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
                         <Alert severity="success" icon={<BookmarkIcon/>}>
-                            สีเขียว => อะไหล่อยู่ในประกัน
+                            สีเขียว {'=>'} อะไหล่อยู่ในประกัน
                         </Alert>
                     </Grid2>
 
