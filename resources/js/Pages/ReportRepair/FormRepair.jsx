@@ -11,6 +11,7 @@ import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import BuildIcon from '@mui/icons-material/Build';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import {Customer} from "@/Pages/ReportRepair/Customer.jsx";
 
 export default function FormRepair({detail, setDetail, check, setCheck}) {
     const [showDetail, setShowDetail] = useState(1);
@@ -24,6 +25,7 @@ export default function FormRepair({detail, setDetail, check, setCheck}) {
         else if(action === 2) setHeadTitle('รูปภาพ');
         else if(action === 3) setHeadTitle('อาการ/สาเหตุ');
         else if(action === 4) setHeadTitle('อะไหล่');
+        else if(action === 5) setHeadTitle('ข้อมูลลูกค้า')
         else setHeadTitle('เพิ่มเติม');
     }
 
@@ -55,7 +57,8 @@ export default function FormRepair({detail, setDetail, check, setCheck}) {
                     <ButtonStyle action={2} title={'รูปภาพ'} icon={<CameraAltIcon/>}/>
                     <ButtonStyle action={3} title={'อาการ/สาเหตุ'} icon={<PsychologyIcon/>}/>
                     <ButtonStyle action={4} title={'อะไหล่'} icon={<BuildIcon/>}/>
-                    <ButtonStyle action={5} title={'เพิ่มเติม'} icon={<MoreHorizIcon/>}/>
+                    <ButtonStyle action={5} title={'ข้อมูลลูกค้า'} icon={<BuildIcon/>}/>
+                    <ButtonStyle action={6} title={'เพิ่มเติม'} icon={<MoreHorizIcon/>}/>
                 </Stack>
             </Grid2>
             <Grid2 size={{xs: 12, lg: 10}}>
@@ -68,7 +71,8 @@ export default function FormRepair({detail, setDetail, check, setCheck}) {
                         {showDetail === 2 && <UploadFile detail={detail} setDetail={setDetail}/>}
                         {showDetail === 3 && <AddBehavior detail={detail} setDetail={setDetail}/>}
                         {showDetail === 4 && <AddSp detail={detail} setDetail={setDetail}/>}
-                        {showDetail === 5 && <AddMore detail={detail} setDetail={setDetail}/>}
+                        {showDetail === 5 && <Customer detail={detail} setDetail={setDetail}/>}
+                        {showDetail === 6 && <AddMore detail={detail} setDetail={setDetail}/>}
                     </Grid2>
                 </Grid2>
             </Grid2>

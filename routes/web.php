@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\MenuFileUploadController;
 use App\Http\Controllers\BehaviorController;
 use App\Http\Controllers\ClaimController;
+use App\Http\Controllers\CustomerInJobController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\ProfileController;
@@ -11,7 +12,6 @@ use App\Http\Controllers\RemarkController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SpareClaimController;
 use App\Http\Controllers\SparePartController;
-use App\Http\Controllers\SparePartWarrantyController;
 use App\Http\Controllers\WarrantyProductController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -37,32 +37,33 @@ Route::middleware('auth')->group(function () {
 
     // ปืดงานซ่อม
     Route::prefix('jobs')->group(function () {
-       Route::post('/update',[JobController::class,'update'])->name('jobs.update');
+        Route::post('/update', [JobController::class, 'update'])->name('jobs.update');
     });
 
     // Upload File and Menu Upload File
     Route::get('/menu-upload-file/show', [MenuFileUploadController::class, 'show'])->name('menuFileUpload.show');
-    Route::prefix('upload-file')->group(function (){
-       Route::get('/list', [FileUploadController::class,'list'])->name('uploadFile.show');
-       Route::post('/store', [FileUploadController::class,'store'])->name('uploadFile.store');
+    Route::prefix('upload-file')->group(function () {
+        Route::get('/list', [FileUploadController::class, 'list'])->name('uploadFile.show');
+        Route::post('/store', [FileUploadController::class, 'store'])->name('uploadFile.store');
     });
 
     // Behavior
-    Route::prefix('behavior')->group(function (){
-        Route::get('/show/{serial_id}',[BehaviorController::class,'show'])->name('behavior.show');
-        Route::post('/store',[BehaviorController::class,'store'])->name('behavior.store');
+    Route::prefix('behavior')->group(function () {
+        Route::get('/show/{serial_id}', [BehaviorController::class, 'show'])->name('behavior.show');
+        Route::post('/store', [BehaviorController::class, 'store'])->name('behavior.store');
     });
 
-    // SparePart Warranty
-    Route::prefix('spare-path-warranty')->group(function (){
-        Route::get('/show/{serial_id}',[SparePartWarrantyController::class,'show'])->name('sparePartWarranty.show');
-        Route::post('/store',[SparePartWarrantyController::class,'store'])->name('sparePartWarranty.store');
+    // Customer in Job
+
+    Route::prefix('customer-in-job')->group(function () {
+        Route::post('/store', [CustomerInJobController::class, 'store'])->name('customerInJob.store');
+        Route::put('/update', [CustomerInJobController::class, 'update'])->name('customerInJob.update');
     });
 
     // SparePart
-    Route::prefix('spare-part')->group(function(){
-        Route::get('/show/{serial_id}',[SparePartController::class,'show'])->name('sparePart.show');
-        Route::post('/store',[SparePartController::class,'store'])->name('sparePart.store');
+    Route::prefix('spare-part')->group(function () {
+        Route::get('/show/{serial_id}', [SparePartController::class, 'show'])->name('sparePart.show');
+        Route::post('/store', [SparePartController::class, 'store'])->name('sparePart.store');
     });
 
     // Remark
@@ -71,13 +72,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/storeOrUpdate', [RemarkController::class, 'storeOrUpdate'])->name('remark.store');
     });
 
-    Route::prefix('spare-claim')->group(function(){
-        Route::get('/index',[SpareClaimController::class,'index'])->name('spareClaim.index');
-        Route::get('/history',[SpareClaimController::class,'historyShow'])->name('spareClaim.history');
+    Route::prefix('spare-claim')->group(function () {
+        Route::get('/index', [SpareClaimController::class, 'index'])->name('spareClaim.index');
+        Route::get('/history', [SpareClaimController::class, 'historyShow'])->name('spareClaim.history');
+        Route::post('/store', [SpareClaimController::class, 'store'])->name('spareClaim.store');
     });
-
-    // สร้างเอกสารเคลม
-    Route::post('/claim/store',[ClaimController::class,'store'])->name('claim.store');
 
     // Admin Only
     Route::middleware('adminPermission')->group(function () {
@@ -92,18 +91,18 @@ Route::middleware('auth')->group(function () {
     });
 
     // ลงทะเบียนรับประกัน
-    Route::prefix('warranty')->group(function(){
-       Route::get('/index',function (){
-           return Inertia::render('Warranty/Form');
-       })->name('warranty.index');
-       Route::post('/store',[WarrantyProductController::class, 'store'])->name('warranty.store');
-       Route::put('/update',[WarrantyProductController::class, 'update'])->name('warranty.update');
+    Route::prefix('warranty')->group(function () {
+        Route::get('/index', function () {
+            return Inertia::render('Warranty/Form');
+        })->name('warranty.index');
+        Route::post('/store', [WarrantyProductController::class, 'store'])->name('warranty.store');
+        Route::put('/update', [WarrantyProductController::class, 'update'])->name('warranty.update');
     });
 
-    Route::prefix('orders')->group(function(){
-       Route::get('/list',function (){
-           return Inertia::render('Orders/OrderList');
-       })->name('orders.list');
+    Route::prefix('orders')->group(function () {
+        Route::get('/list', function () {
+            return Inertia::render('Orders/OrderList');
+        })->name('orders.list');
     });
 
 });
@@ -112,7 +111,7 @@ Route::get('/Unauthorized', function () {
     return Inertia::render('Unauthorized');
 })->name('unauthorized');
 
-Route::get('/home',function () {
+Route::get('/home', function () {
     return view('home');
 })->name('home');
 

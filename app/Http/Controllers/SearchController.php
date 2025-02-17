@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Behavior;
+use App\Models\CustomerInJob;
 use App\Models\FileUpload;
 use App\Models\JobList;
 use App\Models\MenuFileUpload;
 use App\Models\Remark;
 use App\Models\SparePart;
-use App\Models\SparePartWarranty;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
@@ -28,12 +28,13 @@ class SearchController extends Controller
             if ($response->status() === 200) {
                 $searchResults = $response->json();
                 if ($searchResults['status'] === 'Fail') {
-                    throw new \Exception('ไม่พบข้อมูลซีเรียล : '.$request->sn);
+                    throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $request->sn);
                 }
                 $searchResults['assets'][0]['job'] = $this->storeJob($searchResults['assets'][0]);
                 $searchResults['assets'][0]['selected']['behavior'] = $this->BehaviorSelected($request->sn);
                 $searchResults['assets'][0]['selected']['remark'] = $this->RemarkSelected($request->sn);
                 $searchResults['assets'][0]['selected']['fileUpload'] = $this->FileSelected($request->sn);
+                $searchResults['assets'][0]['selected']['customerInJob'] = $this->CustomerInJob( $searchResults['assets'][0]['job']['job_id']) ?? [];
                 $sp = $this->SpSelected($request->sn);
                 $searchResults['assets'][0]['selected']['sp_warranty'] = $sp['sp_warranty'];
                 $searchResults['assets'][0]['selected']['sp'] = $sp['sp'];
@@ -79,7 +80,7 @@ class SearchController extends Controller
 
     private function SpSelected($sn): array
     {
-        $warranty = SparePartWarranty::query()->where('serial_id', $sn)
+        $sp = SparePart::query()->where('serial_id', $sn)->where('sp_warranty', false)
             ->select(
                 'sp_code as spcode',
                 'sp_name as spname',
@@ -87,17 +88,14 @@ class SearchController extends Controller
                 'qty',
                 'created_at', 'updated_at'
             )->get();
-        $not_warranty = SparePart::query()->where('serial_id', $sn)
+        $sp_warranty = SparePart::query()->where('serial_id', $sn)->where('sp_warranty', true)
             ->select(
-                'sp_code as spcode',
-                'sp_name as spname',
-                'price_per_unit',
-                'qty',
-                'created_at', 'updated_at'
+                'sp_code as spcode', 'sp_name as spname',
+                'price_per_unit', 'qty', 'created_at', 'updated_at'
             )->get();
         return [
-            'sp_warranty' => $warranty,
-            'sp' => $not_warranty,
+            'sp' => $sp,
+            'sp_warranty' => $sp_warranty
         ];
     }
 
@@ -119,10 +117,6 @@ class SearchController extends Controller
                 'user_id' => \auth()->user()->is_code_cust_id,
                 'status' => 'pending',
             ]);
-        } else {
-            if ($job->status === 'success') {
-
-            }
         }
         return $job;
     }
@@ -135,5 +129,9 @@ class SearchController extends Controller
             $list['list'] = $files;
         }
         return $lists;
+    }
+
+    private function CustomerInJob($job_id){
+        return CustomerInJob::query()->where('job_id', $job_id)->first();
     }
 }

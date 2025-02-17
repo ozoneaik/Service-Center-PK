@@ -13,6 +13,8 @@ class SparePart extends Model
         'sp_name',
         'price_per_unit',
         'qty',
-        'sp_unit'
+        'sp_warranty',
+        'sp_unit',
+        'status'
     ];
 }

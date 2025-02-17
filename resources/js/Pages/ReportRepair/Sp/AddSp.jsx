@@ -26,7 +26,7 @@ const TableSummary = ({data}) => (
             {data && data.map((item, index) => (
                 <TableRow key={index}>
                     <TableCell>
-                       image
+                        image
                     </TableCell>
                     <TableCell>{item.spcode}</TableCell>
                     <TableCell>{item.spname}</TableCell>
@@ -43,7 +43,7 @@ export const AddSp = ({detail, setDetail}) => {
     const [btnSelected, setBtnSelected] = useState(0);
 
     useEffect(() => {
-        if (detail.selected.sp.length > 0 || detail.selected.sp_warranty.length > 0){
+        if (detail.selected.sp.length > 0 || detail.selected.sp_warranty.length > 0) {
             setBtnSelected(1)
         }
     }, []);
@@ -53,7 +53,9 @@ export const AddSp = ({detail, setDetail}) => {
             sp_warranty: detail.selected.sp_warranty
         }
     );
-    const handelOpen = () => {setOpen(true)}
+    const handelOpen = () => {
+        setOpen(true)
+    }
     return (
         <>
             <TotalPrice
@@ -82,17 +84,17 @@ export const AddSp = ({detail, setDetail}) => {
                     {(detail.selected.sp.length > 0 || detail.selected.sp_warranty.length > 0) && btnSelected === 1 ? (
                         <>
                             <Grid2 container spacing={2}>
-                                <Typography fontWeight='bold'>อะไหล่ที่อยู่ในรับประกัน</Typography>
-                                <Grid2 size={12} sx={{maxHeight: 300, overflowY: 'scroll'}}>
-                                    <TableSummary data={detail.selected.sp}/>
-                                </Grid2>
                                 <Typography fontWeight='bold'>อะไหล่ที่ไม่อยู่ในรับประกัน</Typography>
                                 <Grid2 size={12} sx={{maxHeight: 300, overflowY: 'scroll'}}>
                                     <TableSummary data={detail.selected.sp_warranty}/>
                                 </Grid2>
+                                <Typography fontWeight='bold'>อะไหล่ที่อยู่ในรับประกัน</Typography>
+                                <Grid2 size={12} sx={{maxHeight: 300, overflowY: 'scroll'}}>
+                                    <TableSummary data={detail.selected.sp}/>
+                                </Grid2>
                             </Grid2>
                             <Stack mt={3} direction='row' justifyContent='end' spacing={2}>
-                                <Button onClick={()=>setBtnSelected(0)} variant='contained' color='primary'>
+                                <Button onClick={() => setBtnSelected(0)} variant='contained' color='primary'>
                                     แก้ไข
                                 </Button>
                             </Stack>

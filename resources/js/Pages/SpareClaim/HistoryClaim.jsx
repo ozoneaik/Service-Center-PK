@@ -44,7 +44,7 @@ export default function HistoryClaim({history}) {
                             <Button
                                 component={Link} href={'/spare-claim/index'}
                                 variant={route().current() === 'spareClaim.index' ? 'contained' : 'outlined'}>
-                                สร้างเอกสารเคลม
+                                แจ้งเคลมอะไหล่
                             </Button>
                             <Button
                                 component={Link} href={'/spare-claim/history'}

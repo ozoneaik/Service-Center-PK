@@ -14,12 +14,12 @@ export default function ClaimPending({spareParts}) {
 
     return (
         <AuthenticatedLayout>
-            <Container maxWidth>
+            <Container maxWidth='false'>
                 <Grid2 container spacing={2} mt={3}>
                     <Grid2 size={12}>
                         <Breadcrumbs>
                             <Typography sx={{color: 'text.primary'}}>แจ้งเคลมอะไหล่</Typography>
-                            <Typography sx={{color: 'text.primary'}}>สร้างเอกสารเคลม</Typography>
+                            <Typography sx={{color: 'text.primary'}}>แจ้งเคลมอะไหล่</Typography>
                         </Breadcrumbs>
                     </Grid2>
                     <Grid2 size={12}>
@@ -27,7 +27,7 @@ export default function ClaimPending({spareParts}) {
                             <Button
                                 component={Link} href={'/spare-claim/index'}
                                 variant={route().current() === 'spareClaim.index' ? 'contained' : 'outlined'}>
-                                สร้างเอกสารเคลม
+                                แจ้งเคลมอะไหล่
                             </Button>
                             <Button
                                 component={Link} href={'/spare-claim/history'}

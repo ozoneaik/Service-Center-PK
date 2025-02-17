@@ -42,7 +42,7 @@ export default function DialogDetail({open , setOpen, data,sparePartsDetail}){
                                 <TableCell>{item.job_id}</TableCell>
                                 <TableCell>{item.serial_id}</TableCell>
                                 <TableCell>{item.p_name}</TableCell>
-                                <TableCell>{item.sp_code}</TableCell>
+                                <TableCell sx={{color : item.sp_warranty ? 'green' : ''}}>{item.sp_code}</TableCell>
                                 <TableCell>{item.sp_name}</TableCell>
                                 <TableCell>{item.qty}</TableCell>
                                 <TableCell>{item.sp_unit}</TableCell>

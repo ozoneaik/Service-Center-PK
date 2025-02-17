@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SparePathRequest;
 use App\Models\SparePart;
-use App\Models\SparePartWarranty;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -46,22 +45,22 @@ class SparePartController extends Controller
                     'sp_unit' => $item['spunit'] ?? 'อัน',
                 ]);
             }, $list['sp']);
+
             $data['sp_warranty'] = array_map(function ($item) use ($serial_id,$job_id) {
-                return SparePartWarranty::query()->create([
+                return SparePart::query()->create([
                     'serial_id' => $serial_id,
                     'job_id' => $job_id,
                     'sp_code' => $item['spcode'],
                     'sp_name' => $item['spname'],
                     'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
                     'qty' => $item['qty'] ?? 0,
+                    'sp_warranty' => true,
                     'sp_unit' => $item['spunit'] ?? 'อัน',
-                    'status' => 'pending',
                 ]);
             }, $list['sp_warranty']);
-
             DB::commit();
             return response()->json([
-                'message' => 'success',
+                'message' => 'บันทึกรายการอะไหล่สำเร็จ',
                 'data' => $data
             ]);
         } catch (\Exception $exception) {
@@ -76,6 +75,5 @@ class SparePartController extends Controller
     private function delete($job_id): void
     {
         SparePart::query()->where('job_id', $job_id)->delete();
-        SparePartWarranty::query()->where('job_id', $job_id)->delete();
     }
 }

@@ -1,7 +1,7 @@
 import {Button, Stack, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
 import Checkbox from "@mui/material/Checkbox";
 import PreviewIcon from "@mui/icons-material/Preview";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import DialogDetail from "@/Pages/SpareClaim/DialogDetail.jsx";
 import {router} from "@inertiajs/react";
 import {AlertDialog} from "@/Components/AlertDialog.js";
@@ -14,7 +14,11 @@ export default function AlreadyClaim({spareParts}) {
         checked: false,
         detail: item.detail.map(detailItem => ({...detailItem, checked: false}))
     })));
+    // const [selected, setSelected] = useState([]);
 
+    useEffect(() => {
+        console.log(spareParts)
+    }, []);
     const showModal = (data) => {
         setDetail(data.detail);
         setOpen(true);
@@ -50,7 +54,7 @@ export default function AlreadyClaim({spareParts}) {
             onPassed: async (confirm) => {
                 if (confirm) {
                     try {
-                        const {data, status} = await axios.post('/claim/store', {
+                        const {data, status} = await axios.post('/spare-claim/store', {
                             selected: formData
                         });
                         message = data.message;

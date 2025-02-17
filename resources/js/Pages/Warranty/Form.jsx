@@ -6,23 +6,17 @@ import {useRef, useState} from "react";
 import {AlertDialog} from "@/Components/AlertDialog.js";
 import ProductDetail from "@/Components/ProductDetail.jsx";
 import axios from "axios";
-import {Datepicker, Toast} from "flowbite-react";
+import {Datepicker} from "flowbite-react";
 
 export default function FormWarranty() {
-
-
     const today = new Date();
     const sevenDaysAgo = new Date(today);
     sevenDaysAgo.setDate(today.getDate() - 7);
-
-
     const search = useRef(null);
     const inputDate = useRef(null);
     const [loading, setLoading] = useState(false);
     const [detail, setDetail] = useState();
-
     const fetchData = async (sn) => {
-
         try {
             setLoading(true);
             const {data, status} = await axios.post('/search', {sn, views: 'single'});
@@ -97,14 +91,8 @@ export default function FormWarranty() {
                             <Stack direction='row' spacing={2}>
                                 <Datepicker
                                     className={'w-full'} language="th-TH"
-                                    // onChange={(date) => console.log(new Date(date))}
+                                    onChange={(date) => console.log(date)}
                                 />
-
-                                <input type="date" onChange={(e)=> console.log(e.target.value)}/>
-                                {/*<input min="2014-05-11" max="2014-05-20" style={{*/}
-                                {/*    borderRadius: 5, border: '1px black solid',*/}
-                                {/*    width: '100%', padding: 12, fontSize: 18*/}
-                                {/*}} ref={search} placeholder='ค้นหาหมายเลขซีเรียล'/>*/}
                                 <Button type='submit' variant='contained' startIcon={<SearchIcon/>}>
                                     ค้นหา
                                 </Button>
