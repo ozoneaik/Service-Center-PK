@@ -89,6 +89,8 @@ export default function AlreadyClaim({spareParts}) {
                         </TableCell>
                         <TableCell>รหัสอะไหล่</TableCell>
                         <TableCell>ชื่ออะไหล่</TableCell>
+                        <TableCell>สต็อกศูนย์ซ่อม</TableCell>
+                        <TableCell>สต็อกพัมคิน</TableCell>
                         <TableCell>จำนวน</TableCell>
                         <TableCell>หน่วย</TableCell>
                         <TableCell>รายละเอียด</TableCell>
@@ -105,10 +107,12 @@ export default function AlreadyClaim({spareParts}) {
                             </TableCell>
                             <TableCell>{item.sp_code}</TableCell>
                             <TableCell>{item.sp_name}</TableCell>
+                            <TableCell>0</TableCell>
+                            <TableCell>0</TableCell>
                             <TableCell>{item.qty}</TableCell>
                             <TableCell>{item.sp_unit}</TableCell>
                             <TableCell>
-                                <Button onClick={() => showModal(item)}>
+                                <Button>
                                     <PreviewIcon/>
                                 </Button>
                             </TableCell>

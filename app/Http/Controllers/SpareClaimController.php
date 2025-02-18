@@ -19,6 +19,7 @@ class SpareClaimController extends Controller
         $spareParts = SparePart::query()->select('sp_code', 'sp_name', DB::raw('SUM(qty) as qty'), 'sp_unit')
             ->leftJoin('job_lists', 'job_lists.job_id', '=', 'spare_parts.job_id')
             ->where('spare_parts.status', 'pending')
+            ->where('spare_parts.sp_warranty',true)
             ->where('job_lists.status', 'like', 'success')
             ->where('job_lists.user_id', auth()->user()->is_code_cust_id)
             ->groupBy('sp_code', 'sp_name', 'sp_unit')
@@ -32,7 +33,7 @@ class SpareClaimController extends Controller
                 ->where('job_lists.user_id', auth()->user()->is_code_cust_id)
                 ->get();
         }
-        return Inertia::render('SpareClaim/ClaimPending', ['spareParts' => $spareParts]);
+        return Inertia::render('SpareClaim/ClaimMain', ['spareParts' => $spareParts]);
     }
 
     public function store(ClaimRequest $request): JsonResponse
@@ -86,6 +87,18 @@ class SpareClaimController extends Controller
         }
         return Inertia::render('SpareClaim/HistoryClaim',[
             'history' => $history
+        ]);
+    }
+
+    public function pendingShow(): Response
+    {
+        $list = Claim::query()->leftJoin('claim_details','claim_details.claim_id','claims.claim_id')
+            ->where('claim_details.status', 'pending')
+            ->where('user_id',auth()->user()->is_code_cust_id)
+            ->orderByDesc('claim_details.created_at')
+            ->get();
+        return Inertia::render('SpareClaim/PendingClaim',[
+            'list' => $list
         ]);
     }
 }

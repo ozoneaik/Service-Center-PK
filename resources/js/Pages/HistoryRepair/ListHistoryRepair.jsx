@@ -15,7 +15,6 @@ export default function ListHistoryRepair({detail}) {
     const [history, setHistory] = useState(detail.history);
     return (
         <>
-
             <Grid2 container spacing={2}>
                 <Grid2 size={12}>
                     <Stack direction='column' spacing={2}>

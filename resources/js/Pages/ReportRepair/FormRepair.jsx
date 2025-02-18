@@ -9,6 +9,7 @@ import ChecklistIcon from '@mui/icons-material/Checklist';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import PsychologyIcon from '@mui/icons-material/Psychology';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import BuildIcon from '@mui/icons-material/Build';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import {Customer} from "@/Pages/ReportRepair/Customer.jsx";
@@ -57,7 +58,7 @@ export default function FormRepair({detail, setDetail, check, setCheck}) {
                     <ButtonStyle action={2} title={'รูปภาพ'} icon={<CameraAltIcon/>}/>
                     <ButtonStyle action={3} title={'อาการ/สาเหตุ'} icon={<PsychologyIcon/>}/>
                     <ButtonStyle action={4} title={'อะไหล่'} icon={<BuildIcon/>}/>
-                    <ButtonStyle action={5} title={'ข้อมูลลูกค้า'} icon={<BuildIcon/>}/>
+                    <ButtonStyle action={5} title={'ข้อมูลลูกค้า'} icon={<AccountCircleIcon/>}/>
                     <ButtonStyle action={6} title={'เพิ่มเติม'} icon={<MoreHorizIcon/>}/>
                 </Stack>
             </Grid2>

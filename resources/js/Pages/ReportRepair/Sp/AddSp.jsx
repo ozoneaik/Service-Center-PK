@@ -1,15 +1,12 @@
 import {Button, Grid2, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography,} from "@mui/material";
-import {PhotoProvider, PhotoView} from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
 import {useEffect, useState} from "react";
 import TotalPrice from "@/Pages/ReportRepair/Sp/TotalPrice.jsx";
 import SelectSP from "@/Pages/ReportRepair/Sp/SelectSP.jsx";
+import DefaultSP from '../../../assets/images/defaultSP.jpg';
 import Checkbox from "@mui/material/Checkbox";
 import {ImagePreview} from "@/Components/ImagePreview.jsx";
-
-
-const imagePath = 'https://images.pumpkin.tools/A%20%e0%b9%80%e0%b8%84%e0%b8%a3%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%87%e0%b8%a1%e0%b8%b7%e0%b8%ad%e0%b9%84%e0%b8%9f%e0%b8%9f%e0%b9%89%e0%b8%b2%20%e0%b9%81%e0%b8%a5%e0%b8%b0%20%e0%b9%80%e0%b8%84%e0%b8%a3%e0%b8%b7%e0%b9%88%e0%b8%ad%e0%b8%87%e0%b8%a1%e0%b8%b7%e0%b8%ad%e0%b9%84%e0%b8%9f%e0%b8%9f%e0%b9%89%e0%b8%b2%e0%b9%84%e0%b8%a3%e0%b9%89%e0%b8%aa%e0%b8%b2%e0%b8%a2/50349/Diagrams_50349-DM01.jpg';
-
+import DefaultDiagram from '../../../assets/images/DiagramsDefault.jpg'
 
 const TableSummary = ({data}) => (
     <Table stickyHeader>
@@ -26,7 +23,7 @@ const TableSummary = ({data}) => (
             {data && data.map((item, index) => (
                 <TableRow key={index}>
                     <TableCell>
-                        image
+                        <ImagePreview src={DefaultSP}/>
                     </TableCell>
                     <TableCell>{item.spcode}</TableCell>
                     <TableCell>{item.spname}</TableCell>
@@ -72,13 +69,7 @@ export const AddSp = ({detail, setDetail}) => {
             />
             <Grid2 container spacing={2}>
                 <Grid2 size={{xs: 12, lg: 5}} sx={{cursor: 'pointer'}}>
-                    <PhotoProvider>
-                        <div className="foo">
-                            <PhotoView src={imagePath}>
-                                <img src={imagePath} alt="" width='100%'/>
-                            </PhotoView>
-                        </div>
-                    </PhotoProvider>
+                    <ImagePreview src={DefaultDiagram} width='100%'/>
                 </Grid2>
                 <Grid2 size={{xs: 12, lg: 7}}>
                     {(detail.selected.sp.length > 0 || detail.selected.sp_warranty.length > 0) && btnSelected === 1 ? (

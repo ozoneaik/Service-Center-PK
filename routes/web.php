@@ -3,9 +3,9 @@
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\MenuFileUploadController;
 use App\Http\Controllers\BehaviorController;
-use App\Http\Controllers\ClaimController;
 use App\Http\Controllers\CustomerInJobController;
 use App\Http\Controllers\FileUploadController;
+use App\Http\Controllers\HistoryRepairController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RemarkController;
@@ -54,10 +54,8 @@ Route::middleware('auth')->group(function () {
     });
 
     // Customer in Job
-
     Route::prefix('customer-in-job')->group(function () {
         Route::post('/store', [CustomerInJobController::class, 'store'])->name('customerInJob.store');
-        Route::put('/update', [CustomerInJobController::class, 'update'])->name('customerInJob.update');
     });
 
     // SparePart
@@ -75,6 +73,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('spare-claim')->group(function () {
         Route::get('/index', [SpareClaimController::class, 'index'])->name('spareClaim.index');
         Route::get('/history', [SpareClaimController::class, 'historyShow'])->name('spareClaim.history');
+        Route::get('/pending', [SpareClaimController::class, 'pendingShow'])->name('spareClaim.pending');
         Route::post('/store', [SpareClaimController::class, 'store'])->name('spareClaim.store');
     });
 
@@ -95,14 +94,21 @@ Route::middleware('auth')->group(function () {
         Route::get('/index', function () {
             return Inertia::render('Warranty/Form');
         })->name('warranty.index');
+        Route::post('/search',[WarrantyProductController::class, 'search'])->name('warranty.search');
         Route::post('/store', [WarrantyProductController::class, 'store'])->name('warranty.store');
         Route::put('/update', [WarrantyProductController::class, 'update'])->name('warranty.update');
+        Route::get('/fetchDataLocal/{serial_id}',[WarrantyProductController::class,'fetchDataLocal'])->name('warranty.fetchDataLocal');
     });
 
     Route::prefix('orders')->group(function () {
         Route::get('/list', function () {
             return Inertia::render('Orders/OrderList');
         })->name('orders.list');
+    });
+
+    Route::prefix('history')->group(function () {
+       Route::get('/index', [HistoryRepairController::class,'index'])->name('history.index');
+       Route::post('/search',[HistoryRepairController::class,'search'])->name('history.search');
     });
 
 });

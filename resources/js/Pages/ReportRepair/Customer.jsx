@@ -7,7 +7,9 @@ export const Customer = ({detail, setDetail}) => {
     const [loading, setLoading] = useState(false);
     const [customer, setCustomer] = useState({
         phone: detail.selected.customerInJob.phone ?? '',
-        name: detail.selected.customerInJob.name ?? ''
+        name: detail.selected.customerInJob.name ?? '',
+        address : detail.selected.customerInJob.address ?? '',
+        remark : detail.selected.customerInJob.remark ?? ''
     });
     const onSubmit = async (e) => {
         e.preventDefault();
@@ -17,15 +19,16 @@ export const Customer = ({detail, setDetail}) => {
         try {
             const {data, status} = await axios.post('/customer-in-job/store', {
                 job_id: detail.job.job_id,
-                name: customer.name,
-                phone: customer.phone
+                ...customer
             });
             console.log(data, status)
             Status = status;
             message = data.message;
             setCustomer({
                 phone: data.phone,
-                name: data.name
+                name: data.name,
+                address : data.address,
+                remark : data.remark
             });
             setDetail(prevDetail => ({
                 ...prevDetail,
@@ -61,7 +64,9 @@ export const Customer = ({detail, setDetail}) => {
             message = data.message;
             setCustomer({
                 phone: data.phone,
-                name: data.name
+                name: data.name,
+                address : data.address,
+                remark : data.remark
             });
         } catch (error) {
             console.log(error.response.data.message)
@@ -104,6 +109,34 @@ export const Customer = ({detail, setDetail}) => {
                     placeholder="ชื่อ-นามสกุล"
                     size="small"
                 />
+
+                <Typography>ที่อยู่</Typography>
+                <TextField
+                    value={customer.address}
+                    onChange={(e) => {
+                        setCustomer(prevState => ({
+                            ...prevState,
+                            address: e.target.value
+                        }));
+                    }}
+                    placeholder="ที่อยู่"
+                    size="small"
+                />
+
+                <Typography>หมายเหตุ</Typography>
+                <TextField
+                    value={customer.remark}
+                    onChange={(e) => {
+                        setCustomer(prevState => ({
+                            ...prevState,
+                            remark: e.target.value
+                        }));
+                    }}
+                    placeholder="หมายเหตุ"
+                    size="small"
+                />
+
+
                 <Stack direction='row-reverse' spacing={2}>
                     <Button variant='contained' type='submit'>save</Button>
                     <Button color='secondary' variant='contained'>cancel</Button>

@@ -12,5 +12,7 @@ class CustomerInJob extends Model
         'job_id',
         'name' ,
         'phone' ,
+        'address',
+        'remark',
     ];
 }

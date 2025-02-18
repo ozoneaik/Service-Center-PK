@@ -32,6 +32,11 @@ button{
 
 input{
     border: none;
+    background-color: #fff !important;
+}
+
+select{
+    background-color: #fff !important;
 }
 
 input:focus{

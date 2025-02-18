@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('job_id')->comment('รหัสจ็อบ');
             $table->string('name')->comment('ชื่อลูกค้า');
             $table->string('phone')->comment('เบอร์โทรศัพท์');
+            $table->string('address')->nullable()->comment('ที่อยู่');
+            $table->string('remark')->nullable()->comment('หมายเหตุ');
             $table->timestamps();
         });
     }

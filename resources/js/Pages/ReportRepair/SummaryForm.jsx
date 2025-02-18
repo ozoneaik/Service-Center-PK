@@ -39,45 +39,48 @@ const FileDetail = ({menu}) => (
     </Grid2>
 )
 
-const SpDetail = ({sp, sp_warranty}) => (
-    <Table>
-        <TableHead>
-            <TableRow>
-                <TableCell>รูปภาพ</TableCell>
-                <TableCell>รหัสอะไหล่</TableCell>
-                <TableCell>ชื่ออะไหล่</TableCell>
-                <TableCell>ราคาต่อหน่วย</TableCell>
-                <TableCell>จำนวน</TableCell>
-                <TableCell>หน่วย</TableCell>
-                <TableCell>ราคารวม</TableCell>
-            </TableRow>
-        </TableHead>
-        <TableBody>
-            {sp.map((item, index) => (
-                <TableRow key={index}>
-                    <TableCell>image</TableCell>
-                    <TableCell>{item.spcode}</TableCell>
-                    <TableCell>{item.spname}</TableCell>
-                    <TableCell>{item.price_per_unit}</TableCell>
-                    <TableCell>{item.qty}</TableCell>
-                    <TableCell>{item.unit ?? 'อัน'}</TableCell>
-                    <TableCell>{item.price_per_unit*item.qty}</TableCell>
+const SpDetail = ({sp, sp_warranty}) => {
+    const highlight = {backgroundColor : '#e6ffe6'}
+    return (
+        <Table>
+            <TableHead>
+                <TableRow>
+                    <TableCell>รูปภาพ</TableCell>
+                    <TableCell>รหัสอะไหล่</TableCell>
+                    <TableCell>ชื่ออะไหล่</TableCell>
+                    <TableCell>ราคาต่อหน่วย</TableCell>
+                    <TableCell>จำนวน</TableCell>
+                    <TableCell>หน่วย</TableCell>
+                    <TableCell>ราคารวม</TableCell>
                 </TableRow>
-            ))}
-            {sp_warranty.map((item, index) => (
-                <TableRow key={index}>
-                    <TableCell>image</TableCell>
-                    <TableCell sx={{color : 'green'}}>{item.spcode}</TableCell>
-                    <TableCell>{item.spname}</TableCell>
-                    <TableCell>{item.price_per_unit}</TableCell>
-                    <TableCell>{item.qty}</TableCell>
-                    <TableCell>{item.unit ?? 'อัน'}</TableCell>
-                    <TableCell>{item.price_per_unit*item.qty}</TableCell>
-                </TableRow>
-            ))}
-        </TableBody>
-    </Table>
-)
+            </TableHead>
+            <TableBody>
+                {sp.map((item, index) => (
+                    <TableRow key={index}>
+                        <TableCell>image</TableCell>
+                        <TableCell>{item.spcode}</TableCell>
+                        <TableCell>{item.spname}</TableCell>
+                        <TableCell>{item.price_per_unit}</TableCell>
+                        <TableCell>{item.qty}</TableCell>
+                        <TableCell>{item.unit ?? 'อัน'}</TableCell>
+                        <TableCell>{item.price_per_unit * item.qty}</TableCell>
+                    </TableRow>
+                ))}
+                {sp_warranty.map((item, index) => (
+                    <TableRow key={index}>
+                        <TableCell sx={highlight}>image</TableCell>
+                        <TableCell sx={highlight}>{item.spcode}</TableCell>
+                        <TableCell sx={highlight}>{item.spname}</TableCell>
+                        <TableCell sx={highlight}>{item.price_per_unit}</TableCell>
+                        <TableCell sx={highlight}>{item.qty}</TableCell>
+                        <TableCell sx={highlight}>{item.unit ?? 'อัน'}</TableCell>
+                        <TableCell sx={highlight}>{item.price_per_unit * item.qty}</TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    )
+}
 
 
 const CardDetail = ({children}) => (
@@ -91,6 +94,7 @@ const CardDetail = ({children}) => (
 
 export const SummaryForm = ({detail, setDetail}) => {
     const selected = detail.selected;
+
     async function endJob() {
         let message = '';
         let Status = 400;

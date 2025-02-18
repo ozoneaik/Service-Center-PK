@@ -26,14 +26,19 @@ class CustomerInJobRequest extends FormRequest
             'job_id' => 'required',
             'name' => 'required',
             'phone' => 'required',
+            'address' => 'required',
+            'remark' => 'required',
         ];
     }
 
-    public function messages(): array{
+    public function messages(): array
+    {
         return [
-          'job_id.required' => 'job id is required',
-          'name.required' => 'job name is required',
-          'phone.required' => 'job phone is required',
+            'job_id.required' => 'job_id is required',
+            'name.required' => 'name is required',
+            'phone.required' => 'phone is required',
+            'address.required' => 'address is required',
+            'remark.required' => 'remark is required',
         ];
     }
 }

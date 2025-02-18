@@ -8,26 +8,26 @@ export default function SelectSP({list, selected, setSelected, warranty = false}
 
     const handleOnChange = (item, e) => {
         const checked = e.target.checked;
-        if (warranty){
+        if (warranty) {
             item.price_per_unit = 0
             item.spunit = 'อัน'
         }
-        if (!warranty) { // add to sp
+        if (!warranty) {
             setSelected(prevSelected =>
                 checked
-                    ? {...prevSelected, sp: [...prevSelected.sp, item]} // ถ้า checked = true, เพิ่ม item เข้าไปใน sp
+                    ? {...prevSelected, sp: [...prevSelected.sp, item]}
                     : {
                         ...prevSelected,
-                        sp: prevSelected.sp.filter(spItem => spItem.spcode !== item.spcode) // ลบออกถ้า unchecked
+                        sp: prevSelected.sp.filter(spItem => spItem.spcode !== item.spcode)
                     }
             );
-        } else { // add to sp_warranty
+        } else {
             setSelected(prevSelected =>
                 checked
-                    ? {...prevSelected, sp_warranty: [...prevSelected.sp_warranty, item]} // ถ้า checked = true, เพิ่ม item เข้าไปใน sp_warranty
+                    ? {...prevSelected, sp_warranty: [...prevSelected.sp_warranty, item]}
                     : {
                         ...prevSelected,
-                        sp_warranty: prevSelected.sp_warranty.filter(spItem => spItem.spcode !== item.spcode) // ลบออกถ้า unchecked
+                        sp_warranty: prevSelected.sp_warranty.filter(spItem => spItem.spcode !== item.spcode)
                     }
             );
         }

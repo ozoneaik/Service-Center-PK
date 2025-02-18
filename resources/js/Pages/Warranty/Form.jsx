@@ -1,6 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {Head} from "@inertiajs/react";
-import {Button, CircularProgress, Container, Grid2, Stack, TextField} from "@mui/material";
+import {Alert, Button, CircularProgress, Container, Grid2, Stack, TextField, Typography} from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import {useRef, useState} from "react";
 import {AlertDialog} from "@/Components/AlertDialog.js";
@@ -9,28 +9,40 @@ import axios from "axios";
 import {Datepicker} from "flowbite-react";
 
 export default function FormWarranty() {
+
+    const search = useRef(null);
+    const [inputDate, setInputDate] = useState('');
+    const [warrantyAt, setWarrantyAt] = useState();
+    const [loading, setLoading] = useState(false);
+    const [detail, setDetail] = useState();
+
+
     const today = new Date();
     const sevenDaysAgo = new Date(today);
     sevenDaysAgo.setDate(today.getDate() - 7);
-    const search = useRef(null);
-    const inputDate = useRef(null);
-    const [loading, setLoading] = useState(false);
-    const [detail, setDetail] = useState();
+    const year = sevenDaysAgo.getFullYear();
+    const month = sevenDaysAgo.getMonth() + 1;
+    const day = sevenDaysAgo.getDate();
+
+
     const fetchData = async (sn) => {
         try {
             setLoading(true);
-            const {data, status} = await axios.post('/search', {sn, views: 'single'});
+            const {data, status} = await axios.post('/warranty/search', {serial_id: sn, views: 'single'});
             if (data.searchResults.message === 'SUCCESS') {
                 console.log(data)
                 setDetail(data.searchResults.assets[0])
+                setWarrantyAt(data.warrantyAt)
             } else {
                 throw 'error'
             }
         } catch (err) {
-            setDetail();
+            setDetail({});
             console.log(err)
             AlertDialog({
-                title: 'เกิดข้อผิดพลาด', onPassed: () => {
+                title: 'เกิดข้อผิดพลาด',
+                text: err.response.data.message,
+                onPassed: () => {
                 }
             })
         } finally {
@@ -52,30 +64,18 @@ export default function FormWarranty() {
                 serial_id: detail.serial,
                 pid: detail.pid,
                 p_name: detail.pname,
-                date_warranty: inputDate.current.value
+                date_warranty: inputDate
             })
             console.log(data, status);
             AlertDialog({
                 icon: 'success',
                 text: data.message
             })
+            setWarrantyAt(inputDate)
         } catch (error) {
             AlertDialog({
                 text: error.response.data.message,
                 onPassed: async () => {
-                    if (error.response.data.message === 'เคยบันทึกข้อมูลนี้ไว้แล้ว กดตกลงเพื่อ อัพเดทข้อมูล') {
-                        const {data, status} = await axios.put('/warranty/update', {
-                            serial_id: detail.serial,
-                            date_warranty: inputDate.current.value
-                        });
-                        AlertDialog({
-                            icon: status === 200 ? 'success' : 'error',
-                            title: status === 200 ? 'สำเร็จ' : 'error',
-                            text: data.message ?? 'no content',
-                            onPassed: () => {
-                            }
-                        })
-                    }
                 }
             })
         }
@@ -89,10 +89,8 @@ export default function FormWarranty() {
                     <Grid2 size={12}>
                         <form onSubmit={handelSearch}>
                             <Stack direction='row' spacing={2}>
-                                <Datepicker
-                                    className={'w-full'} language="th-TH"
-                                    onChange={(date) => console.log(date)}
-                                />
+                                <TextField placeholder='ค้นหาเลขซีเรียล' inputRef={search} fullWidth size='small'
+                                           sx={{backgroundColor: 'white'}}/>
                                 <Button type='submit' variant='contained' startIcon={<SearchIcon/>}>
                                     ค้นหา
                                 </Button>
@@ -102,19 +100,30 @@ export default function FormWarranty() {
                     <Grid2 size={12}>
                         {!loading ? (detail && <ProductDetail {...detail} warranty={false}/>) : <CircularProgress/>}
                     </Grid2>
-                    {detail && (<Grid2 size={12}>
-                        <form onSubmit={handelSubmit}>
-                            <Stack direction='row' spacing={2}>
-                                <input type='date' style={{
-                                    minWidth: 300, padding: 12, fontSize: 18,
-                                    borderRadius: 5, border: '1px black solid',
-                                }} ref={inputDate} placeholder='ค้นหาหมายเลขซีเรียล'/>
-                                <Button type='submit' variant='contained'>บันทึก</Button>
-                            </Stack>
-                        </form>
-                    </Grid2>)}
+                    {detail && !warrantyAt ? (
+                        <Grid2 size={12}>
+                            <form onSubmit={handelSubmit}>
+                                <Stack direction='row' spacing={2}>
+                                    <Datepicker
+                                        language="th-TH"
+                                        onChange={(date) => setInputDate(date.toLocaleString())}
+                                    />
+                                    <Button type='submit' variant='contained'>บันทึก</Button>
+                                </Stack>
+                            </form>
+                        </Grid2>
+                    ) : (warrantyAt ? (
+                            <Alert security='success' sx={{width: '100%'}}>
+                                <Stack direction='row' spacing={1}>
+                                    <Typography>หมายเลขซีเรียลนี้เคยลงทะเบียนรับประกันไปแล้ว คือ</Typography>
+                                    <Typography fontWeight='bold'>{warrantyAt}</Typography>
+                                </Stack>
+                            </Alert>
+                        ) : <></>
+                    )}
                 </Grid2>
             </Container>
         </AuthenticatedLayout>
     )
 }
+
