@@ -23,9 +23,9 @@ export default function Dashboard() {
     const [showContent, setShowContent] = useState();
 
     useEffect(() => {
-        if (productTarget){
-            fetchData(productTarget.serial).then();
-        }
+        // if (productTarget){
+        //     fetchData(productTarget.serial).then();
+        // }
     }, []);
 
     const fetchData = async (ser) => {

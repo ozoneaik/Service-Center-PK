@@ -12,7 +12,7 @@ const HeadTitle = ({endService}) => (
 )
 
 export default function ListHistoryRepair({detail}) {
-    const [history, setHistory] = useState(detail.history);
+    const [history, setHistory] = useState(detail.history ?? []);
     return (
         <>
             <Grid2 container spacing={2}>

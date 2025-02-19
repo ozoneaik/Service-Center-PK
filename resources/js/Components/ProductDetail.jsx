@@ -22,7 +22,7 @@ export default function ProductDetail({serial = 'ไม่พบ', imagesku, pna
                     <Typography variant='h5' fontWeight='bold'>{pid} {pname}</Typography>
                     <Typography variant='h5' fontWeight='bold'>S/N : {serial}</Typography>
                 </Stack>
-                <Stack direction='column'  sx={{gap : 0.75}}>
+                <Stack direction='column' spacing={1}>
                     <Detail title={'ระยะเวลารับประกัน (เดือน)'} value={12}/>
                     <Detail title={'เงื่อนไขการรับประกัน'} value={'รับประกันเฉพาะมอเตอร์ (ทุ่นและสตอร์เท่านั้น)'}/>
                     <Detail title={'หมายเหตุรับประกัน'} value={'การรับประกันไม่รวม ความเสียหายที่เกิดจากการใช้งานและเก็บรักษา ตามเงื่อนไขบนใบรับประกัน'}/>

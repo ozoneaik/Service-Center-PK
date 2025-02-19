@@ -55,10 +55,10 @@ export default function FormRepair({detail, setDetail, check, setCheck}) {
             <Grid2 size={{xs: 12, lg: 2}}>
                 <Stack direction={{xs: 'row', lg: 'column'}} spacing={2}>
                     <ButtonStyle action={1} title={'สรุปการทำงาน'} icon={<ViewListIcon/>}/>
+                    <ButtonStyle action={5} title={'ข้อมูลลูกค้า'} icon={<AccountCircleIcon/>}/>
                     <ButtonStyle action={2} title={'รูปภาพ'} icon={<CameraAltIcon/>}/>
                     <ButtonStyle action={3} title={'อาการ/สาเหตุ'} icon={<PsychologyIcon/>}/>
                     <ButtonStyle action={4} title={'อะไหล่'} icon={<BuildIcon/>}/>
-                    <ButtonStyle action={5} title={'ข้อมูลลูกค้า'} icon={<AccountCircleIcon/>}/>
                     <ButtonStyle action={6} title={'เพิ่มเติม'} icon={<MoreHorizIcon/>}/>
                 </Stack>
             </Grid2>

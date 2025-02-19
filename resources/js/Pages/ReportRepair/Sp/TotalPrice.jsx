@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import {ImagePreview} from "@/Components/ImagePreview.jsx";
-import {useMemo, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import {AlertDialog} from "@/Components/AlertDialog.js";
 
@@ -35,8 +35,44 @@ export default function TotalPrice(props) {
     const [quantities, setQuantities] = useState({});
 
     // ฟังก์ชันคำนวณราคาของแต่ละอะไหล่
+    // const handleQuantityChange = (event, item, type) => {
+    //     const qty = parseInt(event.target.value) || 0; // แปลงเป็นตัวเลข
+    //     setQuantities(prev => ({
+    //         ...prev,
+    //         [item.spcode]: qty
+    //     }));
+    //     setSelected((prevSelected) => {
+    //         return {
+    //             ...prevSelected,
+    //             [type]: prevSelected[type].map((spItem) =>
+    //                 spItem.spcode === item.spcode ? {...spItem, qty: qty} : spItem
+    //             ),
+    //         };
+    //     });
+    // };
+
+    // คำนวณผลรวมของแต่ละอะไหล่ (ราคาต่อหน่วย * จำนวน)
+    // const getItemTotal = (item) => {
+    //     return (quantities[item.spcode] || 0) * item.price_per_unit;
+    // };
+
+    // คำนวณผลรวมทั้งหมดของทุกอะไหล่
+    // const totalPrice = useMemo(() => {
+    //     return [...(selected.sp_warranty || []), ...(selected.sp || [])].reduce((sum, item) => {
+    //         return sum + getItemTotal(item);
+    //     }, 0);
+    // }, [quantities, selected]);
+
+    useEffect(() => {
+        const initialQuantities = {};
+        [...(selected.sp_warranty || []), ...(selected.sp || [])].forEach(item => {
+            initialQuantities[item.spcode] = item.qty || 0;
+        });
+        setQuantities(initialQuantities);
+    }, [selected]);
+
     const handleQuantityChange = (event, item, type) => {
-        const qty = parseInt(event.target.value) || 0; // แปลงเป็นตัวเลข
+        const qty = parseInt(event.target.value) || 0;
         setQuantities(prev => ({
             ...prev,
             [item.spcode]: qty
@@ -51,38 +87,39 @@ export default function TotalPrice(props) {
         });
     };
 
-    // คำนวณผลรวมของแต่ละอะไหล่ (ราคาต่อหน่วย * จำนวน)
     const getItemTotal = (item) => {
-        return (quantities[item.spcode] || 0) * item.price_per_unit;
+        return (quantities[item.spcode] || 0) * (item.price_per_unit || 0);
     };
 
-    // คำนวณผลรวมทั้งหมดของทุกอะไหล่
     const totalPrice = useMemo(() => {
-        return [...(selected.sp_warranty || []), ...(selected.sp || [])].reduce((sum, item) => {
-            return sum + getItemTotal(item);
+        const allItems = [...(selected.sp_warranty || []), ...(selected.sp || [])];
+        return allItems.reduce((sum, item) => {
+            const quantity = quantities[item.spcode] || 0;
+            const price = item.price_per_unit || 0;
+            return sum + (quantity * price);
         }, 0);
-    }, [quantities, selected]);
+    }, [quantities, selected.sp_warranty, selected.sp]);
 
     const onSubmit = async (e) => {
         e.preventDefault();
         setOpen(false);
         try {
-            const {data,status} = await axios.post('/spare-part/store', {
+            const {data, status} = await axios.post('/spare-part/store', {
                 serial_id,
                 list: selected,
-                job_id : detail.job.job_id
+                job_id: detail.job.job_id
             })
             AlertDialog({
-                icon : 'success',
-                title : 'สำเร็จ',
-                text : data.message,
-                onPassed : () => {
+                icon: 'success',
+                title: 'สำเร็จ',
+                text: data.message,
+                onPassed: () => {
                     setDetail(prevDetail => ({
                         ...prevDetail,
                         selected: {
                             ...prevDetail.selected,
                             sp_warranty: selected.sp_warranty,
-                            sp : selected.sp
+                            sp: selected.sp
                         }
                     }));
                     setBtnSelected(1);
@@ -90,12 +127,58 @@ export default function TotalPrice(props) {
             })
         } catch (error) {
             AlertDialog({
-                title : 'เกิดข้อผิดพลาด',
+                title: 'เกิดข้อผิดพลาด',
                 text: error.response.data.message + ` (code : ${error.status})`,
-                onPassed : () => {}
+                onPassed: () => {
+                }
             })
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+    // const onSubmit = async (e) => {
+    //     e.preventDefault();
+    //     setOpen(false);
+    //     try {
+    //         const {data,status} = await axios.post('/spare-part/store', {
+    //             serial_id,
+    //             list: selected,
+    //             job_id : detail.job.job_id
+    //         })
+    //         AlertDialog({
+    //             icon : 'success',
+    //             title : 'สำเร็จ',
+    //             text : data.message,
+    //             onPassed : () => {
+    //                 setDetail(prevDetail => ({
+    //                     ...prevDetail,
+    //                     selected: {
+    //                         ...prevDetail.selected,
+    //                         sp_warranty: selected.sp_warranty,
+    //                         sp : selected.sp
+    //                     }
+    //                 }));
+    //                 setBtnSelected(1);
+    //             }
+    //         })
+    //     } catch (error) {
+    //         AlertDialog({
+    //             title : 'เกิดข้อผิดพลาด',
+    //             text: error.response.data.message + ` (code : ${error.status})`,
+    //             onPassed : () => {}
+    //         })
+    //     }
+    // }
 
     return (
         <Dialog fullWidth fullScreen={fullScreen} maxWidth='lg' open={open} onClose={() => setOpen(false)}>

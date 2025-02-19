@@ -109,6 +109,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('history')->group(function () {
        Route::get('/index', [HistoryRepairController::class,'index'])->name('history.index');
        Route::post('/search',[HistoryRepairController::class,'search'])->name('history.search');
+       Route::get('/detail/{serial_id}' ,[HistoryRepairController::class,'detail'])->name('history.detail');
     });
 
 });
