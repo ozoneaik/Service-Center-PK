@@ -112,7 +112,7 @@ export default function AlreadyClaim({spareParts}) {
                             <TableCell>{item.qty}</TableCell>
                             <TableCell>{item.sp_unit}</TableCell>
                             <TableCell>
-                                <Button>
+                                <Button onClick={()=>showModal(item)}>
                                     <PreviewIcon/>
                                 </Button>
                             </TableCell>

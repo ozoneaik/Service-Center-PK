@@ -16,6 +16,7 @@ import {ImagePreview} from "@/Components/ImagePreview.jsx";
 import {useEffect, useMemo, useState} from "react";
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import {AlertDialog} from "@/Components/AlertDialog.js";
+import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
 
 const spPath = 'https://images.dcpumpkin.com/images/product/500/default.jpg';
 
@@ -26,8 +27,8 @@ const theadStyle = {
 }
 
 export default function TotalPrice(props) {
-    const {open, setOpen, selected, setSelected, serial_id,setDetail,detail} = props
-    const {setBtnSelected,btnSelected} = props;
+    const {open, setOpen, selected, setSelected, serial_id, setDetail, detail} = props
+    const {setBtnSelected, btnSelected} = props;
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -94,7 +95,7 @@ export default function TotalPrice(props) {
     const totalPrice = useMemo(() => {
         const allItems = [...(selected.sp_warranty || []), ...(selected.sp || [])];
         return allItems.reduce((sum, item) => {
-            const quantity = quantities[item.spcode] || 0;
+            const quantity = quantities[item.spcode] || 1;
             const price = item.price_per_unit || 0;
             return sum + (quantity * price);
         }, 0);
@@ -134,16 +135,6 @@ export default function TotalPrice(props) {
             })
         }
     }
-
-
-
-
-
-
-
-
-
-
 
 
     // const onSubmit = async (e) => {
@@ -187,9 +178,16 @@ export default function TotalPrice(props) {
             <DialogContent>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
-                        <Alert severity="success" icon={<BookmarkIcon/>}>
-                            สีเขียว {'=>'} อะไหล่อยู่ในประกัน
-                        </Alert>
+                        <Stack direction='row' spacing={2} alignItems='center'>
+                            <Alert sx={{width : '80%'}} severity="success" icon={<BookmarkIcon/>}>
+                                สีเขียว {'=>'} อะไหล่อยู่ในประกัน
+                            </Alert>
+                            <Alert sx={{width : '20%'}} severity="info" icon={<BookmarkAddIcon/>}>
+                                GP 10 % {10/100*250 + 250}
+                            </Alert>
+
+
+                        </Stack>
                     </Grid2>
 
                     <Grid2 size={12} maxHeight={500} sx={{overflowY: 'scroll'}}>
@@ -200,6 +198,9 @@ export default function TotalPrice(props) {
                                     <TableCell sx={theadStyle}>รหัสอะไหล่</TableCell>
                                     <TableCell sx={theadStyle}>ชื่ออะไหล่</TableCell>
                                     <TableCell sx={theadStyle}>ราคาต่อหน่วย</TableCell>
+                                    <TableCell sx={theadStyle}>
+                                        GP %
+                                    </TableCell>
                                     <TableCell sx={theadStyle} width={200}>จำนวน</TableCell>
                                     <TableCell sx={theadStyle}>หน่วย</TableCell>
                                     <TableCell sx={theadStyle}>ราคารวม</TableCell>
@@ -229,7 +230,13 @@ export default function TotalPrice(props) {
                                         <TableCell>
                                             <TextField
                                                 type="number"
-                                                value={quantities[item.spcode] || item.qty || 0}
+                                                value={10/100*item.price_per_unit + parseFloat(item.price_per_unit)}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <TextField
+                                                type="number"
+                                                value={quantities[item.spcode] || item.qty || 1}
                                                 onChange={(e) => {
                                                     handleQuantityChange(e, item, selected.sp_warranty.includes(item) ? 'sp_warranty' : 'sp')
                                                 }}
@@ -258,9 +265,8 @@ export default function TotalPrice(props) {
                     <Grid2 size={12}>
                         <form onSubmit={onSubmit}>
                             <Stack direction='row' justifyContent='end' spacing={2}>
-                                <Button variant='contained' onClick={() => setOpen(false)}
-                                        color='primary'>ยกเลิก</Button>
-                                <Button type='submit' variant='contained' color='error'>บันทึก</Button>
+                                <Button variant='outlined' onClick={() => setOpen(false)}>ยกเลิก</Button>
+                                <Button type='submit' variant='contained' color='primary'>บันทึก</Button>
                             </Stack>
                         </form>
                     </Grid2>

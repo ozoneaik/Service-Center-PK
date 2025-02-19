@@ -102,7 +102,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('orders')->group(function () {
         Route::get('/list', function () {
-            return Inertia::render('Orders/OrderList');
+            return Inertia::render('Orders/OrderList1');
         })->name('orders.list');
     });
 

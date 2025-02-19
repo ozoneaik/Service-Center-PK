@@ -62,34 +62,43 @@ export const UploadFile = ({detail, setDetail}) => {
         });
     };
 
-    const handleSave = async () => {
-        console.log(selected)
-        try {
-            const {data, status} = await axios.post('/upload-file/store', {
-                serial_id: detail.serial,
-                list: selected,
-                job_id : detail.job.job_id
-            }, {headers: {"Content-Type": 'multipart/form-data'}});
-            console.log(data, status)
-            setSelected(data.data)
-            setDetail(prevDetail => ({
-                ...prevDetail,
-                selected: {
-                    ...prevDetail.selected,
-                    fileUpload: data.data
+    const handleSave = () => {
+        AlertDialog({
+            icon : 'question',
+            title : 'ยินยันการบันทึกข้อมูล',
+            text : 'กดตกลงเพื่อบันทึกหรืออัพเดทช้อมูล',
+            onPassed : async (confirm) => {
+                if (confirm){
+                    try {
+                        const {data, status} = await axios.post('/upload-file/store', {
+                            serial_id: detail.serial,
+                            list: selected,
+                            job_id : detail.job.job_id
+                        }, {headers: {"Content-Type": 'multipart/form-data'}});
+                        console.log(data, status)
+                        setSelected(data.data)
+                        setDetail(prevDetail => ({
+                            ...prevDetail,
+                            selected: {
+                                ...prevDetail.selected,
+                                fileUpload: data.data
+                            }
+                        }));
+                        AlertDialog({
+                            icon : "success",
+                            title : 'สำเร็จ',
+                            text : data.message
+                        })
+                    } catch (error) {
+                        AlertDialog({
+                            title : 'เกิดข้อผิดพลาด',
+                            text : error.response.data.message
+                        })
+                    }
                 }
-            }));
-            AlertDialog({
-                icon : "success",
-                title : 'สำเร็จ',
-                text : data.message
-            })
-        } catch (error) {
-            AlertDialog({
-                title : 'เกิดข้อผิดพลาด',
-                text : error.response.data.message
-            })
-        }
+            }
+        })
+
     };
 
     return (
@@ -125,8 +134,8 @@ export const UploadFile = ({detail, setDetail}) => {
                     ))}
                     <Grid2 size={12}>
                         <Stack direction='row' justifyContent='end' spacing={2}>
+                            <Button variant='outlined' disabled={detail.job.status === 'success'}>ยกเลิก</Button>
                             <Button onClick={handleSave} disabled={detail.job.status === 'success'} variant='contained'>บันทึก</Button>
-                            <Button variant='contained' disabled={detail.job.status === 'success'} color='secondary'>ยกเลิก</Button>
                         </Stack>
                     </Grid2>
                 </Grid2>

@@ -104,7 +104,7 @@ export const AddSp = ({detail, setDetail}) => {
                                 </Grid2>
                             </Grid2>
                             <Stack mt={3} direction='row' justifyContent='end' spacing={2}>
-                                <Button variant='contained' color='secondary'>ยกเลิกบันทึกอะไหล่</Button>
+                                <Button variant='contained' color='error'>ยกเลิกบันทึกอะไหล่</Button>
                                 <Button onClick={() => handelOpen()} variant='contained' color='primary'>
                                     สรุปอะไหล่ / ตรวจสอบราคา
                                 </Button>

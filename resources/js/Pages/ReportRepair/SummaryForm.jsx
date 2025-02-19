@@ -40,7 +40,7 @@ const FileDetail = ({menu}) => (
 )
 
 const SpDetail = ({sp, sp_warranty}) => {
-    const highlight = {backgroundColor : '#e6ffe6'}
+    const highlight = {backgroundColor: '#e6ffe6'}
     return (
         <Table>
             <TableHead>
@@ -95,34 +95,48 @@ const CardDetail = ({children}) => (
 export const SummaryForm = ({detail, setDetail}) => {
     const selected = detail.selected;
 
+
     async function endJob() {
-        let message = '';
-        let Status = 400;
-        try {
-            const {data, status} = await axios.post('jobs/update', {
-                job_id: detail.job.job_id
-            });
-            Status = status;
-            message = data.message;
-            setDetail(prevDetail => ({
-                ...prevDetail,
-                job: {
-                    ...prevDetail.job,
-                    status: 'success'
-                }
-            }));
-        } catch (error) {
-            Status = error.response.status;
-            message = error.response.data.message;
-        } finally {
-            AlertDialog({
-                icon: Status === 200 ? 'success' : 'error',
-                text: message,
-                onPassed: () => {
-                }
-            })
-        }
+
+        AlertDialog({
+            icon: 'question',
+            title: 'ยืนยันการปิดงานซ่อม',
+            text : 'กด ตกลง เพื่อ ยืนยันการปิดงานซ่อม',
+            onPassed : async (confirm) => {
+                if (confirm){
+                    let message = '';
+                    let Status = 400;
+                    try {
+                        const {data, status} = await axios.post('jobs/update', {
+                            job_id: detail.job.job_id
+                        });
+                        Status = status;
+                        message = data.message;
+                        setDetail(prevDetail => ({
+                            ...prevDetail,
+                            job: {
+                                ...prevDetail.job,
+                                status: 'success'
+                            }
+                        }));
+                    } catch (error) {
+                        Status = error.response.status;
+                        message = error.response.data.message;
+                    } finally {
+                        AlertDialog({
+                            icon: Status === 200 ? 'success' : 'error',
+                            text: message,
+                            onPassed: () => {
+                            }
+                        })
+                    }
+                }else console.log('ไม่ได้กด confirm')
+            }
+        });
+
+
     }
+
 
     return (
         <Grid2 container>
@@ -131,10 +145,13 @@ export const SummaryForm = ({detail, setDetail}) => {
                     <Stack direction='column' spacing={2}>
                         <CardDetail>
                             <Stack direction='row' spacing={2} alignItems='center'>
-                                <Avatar src="https://images.pumpkin.tools/icon/botLogo.png"
-                                        sx={{width: 50, height: 50}}/>
+                                <Avatar sizes='lg' sx={{backgroundColor: '#eb5b1f', width: 50, height: 50}}/>
                                 <Stack direction='column'>
                                     <Typography>ชื่อ : {selected.customerInJob.name}</Typography>
+                                    <Typography>เบอร์โทร : {selected.customerInJob.phone}</Typography>
+                                </Stack>
+                                <Stack direction='column'>
+                                    <Typography><b>ชื่อ :</b> {selected.customerInJob.name}</Typography>
                                     <Typography>เบอร์โทร : {selected.customerInJob.phone}</Typography>
                                 </Stack>
                             </Stack>

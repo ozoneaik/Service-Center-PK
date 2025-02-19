@@ -8,34 +8,45 @@ export const AddMore = ({detail, setDetail}) => {
     const [remark, setRemark] = useState(detail.selected.remark);
     const onSubmit = async (e) => {
         e.preventDefault();
-        console.log(detail.serial, remark)
-        try {
-            const {data, status} = await axios.post('/remark/storeOrUpdate', {
-                remark: remark,
-                serial_id: detail.serial,
-                job_id: detail.job.job_id
-            })
-            AlertDialog({
-                icon : 'success',
-                title : 'สำเร็จ',
-                text : data.message,
-                onPassed : ()=>{
-                    setDetail(prevDetail => ({
-                        ...prevDetail,
-                        selected: {
-                            ...prevDetail.selected,
-                            remark
-                        }
-                    }));
+        AlertDialog({
+            icon: 'question',
+            title: 'ยืนยันการบันทึกข้อมูล',
+            text: 'กดตกลงเพื่อบันทึกหรืออัพเดทช้อมูล',
+            onPassed: async (confirm) => {
+                if (confirm) {
+                    try {
+                        const {data, status} = await axios.post('/remark/storeOrUpdate', {
+                            remark: remark,
+                            serial_id: detail.serial,
+                            job_id: detail.job.job_id
+                        })
+                        AlertDialog({
+                            icon: 'success',
+                            title: 'สำเร็จ',
+                            text: data.message,
+                            onPassed: () => {
+                                setDetail(prevDetail => ({
+                                    ...prevDetail,
+                                    selected: {
+                                        ...prevDetail.selected,
+                                        remark
+                                    }
+                                }));
+                            }
+                        })
+                    } catch (error) {
+                        AlertDialog({
+                            title: 'เกิดข้อผิดพลาด',
+                            text: error.response.data.message,
+                            onPassed: () => console.log('onPassed')
+                        })
+                    }
+                } else {
+                    console.log('no confirm')
                 }
-            })
-        } catch (error) {
-            AlertDialog({
-                title : 'เกิดข้อผิดพลาด',
-                text : error.response.data.message,
-                onPassed : ()=>console.log('onPassed')
-            })
-        }
+            }
+        })
+
     }
     return (
         <>
@@ -48,8 +59,9 @@ export const AddMore = ({detail, setDetail}) => {
                             onChange={(e) => setRemark(e.target.value)}
                         />
                         <Stack direction='row' justifyContent='end' spacing={2}>
-                            <Button color='secondary' variant='contained'>ยกเลิก</Button>
-                            <Button disabled={detail.job.status === 'success' || remark === ''} type='submit' color='primary' variant='contained'>บันทึก</Button>
+                            <Button variant='outlined'>ยกเลิก</Button>
+                            <Button disabled={detail.job.status === 'success' || remark === ''} type='submit'
+                                    color='primary' variant='contained'>บันทึก</Button>
                         </Stack>
                     </Stack>
                 </form>

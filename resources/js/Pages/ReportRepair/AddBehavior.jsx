@@ -44,8 +44,8 @@ export const AddBehavior = ({detail,setDetail}) => {
         console.log(selected)
         AlertDialog({
             icon: 'question',
-            title: 'บันทึก',
-            text: 'กดตกลงเพื่อบันทึกข้อมูล',
+            title: 'ยืนยันการบันทึกข้อมูล',
+            text: 'กดตกลงเพื่อบันทึกหรืออัพเดทช้อมูล',
             onPassed: async (confirm) => {
                 if (confirm) {
                     try {
@@ -128,10 +128,8 @@ export const AddBehavior = ({detail,setDetail}) => {
                     ))}
                     <form onSubmit={onSubmit}>
                         < Stack direction='row' justifyContent='end' spacing={2}>
+                            <Button variant='outlined'>ยกเลิก</Button>
                             <Button variant='contained'  disabled={detail.job.status === 'success'} color='primary' type='submit'>บันทึก</Button>
-                            <Button onClick={() => console.log(detail, groupedBehavior)} variant='contained'
-                                    color='secondary'
-                            >ยกเลิก</Button>
                         </Stack>
                     </form>
                 </>

@@ -11,46 +11,58 @@ export const Customer = ({detail, setDetail}) => {
         address : detail.selected.customerInJob.address ?? '',
         remark : detail.selected.customerInJob.remark ?? ''
     });
-    const onSubmit = async (e) => {
+    const onSubmit = (e) => {
         e.preventDefault();
-        setLoading(true);
+
         let Status = 400;
         let message = '';
-        try {
-            const {data, status} = await axios.post('/customer-in-job/store', {
-                job_id: detail.job.job_id,
-                ...customer
-            });
-            console.log(data, status)
-            Status = status;
-            message = data.message;
-            setCustomer({
-                phone: data.phone,
-                name: data.name,
-                address : data.address,
-                remark : data.remark
-            });
-            setDetail(prevDetail => ({
-                ...prevDetail,
-                selected: {
-                    ...prevDetail.selected,
-                    customerInJob : customer
+        AlertDialog({
+            icon : 'question',
+            title : 'ยินยันการบันทึกข้อมูล',
+            text : 'กดตกลงเพื่อบันทึกหรืออัพเดทช้อมูล',
+            onPassed : async (confirm) => {
+
+                if (confirm){
+                    setLoading(true);
+                    try {
+                        const {data, status} = await axios.post('/customer-in-job/store', {
+                            job_id: detail.job.job_id,
+                            ...customer
+                        });
+                        console.log(data, status)
+                        Status = status;
+                        message = data.message;
+                        setCustomer({
+                            phone: data.phone,
+                            name: data.name,
+                            address : data.address,
+                            remark : data.remark
+                        });
+                        setDetail(prevDetail => ({
+                            ...prevDetail,
+                            selected: {
+                                ...prevDetail.selected,
+                                customerInJob : customer
+                            }
+                        }));
+                    } catch (error) {
+                        console.log(error.response.data.message)
+                        Status = error.response.status;
+                        message = error.response.data.message;
+                    } finally {
+                        AlertDialog({
+                            icon: Status === 200 ? 'success' : 'error',
+                            title: Status === 200 ? 'สำเร็จ' : 'เกิดข้อผิดพลาด',
+                            text: message,
+                            onPassed: () => {
+                            }
+                        })
+                        setLoading(false)
+                    }
                 }
-            }));
-        } catch (error) {
-            console.log(error.response.data.message)
-            Status = error.response.status;
-            message = error.response.data.message;
-        } finally {
-            AlertDialog({
-                icon: Status === 200 ? 'success' : 'error',
-                title: Status === 200 ? 'สำเร็จ' : 'เกิดข้อผิดพลาด',
-                text: message,
-                onPassed: () => {
-                }
-            })
-            setLoading(false)
-        }
+            }
+        })
+
     }
 
     const searchCustomer = async () => {
@@ -138,8 +150,8 @@ export const Customer = ({detail, setDetail}) => {
 
 
                 <Stack direction='row-reverse' spacing={2}>
-                    <Button variant='contained' type='submit'>save</Button>
-                    <Button color='secondary' variant='contained'>cancel</Button>
+                    <Button variant='contained' type='submit'>บันทึก</Button>
+                    <Button variant='outlined'>ยกเลิก</Button>
                 </Stack>
             </Stack>
         </form>
