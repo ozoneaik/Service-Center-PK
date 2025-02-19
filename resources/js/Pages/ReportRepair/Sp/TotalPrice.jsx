@@ -27,6 +27,7 @@ const theadStyle = {
 }
 
 export default function TotalPrice(props) {
+    const [gpDefault, setGpDefault] = useState(10);
     const {open, setOpen, selected, setSelected, serial_id, setDetail, detail} = props
     const {setBtnSelected, btnSelected} = props;
     const theme = useTheme();
@@ -34,43 +35,20 @@ export default function TotalPrice(props) {
 
     // State เก็บค่าจำนวนของแต่ละอะไหล่
     const [quantities, setQuantities] = useState({});
+    // State เก็บค่า GP ของแต่ละอะไหล่
+    const [gpValues, setGpValues] = useState({});
 
-    // ฟังก์ชันคำนวณราคาของแต่ละอะไหล่
-    // const handleQuantityChange = (event, item, type) => {
-    //     const qty = parseInt(event.target.value) || 0; // แปลงเป็นตัวเลข
-    //     setQuantities(prev => ({
-    //         ...prev,
-    //         [item.spcode]: qty
-    //     }));
-    //     setSelected((prevSelected) => {
-    //         return {
-    //             ...prevSelected,
-    //             [type]: prevSelected[type].map((spItem) =>
-    //                 spItem.spcode === item.spcode ? {...spItem, qty: qty} : spItem
-    //             ),
-    //         };
-    //     });
-    // };
-
-    // คำนวณผลรวมของแต่ละอะไหล่ (ราคาต่อหน่วย * จำนวน)
-    // const getItemTotal = (item) => {
-    //     return (quantities[item.spcode] || 0) * item.price_per_unit;
-    // };
-
-    // คำนวณผลรวมทั้งหมดของทุกอะไหล่
-    // const totalPrice = useMemo(() => {
-    //     return [...(selected.sp_warranty || []), ...(selected.sp || [])].reduce((sum, item) => {
-    //         return sum + getItemTotal(item);
-    //     }, 0);
-    // }, [quantities, selected]);
 
     useEffect(() => {
         const initialQuantities = {};
+        const initialGpValues = {};
         [...(selected.sp_warranty || []), ...(selected.sp || [])].forEach(item => {
-            initialQuantities[item.spcode] = item.qty || 0;
+            initialQuantities[item.spcode] = item.qty || 1;
+            initialGpValues[item.spcode] = item.gp || gpDefault;
         });
         setQuantities(initialQuantities);
-    }, [selected]);
+        setGpValues(initialGpValues);
+    }, [selected, gpDefault]);
 
     const handleQuantityChange = (event, item, type) => {
         const qty = parseInt(event.target.value) || 0;
@@ -78,6 +56,7 @@ export default function TotalPrice(props) {
             ...prev,
             [item.spcode]: qty
         }));
+
         setSelected((prevSelected) => {
             return {
                 ...prevSelected,
@@ -88,26 +67,62 @@ export default function TotalPrice(props) {
         });
     };
 
+    const handleGpChange = (event, item, type) => {
+        const gpValue = parseInt(event.target.value) || 0;
+        setGpValues(prev => ({
+            ...prev,
+            [item.spcode]: gpValue
+        }));
+
+        setSelected((prevSelected) => {
+            return {
+                ...prevSelected,
+                [type]: prevSelected[type].map((spItem) =>
+                    spItem.spcode === item.spcode ? {...spItem, gp: gpValue} : spItem
+                ),
+            };
+        });
+    };
+
+    const calculatePriceWithGp = (item) => {
+        const gp = gpValues[item.spcode] || gpDefault;
+        return (gp/100 * parseFloat(item.price_per_unit)) + parseFloat(item.price_per_unit);
+    };
+
     const getItemTotal = (item) => {
-        return (quantities[item.spcode] || 0) * (item.price_per_unit || 0);
+        const priceWithGp = calculatePriceWithGp(item);
+        return (quantities[item.spcode] || 1) * priceWithGp;
     };
 
     const totalPrice = useMemo(() => {
         const allItems = [...(selected.sp_warranty || []), ...(selected.sp || [])];
         return allItems.reduce((sum, item) => {
             const quantity = quantities[item.spcode] || 1;
-            const price = item.price_per_unit || 0;
-            return sum + (quantity * price);
+            const priceWithGp = calculatePriceWithGp(item);
+            return sum + (quantity * priceWithGp);
         }, 0);
-    }, [quantities, selected.sp_warranty, selected.sp]);
+    }, [quantities, gpValues, selected.sp_warranty, selected.sp]);
 
     const onSubmit = async (e) => {
         e.preventDefault();
         setOpen(false);
         try {
+            // Include GP values in the submitted data
+            const updatedSelected = {
+                ...selected,
+                sp_warranty: selected.sp_warranty.map(item => ({
+                    ...item,
+                    gp: gpValues[item.spcode] || gpDefault
+                })),
+                sp: selected.sp.map(item => ({
+                    ...item,
+                    gp: gpValues[item.spcode] || gpDefault
+                }))
+            };
+
             const {data, status} = await axios.post('/spare-part/store', {
                 serial_id,
-                list: selected,
+                list: updatedSelected,
                 job_id: detail.job.job_id
             })
             AlertDialog({
@@ -119,8 +134,8 @@ export default function TotalPrice(props) {
                         ...prevDetail,
                         selected: {
                             ...prevDetail.selected,
-                            sp_warranty: selected.sp_warranty,
-                            sp: selected.sp
+                            sp_warranty: updatedSelected.sp_warranty,
+                            sp: updatedSelected.sp
                         }
                     }));
                     setBtnSelected(1);
@@ -136,41 +151,6 @@ export default function TotalPrice(props) {
         }
     }
 
-
-    // const onSubmit = async (e) => {
-    //     e.preventDefault();
-    //     setOpen(false);
-    //     try {
-    //         const {data,status} = await axios.post('/spare-part/store', {
-    //             serial_id,
-    //             list: selected,
-    //             job_id : detail.job.job_id
-    //         })
-    //         AlertDialog({
-    //             icon : 'success',
-    //             title : 'สำเร็จ',
-    //             text : data.message,
-    //             onPassed : () => {
-    //                 setDetail(prevDetail => ({
-    //                     ...prevDetail,
-    //                     selected: {
-    //                         ...prevDetail.selected,
-    //                         sp_warranty: selected.sp_warranty,
-    //                         sp : selected.sp
-    //                     }
-    //                 }));
-    //                 setBtnSelected(1);
-    //             }
-    //         })
-    //     } catch (error) {
-    //         AlertDialog({
-    //             title : 'เกิดข้อผิดพลาด',
-    //             text: error.response.data.message + ` (code : ${error.status})`,
-    //             onPassed : () => {}
-    //         })
-    //     }
-    // }
-
     return (
         <Dialog fullWidth fullScreen={fullScreen} maxWidth='lg' open={open} onClose={() => setOpen(false)}>
             <DialogTitle fontWeight='bold'>สรุปรายการอะไหล่</DialogTitle>
@@ -183,10 +163,8 @@ export default function TotalPrice(props) {
                                 สีเขียว {'=>'} อะไหล่อยู่ในประกัน
                             </Alert>
                             <Alert sx={{width : '20%'}} severity="info" icon={<BookmarkAddIcon/>}>
-                                GP 10 % {10/100*250 + 250}
+                                GP {gpDefault} % ตั้งต้น
                             </Alert>
-
-
                         </Stack>
                     </Grid2>
 
@@ -225,16 +203,24 @@ export default function TotalPrice(props) {
                                             </Typography>
                                         </TableCell>
                                         <TableCell>
-                                            <Typography>{item.price_per_unit ?? 0}</Typography>
+                                            <Typography>
+                                                {calculatePriceWithGp(item).toFixed(2)}
+                                            </Typography>
                                         </TableCell>
                                         <TableCell>
                                             <TextField
+                                                sx={{minWidth : 100}}
+                                                disabled={selected.sp_warranty.includes(item)}
                                                 type="number"
-                                                value={10/100*item.price_per_unit + parseFloat(item.price_per_unit)}
+                                                value={gpValues[item.spcode] || gpDefault}
+                                                onChange={(e) => {
+                                                    handleGpChange(e, item, selected.sp_warranty.includes(item) ? 'sp_warranty' : 'sp')
+                                                }}
                                             />
                                         </TableCell>
                                         <TableCell>
                                             <TextField
+                                                sx={{minWidth : 100}}
                                                 type="number"
                                                 value={quantities[item.spcode] || item.qty || 1}
                                                 onChange={(e) => {
@@ -246,7 +232,7 @@ export default function TotalPrice(props) {
                                             <Typography>{item.spunit ?? 'อัน'}</Typography>
                                         </TableCell>
                                         <TableCell>
-                                            <Typography>{getItemTotal(item)} บาท</Typography>
+                                            <Typography>{getItemTotal(item).toFixed(2)} บาท</Typography>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -257,7 +243,7 @@ export default function TotalPrice(props) {
                     <Grid2 size={12}>
                         <Stack direction='row-reverse'>
                             <Typography fontWeight='bold' fontSize={20}>
-                                รวมทั้งหมด: {totalPrice} บาท
+                                รวมทั้งหมด: {totalPrice.toFixed(2)} บาท
                             </Typography>
                         </Stack>
                     </Grid2>
