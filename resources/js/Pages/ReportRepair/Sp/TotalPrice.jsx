@@ -17,6 +17,7 @@ import {useEffect, useMemo, useState} from "react";
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import {AlertDialog} from "@/Components/AlertDialog.js";
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
+import axios from 'axios';
 
 const spPath = 'https://images.dcpumpkin.com/images/product/500/default.jpg';
 
@@ -27,8 +28,8 @@ const theadStyle = {
 }
 
 export default function TotalPrice(props) {
-    const [gpDefault, setGpDefault] = useState(10);
     const {open, setOpen, selected, setSelected, serial_id, setDetail, detail} = props
+    const [gpDefault, setGpDefault] = useState(detail.selected.globalGP || 0);
     const {setBtnSelected, btnSelected} = props;
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
@@ -38,20 +39,33 @@ export default function TotalPrice(props) {
     // State เก็บค่า GP ของแต่ละอะไหล่
     const [gpValues, setGpValues] = useState({});
 
+    // Calculate price with GP
+    const calculatePriceWithGp = (price, gp) => {
+        return (gp/100 * parseFloat(price)) + parseFloat(price);
+    };
 
     useEffect(() => {
         const initialQuantities = {};
         const initialGpValues = {};
-        [...(selected.sp_warranty || []), ...(selected.sp || [])].forEach(item => {
+
+        // Process warranty spare parts
+        (selected.sp_warranty || []).forEach(item => {
             initialQuantities[item.spcode] = item.qty || 1;
-            initialGpValues[item.spcode] = item.gp || gpDefault;
+            initialGpValues[item.spcode] = item.gp !== undefined ? item.gp : gpDefault;
         });
+
+        // Process regular spare parts
+        (selected.sp || []).forEach(item => {
+            initialQuantities[item.spcode] = item.qty || 1;
+            initialGpValues[item.spcode] = item.gp !== undefined ? item.gp : gpDefault;
+        });
+
         setQuantities(initialQuantities);
         setGpValues(initialGpValues);
     }, [selected, gpDefault]);
 
     const handleQuantityChange = (event, item, type) => {
-        const qty = parseInt(event.target.value) || 0;
+        const qty = parseInt(event.target.value) || 1;
         setQuantities(prev => ({
             ...prev,
             [item.spcode]: qty
@@ -78,19 +92,23 @@ export default function TotalPrice(props) {
             return {
                 ...prevSelected,
                 [type]: prevSelected[type].map((spItem) =>
-                    spItem.spcode === item.spcode ? {...spItem, gp: gpValue} : spItem
+                    spItem.spcode === item.spcode ? {
+                        ...spItem,
+                        gp: gpValue,
+                        price_multiple_gp: calculatePriceWithGp(spItem.price_per_unit, gpValue)
+                    } : spItem
                 ),
             };
         });
     };
 
-    const calculatePriceWithGp = (item) => {
-        const gp = gpValues[item.spcode] || gpDefault;
-        return (gp/100 * parseFloat(item.price_per_unit)) + parseFloat(item.price_per_unit);
+    const getItemPriceWithGp = (item) => {
+        const gp = gpValues[item.spcode] !== undefined ? gpValues[item.spcode] : gpDefault;
+        return calculatePriceWithGp(item.price_per_unit, gp);
     };
 
     const getItemTotal = (item) => {
-        const priceWithGp = calculatePriceWithGp(item);
+        const priceWithGp = getItemPriceWithGp(item);
         return (quantities[item.spcode] || 1) * priceWithGp;
     };
 
@@ -98,7 +116,7 @@ export default function TotalPrice(props) {
         const allItems = [...(selected.sp_warranty || []), ...(selected.sp || [])];
         return allItems.reduce((sum, item) => {
             const quantity = quantities[item.spcode] || 1;
-            const priceWithGp = calculatePriceWithGp(item);
+            const priceWithGp = getItemPriceWithGp(item);
             return sum + (quantity * priceWithGp);
         }, 0);
     }, [quantities, gpValues, selected.sp_warranty, selected.sp]);
@@ -107,24 +125,33 @@ export default function TotalPrice(props) {
         e.preventDefault();
         setOpen(false);
         try {
-            // Include GP values in the submitted data
+            // Include GP values and price_multiple_gp in the submitted data
             const updatedSelected = {
                 ...selected,
-                sp_warranty: selected.sp_warranty.map(item => ({
-                    ...item,
-                    gp: gpValues[item.spcode] || gpDefault
-                })),
-                sp: selected.sp.map(item => ({
-                    ...item,
-                    gp: gpValues[item.spcode] || gpDefault
-                }))
+                sp_warranty: (selected.sp_warranty || []).map(item => {
+                    const currentGp = gpValues[item.spcode] !== undefined ? gpValues[item.spcode] : gpDefault;
+                    return {
+                        ...item,
+                        gp: currentGp,
+                        price_multiple_gp: calculatePriceWithGp(item.price_per_unit, currentGp)
+                    };
+                }),
+                sp: (selected.sp || []).map(item => {
+                    const currentGp = gpValues[item.spcode] !== undefined ? gpValues[item.spcode] : gpDefault;
+                    return {
+                        ...item,
+                        gp: currentGp,
+                        price_multiple_gp: calculatePriceWithGp(item.price_per_unit, currentGp)
+                    };
+                })
             };
 
             const {data, status} = await axios.post('/spare-part/store', {
                 serial_id,
                 list: updatedSelected,
                 job_id: detail.job.job_id
-            })
+            });
+
             AlertDialog({
                 icon: 'success',
                 title: 'สำเร็จ',
@@ -140,14 +167,13 @@ export default function TotalPrice(props) {
                     }));
                     setBtnSelected(1);
                 }
-            })
+            });
         } catch (error) {
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
-                text: error.response.data.message + ` (code : ${error.status})`,
-                onPassed: () => {
-                }
-            })
+                text: error.response?.data?.message || error.message + ` (code : ${error.response?.status || 'unknown'})`,
+                onPassed: () => {}
+            });
         }
     }
 
@@ -185,57 +211,59 @@ export default function TotalPrice(props) {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {[...(selected.sp_warranty || []), ...(selected.sp || [])].map((item, index) => (
-                                    <TableRow key={index}>
-                                        <TableCell>
-                                            <ImagePreview src={spPath}/>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Typography
-                                                color={selected.sp_warranty.includes(item) ? 'success' : 'inherit'}>
-                                                {item.spcode}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Typography
-                                                color={selected.sp_warranty.includes(item) ? 'success' : 'inherit'}>
-                                                {item.spname}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Typography>
-                                                {calculatePriceWithGp(item).toFixed(2)}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell>
-                                            <TextField
-                                                sx={{minWidth : 100}}
-                                                disabled={selected.sp_warranty.includes(item)}
-                                                type="number"
-                                                value={gpValues[item.spcode] || gpDefault}
-                                                onChange={(e) => {
-                                                    handleGpChange(e, item, selected.sp_warranty.includes(item) ? 'sp_warranty' : 'sp')
-                                                }}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <TextField
-                                                sx={{minWidth : 100}}
-                                                type="number"
-                                                value={quantities[item.spcode] || item.qty || 1}
-                                                onChange={(e) => {
-                                                    handleQuantityChange(e, item, selected.sp_warranty.includes(item) ? 'sp_warranty' : 'sp')
-                                                }}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Typography>{item.spunit ?? 'อัน'}</Typography>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Typography>{getItemTotal(item).toFixed(2)} บาท</Typography>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                {[...(selected.sp_warranty || []), ...(selected.sp || [])].map((item, index) => {
+                                    const isWarranty = (selected.sp_warranty || []).some(sp => sp.spcode === item.spcode);
+                                    return (
+                                        <TableRow key={index}>
+                                            <TableCell>
+                                                <ImagePreview src={spPath}/>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography color={isWarranty ? 'success' : 'inherit'}>
+                                                    {item.spcode}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography color={isWarranty ? 'success' : 'inherit'}>
+                                                    {item.spname}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography>
+                                                    {item.price_per_unit}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <TextField
+                                                    sx={{minWidth : 100}}
+                                                    disabled={isWarranty}
+                                                    type="number"
+                                                    value={gpValues[item.spcode] !== undefined ? gpValues[item.spcode] : gpDefault}
+                                                    onChange={(e) => {
+                                                        handleGpChange(e, item, isWarranty ? 'sp_warranty' : 'sp');
+                                                    }}
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <TextField
+                                                    sx={{minWidth : 100}}
+                                                    type="number"
+                                                    inputProps={{ min: 1 }}
+                                                    value={quantities[item.spcode] || 1}
+                                                    onChange={(e) => {
+                                                        handleQuantityChange(e, item, isWarranty ? 'sp_warranty' : 'sp');
+                                                    }}
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography>{item.spunit ?? 'อัน'}</Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography>{getItemTotal(item)} บาท</Typography>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                             </TableBody>
                         </Table>
                     </Grid2>
@@ -243,7 +271,7 @@ export default function TotalPrice(props) {
                     <Grid2 size={12}>
                         <Stack direction='row-reverse'>
                             <Typography fontWeight='bold' fontSize={20}>
-                                รวมทั้งหมด: {totalPrice.toFixed(2)} บาท
+                                รวมทั้งหมด: {totalPrice} บาท
                             </Typography>
                         </Stack>
                     </Grid2>

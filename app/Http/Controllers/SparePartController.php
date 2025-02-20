@@ -13,7 +13,6 @@ class SparePartController extends Controller
     {
         try {
             $data = SparePart::query()->where('serial_id', $serial_id)->get();
-
             return response()->json([
                 'message' => 'success',
                 'data' => $data
@@ -34,25 +33,29 @@ class SparePartController extends Controller
             $job_id = $request->input('job_id');
             $list = $request->input('list');
             $this->delete($job_id);
-            $data['sp'] = array_map(function ($item) use ($serial_id,$job_id) {
+            $data['sp'] = array_map(function ($item) use ($serial_id, $job_id) {
                 return SparePart::query()->create([
                     'serial_id' => $serial_id,
                     'job_id' => $job_id,
                     'sp_code' => $item['spcode'],
                     'sp_name' => $item['spname'],
                     'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
+                    'gp' => $item['gp'],
+                    'price_multiple_gp' => $this->calculateGP($item['price_per_unit'],$item['gp']),
                     'qty' => $item['qty'] ?? 0,
                     'sp_unit' => $item['spunit'] ?? 'อัน',
                 ]);
             }, $list['sp']);
 
-            $data['sp_warranty'] = array_map(function ($item) use ($serial_id,$job_id) {
+            $data['sp_warranty'] = array_map(function ($item) use ($serial_id, $job_id) {
                 return SparePart::query()->create([
                     'serial_id' => $serial_id,
                     'job_id' => $job_id,
                     'sp_code' => $item['spcode'],
                     'sp_name' => $item['spname'],
                     'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
+                    'gp' => $item['gp'],
+                    'price_multiple_gp' => $this->calculateGP($item['price_per_unit'],$item['gp']),
                     'qty' => $item['qty'] ?? 0,
                     'sp_warranty' => true,
                     'sp_unit' => $item['spunit'] ?? 'อัน',
@@ -75,5 +78,13 @@ class SparePartController extends Controller
     private function delete($job_id): void
     {
         SparePart::query()->where('job_id', $job_id)->delete();
+    }
+
+    private function calculateGP($price, $gp): float
+    {
+        $c = floatval($gp) / 100;
+        $cc = $c * floatval($price);
+//        dd($c, $cc, $cc + floatval($price),floatval($gp),floatval($price));
+        return $cc + floatval($price);
     }
 }

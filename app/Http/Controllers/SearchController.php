@@ -31,11 +31,13 @@ class SearchController extends Controller
                     throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $request->sn);
                 }
                 $searchResults['assets'][0]['job'] = $this->storeJob($searchResults['assets'][0]);
-                $searchResults['assets'][0]['selected']['behavior'] = $this->BehaviorSelected($request->sn);
-                $searchResults['assets'][0]['selected']['remark'] = $this->RemarkSelected($request->sn);
-                $searchResults['assets'][0]['selected']['fileUpload'] = $this->FileSelected($request->sn);
-                $searchResults['assets'][0]['selected']['customerInJob'] = $this->CustomerInJob( $searchResults['assets'][0]['job']['job_id']) ?? [];
-                $sp = $this->SpSelected($request->sn);
+                $job_id = $searchResults['assets'][0]['job']['job_id'];
+                $searchResults['assets'][0]['selected']['behavior'] = $this->BehaviorSelected($job_id);
+                $searchResults['assets'][0]['selected']['remark'] = $this->RemarkSelected($job_id);
+                $searchResults['assets'][0]['selected']['fileUpload'] = $this->FileSelected($job_id);
+                $searchResults['assets'][0]['selected']['globalGP'] = 10;
+                $searchResults['assets'][0]['selected']['customerInJob'] = $this->CustomerInJob($searchResults['assets'][0]['job']['job_id']) ?? [];
+                $sp = $this->SpSelected($job_id);
                 $searchResults['assets'][0]['selected']['sp_warranty'] = $sp['sp_warranty'];
                 $searchResults['assets'][0]['selected']['sp'] = $sp['sp'];
             } else {
@@ -55,10 +57,10 @@ class SearchController extends Controller
         }
     }
 
-    private function BehaviorSelected($sn): Collection
+    private function BehaviorSelected($job_id): Collection
     {
         return Behavior::query()
-            ->where('serial_id', $sn)
+            ->where('job_id', $job_id)
             ->select(
                 'id',
                 'catalog',
@@ -72,26 +74,33 @@ class SearchController extends Controller
             ->get();
     }
 
-    private function RemarkSelected($sn)
+    private function RemarkSelected($job_id)
     {
-        $remark = Remark::query()->where('serial_id', $sn)->first();
+        $remark = Remark::query()->where('job_id', $job_id)->first();
         return $remark ? $remark->remark : '';
     }
 
-    private function SpSelected($sn): array
+    private function SpSelected($job_id): array
     {
-        $sp = SparePart::query()->where('serial_id', $sn)->where('sp_warranty', false)
+        $sp = SparePart::query()->where('job_id', $job_id)->where('sp_warranty', false)
             ->select(
                 'sp_code as spcode',
                 'sp_name as spname',
                 'price_per_unit',
                 'qty',
+                'gp',
+                'price_multiple_gp',
                 'created_at', 'updated_at'
             )->get();
-        $sp_warranty = SparePart::query()->where('serial_id', $sn)->where('sp_warranty', true)
+        $sp_warranty = SparePart::query()->where('job_id', $job_id)->where('sp_warranty', true)
             ->select(
-                'sp_code as spcode', 'sp_name as spname',
-                'price_per_unit', 'qty', 'created_at', 'updated_at'
+                'sp_code as spcode',
+                'sp_name as spname',
+                'price_per_unit',
+                'qty',
+                'gp',
+                'price_multiple_gp',
+                'created_at', 'updated_at'
             )->get();
         return [
             'sp' => $sp,
@@ -121,17 +130,18 @@ class SearchController extends Controller
         return $job;
     }
 
-    private function FileSelected($sn): Collection
+    private function FileSelected($job_id): Collection
     {
         $lists = MenuFileUpload::query()->select('menu_name', 'id')->get();
         foreach ($lists as $list) {
-            $files = FileUpload::query()->where('serial_id', $sn)->where('menu_id', $list->id)->get();
+            $files = FileUpload::query()->where('job_id', $job_id)->where('menu_id', $list->id)->get();
             $list['list'] = $files;
         }
         return $lists;
     }
 
-    private function CustomerInJob($job_id){
+    private function CustomerInJob($job_id)
+    {
         return CustomerInJob::query()->where('job_id', $job_id)->first();
     }
 }
