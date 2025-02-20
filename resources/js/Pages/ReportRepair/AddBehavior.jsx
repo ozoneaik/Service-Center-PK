@@ -106,7 +106,7 @@ export const AddBehavior = ({detail,setDetail}) => {
                     {groupedBehavior.map((group, index) => (
                         <Stack direction='column' key={index}>
                             <Typography variant='h6' color='#f15922' fontWeight='bold'>{group.behaviorname}</Typography>
-                            <Grid2 container>
+                            <Grid2 container marginLeft={5}>
                                 {group.list.map((cause, i) => (
                                     <Grid2 size={{xs: 12, md: 4, lg: 3}} key={i}>
                                         <FormControlLabel

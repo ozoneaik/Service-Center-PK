@@ -14,7 +14,6 @@ import ListHistoryRepair from "@/Pages/HistoryRepair/ListHistoryRepair.jsx";
 import {useProductTarget} from "@/Context/ProductContext.jsx";
 
 export default function Dashboard() {
-    const {productTarget, setProductTarget} = useProductTarget();
     const [check, setCheck] = useState('before');
     const [detail, setDetail] = useState();
     const [newData, setNewData] = useState();
@@ -22,23 +21,16 @@ export default function Dashboard() {
     const [sn, setSn] = useState();
     const [showContent, setShowContent] = useState();
 
-    useEffect(() => {
-        // if (productTarget){
-        //     fetchData(productTarget.serial).then();
-        // }
-    }, []);
-
     const fetchData = async (ser) => {
         setProcessing(true)
         try {
-            const {data, status} = await axios.post('/search', {sn : ser, views: 'single'});
+            const {data} = await axios.post('/search', {sn : ser, views: 'single'});
             if (data.searchResults.message === 'SUCCESS') {
                 const responseData = data.searchResults.assets[0];
                 console.log(responseData)
                 setDetail(responseData)
-                setProductTarget(responseData)
-            } else {
-                throw 'error'
+                setSn(null);
+                document.getElementById('search').value = null;
             }
         } catch (err) {
             setDetail();
@@ -58,8 +50,7 @@ export default function Dashboard() {
         await fetchData(sn);
     }
 
-    const ButtonLink = ({url, data, icon, title, color, menu}) => (
-        // <Link href={url} method='post' data={data} id='LinkInertia'>
+    const ButtonLink = ({icon, title, color, menu}) => (
         <Button disabled={showContent === menu} onClick={() => setShowContent(menu)} component='a' variant='contained'
                 color={color} sx={{width: 150}}>
             <Stack direction='column' justifyContent='center' alignItems='center'>
@@ -89,8 +80,9 @@ export default function Dashboard() {
                             <Grid2 container spacing={2}>
                                 <Grid2 size={12} mb={10}>
                                     <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>
-                                        <TextField sx={{backgroundColor: 'white'}} placeholder='ค้นหาหมายเลขซีเรียล'
-                                                   fullWidth
+                                        <TextField id={'search'} sx={{backgroundColor: 'white'}} placeholder='ค้นหาหมายเลขซีเรียล'
+                                                   fullWidth autoComplete='off'
+                                                   defaultValue={sn || ''}
                                                    onChange={(e) => setSn(e.target.value)}/>
                                         <Button sx={{minWidth: 100}} disabled={processing || !sn} type='submit'
                                                 size='small' variant='contained'

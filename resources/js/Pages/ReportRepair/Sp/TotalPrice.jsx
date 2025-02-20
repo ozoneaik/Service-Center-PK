@@ -1,168 +1,103 @@
 import {
-    Alert,
-    Button,
-    Dialog,
-    DialogContent,
-    DialogTitle,
-    Grid2, Stack,
-    Table, TableBody,
-    TableCell,
-    TableHead,
-    TableRow, TextField, Typography,
-    useTheme
+    Alert, Button, Dialog, DialogContent, DialogTitle, Grid2, Stack,
+    Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography
 } from "@mui/material";
-import useMediaQuery from "@mui/material/useMediaQuery";
 import {ImagePreview} from "@/Components/ImagePreview.jsx";
-import {useEffect, useMemo, useState} from "react";
+import {useState, useMemo, useEffect} from "react";
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import {AlertDialog} from "@/Components/AlertDialog.js";
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
 import axios from 'axios';
 
-const spPath = 'https://images.dcpumpkin.com/images/product/500/default.jpg';
-
-const theadStyle = {
+const SPARE_PART_IMAGE_PATH = import.meta.env.VITE_IMAGE_PATH;
+const TABLE_HEADER_STYLE = {
     backgroundColor: '#c7c7c7',
     fontWeight: 'bold',
     fontSize: 16
-}
+};
 
 export default function TotalPrice(props) {
-    const {open, setOpen, selected, setSelected, serial_id, setDetail, detail} = props
-    const [gpDefault, setGpDefault] = useState(detail.selected.globalGP || 0);
-    const {setBtnSelected, btnSelected} = props;
-    const theme = useTheme();
-    const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+    const {open, setOpen} = props;
+    const {selected, setSelected} = props;
+    const {serial_id, detail, setDetail, setBtnSelected} = props;
+    const [gpDefault] = useState(detail.selected.globalGP || 0);
+    const [localItems, setLocalItems] = useState([]);
 
-    // State เก็บค่าจำนวนของแต่ละอะไหล่
-    const [quantities, setQuantities] = useState({});
-    // State เก็บค่า GP ของแต่ละอะไหล่
-    const [gpValues, setGpValues] = useState({});
-
-    // Calculate price with GP
-    const calculatePriceWithGp = (price, gp) => {
-        return (gp/100 * parseFloat(price)) + parseFloat(price);
-    };
-
+    // Initialize local items with calculated price_multiple_gp and qty
     useEffect(() => {
-        const initialQuantities = {};
-        const initialGpValues = {};
+        if (selected.sp && selected.sp.length > 0) {
+            const items = selected.sp.map(item => {
+                const price_multiple_gp = item.price_multiple_gp ||
+                    (parseFloat(item.price_per_unit) + (parseFloat(item.price_per_unit) * gpDefault / 100)).toFixed(2);
 
-        // Process warranty spare parts
-        (selected.sp_warranty || []).forEach(item => {
-            initialQuantities[item.spcode] = item.qty || 1;
-            initialGpValues[item.spcode] = item.gp !== undefined ? item.gp : gpDefault;
-        });
+                return {
+                    ...item,
+                    price_multiple_gp,
+                    qty: 1
+                };
+            });
+            setLocalItems(items);
+        }
+    }, [selected.sp, gpDefault]);
 
-        // Process regular spare parts
-        (selected.sp || []).forEach(item => {
-            initialQuantities[item.spcode] = item.qty || 1;
-            initialGpValues[item.spcode] = item.gp !== undefined ? item.gp : gpDefault;
-        });
-
-        setQuantities(initialQuantities);
-        setGpValues(initialGpValues);
-    }, [selected, gpDefault]);
-
-    const handleQuantityChange = (event, item, type) => {
-        const qty = parseInt(event.target.value) || 1;
-        setQuantities(prev => ({
-            ...prev,
-            [item.spcode]: qty
-        }));
-
-        setSelected((prevSelected) => {
-            return {
-                ...prevSelected,
-                [type]: prevSelected[type].map((spItem) =>
-                    spItem.spcode === item.spcode ? {...spItem, qty: qty} : spItem
-                ),
-            };
-        });
-    };
-
-    const handleGpChange = (event, item, type) => {
-        const gpValue = parseInt(event.target.value) || 0;
-        setGpValues(prev => ({
-            ...prev,
-            [item.spcode]: gpValue
-        }));
-
-        setSelected((prevSelected) => {
-            return {
-                ...prevSelected,
-                [type]: prevSelected[type].map((spItem) =>
-                    spItem.spcode === item.spcode ? {
-                        ...spItem,
-                        gp: gpValue,
-                        price_multiple_gp: calculatePriceWithGp(spItem.price_per_unit, gpValue)
-                    } : spItem
-                ),
-            };
-        });
-    };
-
-    const getItemPriceWithGp = (item) => {
-        const gp = gpValues[item.spcode] !== undefined ? gpValues[item.spcode] : gpDefault;
-        return calculatePriceWithGp(item.price_per_unit, gp);
-    };
-
-    const getItemTotal = (item) => {
-        const priceWithGp = getItemPriceWithGp(item);
-        return (quantities[item.spcode] || 1) * priceWithGp;
-    };
-
+    // Calculate total price using useMemo
     const totalPrice = useMemo(() => {
-        const allItems = [...(selected.sp_warranty || []), ...(selected.sp || [])];
-        return allItems.reduce((sum, item) => {
-            const quantity = quantities[item.spcode] || 1;
-            const priceWithGp = getItemPriceWithGp(item);
-            return sum + (quantity * priceWithGp);
-        }, 0);
-    }, [quantities, gpValues, selected.sp_warranty, selected.sp]);
+        return localItems.reduce((sum, item) => {
+            if (item.warranty) {
+                return sum; // Price is 0 for warranty items
+            }
+            return sum + (parseFloat(item.price_multiple_gp) * parseFloat(item.qty));
+        }, 0).toFixed(2);
+    }, [localItems]);
+
+    // Handle quantity change
+    const handleQtyChange = (index, value) => {
+        const newItems = [...localItems];
+        newItems[index].qty = value < 1 ? 1 : value;
+        setLocalItems(newItems);
+    };
+
+    // Handle price with GP change
+    const handlePriceChange = (index, value) => {
+        const newItems = [...localItems];
+        newItems[index].price_multiple_gp = value;
+        setLocalItems(newItems);
+    };
 
     const onSubmit = async (e) => {
         e.preventDefault();
         setOpen(false);
-        try {
-            // Include GP values and price_multiple_gp in the submitted data
-            const updatedSelected = {
-                ...selected,
-                sp_warranty: (selected.sp_warranty || []).map(item => {
-                    const currentGp = gpValues[item.spcode] !== undefined ? gpValues[item.spcode] : gpDefault;
-                    return {
-                        ...item,
-                        gp: currentGp,
-                        price_multiple_gp: calculatePriceWithGp(item.price_per_unit, currentGp)
-                    };
-                }),
-                sp: (selected.sp || []).map(item => {
-                    const currentGp = gpValues[item.spcode] !== undefined ? gpValues[item.spcode] : gpDefault;
-                    return {
-                        ...item,
-                        gp: currentGp,
-                        price_multiple_gp: calculatePriceWithGp(item.price_per_unit, currentGp)
-                    };
-                })
-            };
 
-            const {data, status} = await axios.post('/spare-part/store', {
+        // Prepare items with required fields for submission
+        const itemsForSubmission = localItems.map(item => ({
+            spcode: item.spcode,
+            spname: item.spname,
+            price_per_unit: item.price_per_unit,
+            spunit: item.spunit,
+            warranty: item.warranty,
+            qty: item.qty,
+            price_multiple_gp: item.price_multiple_gp,
+            gp: gpDefault
+        }));
+
+        try {
+            const {data} = await axios.post('/spare-part/store', {
                 serial_id,
-                list: updatedSelected,
+                list : {
+                    sp: itemsForSubmission,
+                },
                 job_id: detail.job.job_id
             });
-
             AlertDialog({
                 icon: 'success',
                 title: 'สำเร็จ',
                 text: data.message,
                 onPassed: () => {
-                    setDetail(prevDetail => ({
-                        ...prevDetail,
+                    setDetail(prev => ({
+                        ...prev,
                         selected: {
-                            ...prevDetail.selected,
-                            sp_warranty: updatedSelected.sp_warranty,
-                            sp: updatedSelected.sp
+                            ...prev.selected,
+                            sp: itemsForSubmission
                         }
                     }));
                     setBtnSelected(1);
@@ -171,24 +106,23 @@ export default function TotalPrice(props) {
         } catch (error) {
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
-                text: error.response?.data?.message || error.message + ` (code : ${error.response?.status || 'unknown'})`,
+                text: error.response?.data?.message || error.message,
                 onPassed: () => {}
             });
         }
-    }
+    };
 
     return (
-        <Dialog fullWidth fullScreen={fullScreen} maxWidth='lg' open={open} onClose={() => setOpen(false)}>
+        <Dialog fullWidth maxWidth='lg' open={open} onClose={() => setOpen(false)}>
             <DialogTitle fontWeight='bold'>สรุปรายการอะไหล่</DialogTitle>
-
             <DialogContent>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
-                        <Stack direction='row' spacing={2} alignItems='center'>
-                            <Alert sx={{width : '80%'}} severity="success" icon={<BookmarkIcon/>}>
+                        <Stack direction={{md: 'column', lg: 'row'}} spacing={2} alignItems='center'>
+                            <Alert sx={{width: {lg: '80%', xs: '100%'}}} severity="success" icon={<BookmarkIcon/>}>
                                 สีเขียว {'=>'} อะไหล่อยู่ในประกัน
                             </Alert>
-                            <Alert sx={{width : '20%'}} severity="info" icon={<BookmarkAddIcon/>}>
+                            <Alert sx={{width: {lg: '20%', xs: '100%'}}} severity="info" icon={<BookmarkAddIcon/>}>
                                 GP {gpDefault} % ตั้งต้น
                             </Alert>
                         </Stack>
@@ -197,72 +131,58 @@ export default function TotalPrice(props) {
                     <Grid2 size={12} maxHeight={500} sx={{overflowY: 'scroll'}}>
                         <Table stickyHeader>
                             <TableHead>
-                                <TableRow sx={{fontWeight: 'bold'}}>
-                                    <TableCell sx={theadStyle} width={10}>รูปภาพ</TableCell>
-                                    <TableCell sx={theadStyle}>รหัสอะไหล่</TableCell>
-                                    <TableCell sx={theadStyle}>ชื่ออะไหล่</TableCell>
-                                    <TableCell sx={theadStyle}>ราคาต่อหน่วย</TableCell>
-                                    <TableCell sx={theadStyle}>
-                                        GP %
-                                    </TableCell>
-                                    <TableCell sx={theadStyle} width={200}>จำนวน</TableCell>
-                                    <TableCell sx={theadStyle}>หน่วย</TableCell>
-                                    <TableCell sx={theadStyle}>ราคารวม</TableCell>
+                                <TableRow>
+                                    <TableCell sx={TABLE_HEADER_STYLE} width={10}>รูปภาพ</TableCell>
+                                    <TableCell sx={TABLE_HEADER_STYLE}>รหัสอะไหล่</TableCell>
+                                    <TableCell sx={TABLE_HEADER_STYLE}>ชื่ออะไหล่</TableCell>
+                                    <TableCell sx={TABLE_HEADER_STYLE}>ราคาต่อหน่วย</TableCell>
+                                    <TableCell sx={TABLE_HEADER_STYLE}>ราคาที่ {'+'} GP แล้ว</TableCell>
+                                    <TableCell sx={TABLE_HEADER_STYLE} width={200}>จำนวน</TableCell>
+                                    <TableCell sx={TABLE_HEADER_STYLE}>หน่วย</TableCell>
+                                    <TableCell sx={TABLE_HEADER_STYLE}>ราคารวม</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {[...(selected.sp_warranty || []), ...(selected.sp || [])].map((item, index) => {
-                                    const isWarranty = (selected.sp_warranty || []).some(sp => sp.spcode === item.spcode);
+                                {localItems.map((item, index) => {
+                                    const image_sp_path = SPARE_PART_IMAGE_PATH + detail.pid + '/' + item.spcode + '.jpg';
+                                    const isWarranty = item.warranty === true;
+                                    const rowStyle = isWarranty ? { backgroundColor: '#e8f5e9' } : {};
+                                    const itemTotal = isWarranty ? 0 : (parseFloat(item.price_multiple_gp) * parseFloat(item.qty)).toFixed(2);
+
                                     return (
-                                        <TableRow key={index}>
+                                        <TableRow key={index} style={rowStyle}>
                                             <TableCell>
-                                                <ImagePreview src={spPath}/>
+                                                <ImagePreview src={image_sp_path}/>
                                             </TableCell>
-                                            <TableCell>
-                                                <Typography color={isWarranty ? 'success' : 'inherit'}>
-                                                    {item.spcode}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography color={isWarranty ? 'success' : 'inherit'}>
-                                                    {item.spname}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography>
-                                                    {item.price_per_unit}
-                                                </Typography>
-                                            </TableCell>
+                                            <TableCell>{item.spcode}</TableCell>
+                                            <TableCell>{item.spname}</TableCell>
+                                            <TableCell>{parseFloat(item.price_per_unit).toFixed(2)}</TableCell>
                                             <TableCell>
                                                 <TextField
-                                                    sx={{minWidth : 100}}
+                                                    value={item.price_multiple_gp}
+                                                    onChange={(e) => handlePriceChange(index, e.target.value)}
                                                     disabled={isWarranty}
                                                     type="number"
-                                                    value={gpValues[item.spcode] !== undefined ? gpValues[item.spcode] : gpDefault}
-                                                    onChange={(e) => {
-                                                        handleGpChange(e, item, isWarranty ? 'sp_warranty' : 'sp');
-                                                    }}
+                                                    inputProps={{ min: 0, step: 0.01 }}
+                                                    size="small"
                                                 />
                                             </TableCell>
                                             <TableCell>
                                                 <TextField
-                                                    sx={{minWidth : 100}}
-                                                    type="number"
+                                                    type='number'
+                                                    value={item.qty}
+                                                    onChange={(e) => handleQtyChange(index, parseInt(e.target.value))}
+                                                    disabled={isWarranty}
                                                     inputProps={{ min: 1 }}
-                                                    value={quantities[item.spcode] || 1}
-                                                    onChange={(e) => {
-                                                        handleQuantityChange(e, item, isWarranty ? 'sp_warranty' : 'sp');
-                                                    }}
+                                                    size="small"
                                                 />
                                             </TableCell>
+                                            <TableCell>{item.spunit}</TableCell>
                                             <TableCell>
-                                                <Typography>{item.spunit ?? 'อัน'}</Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography>{getItemTotal(item)} บาท</Typography>
+                                                {itemTotal}
                                             </TableCell>
                                         </TableRow>
-                                    );
+                                    )
                                 })}
                             </TableBody>
                         </Table>
@@ -275,7 +195,6 @@ export default function TotalPrice(props) {
                             </Typography>
                         </Stack>
                     </Grid2>
-
                     <Grid2 size={12}>
                         <form onSubmit={onSubmit}>
                             <Stack direction='row' justifyContent='end' spacing={2}>

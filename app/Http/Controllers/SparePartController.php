@@ -41,26 +41,27 @@ class SparePartController extends Controller
                     'sp_name' => $item['spname'],
                     'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
                     'gp' => $item['gp'],
-                    'price_multiple_gp' => $this->calculateGP($item['price_per_unit'],$item['gp']),
+                    'sp_warranty' => $item['warranty'],
+                    'price_multiple_gp' => $item['price_multiple_gp'],
                     'qty' => $item['qty'] ?? 0,
                     'sp_unit' => $item['spunit'] ?? 'อัน',
                 ]);
             }, $list['sp']);
 
-            $data['sp_warranty'] = array_map(function ($item) use ($serial_id, $job_id) {
-                return SparePart::query()->create([
-                    'serial_id' => $serial_id,
-                    'job_id' => $job_id,
-                    'sp_code' => $item['spcode'],
-                    'sp_name' => $item['spname'],
-                    'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
-                    'gp' => $item['gp'],
-                    'price_multiple_gp' => $this->calculateGP($item['price_per_unit'],$item['gp']),
-                    'qty' => $item['qty'] ?? 0,
-                    'sp_warranty' => true,
-                    'sp_unit' => $item['spunit'] ?? 'อัน',
-                ]);
-            }, $list['sp_warranty']);
+//            $data['sp_warranty'] = array_map(function ($item) use ($serial_id, $job_id) {
+//                return SparePart::query()->create([
+//                    'serial_id' => $serial_id,
+//                    'job_id' => $job_id,
+//                    'sp_code' => $item['spcode'],
+//                    'sp_name' => $item['spname'],
+//                    'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
+//                    'gp' => $item['gp'],
+//                    'price_multiple_gp' => $item['price_multiple_gp'],
+//                    'qty' => $item['qty'] ?? 0,
+//                    'sp_warranty' => true,
+//                    'sp_unit' => $item['spunit'] ?? 'อัน',
+//                ]);
+//            }, $list['sp_warranty']);
             DB::commit();
             return response()->json([
                 'message' => 'บันทึกรายการอะไหล่สำเร็จ',

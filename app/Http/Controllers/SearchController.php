@@ -82,7 +82,7 @@ class SearchController extends Controller
 
     private function SpSelected($job_id): array
     {
-        $sp = SparePart::query()->where('job_id', $job_id)->where('sp_warranty', false)
+        $sp = SparePart::query()->where('job_id', $job_id)
             ->select(
                 'sp_code as spcode',
                 'sp_name as spname',
@@ -90,6 +90,7 @@ class SearchController extends Controller
                 'qty',
                 'gp',
                 'price_multiple_gp',
+                'sp_warranty as warranty',
                 'created_at', 'updated_at'
             )->get();
         $sp_warranty = SparePart::query()->where('job_id', $job_id)->where('sp_warranty', true)
@@ -100,6 +101,7 @@ class SearchController extends Controller
                 'qty',
                 'gp',
                 'price_multiple_gp',
+                'sp_warranty as warranty',
                 'created_at', 'updated_at'
             )->get();
         return [
@@ -123,7 +125,7 @@ class SearchController extends Controller
                 'p_sub_cat_name' => $data['pSubCatName'],
                 'fac_model' => $data['facmodel'],
                 'image_sku' => $data['imagesku'],
-                'user_id' => \auth()->user()->is_code_cust_id,
+                'user_id' => auth()->user()->is_code_cust_id,
                 'status' => 'pending',
             ]);
         }
