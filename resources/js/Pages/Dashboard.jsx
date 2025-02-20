@@ -25,9 +25,9 @@ export default function Dashboard() {
         setProcessing(true)
         try {
             const {data} = await axios.post('/search', {sn : ser, views: 'single'});
-            if (data.searchResults.message === 'SUCCESS') {
-                const responseData = data.searchResults.assets[0];
-                console.log(responseData)
+            if (data.status === 'SUCCESS') {
+                const responseData = data.searchResults;
+                console.log(data.searchResults)
                 setDetail(responseData)
                 setSn(null);
                 document.getElementById('search').value = null;

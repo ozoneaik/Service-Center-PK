@@ -19,6 +19,7 @@ const TABLE_HEADER_STYLE = {
 export default function TotalPrice(props) {
     const {open, setOpen} = props;
     const {selected, setSelected} = props;
+    console.log(selected)
     const {serial_id, detail, setDetail, setBtnSelected} = props;
     const [gpDefault] = useState(detail.selected.globalGP || 0);
     const [localItems, setLocalItems] = useState([]);
@@ -33,7 +34,7 @@ export default function TotalPrice(props) {
                 return {
                     ...item,
                     price_multiple_gp,
-                    qty: 1
+                    qty: item.qty ?? 1
                 };
             });
             setLocalItems(items);
@@ -178,9 +179,7 @@ export default function TotalPrice(props) {
                                                 />
                                             </TableCell>
                                             <TableCell>{item.spunit}</TableCell>
-                                            <TableCell>
-                                                {itemTotal}
-                                            </TableCell>
+                                            <TableCell>{itemTotal}</TableCell>
                                         </TableRow>
                                     )
                                 })}

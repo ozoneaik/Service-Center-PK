@@ -1,5 +1,5 @@
 import {Button, Grid2, Stack, Typography} from "@mui/material";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {SummaryForm} from "./SummaryForm";
 import {UploadFile} from "./UploadFile";
 import {AddBehavior} from "./AddBehavior";
@@ -17,6 +17,17 @@ import {Customer} from "@/Pages/ReportRepair/Customer.jsx";
 export default function FormRepair({detail, setDetail, check, setCheck}) {
     const [showDetail, setShowDetail] = useState(1);
     const [headTitle , setHeadTitle] = useState('สรุปการทำงาน');
+    const [approve, setApprove] = useState(false);
+    const [first, setFirst] = useState(true);
+
+
+    useEffect(()=> {
+        if (!first){
+            // เช็คว่า detail นี้ อยู่ใน ประกันแล้วมีการเลือกอะไหล่ที่อยู่ในประกัน แล้วมีราคาอะไหร่เป็น 0 ด้วย
+            setApprove(true)
+        }
+        setFirst(false)
+    },[detail])
 
 
 
@@ -31,7 +42,7 @@ export default function FormRepair({detail, setDetail, check, setCheck}) {
     }
 
     const ButtonStyle = ({title, action, icon}) => (
-        <Button sx={{height: {lg: 80}}} onClick={()=>handelChangeMenu({action})}
+        <Button sx={{height: {lg: 80},width : {sm : 80,md : '100%'}}} onClick={()=>handelChangeMenu({action})}
                 variant={action === showDetail ? 'contained' : 'outlined'}>
             <Stack direction='column' spacing={2} alignItems='center'>
                 {icon}
@@ -60,6 +71,7 @@ export default function FormRepair({detail, setDetail, check, setCheck}) {
                     <ButtonStyle action={3} title={'อาการ/สาเหตุ'} icon={<PsychologyIcon/>}/>
                     <ButtonStyle action={4} title={'อะไหล่'} icon={<BuildIcon/>}/>
                     <ButtonStyle action={6} title={'เพิ่มเติม'} icon={<MoreHorizIcon/>}/>
+                    {approve && <ButtonStyle action={7} title={'พิเคษ'} icon={<MoreHorizIcon/>}/>}
                 </Stack>
             </Grid2>
             <Grid2 size={{xs: 12, lg: 10}}>

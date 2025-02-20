@@ -107,7 +107,7 @@ export const UploadFile = ({detail, setDetail}) => {
                 <Grid2 container spacing={4}>
                     {selected.map((item) => (
                         <Grid2 size={12} key={item.id}>
-                            <Typography fontWeight='bold'>{item.menu_name}{item.id}</Typography>
+                            <Typography fontWeight='bold'>{item.menu_name}</Typography>
                             <Stack direction='row' spacing={2} sx={{flexWrap: 'wrap', gap: 2}}>
                                 {item.list.map((image) => (
                                     <Card key={image.id} sx={{width: 150, height: 150, position: 'relative'}}>

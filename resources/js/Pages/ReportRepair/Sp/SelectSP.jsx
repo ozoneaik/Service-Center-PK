@@ -29,25 +29,6 @@ export default function SelectSP({pid, list, selected, setSelected, warranty = f
                     sp: prevSelected.sp.filter(spItem => spItem.spcode !== item.spcode)
                 }
         );
-        // if (!warranty) {
-        //     setSelected(prevSelected =>
-        //         checked
-        //             ? {...prevSelected, sp: [...prevSelected.sp, item]}
-        //             : {
-        //                 ...prevSelected,
-        //                 sp: prevSelected.sp.filter(spItem => spItem.spcode !== item.spcode)
-        //             }
-        //     );
-        // } else {
-        //     setSelected(prevSelected =>
-        //         checked
-        //             ? {...prevSelected, sp_warranty: [...prevSelected.sp_warranty, item]}
-        //             : {
-        //                 ...prevSelected,
-        //                 sp_warranty: prevSelected.sp_warranty.filter(spItem => spItem.spcode !== item.spcode)
-        //             }
-        //     );
-        // }
     };
 
     return (

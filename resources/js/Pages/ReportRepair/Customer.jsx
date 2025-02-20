@@ -123,7 +123,8 @@ export const Customer = ({detail, setDetail}) => {
                 />
 
                 <Typography>ที่อยู่</Typography>
-                <TextField
+                <textarea
+                    style={{padding : 10,fontSize : 16}}
                     value={customer.address}
                     onChange={(e) => {
                         setCustomer(prevState => ({
@@ -136,7 +137,8 @@ export const Customer = ({detail, setDetail}) => {
                 />
 
                 <Typography>หมายเหตุ</Typography>
-                <TextField
+                <textarea
+                    style={{padding : 10,fontSize : 16}}
                     value={customer.remark}
                     onChange={(e) => {
                         setCustomer(prevState => ({

@@ -56,25 +56,14 @@ const SpDetail = ({sp, sp_warranty}) => {
             </TableHead>
             <TableBody>
                 {sp.map((item, index) => (
-                    <TableRow key={index}>
+                    <TableRow key={index} sx={item.warranty ? highlight : {}}>
                         <TableCell>image</TableCell>
                         <TableCell>{item.spcode}</TableCell>
                         <TableCell>{item.spname}</TableCell>
-                        <TableCell>{item.price_per_unit}</TableCell>
+                        <TableCell>{item.price_multiple_gp}</TableCell>
                         <TableCell>{item.qty}</TableCell>
                         <TableCell>{item.unit ?? 'อัน'}</TableCell>
-                        <TableCell>{item.price_per_unit * item.qty}</TableCell>
-                    </TableRow>
-                ))}
-                {sp_warranty.map((item, index) => (
-                    <TableRow key={index}>
-                        <TableCell sx={highlight}>image</TableCell>
-                        <TableCell sx={highlight}>{item.spcode}</TableCell>
-                        <TableCell sx={highlight}>{item.spname}</TableCell>
-                        <TableCell sx={highlight}>{item.price_per_unit}</TableCell>
-                        <TableCell sx={highlight}>{item.qty}</TableCell>
-                        <TableCell sx={highlight}>{item.unit ?? 'อัน'}</TableCell>
-                        <TableCell sx={highlight}>{item.price_per_unit * item.qty}</TableCell>
+                        <TableCell>{item.price_multiple_gp * item.qty}</TableCell>
                     </TableRow>
                 ))}
             </TableBody>

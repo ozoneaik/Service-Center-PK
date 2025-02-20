@@ -37,18 +37,12 @@ export const AddSp = ({detail, setDetail}) => {
     const DIAGRAM_PATH=import.meta.env.VITE_IMAGE_PATH+detail.pid+`/Diagrams_${detail.pid}-DM01.jpg`
     const [open, setOpen] = useState(false)
     const [btnSelected, setBtnSelected] = useState(0);
-
     useEffect(() => {
-        if (detail.selected.sp.length > 0 || detail.selected.sp_warranty.length > 0) {
-            setBtnSelected(1)
-        }
+        if (detail.selected.sp.length > 0 || detail.selected.sp_warranty.length > 0) {setBtnSelected(1)}
     }, []);
-
-    const [selected, setSelected] = useState({
-            sp: detail.selected.sp,
-            // sp_warranty: detail.selected.sp_warranty
-        }
-    );
+    const [selected, setSelected] = useState({sp: detail.selected.sp});
+    const [sp, setSp] = useState(detail.selected.sp.filter((item) => item.warranty === false));
+    const [spW, setSpW] = useState(detail.selected.sp.filter((item) => item.warranty === true))
     const handelOpen = () => {
         console.log(selected)
         setOpen(true)
@@ -68,20 +62,20 @@ export const AddSp = ({detail, setDetail}) => {
                 setBtnSelected={setBtnSelected}
             />
             <Grid2 container spacing={2}>
-                <Grid2 size={{xs: 12, lg: 5}} sx={{cursor: 'pointer'}}>
+                <Grid2 size={{xs: 12, lg: 4}} sx={{cursor: 'pointer'}}>
                     <ImagePreview src={DIAGRAM_PATH} width='100%'/>
                 </Grid2>
-                <Grid2 size={{xs: 12, lg: 7}}>
+                <Grid2 size={{xs: 12, lg: 8}}>
                     {(detail.selected.sp.length > 0 || detail.selected.sp_warranty.length > 0) && btnSelected === 1 ? (
                         <>
                             <Grid2 container spacing={2}>
-                                <Typography fontWeight='bold'>อะไหล่ที่ไม่อยู่ในรับประกัน</Typography>
-                                <Grid2 size={12} sx={{maxHeight: 300, overflowY: 'scroll'}}>
-                                    <TableSummary data={detail.selected.sp_warranty}/>
-                                </Grid2>
                                 <Typography fontWeight='bold'>อะไหล่ที่อยู่ในรับประกัน</Typography>
                                 <Grid2 size={12} sx={{maxHeight: 300, overflowY: 'scroll'}}>
-                                    <TableSummary data={detail.selected.sp}/>
+                                    <TableSummary data={spW}/>
+                                </Grid2>
+                                <Typography fontWeight='bold'>อะไหล่ที่ไม่อยู่ในรับประกัน</Typography>
+                                <Grid2 size={12} sx={{maxHeight: 300, overflowY: 'scroll'}}>
+                                    <TableSummary data={sp}/>
                                 </Grid2>
                             </Grid2>
                             <Stack mt={3} direction='row' justifyContent='end' spacing={2}>
@@ -99,7 +93,7 @@ export const AddSp = ({detail, setDetail}) => {
                                               list={detail.sp_warranty}/>
                                 </Grid2>
                                 <Typography fontWeight='bold'>อะไหล่</Typography>
-                                <Grid2 size={12} sx={{maxHeight: 300, overflowY: 'scroll'}}>
+                                <Grid2 size={12} sx={{maxHeight: 500, overflowY: 'scroll'}}>
                                     <SelectSP sp_warranty={detail.sp_warranty} pid={detail.pid} selected={selected} setSelected={setSelected} list={detail.sp}/>
                                 </Grid2>
                             </Grid2>

@@ -27,29 +27,33 @@ class SearchController extends Controller
             ]);
             if ($response->status() === 200) {
                 $searchResults = $response->json();
+                $status = $searchResults['status'];
                 if ($searchResults['status'] === 'Fail') {
                     throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $request->sn);
                 }
-                $searchResults['assets'][0]['job'] = $this->storeJob($searchResults['assets'][0]);
-                $job_id = $searchResults['assets'][0]['job']['job_id'];
-                $searchResults['assets'][0]['selected']['behavior'] = $this->BehaviorSelected($job_id);
-                $searchResults['assets'][0]['selected']['remark'] = $this->RemarkSelected($job_id);
-                $searchResults['assets'][0]['selected']['fileUpload'] = $this->FileSelected($job_id);
-                $searchResults['assets'][0]['selected']['globalGP'] = 10;
-                $searchResults['assets'][0]['selected']['customerInJob'] = $this->CustomerInJob($searchResults['assets'][0]['job']['job_id']) ?? [];
+                $searchResults = $searchResults['assets'][0];
+                $searchResults['job'] = $this->storeJob($searchResults);
+                $job_id = $searchResults['job']['job_id'];
+                $searchResults['selected']['behavior'] = $this->BehaviorSelected($job_id);
+                $searchResults['selected']['remark'] = $this->RemarkSelected($job_id);
+                $searchResults['selected']['fileUpload'] = $this->FileSelected($job_id);
+                $searchResults['selected']['globalGP'] = 10;
+                $searchResults['selected']['customerInJob'] = $this->CustomerInJob($searchResults['job']['job_id']) ?? [];
                 $sp = $this->SpSelected($job_id);
-                $searchResults['assets'][0]['selected']['sp_warranty'] = $sp['sp_warranty'];
-                $searchResults['assets'][0]['selected']['sp'] = $sp['sp'];
+                $searchResults['selected']['sp_warranty'] = $sp['sp_warranty'];
+                $searchResults['selected']['sp'] = $sp['sp'];
             } else {
                 throw new \Exception('ไม่พบข้อมูล');
             }
             return response()->json([
+                'status' => $status,
                 'searchResults' => $searchResults,
                 'message' => 'success',
                 'time' => Carbon::now()
             ]);
         } catch (\Exception $e) {
             return response()->json([
+                'status' => 'Fail',
                 'searchResults' => [],
                 'message' => $e->getMessage(),
                 'time' => Carbon::now()
