@@ -7,58 +7,69 @@ import {AddSp} from "./Sp/AddSp.jsx";
 import {AddMore} from "./AddMore";
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import ViewListIcon from '@mui/icons-material/ViewList';
+import WarningIcon from '@mui/icons-material/Warning';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import BuildIcon from '@mui/icons-material/Build';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import {Customer} from "@/Pages/ReportRepair/Customer.jsx";
+import {useProductTarget} from "@/Context/ProductContext.jsx";
+import {WarningApprove} from "@/Pages/ReportRepair/WarningApprove.jsx";
 
-export default function FormRepair({detail, setDetail, check, setCheck}) {
+export default function FormRepair({detail, setDetail}) {
     const [showDetail, setShowDetail] = useState(1);
-    const [headTitle , setHeadTitle] = useState('สรุปการทำงาน');
+    const [headTitle, setHeadTitle] = useState('สรุปการทำงาน');
     const [approve, setApprove] = useState(false);
-    const [first, setFirst] = useState(true);
+    const {setProductTarget} = useProductTarget()
 
 
-    useEffect(()=> {
-        if (!first){
-            // เช็คว่า detail นี้ อยู่ใน ประกันแล้วมีการเลือกอะไหล่ที่อยู่ในประกัน แล้วมีราคาอะไหร่เป็น 0 ด้วย
-            setApprove(true)
-        }
-        setFirst(false)
-    },[detail])
-
+    useEffect(() => {
+        // เช็คว่า detail นี้ อยู่ใน ประกัน แล้วมีราคาอะไหร่เป็น 0 ด้วย
+        const findPriceMultipleGpZero = detail.selected.sp.filter(item => parseInt(item.price_multiple_gp) === 0);
+        const trueOrFalsePriceZero = !!(detail.job.warranty && (findPriceMultipleGpZero.length > 0))
+        // เช็คว่า detail นี้ อยู่ในประกันหรือไม่ แล้วมีการเลือกอะไหล่ที่อยู่ในประกัน แต่ไม่ได้อัปโหลดภาพอะไหล่ที่เสียส่งเคลม
+        const findSpWarranty = detail.selected.sp.filter(item => item.warranty === true);
+        const findUploadImage = detail.selected.fileUpload.find(item => item.id === 3);
+        const findListUploadImage = findUploadImage.list;
+        console.log(findUploadImage, findUploadImage.list, findListUploadImage)
+        const trueOrFalseUploadFile = !!(detail.job.warranty && (findSpWarranty.length > 0) && (findListUploadImage.length === 0))
+        console.log(`trueOrFalseUploadFile >> ${trueOrFalseUploadFile} ` + `trueOrFalsePriceZero >> ${trueOrFalsePriceZero}`)
+        setApprove(trueOrFalseUploadFile || trueOrFalsePriceZero);
+        setProductTarget(trueOrFalseUploadFile || trueOrFalsePriceZero)
+    }, [detail])
 
 
     const handelChangeMenu = ({action}) => {
         setShowDetail(action);
         if (action === 1) setHeadTitle('สรุปการทำงาน');
-        else if(action === 2) setHeadTitle('รูปภาพ');
-        else if(action === 3) setHeadTitle('อาการ/สาเหตุ');
-        else if(action === 4) setHeadTitle('อะไหล่');
-        else if(action === 5) setHeadTitle('ข้อมูลลูกค้า')
+        else if (action === 2) setHeadTitle('รูปภาพ');
+        else if (action === 3) setHeadTitle('อาการ/สาเหตุ');
+        else if (action === 4) setHeadTitle('อะไหล่');
+        else if (action === 5) setHeadTitle('ข้อมูลลูกค้า')
+        else if (action === 7) setHeadTitle('แจ้งเตือน')
         else setHeadTitle('เพิ่มเติม');
     }
 
     const ButtonStyle = ({title, action, icon}) => (
-        <Button sx={{height: {lg: 80},width : {sm : 80,md : '100%'}}} onClick={()=>handelChangeMenu({action})}
-                variant={action === showDetail ? 'contained' : 'outlined'}>
+        <Button
+            sx={{height: {lg: 80}, width: {sm: 80, md: '100%'}}}
+            onClick={() => handelChangeMenu({action})}
+            variant={action === showDetail ? 'contained' : 'outlined'}
+            color={action === 7 ? 'warning' : 'primary'}
+        >
             <Stack direction='column' spacing={2} alignItems='center'>
-                {icon}
-                {title}
+                {icon}{title}
             </Stack>
         </Button>
     )
 
     const HeadTitle = ({title}) => (
-        <>
-            <Stack direction='row' spacing={2} alignItems='center' mb={2}>
-                <Typography variant='h5' fontWeight='bold' sx={{textDecoration: 'underline'}}>
-                    <ChecklistIcon/>&nbsp;{title}
-                </Typography>
-            </Stack>
-        </>
+        <Stack direction='row' spacing={2} alignItems='center' mb={2}>
+            <Typography variant='h5' fontWeight='bold' sx={{textDecoration: 'underline'}}>
+                <ChecklistIcon/>&nbsp;{title}
+            </Typography>
+        </Stack>
     )
 
     return (
@@ -71,7 +82,7 @@ export default function FormRepair({detail, setDetail, check, setCheck}) {
                     <ButtonStyle action={3} title={'อาการ/สาเหตุ'} icon={<PsychologyIcon/>}/>
                     <ButtonStyle action={4} title={'อะไหล่'} icon={<BuildIcon/>}/>
                     <ButtonStyle action={6} title={'เพิ่มเติม'} icon={<MoreHorizIcon/>}/>
-                    {approve && <ButtonStyle action={7} title={'พิเคษ'} icon={<MoreHorizIcon/>}/>}
+                    {approve && <ButtonStyle action={7} title={'แจ้งเตือน'} icon={<WarningIcon/>}/>}
                 </Stack>
             </Grid2>
             <Grid2 size={{xs: 12, lg: 10}}>
@@ -86,6 +97,7 @@ export default function FormRepair({detail, setDetail, check, setCheck}) {
                         {showDetail === 4 && <AddSp detail={detail} setDetail={setDetail}/>}
                         {showDetail === 5 && <Customer detail={detail} setDetail={setDetail}/>}
                         {showDetail === 6 && <AddMore detail={detail} setDetail={setDetail}/>}
+                        {showDetail === 7 && <WarningApprove detail={detail} setDetail={setDetail}/>}
                     </Grid2>
                 </Grid2>
             </Grid2>

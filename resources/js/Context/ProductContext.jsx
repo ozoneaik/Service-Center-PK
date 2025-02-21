@@ -1,13 +1,13 @@
 import {createContext, useContext, useState} from "react";
 
 const ProductTargetContent = createContext({
-    productTarget : null,
+    productTarget : false,
     setProductTarget : ()=> {}
 })
 
 export const ProductTargetProvider = ({children}) => {
     const [productTarget, _setProductTarget] = useState(
-        JSON.parse(localStorage.getItem('productTarget')) || null
+        JSON.parse(localStorage.getItem('productTarget')) || false
     );
 
     const setProductTarget = (productTarget) => {

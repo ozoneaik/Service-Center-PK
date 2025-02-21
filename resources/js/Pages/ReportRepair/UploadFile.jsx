@@ -1,8 +1,9 @@
-import {Button, Card, Grid2, Stack, Typography} from "@mui/material";
+import {Alert, Button, Card, Grid2, Stack, Typography} from "@mui/material";
 import {useEffect, useState} from "react";
 import Progress from "@/Components/Progress.jsx";
 import {ImagePreview} from "@/Components/ImagePreview.jsx";
 import {AlertDialog} from "@/Components/AlertDialog.js";
+import CheckIcon from "@mui/icons-material/Check";
 
 export const UploadFile = ({detail, setDetail}) => {
     const [loading, setLoading] = useState(true);
@@ -105,6 +106,20 @@ export const UploadFile = ({detail, setDetail}) => {
         <>
             {!loading ? (
                 <Grid2 container spacing={4}>
+                    {
+                        detail.job.warranty && (
+                            <Grid2 size={12}>
+                                <Alert severity="warning">
+                                    <Typography fontSize={18}>
+                                        หากคุณมีการเลือกอะไหล่ที่อยู่ในรับประกันในหน้าเลือกอะไหล่
+                                        <br/>
+                                        อย่าลืมอัปโหลด <b>"ภาพอะไหล่ที่เสียส่งเคลม"</b>
+                                    </Typography>
+                                </Alert>
+                            </Grid2>
+
+                        )
+                    }
                     {selected.map((item) => (
                         <Grid2 size={12} key={item.id}>
                             <Typography fontWeight='bold'>{item.menu_name}</Typography>

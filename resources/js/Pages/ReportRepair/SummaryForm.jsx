@@ -14,6 +14,7 @@ import {
 import FormGroup from '@mui/material/FormGroup';
 import {AlertDialog} from "@/Components/AlertDialog.js";
 import {ImagePreview} from "@/Components/ImagePreview.jsx";
+import {useProductTarget} from "@/Context/ProductContext.jsx";
 
 
 const BehaviorDetail = ({detail}) => (
@@ -30,9 +31,9 @@ const FileDetail = ({menu}) => (
             <Grid2 key={index} size={6}>
                 <Typography>{item.menu_name}</Typography>
                 <Stack direction='row' spacing={2}>
-                    {item.list.map((image, i) => (
-                        <ImagePreview key={i} src={image.full_file_path} width={50}/>
-                    ))}
+                    {item.list.length > 0 ? item.list.map((image, i) => (
+                        <ImagePreview key={i} src={image.full_file_path} width={100}/>
+                    )) : <>{'-'}</>}
                 </Stack>
             </Grid2>
         ))}
@@ -83,6 +84,7 @@ const CardDetail = ({children}) => (
 
 export const SummaryForm = ({detail, setDetail}) => {
     const selected = detail.selected;
+    const {productTarget} = useProductTarget()
 
 
     async function endJob() {
@@ -90,9 +92,9 @@ export const SummaryForm = ({detail, setDetail}) => {
         AlertDialog({
             icon: 'question',
             title: 'ยืนยันการปิดงานซ่อม',
-            text : 'กด ตกลง เพื่อ ยืนยันการปิดงานซ่อม',
-            onPassed : async (confirm) => {
-                if (confirm){
+            text: 'กด ตกลง เพื่อ ยืนยันการปิดงานซ่อม',
+            onPassed: async (confirm) => {
+                if (confirm) {
                     let message = '';
                     let Status = 400;
                     try {
@@ -119,7 +121,7 @@ export const SummaryForm = ({detail, setDetail}) => {
                             }
                         })
                     }
-                }else console.log('ไม่ได้กด confirm')
+                } else console.log('ไม่ได้กด confirm')
             }
         });
 

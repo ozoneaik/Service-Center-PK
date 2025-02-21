@@ -24,6 +24,8 @@ return new class extends Migration
             $table->float('price_multiple_gp')->nullable()->comment('ราคาหลังรวม GP แล้ว');
             $table->boolean('sp_warranty')->default(false)->comment('อะไหล่อยู่ในรัปประกันหรือไม่');
             $table->string('status')->default('pending')->comment('สถานะการเคลม');
+            $table->string('approve')->default('no')->comment('อะไหล่รอ approve');
+            $table->string('approve_status')->default('yes')->comment('สถานะอะไหล่รอ approve');
             $table->timestamps();
         });
     }

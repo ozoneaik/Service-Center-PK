@@ -19,7 +19,6 @@ const TABLE_HEADER_STYLE = {
 export default function TotalPrice(props) {
     const {open, setOpen} = props;
     const {selected, setSelected} = props;
-    console.log(selected)
     const {serial_id, detail, setDetail, setBtnSelected} = props;
     const [gpDefault] = useState(detail.selected.globalGP || 0);
     const [localItems, setLocalItems] = useState([]);
@@ -62,7 +61,12 @@ export default function TotalPrice(props) {
     const handlePriceChange = (index, value) => {
         const newItems = [...localItems];
         newItems[index].price_multiple_gp = value;
+        if(detail.job.warranty){
+            newItems[index].approve = parseFloat(value) === 0 ? 'yes' : 'no';
+            newItems[index].approve_status = parseFloat(value) === 0 ? 'no' : 'yes';
+        }
         setLocalItems(newItems);
+        console.log(newItems[index])
     };
 
     const onSubmit = async (e) => {
@@ -78,9 +82,13 @@ export default function TotalPrice(props) {
             warranty: item.warranty,
             qty: item.qty,
             price_multiple_gp: item.price_multiple_gp,
+            approve : item.approve,
+            approve_status : item.approve_status,
             gp: gpDefault
         }));
 
+        console.log(itemsForSubmission)
+        // return ;
         try {
             const {data} = await axios.post('/spare-part/store', {
                 serial_id,

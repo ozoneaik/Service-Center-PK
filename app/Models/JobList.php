@@ -18,6 +18,7 @@ class JobList extends Model
         'serial_id',
         'image_sku',
         'status',
+        'warranty',
         'user_id',
     ];
 }

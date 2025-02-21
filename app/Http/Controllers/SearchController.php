@@ -27,11 +27,13 @@ class SearchController extends Controller
             ]);
             if ($response->status() === 200) {
                 $searchResults = $response->json();
+                $warrantyexpire = $searchResults['warrantyexpire'];
                 $status = $searchResults['status'];
                 if ($searchResults['status'] === 'Fail') {
                     throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $request->sn);
                 }
                 $searchResults = $searchResults['assets'][0];
+                $searchResults['warranty_status'] = $warrantyexpire;
                 $searchResults['job'] = $this->storeJob($searchResults);
                 $job_id = $searchResults['job']['job_id'];
                 $searchResults['selected']['behavior'] = $this->BehaviorSelected($job_id);
@@ -94,6 +96,8 @@ class SearchController extends Controller
                 'qty',
                 'gp',
                 'price_multiple_gp',
+                'approve',
+                'approve_status',
                 'sp_warranty as warranty',
                 'created_at', 'updated_at'
             )->get();
@@ -105,6 +109,8 @@ class SearchController extends Controller
                 'qty',
                 'gp',
                 'price_multiple_gp',
+                'approve',
+                'approve_status',
                 'sp_warranty as warranty',
                 'created_at', 'updated_at'
             )->get();
@@ -116,8 +122,10 @@ class SearchController extends Controller
 
     private function storeJob($data)
     {
-        $job = JobList::query()->where('serial_id', $data['serial'])->first();
-        if (!$job) {
+        $job = JobList::query()
+            ->where('serial_id', $data['serial'])->orderBy('id','desc')
+            ->first();
+        if (!$job || $job->status === 'success') {
             $job = JobList::query()->create([
                 'serial_id' => $data['serial'],
                 'job_id' => "JOB-" . Carbon::now()->timestamp,
@@ -129,6 +137,7 @@ class SearchController extends Controller
                 'p_sub_cat_name' => $data['pSubCatName'],
                 'fac_model' => $data['facmodel'],
                 'image_sku' => $data['imagesku'],
+                'warranty' => $data['warranty_status'],
                 'user_id' => auth()->user()->is_code_cust_id,
                 'status' => 'pending',
             ]);
