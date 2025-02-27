@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\MenuFileUploadController;
+use App\Http\Controllers\ApprovalSpController;
 use App\Http\Controllers\BehaviorController;
 use App\Http\Controllers\CustomerInJobController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\HistoryRepairController;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\ManageBranchController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RemarkController;
 use App\Http\Controllers\SearchController;
@@ -86,6 +88,9 @@ Route::middleware('auth')->group(function () {
                 Route::put('/update', [MenuFileUploadController::class, 'update'])->name('menuFileUpload.update');
                 Route::delete('/destroy', [MenuFileUploadController::class, 'destroy'])->name('menuFileUpload.destroy');
             });
+            Route::prefix('approval')->group(function (){
+               Route::get('/index',[ApprovalSpController::class, 'index'])->name('approvalSp.index');
+            });
         });
     });
 
@@ -110,6 +115,11 @@ Route::middleware('auth')->group(function () {
        Route::get('/index', [HistoryRepairController::class,'index'])->name('history.index');
        Route::post('/search',[HistoryRepairController::class,'search'])->name('history.search');
        Route::get('/detail/{serial_id}' ,[HistoryRepairController::class,'detail'])->name('history.detail');
+    });
+
+    Route::middleware('AdminBranchAccess')->group(function() {
+       Route::get('index', [ManageBranchController::class,'index'])->name('Manage.index');
+       Route::post('gp/store',[ManageBranchController::class,'storeGp'])->name('Manage.gp.store');
     });
 
 });

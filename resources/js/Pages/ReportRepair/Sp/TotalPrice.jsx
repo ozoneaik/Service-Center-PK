@@ -57,7 +57,7 @@ export default function TotalPrice(props) {
         setLocalItems(newItems);
     };
 
-    // Handle price with GP change
+    // Handle price with ManageBranchPage change
     const handlePriceChange = (index, value) => {
         const newItems = [...localItems];
         newItems[index].price_multiple_gp = value;

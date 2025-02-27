@@ -21,6 +21,12 @@ export default function NavBar({user}) {
             {user.role === 'admin' && (
                 <>
                     <NavLink href={route('admin.show')} active={route().current('admin.show')}>ผู้ดูแลระบบ</NavLink>
+                    <NavLink href={route('approvalSp.index')} active={route().current('approvalSp.index')}>อนุมัติอะไหล่</NavLink>
+                </>
+            )}
+            {user.role === 'service' && user.admin_that_branch === true && (
+                <>
+                    <NavLink href={route('Manage.index')} active={route().current('Manage.index')}>จัดการบริการของตัวเอง</NavLink>
                 </>
             )}
         </>

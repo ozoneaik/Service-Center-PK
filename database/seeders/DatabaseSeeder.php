@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'user@local',
             'password' => Hash::make('1111'),
             'name' => 'John Doe',
-            'role' => 'user',
+            'role' => 'service',
             'is_code_cust_id' => 'IS-CODE-0014144-875412'
         ]);
 

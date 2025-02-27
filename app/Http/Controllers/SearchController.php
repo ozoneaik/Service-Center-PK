@@ -39,7 +39,7 @@ class SearchController extends Controller
                 $searchResults['selected']['behavior'] = $this->BehaviorSelected($job_id);
                 $searchResults['selected']['remark'] = $this->RemarkSelected($job_id);
                 $searchResults['selected']['fileUpload'] = $this->FileSelected($job_id);
-                $searchResults['selected']['globalGP'] = 10;
+                $searchResults['selected']['globalGP'] = 0;
                 $searchResults['selected']['customerInJob'] = $this->CustomerInJob($searchResults['job']['job_id']) ?? [];
                 $sp = $this->SpSelected($job_id);
                 $searchResults['selected']['sp_warranty'] = $sp['sp_warranty'];

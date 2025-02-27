@@ -82,7 +82,7 @@ const CardDetail = ({children}) => (
 )
 
 
-export const SummaryForm = ({detail, setDetail}) => {
+export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
     const selected = detail.selected;
     const {productTarget} = useProductTarget()
 
@@ -113,6 +113,12 @@ export const SummaryForm = ({detail, setDetail}) => {
                     } catch (error) {
                         Status = error.response.status;
                         message = error.response.data.message;
+                        if (message === 'ตรวจพบอะไหล่ที่ยังไม่ถูก approve กรุณาตรวจสอบในปุ่มแจ้งเตือน'){
+                            setShowDetail(7)
+                        }
+                        if (message === 'จำเป็นต้องอัปโหลดภาพอะไหล่ที่เสียส่งเคลม กรุณาตรวจสอบในปุ่มแจ้งเตือน'){
+                            setShowDetail(2)
+                        }
                     } finally {
                         AlertDialog({
                             icon: Status === 200 ? 'success' : 'error',
@@ -124,11 +130,7 @@ export const SummaryForm = ({detail, setDetail}) => {
                 } else console.log('ไม่ได้กด confirm')
             }
         });
-
-
     }
-
-
     return (
         <Grid2 container>
             <Grid2 size={12}>
@@ -139,10 +141,6 @@ export const SummaryForm = ({detail, setDetail}) => {
                                 <Avatar sizes='lg' sx={{backgroundColor: '#eb5b1f', width: 50, height: 50}}/>
                                 <Stack direction='column'>
                                     <Typography>ชื่อ : {selected.customerInJob.name}</Typography>
-                                    <Typography>เบอร์โทร : {selected.customerInJob.phone}</Typography>
-                                </Stack>
-                                <Stack direction='column'>
-                                    <Typography><b>ชื่อ :</b> {selected.customerInJob.name}</Typography>
                                     <Typography>เบอร์โทร : {selected.customerInJob.phone}</Typography>
                                 </Stack>
                             </Stack>

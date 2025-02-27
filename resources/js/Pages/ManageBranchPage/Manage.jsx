@@ -1,0 +1,61 @@
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
+import {Container, Grid2} from "@mui/material";
+import {useState} from "react";
+import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
+import GP from "@/Pages/ManageBranchPage/GP.jsx";
+import Employee from "@/Pages/ManageBranchPage/Employee.jsx";
+
+export default function Manage({listEmployeeThatBranch, gp, user}) {
+    const [gpVal, setGpVal] = useState(gp);
+
+    const onSubmit = (e) => {
+        e.preventDefault();
+        AlertDialogQuestion({
+            text: 'กด ตกลง เพื่อสร้างหรืออัพเดท GP', onPassed: async (confirm) => {
+                if (confirm) {
+                    await addGp();
+                }
+            }
+        })
+    }
+
+    const addGp = async () => {
+        let Status, Message, Title;
+        try {
+            const {data, status} = await axios.post('/gp/store', {
+                is_code_cust_id: user.is_code_cust_id,
+                auth_key: user.id,
+                gp_val: gpVal
+            })
+            Status = status;
+            Message = data.message;
+            Title = 'สำเร็จ';
+        } catch (error) {
+            Status = error.response.status
+            Title = 'ไม่สำเร็จ';
+            Message = error.response.data.message;
+        } finally {
+            AlertDialog({
+                icon: Status === 200 ? 'success' : 'error',
+                title: Title,
+                text: Message,
+                onPassed: () => {
+                }
+            })
+        }
+    }
+    return (
+        <AuthenticatedLayout>
+            <Container maxWidth='false'>
+                <Grid2 container spacing={2} mt={2}>
+                    <Grid2 size={8}>
+                        <Employee listEmployeeThatBranch={listEmployeeThatBranch}/>
+                    </Grid2>
+                    <Grid2 size={4}>
+                        <GP gpVal={gpVal} setGpVal={setGpVal} onSubmit={onSubmit}/>
+                    </Grid2>
+                </Grid2>
+            </Container>
+        </AuthenticatedLayout>
+    )
+}

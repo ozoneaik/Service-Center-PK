@@ -91,13 +91,13 @@ export default function FormRepair({detail, setDetail}) {
                         <HeadTitle title={headTitle}/>
                     </Grid2>
                     <Grid2 size={12}>
-                        {showDetail === 1 && <SummaryForm detail={detail} setDetail={setDetail}/>}
-                        {showDetail === 2 && <UploadFile detail={detail} setDetail={setDetail}/>}
-                        {showDetail === 3 && <AddBehavior detail={detail} setDetail={setDetail}/>}
-                        {showDetail === 4 && <AddSp detail={detail} setDetail={setDetail}/>}
-                        {showDetail === 5 && <Customer detail={detail} setDetail={setDetail}/>}
-                        {showDetail === 6 && <AddMore detail={detail} setDetail={setDetail}/>}
-                        {showDetail === 7 && <WarningApprove detail={detail} setDetail={setDetail}/>}
+                        {showDetail === 1 && <SummaryForm setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
+                        {showDetail === 2 && <UploadFile setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
+                        {showDetail === 3 && <AddBehavior setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
+                        {showDetail === 4 && <AddSp setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
+                        {showDetail === 5 && <Customer setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
+                        {showDetail === 6 && <AddMore setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
+                        {showDetail === 7 && <WarningApprove setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
                     </Grid2>
                 </Grid2>
             </Grid2>

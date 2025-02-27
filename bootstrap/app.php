@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AdminBranchAccess;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\UserAccess;
 use Illuminate\Foundation\Application;
@@ -20,7 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
         $middleware->alias([
-            'adminPermission' => UserAccess::class
+            'adminPermission' => UserAccess::class,
+            'AdminBranchAccess' => AdminBranchAccess::class
         ]);
 
         //

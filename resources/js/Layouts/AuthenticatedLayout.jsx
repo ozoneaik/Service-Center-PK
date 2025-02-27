@@ -4,22 +4,40 @@ import {usePage} from '@inertiajs/react';
 import {useState} from 'react';
 import icon from '../assets/images/logo.png'
 import {Avatar} from "@mui/material";
-import cover from '../assets/images/cover.png'
-import background from '../assets/images/background.jpg'
+import watermark from '../assets/images/coverMini.jpg'
+import HeaderImage from '../assets/images/cover.png'
 import NavBar from "@/Layouts/NavBar.jsx";
 
-const backgroundCover = {
-    backgroundImage: `url(${background})`,
+const HeaderImageStyle = {
+    backgroundImage: `url(${HeaderImage})`,
     backgroundRepeat : 'no-repeat',
     backgroundSize: '100% auto',
     backgroundPosition: 'top'
-
 }
+
+const WatermarkStyle = {
+    backgroundImage: `url(${watermark})`,
+    backgroundRepeat: 'repeat',
+    backgroundSize: '300px auto',
+    backgroundPosition: 'center',
+    // opacity: 0.1,
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    zIndex: -1,
+    pointerEvents: 'none'
+}
+
 export default function AuthenticatedLayout({header, children}) {
     const user = usePage().props.auth.user;
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     return (
-        <div className="min-h-screen " style={backgroundCover}>
+        <div className="min-h-screen relative" style={HeaderImageStyle}>
+            {/* Watermark Layer */}
+            <div style={WatermarkStyle}></div>
+
             <nav className="fixed w-full z-50 border-b border-gray-100 bg-orange/75 backdrop-blur-sm">
                 <div className="px-3 bg-black/75">
                     <div className="flex h-16 justify-between">
@@ -171,7 +189,7 @@ export default function AuthenticatedLayout({header, children}) {
             )}
 
             <main className="pt-16">
-                    {children}
+                {children}
             </main>
         </div>
     );

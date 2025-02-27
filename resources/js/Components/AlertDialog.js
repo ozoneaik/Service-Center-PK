@@ -38,3 +38,15 @@ export function AlertWithFormDialog({title, text, icon = 'error',res}) {
         res(result.isConfirmed,value)
     });
 }
+
+export function AlertDialogQuestion({text,onPassed,showCancelButton = true}){
+    Swal.fire({
+        icon : 'question',
+        title : 'แน่ใจหรือไม่',
+        text,
+        showCancelButton,
+        ...options
+    }).then((result) => {
+        onPassed(result.isConfirmed)
+    })
+}

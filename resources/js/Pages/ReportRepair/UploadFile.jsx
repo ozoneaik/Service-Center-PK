@@ -5,7 +5,7 @@ import {ImagePreview} from "@/Components/ImagePreview.jsx";
 import {AlertDialog} from "@/Components/AlertDialog.js";
 import CheckIcon from "@mui/icons-material/Check";
 
-export const UploadFile = ({detail, setDetail}) => {
+export const UploadFile = ({detail, setDetail,setShowDetail}) => {
     const [loading, setLoading] = useState(true);
     const [menuList, setMenuList] = useState([]);
     const [selected, setSelected] = useState(detail.selected.fileUpload);
