@@ -22,7 +22,7 @@ class JobController extends Controller
             $job = JobList::query()->where('job_id', $job_id)->first();
             $findSpApprove = SparePart::query()->where('job_id', $job_id)->get();
             foreach ($findSpApprove as $sp) {
-                if (($job->warranty === true) && ($sp->approve == 'yes') || ($sp->approve_status == 'no')) {
+                if (($job->warranty === true) && (($sp->approve == 'yes') && ($sp->approve_status == 'no'))) {
                     throw new \Exception('ตรวจพบอะไหล่ที่ยังไม่ถูก approve กรุณาตรวจสอบในปุ่มแจ้งเตือน');
                 }
                 if ($job->warranty === true){

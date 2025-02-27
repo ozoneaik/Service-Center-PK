@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Behavior;
 use App\Models\CustomerInJob;
 use App\Models\FileUpload;
+use App\Models\Gp;
 use App\Models\JobList;
 use App\Models\MenuFileUpload;
 use App\Models\Remark;
@@ -39,7 +40,8 @@ class SearchController extends Controller
                 $searchResults['selected']['behavior'] = $this->BehaviorSelected($job_id);
                 $searchResults['selected']['remark'] = $this->RemarkSelected($job_id);
                 $searchResults['selected']['fileUpload'] = $this->FileSelected($job_id);
-                $searchResults['selected']['globalGP'] = 0;
+                $findGP = Gp::query()->where('is_code_cust_id', auth()->user()->is_code_cust_id)->first();
+                $searchResults['selected']['globalGP'] = $findGP ? $findGP->gp_val : 0;
                 $searchResults['selected']['customerInJob'] = $this->CustomerInJob($searchResults['job']['job_id']) ?? [];
                 $sp = $this->SpSelected($job_id);
                 $searchResults['selected']['sp_warranty'] = $sp['sp_warranty'];

@@ -90,6 +90,7 @@ Route::middleware('auth')->group(function () {
             });
             Route::prefix('approval')->group(function (){
                Route::get('/index',[ApprovalSpController::class, 'index'])->name('approvalSp.index');
+               Route::put('/update/{spId}/{approve_status}',[ApprovalSpController::class,'updateStatus'])->name('approvalSp.update');
             });
         });
     });
