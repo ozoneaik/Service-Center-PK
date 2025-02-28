@@ -19,6 +19,9 @@ class JobList extends Model
         'image_sku',
         'status',
         'warranty',
-        'user_id',
+        'auth_key',
+        'is_code_key',
+        'user_id'
+
     ];
 }

@@ -39,7 +39,7 @@ export default function ProductDetail({
                             value={warrantynote}/>
                     {warranty && (
                         <>
-                            <DetailWarranty title={'ระยะประกัน'} to={'23-01-2024'} start={'23-01-2025'}/>
+                            {/*<DetailWarranty title={'ระยะประกัน'} to={'23-01-2024'} start={'23-01-2025'}/>*/}
                             <Detail title={'สถานะรับประกัน'}
                                     value={warranty_status ? 'อยู่ในประกัน' : 'ไม่อยู่ในประกัน'}
                                     Color={warranty_status ? 'green' : 'red'}/>

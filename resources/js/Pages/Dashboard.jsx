@@ -90,13 +90,13 @@ export default function Dashboard() {
                                             {processing && 'กำลัง'}ค้นหา
                                         </Button>
                                     </Stack>
-                                    <Stack direction='row-reverse' mt={2}>
-                                        <Breadcrumbs>
-                                            <Typography sx={{color: 'text.primary'}}>Breadcrumbs2</Typography>
-                                            <Typography sx={{color: 'text.primary'}}>Breadcrumbs3</Typography>
-                                            <Typography sx={{color: 'text.primary'}}>Breadcrumbs4</Typography>
-                                        </Breadcrumbs>
-                                    </Stack>
+                                    {/*<Stack direction='row-reverse' mt={2}>*/}
+                                    {/*    <Breadcrumbs>*/}
+                                    {/*        <Typography sx={{color: 'text.primary'}}>Breadcrumbs2</Typography>*/}
+                                    {/*        <Typography sx={{color: 'text.primary'}}>Breadcrumbs3</Typography>*/}
+                                    {/*        <Typography sx={{color: 'text.primary'}}>Breadcrumbs4</Typography>*/}
+                                    {/*    </Breadcrumbs>*/}
+                                    {/*</Stack>*/}
                                 </Grid2>
                             </Grid2>
                         </form>

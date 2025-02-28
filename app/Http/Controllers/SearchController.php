@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SearchRequest;
 use App\Models\Behavior;
 use App\Models\CustomerInJob;
 use App\Models\FileUpload;
@@ -13,13 +14,11 @@ use App\Models\SparePart;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
 class SearchController extends Controller
 {
-    public function detail(Request $request): JsonResponse
+    public function detail(SearchRequest $request): JsonResponse
     {
         try {
             $response = Http::post(env('API_DETAIL'), [
@@ -52,6 +51,7 @@ class SearchController extends Controller
             return response()->json([
                 'status' => $status,
                 'searchResults' => $searchResults,
+                'auth_user' => auth()->user(),
                 'message' => 'success',
                 'time' => Carbon::now()
             ]);
@@ -59,6 +59,7 @@ class SearchController extends Controller
             return response()->json([
                 'status' => 'Fail',
                 'searchResults' => [],
+                'auth_user' => auth()->user(),
                 'message' => $e->getMessage(),
                 'time' => Carbon::now()
             ], 400);
@@ -125,7 +126,8 @@ class SearchController extends Controller
     private function storeJob($data)
     {
         $job = JobList::query()
-            ->where('serial_id', $data['serial'])->orderBy('id','desc')
+            ->where('serial_id', $data['serial'])
+            ->orderBy('id','desc')
             ->first();
         if (!$job || $job->status === 'success') {
             $job = JobList::query()->create([
@@ -141,6 +143,7 @@ class SearchController extends Controller
                 'image_sku' => $data['imagesku'],
                 'warranty' => $data['warranty_status'],
                 'user_id' => auth()->user()->is_code_cust_id,
+//                'auth_key' => auth()->user()->id,
                 'status' => 'pending',
             ]);
         }

@@ -1,9 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {Container, Grid2} from "@mui/material";
+import {Container, Grid2,} from "@mui/material";
 import {useState} from "react";
 import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
 import GP from "@/Pages/ManageBranchPage/GP.jsx";
 import Employee from "@/Pages/ManageBranchPage/Employee.jsx";
+import CreateEmployeeThatBranch from "@/Pages/ManageBranchPage/CreateEmployeeThatBranch.jsx";
 
 export default function Manage({listEmployeeThatBranch, gp, user}) {
     const [gpVal, setGpVal] = useState(gp);
@@ -49,7 +50,14 @@ export default function Manage({listEmployeeThatBranch, gp, user}) {
             <Container maxWidth='false'>
                 <Grid2 container spacing={2} mt={2}>
                     <Grid2 size={8}>
-                        <Employee listEmployeeThatBranch={listEmployeeThatBranch}/>
+                        <Grid2 container spacing={2}>
+                            <Grid2 size={12}>
+                                <CreateEmployeeThatBranch listEmployeeThatBranch={listEmployeeThatBranch}/>
+                            </Grid2>
+                            <Grid2 size={12}>
+                                <Employee listEmployeeThatBranch={listEmployeeThatBranch}/>
+                            </Grid2>
+                        </Grid2>
                     </Grid2>
                     <Grid2 size={4}>
                         <GP gpVal={gpVal} setGpVal={setGpVal} onSubmit={onSubmit}/>

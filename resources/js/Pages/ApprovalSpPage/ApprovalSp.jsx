@@ -90,7 +90,7 @@ export default function ApprovalSp({listSp}) {
                             <TableCell>{item.gp}</TableCell>
                             <TableCell><Chip label='รออนุมัติ'/></TableCell>
                             <TableCell>
-                                <Stack direction='row' spacing={2}>
+                                <Stack direction='column' spacing={2}>
                                     <Button size='small' variant='contained' onClick={()=>handleClick(item.id,'yes')} color='success'>อนุมัติ</Button>
                                     <Button size='small' variant='contained' onClick={()=>handleClick(item.id,'no')} color='error'>ไม่อนุมัติ</Button>
                                 </Stack>

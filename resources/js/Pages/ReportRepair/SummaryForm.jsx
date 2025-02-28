@@ -14,6 +14,7 @@ import {
 import FormGroup from '@mui/material/FormGroup';
 import {AlertDialog} from "@/Components/AlertDialog.js";
 import {ImagePreview} from "@/Components/ImagePreview.jsx";
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import {useProductTarget} from "@/Context/ProductContext.jsx";
 
 
@@ -85,10 +86,7 @@ const CardDetail = ({children}) => (
 export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
     const selected = detail.selected;
     const {productTarget} = useProductTarget()
-
-
     async function endJob() {
-
         AlertDialog({
             icon: 'question',
             title: 'ยืนยันการปิดงานซ่อม',
@@ -131,6 +129,54 @@ export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
             }
         });
     }
+
+
+    const exportQu = async () => {
+
+
+        console.log(detail)
+        // return;
+        let newDataFormat = [];
+        detail.selected.sp.forEach((item) => {
+            newDataFormat.push({
+                pid: item.spcode,
+                name: item.spname,
+                qty: item.qty,
+                unit: item.sp_unit ?? 'อัน',
+                price: item.price_multiple_gp,
+                prod_discount: 0
+            });
+        });
+        let dataJson = {
+            "req": "path",
+            "regenqu": "Y",
+            "typeservice": "SC",
+            "docqu": `QU-${detail.job.job_id.replace('JOB-', '')}`,
+            "custaddr" : "custaddr",
+            'custnamesc' : detail.selected.customerInJob.name,
+            "sku": newDataFormat,
+            "assno": "",
+            "fgcode": detail.job.skusp,
+            "fgname": detail.job.skuspname,
+            "custcode": detail.job.user_id,
+            "custname": "custname",
+            "docdate": "",
+            "custtel": "0931622330",
+            "empcode": "empcode",
+            "empname": "empname",
+            "remark": detail.selected.remark,
+            "cause_remark": "",
+            "docmt": "",
+            "serial": detail.selected.serial_id,
+            "emprepair": ""
+        };
+        const {data, status} = await axios.post('http://192.168.0.13/genpdf/api/qu_ass',{
+            ...dataJson
+        })
+        console.log(data,status)
+        window.open(data,'_blank');
+    }
+
     return (
         <Grid2 container>
             <Grid2 size={12}>
@@ -160,6 +206,17 @@ export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
                         <CardDetail>
                             <Typography variant='h6' fontWeight='bold'>หมายเหตุ</Typography>
                             <Typography variant='body1' color='gray'>- {selected.remark}</Typography>
+                        </CardDetail>
+                        <CardDetail>
+                            <Typography variant='h6' fontWeight='bold'>เอกสาร</Typography>
+                            <Stack direction='row' spacing={2}>
+                                {
+                                    detail.selected.sp.length > 0 && (
+                                        <Button onClick={exportQu} startIcon={<PictureAsPdfIcon/>} variant='contained'>QU</Button>
+                                    )
+                                }
+                                   <Button variant='contained'>รับสินค้า</Button>
+                            </Stack>
                         </CardDetail>
                         <Stack direction='row' spacing={2} justifyContent='end'>
                             <Button variant='contained' color='error'

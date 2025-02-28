@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\EmpRequest;
 use App\Http\Requests\GpRequest;
 use App\Models\Gp;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 use Ramsey\Uuid\Type\Integer;
@@ -64,6 +66,33 @@ class ManageBranchController extends Controller
                 'message' => $message,
                 'gp' => $gp ?? []
             ], $status);
+        }
+    }
+
+    public function storeEmp(EmpRequest $request): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+            $status = 200;
+            $message = 'บันทึกข้อมูลเสร็จสิ้น';
+            $newEmp = User::query()->create([
+                'name' => $request->input('name'),
+                'email' => $request->input('email'),
+                'password' => Hash::make($request->input('password')),
+                'is_code_cust_id' => auth()->user()->is_code_cust_id,
+                'role' => 'service',
+                'admin_that_branch' => $request->input('role') === 'admin',
+            ]);
+            DB::commit();
+        }catch (\Exception $e){
+            DB::rollBack();
+            $status = 400;
+            $message = $e->getMessage();
+        }finally {
+            return response()->json([
+                'message' => $message,
+                'newEmp' => $newEmp ?? []
+            ],$status);
         }
     }
 

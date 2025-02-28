@@ -3,7 +3,7 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import {usePage} from '@inertiajs/react';
 import {useState} from 'react';
 import icon from '../assets/images/logo.png'
-import {Avatar} from "@mui/material";
+import {alpha, Avatar, createTheme, getContrastRatio} from "@mui/material";
 import watermark from '../assets/images/coverMini.jpg'
 import HeaderImage from '../assets/images/cover.png'
 import NavBar from "@/Layouts/NavBar.jsx";
@@ -29,6 +29,8 @@ const WatermarkStyle = {
     zIndex: -1,
     pointerEvents: 'none'
 }
+
+
 
 export default function AuthenticatedLayout({header, children}) {
     const user = usePage().props.auth.user;

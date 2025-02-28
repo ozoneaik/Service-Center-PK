@@ -2,7 +2,7 @@ import {Button, Paper, Stack, Table, TableBody, TableCell, TableHead, TableRow} 
 
 export default function Employee({listEmployeeThatBranch}) {
     return (
-        <Paper>
+        <Paper sx={{p: 2}}>
             <Table>
                 <TableHead>
                     <TableRow>

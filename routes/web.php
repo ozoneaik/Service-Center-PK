@@ -108,7 +108,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('orders')->group(function () {
         Route::get('/list', function () {
-            return Inertia::render('Orders/OrderList1');
+            return Inertia::render('Orders/OrderList0');
         })->name('orders.list');
     });
 
@@ -121,6 +121,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('AdminBranchAccess')->group(function() {
        Route::get('index', [ManageBranchController::class,'index'])->name('Manage.index');
        Route::post('gp/store',[ManageBranchController::class,'storeGp'])->name('Manage.gp.store');
+       Route::post('emp/store',[ManageBranchController::class,'storeEmp'])->name('Manage.emp.store');
     });
 
 });
