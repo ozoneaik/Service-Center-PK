@@ -19,7 +19,7 @@ export default function SelectSP({pid, list, selected, setSelected, warranty = f
             warranty = false
             item.warranty = false
         }
-        console.log(warranty,item)
+        console.log(warranty, item)
 
         setSelected(prevSelected =>
             checked
@@ -43,7 +43,13 @@ export default function SelectSP({pid, list, selected, setSelected, warranty = f
             </TableHead>
             <TableBody>
                 {list && list.map((item, index) => (
-                    <TableRow key={index}>
+                    <TableRow key={index}
+                              sx={
+                                  item.price_per_unit === '-' ? {backgroundColor: '#ffc3c3'}
+                                      : sp_warranty.find(it => it.spcode === item.spcode) ?
+                                      {backgroundColor: '#edf7ed'} : {backgroundColor: 'white'}
+                              }
+                    >
                         <TableCell>
                             {warranty ? (
                                 <>#</>
@@ -52,6 +58,7 @@ export default function SelectSP({pid, list, selected, setSelected, warranty = f
                                     checked={selected.sp.some(l =>
                                         item.spcode === l.spcode
                                     )}
+                                    disabled={item.price_per_unit === '-'}
                                     onChange={(e) => handleOnChange(item, e)}
                                 />
                             )}

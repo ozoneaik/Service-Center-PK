@@ -147,12 +147,13 @@ export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
                 prod_discount: 0
             });
         });
+        console.log(detail.selected)
         let dataJson = {
             "req": "path",
             "regenqu": "Y",
             "typeservice": "SC",
             "docqu": `QU-${detail.job.job_id.replace('JOB-', '')}`,
-            "custaddr" : "custaddr",
+            "custaddr" : detail.selected.customerInJob.address,
             'custnamesc' : detail.selected.customerInJob.name,
             "sku": newDataFormat,
             "assno": "",
