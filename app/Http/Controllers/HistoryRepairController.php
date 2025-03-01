@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CustomerInJob;
 use App\Models\JobList;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
@@ -16,7 +17,7 @@ class HistoryRepairController extends Controller
         return Inertia::render('HistoryPage/HistoryMain');
     }
 
-    public function search(Request $request)
+    public function search(Request $request): JsonResponse
     {
         $request->validate(
             ['search' => 'required', 'type' => 'required'],
@@ -27,13 +28,14 @@ class HistoryRepairController extends Controller
             ->leftJoin('job_lists', 'job_lists.job_id', '=', 'customer_in_jobs.job_id')
             ->where('phone',$request->get('search'))
             ->where('job_lists.status','success')
-            ->select('serial_id','pid','p_name','image_sku')
-            ->groupBy('serial_id','pid','p_name','image_sku')
+            ->select('serial_id','pid','p_name','image_sku','job_lists.warranty as warranty_status')
+            ->groupBy('serial_id','pid','p_name','image_sku','job_lists.warranty')
             ->get();
         return response()->json($search);
     }
 
-    public function detail($serial_id){
+    public function detail($serial_id): JsonResponse
+    {
         $response = Http::post(env('API_DETAIL'), [
             'sn' => $serial_id,
             'views' => 'single',

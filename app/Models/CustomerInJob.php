@@ -10,6 +10,7 @@ class CustomerInJob extends Model
 
     protected $fillable = [
         'job_id',
+        'serial_id',
         'name' ,
         'phone' ,
         'address',

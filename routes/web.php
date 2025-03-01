@@ -58,6 +58,7 @@ Route::middleware('auth')->group(function () {
     // Customer in Job
     Route::prefix('customer-in-job')->group(function () {
         Route::post('/store', [CustomerInJobController::class, 'store'])->name('customerInJob.store');
+        Route::get('/searchPhone/{phone}', [CustomerInJobController::class, 'searchPhone'])->name('customerInJob.searchPhone');
     });
 
     // SparePart

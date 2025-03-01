@@ -36,7 +36,7 @@ export const ListDetailModal = ({selected, open, setOpen}) => {
             <DialogContent>
                 <Stack direction='column' spacing={2}>
                     <ProductDetail serial={selected.serial_id} pid={selected.pid} pname={selected.p_name}
-                                   imagesku={selected.image_sku}/>
+                                   imagesku={selected.image_sku} warranty_status={selected.warranty_status}/>
                     <Divider/>
                     <Typography fontWeight='bold' variant='h6' color='#f25822'>ประวัติการซ่อม</Typography>
                     {!loading ? (

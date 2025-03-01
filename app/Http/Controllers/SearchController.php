@@ -14,6 +14,7 @@ use App\Models\SparePart;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
 class SearchController extends Controller
@@ -41,7 +42,7 @@ class SearchController extends Controller
                 $searchResults['selected']['fileUpload'] = $this->FileSelected($job_id);
                 $findGP = Gp::query()->where('is_code_cust_id', auth()->user()->is_code_cust_id)->first();
                 $searchResults['selected']['globalGP'] = $findGP ? $findGP->gp_val : 0;
-                $searchResults['selected']['customerInJob'] = $this->CustomerInJob($searchResults['job']['job_id']) ?? [];
+                $searchResults['selected']['customerInJob'] = $this->CustomerInJob($request->sn,$job_id) ?? [];
                 $sp = $this->SpSelected($job_id);
                 $searchResults['selected']['sp_warranty'] = $sp['sp_warranty'];
                 $searchResults['selected']['sp'] = $sp['sp'];
@@ -127,7 +128,7 @@ class SearchController extends Controller
     {
         $job = JobList::query()
             ->where('serial_id', $data['serial'])
-            ->orderBy('id','desc')
+            ->orderBy('id', 'desc')
             ->first();
         if (!$job || $job->status === 'success') {
             $job = JobList::query()->create([
@@ -160,8 +161,35 @@ class SearchController extends Controller
         return $lists;
     }
 
-    private function CustomerInJob($job_id)
+    private function CustomerInJob($serial_id, $job_id)
     {
-        return CustomerInJob::query()->where('job_id', $job_id)->first();
+        $customerInJob = CustomerInJob::where('serial_id', $serial_id)->first();
+
+        if ($customerInJob) {
+            $getLatestJob = CustomerInJob::where('serial_id', $customerInJob->serial_id)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($getLatestJob) {
+                $getCurrentJob = CustomerInJob::where('job_id', $job_id)->first();
+
+                if ($getCurrentJob) {
+                    return $getCurrentJob;
+                } else {
+                    $new = CustomerInJob::create([
+                        'job_id' => $job_id,
+                        'serial_id' => $getLatestJob->serial_id,
+                        'name' => $getLatestJob->name,
+                        'phone' => $getLatestJob->phone,
+                        'address' => $getLatestJob->address,
+                        'remark' => $getLatestJob->remark,
+                    ]);
+                    return $new;
+                }
+            }
+        }
+
+        return [];
     }
+
 }

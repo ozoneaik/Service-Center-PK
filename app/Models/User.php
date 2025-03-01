@@ -23,7 +23,8 @@ class User extends Authenticatable
         'password',
         'role',
         'is_code_cust_id',
-        'admin_that_branch'
+        'admin_that_branch',
+        'address'
     ];
 
     /**

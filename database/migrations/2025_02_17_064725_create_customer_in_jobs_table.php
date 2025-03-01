@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('customer_in_jobs', function (Blueprint $table) {
             $table->id();
             $table->string('job_id')->comment('รหัสจ็อบ');
+            $table->string('serial_id')->comment('รหัสเครื่อง');
             $table->string('name')->comment('ชื่อลูกค้า');
             $table->string('phone')->comment('เบอร์โทรศัพท์');
             $table->string('address')->nullable()->comment('ที่อยู่');

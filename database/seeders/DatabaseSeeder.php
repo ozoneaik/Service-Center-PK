@@ -22,7 +22,8 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('1111'),
             'name' => 'ภูวเดช พาณิชยโสภา',
             'role' => 'admin',
-            'is_code_cust_id' => 'IS-CODE-001415445'
+            'is_code_cust_id' => 'IS-CODE-001415445',
+            'address' => 'บจก. พัมคิน คอร์ปอเรชั่น 4 พระรามที่ 2 ซอย 54 แยก 4 แขวงแสมดำ เขตบางขุนเทียน กรุงเทพมหานคร 10150'
         ]);
 
         User::query()->create([
@@ -30,7 +31,9 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('1111'),
             'name' => 'John Doe',
             'role' => 'service',
-            'is_code_cust_id' => 'IS-CODE-0014144-875412'
+            'admin_that_branch' => true,
+            'is_code_cust_id' => 'IS-CODE-0014144-875412',
+            'address' => 'ห้องสมุดบุญชูตรีทอง เรือนเพาะชำ ตำบล ปงยางคก อำเภอห้างฉัตร ลำปาง 52190'
         ]);
 
         MenuFileUpload::query()->create([

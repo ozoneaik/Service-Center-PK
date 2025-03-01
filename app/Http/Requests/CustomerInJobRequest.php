@@ -24,6 +24,7 @@ class CustomerInJobRequest extends FormRequest
     {
         return [
             'job_id' => 'required',
+            'serial_id' => 'required',
             'name' => 'required',
             'phone' => 'required',
             'address' => 'required',
@@ -35,6 +36,7 @@ class CustomerInJobRequest extends FormRequest
     {
         return [
             'job_id.required' => 'job_id is required',
+            'serial_id.required' => 'serial_id is required',
             'name.required' => 'name is required',
             'phone.required' => 'phone is required',
             'address.required' => 'address is required',

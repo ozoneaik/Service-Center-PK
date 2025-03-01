@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('is_code_cust_id')->nullable()->comment('รหัสลูกค้า ISCode');
             $table->boolean('admin_that_branch')->default(false)->comment('admin ของสาขานั้นๆ');
+            $table->string('address')->nullable()->default('ไม่ได้ระบุที่อยู่')->comment('ที่อยู่');
             $table->rememberToken();
             $table->timestamps();
         });

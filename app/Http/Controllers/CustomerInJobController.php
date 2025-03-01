@@ -13,6 +13,7 @@ class CustomerInJobController extends Controller
     public function store(CustomerInJobRequest $request): JsonResponse
     {
         $job_id = $request->get('job_id');
+        $serial_id = $request->get('serial_id');
         $name = $request->get('name');
         $phone = $request->get('phone');
         $address = $request->get('address');
@@ -21,7 +22,7 @@ class CustomerInJobController extends Controller
             DB::beginTransaction();
             $find = CustomerInJob::query()->where('job_id', $job_id)->first();
             if ($find) {
-                $data = CustomerInJob::query()->update([
+                $data = CustomerInJob::query()->where('job_id', $job_id)->update([
                     'name' => $name,
                     'phone' => $phone,
                     'address' => $address,
@@ -30,6 +31,7 @@ class CustomerInJobController extends Controller
             } else {
                 $data = CustomerInJob::query()->create([
                     'job_id' => $job_id,
+                    'serial_id' => $serial_id,
                     'name' => $name,
                     'phone' => $phone,
                     'address' => $address,
@@ -49,6 +51,22 @@ class CustomerInJobController extends Controller
                 'message' => $message,
                 'data' => $data,
             ], $status);
+        }
+    }
+
+    public function searchPhone($phone): JsonResponse
+    {
+        $searchPhone = CustomerInJob::query()->where('phone', $phone)->orderBy('id', 'desc')->first();
+        if ($searchPhone) {
+            return response()->json([
+                'message' => 'success',
+                'data' => $searchPhone,
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'ไม่พบข้อมูล',
+                'data' => [],
+            ], 400);
         }
     }
 
