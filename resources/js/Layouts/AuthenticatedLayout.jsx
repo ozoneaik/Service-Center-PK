@@ -3,14 +3,14 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import {usePage} from '@inertiajs/react';
 import {useState} from 'react';
 import icon from '../assets/images/logo.png'
-import {alpha, Avatar, createTheme, getContrastRatio} from "@mui/material";
+import {alpha, Avatar, createTheme, getContrastRatio, Typography} from "@mui/material";
 import watermark from '../assets/images/coverMini.jpg'
 import HeaderImage from '../assets/images/cover.png'
 import NavBar from "@/Layouts/NavBar.jsx";
 
 const HeaderImageStyle = {
     backgroundImage: `url(${HeaderImage})`,
-    backgroundRepeat : 'no-repeat',
+    backgroundRepeat: 'no-repeat',
     backgroundSize: '100% auto',
     backgroundPosition: 'top'
 }
@@ -31,7 +31,6 @@ const WatermarkStyle = {
 }
 
 
-
 export default function AuthenticatedLayout({header, children}) {
     const user = usePage().props.auth.user;
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -46,7 +45,7 @@ export default function AuthenticatedLayout({header, children}) {
                         <div className="flex">
                             <div className="flex shrink-0 items-center gap-2 text-white font-bold">
                                 <Avatar src={icon || ''}/>
-                                SERVICE CENTER PK
+                                <Typography sx={{display : {md : 'none',lg : 'block'}}}>SERVICE CENTER PK</Typography>
                             </div>
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavBar user={user}/>
@@ -85,6 +84,11 @@ export default function AuthenticatedLayout({header, children}) {
                                             href={route('profile.edit')}
                                         >
                                             ข้อมูลส่วนตัว
+                                        </Dropdown.Link>
+                                        <Dropdown.Link
+                                            href={route('Manage.index')}
+                                        >
+                                            จัดการบริการของตัวเอง
                                         </Dropdown.Link>
                                         <Dropdown.Link
                                             href={route('logout')}
@@ -142,17 +146,28 @@ export default function AuthenticatedLayout({header, children}) {
                 </div>
 
                 <div
+                    style={{backgroundColor: '#404040', color: '#fff'}}
                     className={
                         (showingNavigationDropdown ? 'block' : 'hidden') +
                         ' sm:hidden'
                     }
                 >
                     <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            href={route('dashboard')}
-                            active={route().current('dashboard')}
-                        >
-                            Dashboard
+                        <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
+                            แจ้งซ่อม
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('history.index')} active={route().current('history.index')}>
+                            ประวัติซ่อม
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('warranty.index')} active={route().current('warranty.index')}>
+                            ลงทะเบียนรับประกัน
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('spareClaim.index')}
+                                           active={route().current('spareClaim.index')}>
+                            แจ้งเคลมอะไหล่
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('orders.list')} active={route().current('orders.list')}>
+                            สั่งซื้ออะไหล่
                         </ResponsiveNavLink>
                     </div>
 
@@ -167,16 +182,20 @@ export default function AuthenticatedLayout({header, children}) {
                         </div>
 
                         <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                method="post"
-                                href={route('logout')}
-                                as="button"
-                            >
-                                Log Out
-                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('profile.edit')}>ข้อมูลส่วนตัว</ResponsiveNavLink>
+                            {user.role === 'service' && user.admin_that_branch === true && (
+                                <ResponsiveNavLink
+                                    href={route('profile.edit')}>จัดการบริการของตัวเอง</ResponsiveNavLink>
+                            )}
+                            {user.role === 'admin' && (
+                                <>
+                                    <ResponsiveNavLink href={route('admin.show')}>ผู้ดูแลระบบ</ResponsiveNavLink>
+                                    <ResponsiveNavLink
+                                        href={route('approvalSp.index')}>อนุมัติอะไหล่</ResponsiveNavLink>
+                                </>
+                            )}
+                            <ResponsiveNavLink method="post" href={route('logout')}
+                                               as="button">ออกจากระบบ</ResponsiveNavLink>
                         </div>
                     </div>
                 </div>

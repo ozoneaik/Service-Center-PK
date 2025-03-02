@@ -33,8 +33,8 @@ export default function OrderList0() {
     return (
         <AuthenticatedLayout>
             {open && <SumOrder open={open} setOpen={setOpen}/>}
-            <Container maxWidth='false'>
-                <Grid2 container spacing={2} mt={3}>
+            <Container maxWidth='false' sx={{backgroundColor : 'white',p : 3}}>
+                <Grid2 container spacing={2}>
                     <Grid2 size={12}>
                         <form onSubmit={handleSearch}>
                             <Stack direction='row' spacing={2}>
@@ -53,7 +53,7 @@ export default function OrderList0() {
                                      alt='no image'/>
                             </Grid2>
                             <Grid2 size={{md: 9, sm: 12}}>
-                                <Paper sx={{p: 3}}>
+                                <Paper sx={{p: 3}} >
                                     <Grid2 container spacing={2}>
                                         <Stack direction='row' spacing={2} sx={{width: '100%'}}>
                                             <TextField fullWidth label={'ต้นหาอะไหล่'}/>

@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import {DateFormat} from "@/Components/DateFormat.jsx";
 import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
+import LayoutMangeAdmin from "@/Pages/Admin/LayoutMangeAdmin.jsx";
 
 const orangeFont = {color: '#f15922'};
 const blackFont = {color: '#000'};
@@ -105,15 +106,17 @@ export default function ApprovalSp({listSp}) {
 
     return (
         <AuthenticatedLayout>
-            <Container maxWidth='false'>
-                <Grid2 container mt={3} spacing={2}>
-                    <Grid2 size={12}>
-                        <Card sx={{p: 3}}>
-                            <TableList/>
-                        </Card>
+            <LayoutMangeAdmin>
+                <Container maxWidth='false'>
+                    <Grid2 container mt={3} spacing={2}>
+                        <Grid2 size={12}>
+                            <Card variant="outlined" sx={{p: 3}}>
+                                <TableList/>
+                            </Card>
+                        </Grid2>
                     </Grid2>
-                </Grid2>
-            </Container>
+                </Container>
+            </LayoutMangeAdmin>
         </AuthenticatedLayout>
     )
 }

@@ -6,17 +6,19 @@ import {Transition} from '@headlessui/react';
 import {Link, useForm, usePage} from '@inertiajs/react';
 import {Button, CircularProgress, TextField} from "@mui/material";
 
-export default function UpdateProfileInformation({
-                                                     mustVerifyEmail,
-                                                     status,
-                                                     className = '',
-                                                 }) {
+export default function UpdateProfileInformation({mustVerifyEmail, status, className = ''}) {
     const user = usePage().props.auth.user;
 
     const {data, setData, patch, errors, processing, recentlySuccessful} =
         useForm({
             name: user.name,
             email: user.email,
+            phone: user.phone,
+            address: user.address,
+            shop_name: user.shop_name,
+            is_code_cust_id: user.is_code_cust_id,
+            role: user.role,
+            admin_that_branch: user.admin_that_branch,
         });
 
     const submit = (e) => {
@@ -67,6 +69,50 @@ export default function UpdateProfileInformation({
                         size='small'
                     />
                     <InputError className="mt-2" message={errors.email}/>
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="phone" value="เบอร์โทรศัพท์"/>
+                    <TextField
+                        id='phone'
+                        type='text'
+                        value={data.phone}
+                        onChange={(e) => setData('phone', e.target.value)}
+                        required
+                        autoComplete='phone'
+                        fullWidth
+                        size='small'
+                    />
+                    <InputError className="mt-2" message={errors.phone}/>
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="address" value="ที่อยู่"/>
+                    <textarea
+                        id='address'
+                        style={{width: '100%'}}
+                        rows={4}
+                        value={data.address}
+                        onChange={(e) => setData('address', e.target.value)}
+                        required
+                        autoComplete='phone'
+                    />
+                    <InputError className="mt-2" message={errors.address}/>
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="shop_name" value={'ชื่อร้าน ' + `( ${data.is_code_cust_id} )`}/>
+                    <TextField
+                        id='shop_name'
+                        type='text'
+                        value={data.shop_name}
+                        onChange={(e) => setData('shop_name', e.target.value)}
+                        required
+                        autoComplete='shop_name'
+                        fullWidth
+                        size='small'
+                    />
+                    <InputError className="mt-2" message={errors.shop_name}/>
                 </div>
 
                 {mustVerifyEmail && user.email_verified_at === null && (

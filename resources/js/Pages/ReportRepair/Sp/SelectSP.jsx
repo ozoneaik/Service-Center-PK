@@ -45,7 +45,7 @@ export default function SelectSP({pid, list, selected, setSelected, warranty = f
                 {list && list.map((item, index) => (
                     <TableRow key={index}
                               sx={
-                                  item.price_per_unit === '-' ? {backgroundColor: '#ffc3c3'}
+                                  item.price_per_unit === '-' ? {backgroundColor: '#fdeded'}
                                       : sp_warranty.find(it => it.spcode === item.spcode) ?
                                       {backgroundColor: '#edf7ed'} : {backgroundColor: 'white'}
                               }

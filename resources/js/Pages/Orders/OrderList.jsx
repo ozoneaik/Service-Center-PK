@@ -113,7 +113,7 @@ export default function OrderList() {
 
     return (
         <AuthenticatedLayout>
-            <Container maxWidth='false' style={{marginTop: 10}}>
+            <Container maxWidth='false' sx={{marginTop: 10}}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
                         <Stack direction='row' spacing={1}>

@@ -42,3 +42,9 @@ select{
 input:focus{
     border: none;
 }
+
+textarea {
+    padding : 10px;
+    font-size: 16px;
+    border-radius: 4px;
+}

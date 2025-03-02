@@ -1,9 +1,25 @@
-import {Button, Grid2, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography,} from "@mui/material";
+import {
+    Alert,
+    Button, Divider,
+    Grid2,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    Typography,
+} from "@mui/material";
 import 'react-photo-view/dist/react-photo-view.css';
 import {useEffect, useState} from "react";
 import TotalPrice from "@/Pages/ReportRepair/Sp/TotalPrice.jsx";
 import SelectSP from "@/Pages/ReportRepair/Sp/SelectSP.jsx";
 import {ImagePreview} from "@/Components/ImagePreview.jsx";
+import Checkbox from "@mui/material/Checkbox";
+import CheckIcon from "@mui/icons-material/Check";
+import PaletteIcon from '@mui/icons-material/Palette';
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormGroup from "@mui/material/FormGroup";
 
 const TableSummary = ({pid, data}) => (
     <Table stickyHeader>
@@ -31,6 +47,12 @@ const TableSummary = ({pid, data}) => (
             })}
         </TableBody>
     </Table>
+);
+
+const TableService = () => (
+    <FormGroup>
+        <FormControlLabel control={<Checkbox />} label="บริการซ่อมฟรี" />
+    </FormGroup>
 )
 
 
@@ -91,10 +113,19 @@ export const AddSp = ({detail, setDetail}) => {
                         <>
                             <Grid2 container spacing={2}>
                                 <Typography fontWeight='bold'>บริการ</Typography>
-                                <Grid2 size={12} sx={{maxHeight: 300, overflowY: 'scroll'}}>
-                                    <SelectSP pid={detail.pid} warranty={true} selected={selected}
-                                              setSelected={setSelected}
-                                              list={detail.sp_warranty}/>
+                                <Grid2 size={12}>
+                                    <TableService/>
+                                    <Divider/>
+                                </Grid2>
+                                <Grid2 size={12}>
+                                    <Stack direction='row' spacing={2}>
+                                        <Alert sx={{mb: 1}} icon={<PaletteIcon fontSize="inherit" />} severity="success">
+                                            อะไหร่ที่อยู่ในรับประกัน
+                                        </Alert>
+                                        <Alert icon={<PaletteIcon fontSize="inherit" />} severity="error">
+                                            อะไหร่ที่ไม่พบราคา
+                                        </Alert>
+                                    </Stack>
                                 </Grid2>
                                 <Typography fontWeight='bold'>อะไหล่</Typography>
                                 <Grid2 size={12} sx={{maxHeight: 500, overflowY: 'scroll'}}>

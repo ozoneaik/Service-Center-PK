@@ -122,7 +122,6 @@ export const Customer = ({detail, setDetail}) => {
                 <Typography>ที่อยู่</Typography>
                 <textarea
                     required
-                    style={{padding: 10, fontSize: 16}}
                     value={customer.address}
                     onChange={(e) => {setCustomer(prevState => ({...prevState, address: e.target.value}));}}
                     placeholder="ที่อยู่"
@@ -131,7 +130,6 @@ export const Customer = ({detail, setDetail}) => {
                 <Typography>หมายเหตุ</Typography>
                 <textarea
                     required
-                    style={{padding: 10, fontSize: 16}}
                     value={customer.remark}
                     onChange={(e) => {setCustomer(prevState => ({...prevState, remark: e.target.value}))}}
                     placeholder="หมายเหตุ"

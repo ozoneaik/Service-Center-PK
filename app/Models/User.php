@@ -24,7 +24,9 @@ class User extends Authenticatable
         'role',
         'is_code_cust_id',
         'admin_that_branch',
-        'address'
+        'address',
+        'phone',
+        'shop_name'
     ];
 
     /**
