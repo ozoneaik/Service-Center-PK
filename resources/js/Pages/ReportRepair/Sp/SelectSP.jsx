@@ -103,7 +103,7 @@ export default function SelectSP({pid, list, selected, setSelected, warranty = f
                         </TableCell>
                         <TableCell>
 
-                            {/*<ImagePreview src={spPath + '/' + item.spcode + '.jpg'}/>*/}
+                            <ImagePreview src={spPath + '/' + item.spcode + '.jpg'}/>
                             {/*<ProductImage spcode={item.spcode} spPath={spPath} />*/}
 
                         </TableCell>
