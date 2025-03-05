@@ -26,6 +26,8 @@ return new class extends Migration
             $table->string('status')->default('pending')->comment('สถานะการเคลม');
             $table->string('approve')->default('no')->comment('อะไหล่รอ approve');
             $table->string('approve_status')->default('yes')->comment('สถานะอะไหล่รอ approve');
+            $table->string('remark')->nullable()->comment('หมายเหตุ');
+            $table->boolean('claim')->nullable()->comment('สถานะเคลม');
             $table->timestamps();
         });
     }

@@ -34,17 +34,23 @@ class genQuPdfController extends Controller
             ];
             $response = Http::post('http://192.168.0.13/genpdf/api/qu_ass',$data);
             if ($response->status() == 200) {
-                $status = 200;
-                $message = "ทำใบ QU สำเร็จ";
-                $pathUrl = trim($response->body(), '"');
+                $Json = $response->json();
+                if (gettype($Json) === 'array' && $Json['status']){
+                    throw new \Exception($Json['message']);
+                }else{
+                    $status = 200;
+                    $message = "ทำใบ QU สำเร็จ";
+                    $pathUrl = trim($response->body(), '"');
+                }
             }else{
-                throw new \Exception($response->body());
+                throw new \Exception('ไม่สามารถ ทำใบ QU สำเร็จ');
             }
         }catch (\Exception $exception){
-            $message = $exception->getMessage();
+            $message = "Error: " . $exception->getMessage() . " on line " . $exception->getLine();
             $status = 400;
             $pathUrl = '';
-        }finally{
+        }
+        finally{
             return response()->json([
                 'status' => $status,
                 'message' => $message,

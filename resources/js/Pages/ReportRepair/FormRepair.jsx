@@ -16,6 +16,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import {Customer} from "@/Pages/ReportRepair/Customer.jsx";
 import {useProductTarget} from "@/Context/ProductContext.jsx";
 import {WarningApprove} from "@/Pages/ReportRepair/WarningApprove.jsx";
+import Symptoms from "@/Pages/ReportRepair/Symptoms.jsx";
 
 export default function FormRepair({detail, setDetail}) {
     const [showDetail, setShowDetail] = useState(1);
@@ -48,7 +49,8 @@ export default function FormRepair({detail, setDetail}) {
         else if (action === 4) setHeadTitle('อะไหล่');
         else if (action === 5) setHeadTitle('ข้อมูลลูกค้า')
         else if (action === 7) setHeadTitle('แจ้งเตือน')
-        else setHeadTitle('เพิ่มเติม');
+        else if (action === 8) setHeadTitle('อาการเบื้องต้น')
+        else setHeadTitle('หมายเหตุ');
     }
 
     const ButtonStyle = ({title, action, icon}) => (
@@ -78,10 +80,11 @@ export default function FormRepair({detail, setDetail}) {
                 <Stack direction={{xs: 'row', lg: 'column'}} spacing={2}>
                     <ButtonStyle action={1} title={'สรุปการทำงาน'} icon={<ViewListIcon/>}/>
                     <ButtonStyle action={5} title={'ข้อมูลลูกค้า'} icon={<AccountCircleIcon/>}/>
+                    <ButtonStyle action={8} title={'อาการเบื้องต้น'} icon={<ViewListIcon/>}/>
                     <ButtonStyle action={2} title={'รูปภาพ'} icon={<CameraAltIcon/>}/>
                     <ButtonStyle action={3} title={'อาการ/สาเหตุ'} icon={<PsychologyIcon/>}/>
                     <ButtonStyle action={4} title={'อะไหล่'} icon={<BuildIcon/>}/>
-                    <ButtonStyle action={6} title={'เพิ่มเติม'} icon={<MoreHorizIcon/>}/>
+                    <ButtonStyle action={6} title={'หมายเหตุ'} icon={<MoreHorizIcon/>}/>
                     {approve && <ButtonStyle action={7} title={'แจ้งเตือน'} icon={<WarningIcon/>}/>}
                 </Stack>
             </Grid2>
@@ -98,6 +101,7 @@ export default function FormRepair({detail, setDetail}) {
                         {showDetail === 5 && <Customer setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
                         {showDetail === 6 && <AddMore setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
                         {showDetail === 7 && <WarningApprove setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
+                        {showDetail === 8 && <Symptoms setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
                     </Grid2>
                 </Grid2>
             </Grid2>

@@ -168,19 +168,19 @@ export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
             "serial": detail.selected.serial_id,
             "emprepair": ""
         };
-        const {data, status} = await axios.post('/genQuPdf',{
-            ...dataJson
-        })
-        console.log(data,status)
-        if (status === 200){
+        try {
+            const {data, status} = await axios.post('/genQuPdf',{
+                ...dataJson
+            })
             window.open(data.pathUrl,'_blank');
-        }else{
+        }catch (error){
             AlertDialog({
                 title : 'เกิดข้อผิดพลาด',
-                text : data.message,
+                text : error.response.data.message,
                 onPassed : () => {}
             })
         }
+
 
     }
 

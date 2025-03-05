@@ -1,23 +1,15 @@
 import {
-    Alert, Button, Dialog, DialogContent, DialogTitle, Grid2, Stack,
+    Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid2, Stack,
     Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography
 } from "@mui/material";
 import {ImagePreview} from "@/Components/ImagePreview.jsx";
 import {useState, useMemo, useEffect} from "react";
 import BookmarkIcon from '@mui/icons-material/Bookmark';
-import {AlertDialog} from "@/Components/AlertDialog.js";
-import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
-import axios from 'axios';
-
-const SPARE_PART_IMAGE_PATH = import.meta.env.VITE_IMAGE_PATH;
-const TABLE_HEADER_STYLE = {
-    backgroundColor: '#c7c7c7',
-    fontWeight: 'bold',
-    fontSize: 16
-};
 
 export default function TotalPrice(props) {
     const {open, setOpen} = props;
+    const [alertZero, setAlertZero] = useState(false);
+    const [targetSpZero, setTargetSpZero] = useState();
     const {selected, setSelected} = props;
     const {serial_id, detail, setDetail, setBtnSelected} = props;
     const [gpDefault] = useState(detail.selected.globalGP || 0);
@@ -61,12 +53,16 @@ export default function TotalPrice(props) {
     const handlePriceChange = (index, value) => {
         const newItems = [...localItems];
         newItems[index].price_multiple_gp = value;
-        if(detail.job.warranty){
+        if (detail.job.warranty) {
             newItems[index].approve = parseFloat(value) === 0 ? 'yes' : 'no';
             newItems[index].approve_status = parseFloat(value) === 0 ? 'no' : 'yes';
         }
         setLocalItems(newItems);
-        console.log(newItems[index])
+        if (parseFloat(value) === 0) {
+            setAlertZero(true)
+            setTargetSpZero(newItems[index])
+        }
+        console.log(parseFloat(value), value)
     };
 
     const onSubmit = async (e) => {
@@ -82,8 +78,8 @@ export default function TotalPrice(props) {
             warranty: item.warranty,
             qty: item.qty,
             price_multiple_gp: item.price_multiple_gp,
-            approve : item.approve,
-            approve_status : item.approve_status,
+            approve: item.approve,
+            approve_status: item.approve_status,
             gp: gpDefault
         }));
 
@@ -92,7 +88,7 @@ export default function TotalPrice(props) {
         try {
             const {data} = await axios.post('/spare-part/store', {
                 serial_id,
-                list : {
+                list: {
                     sp: itemsForSubmission,
                 },
                 job_id: detail.job.job_id
@@ -116,102 +112,183 @@ export default function TotalPrice(props) {
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
                 text: error.response?.data?.message || error.message,
-                onPassed: () => {}
+                onPassed: () => {
+                }
             });
         }
     };
 
+    const handleClose = (event, reason) => {
+        if (reason === "backdropClick" || reason === "escapeKeyDown") {
+            return; // ป้องกันการปิดเมื่อคลิกข้างนอกหรือกด ESC
+        }
+        setAlertZero(false);
+    };
+
+    const AlertNo = () => {
+        const [claim, setClaim] = useState('claim');
+        return (
+            <Dialog
+                maxWidth='lg'
+                disableBackdropClick={true}
+                open={alertZero}
+                onClose={handleClose}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">
+                    {"คุณได้กรอกราคาอะไหล่ เป็น 0 กรุณากรอกรายละเอียดดังนี้"}
+                </DialogTitle>
+
+                    <DialogContent>
+                        <Alert severity='warning'>กำลังอยู่ในช่วงพัฒนา</Alert>
+                        <Stack direction='column' spacing={2}>
+                            <select required onChange={(e) => setClaim(e.target.value)} defaultValue={claim} name=""
+                                    id="">
+                                <option value={'claim'}>เคลม</option>
+                                <option value={'dis_claim'}>ไม่เคลม</option>
+                            </select>
+                            {claim === 'claim' && (
+                                <textarea
+                                    required
+                                    placeholder='โปรดระบุเหตุผล'
+                                />
+                            )}
+
+                        </Stack>
+                    </DialogContent>
+
+
+                    <DialogActions>
+                        <Button onClick={()=>setAlertZero(false)}>targetSpZero</Button>
+                    </DialogActions>
+
+            </Dialog>
+        )
+    }
+
     return (
-        <Dialog fullWidth maxWidth='lg' open={open} onClose={() => setOpen(false)}>
-            <DialogTitle fontWeight='bold'>สรุปรายการอะไหล่</DialogTitle>
-            <DialogContent>
-                <Grid2 container spacing={2}>
-                    <Grid2 size={12}>
-                        <Stack direction={{md: 'column', lg: 'row'}} spacing={2} alignItems='center'>
-                            <Alert sx={{width: {lg: '80%', xs: '100%'}}} severity="success" icon={<BookmarkIcon/>}>
-                                สีเขียว {'=>'} อะไหล่อยู่ในประกัน
-                            </Alert>
-                            <Alert sx={{width: {lg: '20%', xs: '100%'}}} severity="info" icon={<BookmarkAddIcon/>}>
-                                GP {gpDefault} % ตั้งต้น
-                            </Alert>
-                        </Stack>
-                    </Grid2>
-
-                    <Grid2 size={12} maxHeight={500} sx={{overflowY: 'scroll'}}>
-                        <Table stickyHeader>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell sx={TABLE_HEADER_STYLE} width={10}>รูปภาพ</TableCell>
-                                    <TableCell sx={TABLE_HEADER_STYLE}>รหัสอะไหล่</TableCell>
-                                    <TableCell sx={TABLE_HEADER_STYLE}>ชื่ออะไหล่</TableCell>
-                                    <TableCell sx={TABLE_HEADER_STYLE}>ราคาต่อหน่วย</TableCell>
-                                    <TableCell sx={TABLE_HEADER_STYLE}>ราคาที่ {'+'} GP แล้ว</TableCell>
-                                    <TableCell sx={TABLE_HEADER_STYLE} width={200}>จำนวน</TableCell>
-                                    <TableCell sx={TABLE_HEADER_STYLE}>หน่วย</TableCell>
-                                    <TableCell sx={TABLE_HEADER_STYLE}>ราคารวม</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {localItems.map((item, index) => {
-                                    const image_sp_path = SPARE_PART_IMAGE_PATH + detail.pid + '/' + item.spcode + '.jpg';
-                                    const isWarranty = item.warranty === true;
-                                    const rowStyle = isWarranty ? { backgroundColor: '#e8f5e9' } : {};
-                                    const itemTotal = isWarranty ? 0 : (parseFloat(item.price_multiple_gp) * parseFloat(item.qty)).toFixed(2);
-
-                                    return (
-                                        <TableRow key={index} style={rowStyle}>
-                                            <TableCell>
-                                                <ImagePreview src={image_sp_path}/>
-                                            </TableCell>
-                                            <TableCell>{item.spcode}</TableCell>
-                                            <TableCell>{item.spname}</TableCell>
-                                            <TableCell>{parseFloat(item.price_per_unit).toFixed(2)}</TableCell>
-                                            <TableCell>
-                                                <TextField
-                                                    value={item.price_multiple_gp}
-                                                    onChange={(e) => handlePriceChange(index, e.target.value)}
-                                                    disabled={isWarranty}
-                                                    type="number"
-                                                    inputProps={{ min: 0, step: 0.01 }}
-                                                    size="small"
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <TextField
-                                                    type='number'
-                                                    value={item.qty}
-                                                    onChange={(e) => handleQtyChange(index, parseInt(e.target.value))}
-                                                    disabled={isWarranty}
-                                                    inputProps={{ min: 1 }}
-                                                    size="small"
-                                                />
-                                            </TableCell>
-                                            <TableCell>{item.spunit}</TableCell>
-                                            <TableCell>{itemTotal}</TableCell>
-                                        </TableRow>
-                                    )
-                                })}
-                            </TableBody>
-                        </Table>
-                    </Grid2>
-
-                    <Grid2 size={12}>
-                        <Stack direction='row-reverse'>
-                            <Typography fontWeight='bold' fontSize={20}>
-                                รวมทั้งหมด: {totalPrice} บาท
-                            </Typography>
-                        </Stack>
-                    </Grid2>
-                    <Grid2 size={12}>
-                        <form onSubmit={onSubmit}>
-                            <Stack direction='row' justifyContent='end' spacing={2}>
-                                <Button variant='outlined' onClick={() => setOpen(false)}>ยกเลิก</Button>
-                                <Button type='submit' variant='contained' color='primary'>บันทึก</Button>
+        <>
+            {alertZero && <AlertNo/>}
+            <Dialog fullWidth maxWidth='lg' open={open} onClose={() => setOpen(false)}>
+                <DialogTitle fontWeight='bold'>สรุปรายการอะไหล่</DialogTitle>
+                <DialogContent>
+                    <Grid2 container spacing={2}>
+                        <Grid2 size={12}>
+                            <Stack direction={{md: 'column', lg: 'row'}} spacing={2} alignItems='center'>
+                                <Alert sx={{width: {lg: '80%', xs: '100%'}}} severity="success" icon={<BookmarkIcon/>}>
+                                    สีเขียว {'=>'} อะไหล่อยู่ในประกัน
+                                </Alert>
+                                <Alert sx={{width: {lg: '20%', xs: '100%'}}} severity="info" icon={<BookmarkAddIcon/>}>
+                                    GP {gpDefault} % ตั้งต้น
+                                </Alert>
                             </Stack>
-                        </form>
+                        </Grid2>
+
+                        <Grid2 size={12} maxHeight={500} sx={{overflowY: 'scroll'}}>
+                            <Table stickyHeader>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell sx={TABLE_HEADER_STYLE} width={10}>รูปภาพ</TableCell>
+                                        <TableCell sx={TABLE_HEADER_STYLE}>รหัสอะไหล่</TableCell>
+                                        <TableCell sx={TABLE_HEADER_STYLE}>ชื่ออะไหล่</TableCell>
+                                        <TableCell sx={TABLE_HEADER_STYLE}>ราคาต่อหน่วย</TableCell>
+                                        <TableCell sx={TABLE_HEADER_STYLE}>ราคาที่ {'+'} GP แล้ว</TableCell>
+                                        <TableCell sx={TABLE_HEADER_STYLE} width={200}>จำนวน</TableCell>
+                                        <TableCell sx={TABLE_HEADER_STYLE}>หน่วย</TableCell>
+                                        <TableCell sx={TABLE_HEADER_STYLE}>ราคารวม</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {localItems.map((item, index) => {
+                                        const image_sp_path = SPARE_PART_IMAGE_PATH + detail.pid + '/' + item.spcode + '.jpg';
+                                        const isWarranty = item.warranty === true;
+                                        const rowStyle = isWarranty ? {backgroundColor: '#e8f5e9'} : {};
+                                        const itemTotal = isWarranty ? 0 : (parseFloat(item.price_multiple_gp) * parseFloat(item.qty)).toFixed(2);
+
+                                        return (
+                                            <TableRow key={index} style={rowStyle}>
+                                                <TableCell>
+                                                    <ImagePreview src={image_sp_path}/>
+                                                </TableCell>
+                                                <TableCell>{item.spcode}</TableCell>
+                                                <TableCell>{item.spname}</TableCell>
+                                                <TableCell>
+                                                    {parseFloat(item.price_per_unit + (item.price_per_unit * (gpDefault / 100))).toFixed(2)}
+                                                    <br/>
+                                                    {/*{parseFloat(item.price_per_unit).toFixed(2)}*/}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <TextField
+                                                        value={parseFloat(item.price_multiple_gp).toFixed(2)}
+                                                        onChange={(e) => handlePriceChange(index, e.target.value)}
+                                                        disabled={isWarranty}
+                                                        type="number"
+                                                        inputProps={{min: 0, step: 0.01}}
+                                                        size="small"
+                                                    />
+                                                    <br/>
+                                                    {item.remark &&
+                                                        <>
+                                                            <Typography variant='caption'>
+                                                                {item.remark}
+                                                            </Typography>
+                                                            แก้ไข
+                                                        </>
+
+                                                    }
+
+                                                </TableCell>
+                                                <TableCell>
+                                                    <TextField
+                                                        type='number'
+                                                        value={item.qty}
+                                                        onChange={(e) => handleQtyChange(index, parseInt(e.target.value))}
+                                                        disabled={isWarranty}
+                                                        inputProps={{min: 1}}
+                                                        size="small"
+                                                    />
+                                                </TableCell>
+                                                <TableCell>{item.spunit}</TableCell>
+                                                <TableCell>{itemTotal}</TableCell>
+                                            </TableRow>
+                                        )
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </Grid2>
+
+                        <Grid2 size={12}>
+                            <Stack direction='row-reverse'>
+                                <Typography fontWeight='bold' fontSize={20}>
+                                    รวมทั้งหมด: {totalPrice} บาท
+                                </Typography>
+                            </Stack>
+                        </Grid2>
+                        <Grid2 size={12}>
+                            <form onSubmit={onSubmit}>
+                                <Stack direction='row' justifyContent='end' spacing={2}>
+                                    <Button variant='outlined' onClick={() => setOpen(false)}>ยกเลิก</Button>
+                                    <Button type='submit' variant='contained' color='primary'>บันทึก</Button>
+                                </Stack>
+                            </form>
+                        </Grid2>
                     </Grid2>
-                </Grid2>
-            </DialogContent>
-        </Dialog>
+                </DialogContent>
+            </Dialog>
+        </>
+
     );
 }
+import {AlertDialog} from "@/Components/AlertDialog.js";
+import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
+
+import axios from 'axios';
+
+const SPARE_PART_IMAGE_PATH = import.meta.env.VITE_IMAGE_PATH;
+
+const TABLE_HEADER_STYLE = {
+    backgroundColor: '#c7c7c7',
+    fontWeight: 'bold',
+    fontSize: 16
+};

@@ -1,9 +1,19 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {Head} from "@inertiajs/react";
-import {Alert, Button, CircularProgress, Container, Grid2, Stack, TextField, Typography} from "@mui/material";
+import {
+    Alert,
+    Button,
+    CircularProgress,
+    Container,
+    FormLabel,
+    Grid2, Input,
+    Stack,
+    TextField,
+    Typography
+} from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import {useRef, useState} from "react";
-import {AlertDialog} from "@/Components/AlertDialog.js";
+import {AlertDialog, AlertForWarranty} from "@/Components/AlertDialog.js";
 import ProductDetail from "@/Components/ProductDetail.jsx";
 import axios from "axios";
 import {Datepicker} from "flowbite-react";
@@ -15,14 +25,6 @@ export default function FormWarranty() {
     const [warrantyAt, setWarrantyAt] = useState();
     const [loading, setLoading] = useState(false);
     const [detail, setDetail] = useState();
-
-
-    const today = new Date();
-    const sevenDaysAgo = new Date(today);
-    sevenDaysAgo.setDate(today.getDate() - 7);
-    const year = sevenDaysAgo.getFullYear();
-    const month = sevenDaysAgo.getMonth() + 1;
-    const day = sevenDaysAgo.getDate();
 
 
     const fetchData = async (sn) => {
@@ -56,6 +58,19 @@ export default function FormWarranty() {
         await fetchData(sn)
     }
 
+    const handelSave = (e) => {
+        e.preventDefault();
+        AlertForWarranty({
+            text : 'กด บันทึก หรือ บันทึก/แจ้งซ่อม เพื่อบันทึกข้อมูลรับประกัน',
+            onPassed : async (confirm, confirmAndRedirect) => {
+                if (confirm || confirmAndRedirect) {
+
+                }
+            }
+        })
+
+    }
+
 
     const handelSubmit = async (e) => {
         e.preventDefault();
@@ -81,6 +96,8 @@ export default function FormWarranty() {
         }
     }
 
+
+
     return (
         <AuthenticatedLayout>
             <Head title="ลงทะเบียนรับประกัน"/>
@@ -102,12 +119,14 @@ export default function FormWarranty() {
                     </Grid2>
                     {detail && !warrantyAt ? (
                         <Grid2 size={12}>
-                            <form onSubmit={handelSubmit}>
+                            <FormLabel>วันที่ซื้อ</FormLabel>
+                            <form onSubmit={handelSave}>
                                 <Stack direction='row' spacing={2}>
                                     <Datepicker
                                         language="th-TH"
                                         onChange={(date) => setInputDate(date.toLocaleString())}
                                     />
+
                                     <Button type='submit' variant='contained'>บันทึก</Button>
                                 </Stack>
                             </form>

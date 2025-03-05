@@ -102,6 +102,8 @@ class SearchController extends Controller
                 'price_multiple_gp',
                 'approve',
                 'approve_status',
+                'remark',
+                'claim',
                 'sp_warranty as warranty',
                 'created_at', 'updated_at'
             )->get();

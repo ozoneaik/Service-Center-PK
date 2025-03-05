@@ -19,6 +19,8 @@ class SparePart extends Model
         'price_multiple_gp',
         'status',
         'approve',
-        'approve_status'
+        'approve_status',
+        'remark',
+        'claim'
     ];
 }

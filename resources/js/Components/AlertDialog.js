@@ -3,11 +3,17 @@ import Swal from "sweetalert2";
 const options = {
     cancelButtonText: 'ยกเลิก',
     confirmButtonText: 'ตกลง',
-    allowOutsideClick : false,
+    allowOutsideClick: false,
     confirmButtonColor: '#f15922',
 }
 
-export function AlertDialog({title, text, icon = 'error', onPassed,showCancelButton = true}) {
+export function AlertDialog({
+                                title,
+                                text,
+                                icon = 'error',
+                                onPassed,
+                                showCancelButton = true,
+                            }) {
     Swal.fire({
         icon,
         title,
@@ -19,7 +25,7 @@ export function AlertDialog({title, text, icon = 'error', onPassed,showCancelBut
     })
 }
 
-export function AlertWithFormDialog({title, text, icon = 'error',res}) {
+export function AlertWithFormDialog({title, text, icon = 'error', res}) {
     let value;
     Swal.fire({
         icon,
@@ -35,18 +41,36 @@ export function AlertWithFormDialog({title, text, icon = 'error',res}) {
             value = v;
         },
     }).then((result) => {
-        res(result.isConfirmed,value)
+        res(result.isConfirmed, value)
     });
 }
 
-export function AlertDialogQuestion({text,onPassed,showCancelButton = true}){
+export function AlertDialogQuestion({text, onPassed, showCancelButton = true}) {
     Swal.fire({
-        icon : 'question',
-        title : 'แน่ใจหรือไม่',
+        icon: 'question',
+        title: 'แน่ใจหรือไม่',
         text,
         showCancelButton,
         ...options
     }).then((result) => {
         onPassed(result.isConfirmed)
+    })
+}
+
+export function AlertForWarranty({text, onPassed, showCancelButton = true}) {
+    Swal.fire({
+        icon: 'question',
+        title: 'บันทึกข้อมูล',
+        text,
+        showDenyButton: true,
+        denyButtonText: 'บันทึก/แจ้งซ่อม',
+        denyButtonColor: '#f15922',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonText: 'บันทึก',
+        showCancelButton,
+        allowOutsideClick: false,
+        confirmButtonColor: '#f15922',
+    }).then((result) => {
+        onPassed(result.isConfirmed,result.isDenied)
     })
 }

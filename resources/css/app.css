@@ -31,7 +31,9 @@ button{
 }
 
 input{
-    border: none;
+    border-radius: 8px;
+    /*border: none;*/
+    border : solid 1px gray;
     background-color: #fff !important;
 }
 
@@ -43,8 +45,15 @@ input:focus{
     border: none;
 }
 
-textarea {
+
+textarea,select {
     padding : 10px;
     font-size: 16px;
     border-radius: 4px;
+    border: solid 1px #c3c3c3;
+}
+
+textarea:focus,select:focus {
+    border : solid 2px #1976d2;
+    outline: none; /* ลบเส้นขอบเริ่มต้นของเบราว์เซอร์ */
 }
