@@ -132,10 +132,7 @@ export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
 
 
     const exportQu = async () => {
-
-
         console.log(detail)
-        // return;
         let newDataFormat = [];
         detail.selected.sp.forEach((item) => {
             newDataFormat.push({
@@ -162,7 +159,7 @@ export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
             "custcode": detail.job.user_id,
             "custname": "custname",
             "docdate": "",
-            "custtel": "0931622330",
+            "custtel": detail.selected.customerInJob.phone,
             "empcode": "empcode",
             "empname": "empname",
             "remark": detail.selected.remark,
@@ -171,11 +168,20 @@ export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
             "serial": detail.selected.serial_id,
             "emprepair": ""
         };
-        const {data, status} = await axios.post('http://192.168.0.13/genpdf/api/qu_ass',{
+        const {data, status} = await axios.post('/genQuPdf',{
             ...dataJson
         })
         console.log(data,status)
-        window.open(data,'_blank');
+        if (status === 200){
+            window.open(data.pathUrl,'_blank');
+        }else{
+            AlertDialog({
+                title : 'เกิดข้อผิดพลาด',
+                text : data.message,
+                onPassed : () => {}
+            })
+        }
+
     }
 
     return (

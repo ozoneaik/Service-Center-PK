@@ -6,6 +6,7 @@ use App\Http\Controllers\ApprovalSpController;
 use App\Http\Controllers\BehaviorController;
 use App\Http\Controllers\CustomerInJobController;
 use App\Http\Controllers\FileUploadController;
+use App\Http\Controllers\genQuPdfController;
 use App\Http\Controllers\HistoryRepairController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\ManageBranchController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SpareClaimController;
 use App\Http\Controllers\SparePartController;
 use App\Http\Controllers\WarrantyProductController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -134,5 +136,7 @@ Route::get('/Unauthorized', function () {
 Route::get('/home', function () {
     return view('home');
 })->name('home');
+
+Route::post('/genQuPdf',[genQuPdfController::class,'genQuPdf'])->name('genQuPdf');
 
 require __DIR__ . '/auth.php';
