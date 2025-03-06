@@ -49,7 +49,7 @@ export default function Manage({listEmployeeThatBranch, gp, user}) {
         <AuthenticatedLayout>
             <Container maxWidth='false'>
                 <Grid2 container spacing={2} mt={2}>
-                    <Grid2 size={8}>
+                    <Grid2 size={{md : 8, sm :12}}>
                         <Grid2 container spacing={2}>
                             <Grid2 size={12}>
                                 <CreateEmployeeThatBranch listEmployeeThatBranch={listEmployeeThatBranch}/>
@@ -59,7 +59,7 @@ export default function Manage({listEmployeeThatBranch, gp, user}) {
                             </Grid2>
                         </Grid2>
                     </Grid2>
-                    <Grid2 size={4}>
+                    <Grid2 size={{md : 4,sm :12}}>
                         <GP gpVal={gpVal} setGpVal={setGpVal} onSubmit={onSubmit}/>
                     </Grid2>
                 </Grid2>

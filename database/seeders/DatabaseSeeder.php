@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('1111'),
             'name' => 'ภูวเดช พาณิชยโสภา',
             'role' => 'admin',
+            'admin_that_branch' => true,
             'is_code_cust_id' => 'IS-CODE-001415445',
             'address' => 'บจก. พัมคิน คอร์ปอเรชั่น 4 พระรามที่ 2 ซอย 54 แยก 4 แขวงแสมดำ เขตบางขุนเทียน กรุงเทพมหานคร 10150'
         ]);

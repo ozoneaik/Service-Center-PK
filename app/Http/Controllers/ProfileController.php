@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,6 +34,14 @@ class ProfileController extends Controller
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
+        }
+
+        $updateAllUserThatBranch = User::query()->where('is_code_cust_id', auth()->user()->is_code_cust_id)->get();
+        foreach ($updateAllUserThatBranch as $user) {
+            $user->address = $request->address;
+            $user->phone = $request->phone;
+            $user->shop_name = $request->shop_name;
+            $user->save();
         }
 
         $request->user()->save();

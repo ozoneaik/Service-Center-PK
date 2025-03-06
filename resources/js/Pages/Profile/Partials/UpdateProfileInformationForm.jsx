@@ -74,6 +74,7 @@ export default function UpdateProfileInformation({mustVerifyEmail, status, class
                 <div>
                     <InputLabel htmlFor="phone" value="เบอร์โทรศัพท์"/>
                     <TextField
+                        disabled={!user.admin_that_branch}
                         id='phone'
                         type='text'
                         value={data.phone}
@@ -89,6 +90,7 @@ export default function UpdateProfileInformation({mustVerifyEmail, status, class
                 <div>
                     <InputLabel htmlFor="address" value="ที่อยู่"/>
                     <textarea
+                        disabled={!user.admin_that_branch}
                         id='address'
                         style={{width: '100%'}}
                         rows={4}
@@ -103,6 +105,7 @@ export default function UpdateProfileInformation({mustVerifyEmail, status, class
                 <div>
                     <InputLabel htmlFor="shop_name" value={'ชื่อร้าน ' + `( ${data.is_code_cust_id} )`}/>
                     <TextField
+                        disabled={!user.admin_that_branch}
                         id='shop_name'
                         type='text'
                         value={data.shop_name}

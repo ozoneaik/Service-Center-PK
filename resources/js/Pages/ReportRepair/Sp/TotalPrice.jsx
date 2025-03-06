@@ -5,6 +5,9 @@ import {
 import {ImagePreview} from "@/Components/ImagePreview.jsx";
 import {useState, useMemo, useEffect} from "react";
 import BookmarkIcon from '@mui/icons-material/Bookmark';
+import axios from 'axios';
+import {AlertDialog} from "@/Components/AlertDialog.js";
+import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
 
 export default function TotalPrice(props) {
     const {open, setOpen} = props;
@@ -21,7 +24,6 @@ export default function TotalPrice(props) {
             const items = selected.sp.map(item => {
                 const price_multiple_gp = item.price_multiple_gp ||
                     (parseFloat(item.price_per_unit) + (parseFloat(item.price_per_unit) * gpDefault / 100)).toFixed(2);
-
                 return {
                     ...item,
                     price_multiple_gp,
@@ -57,18 +59,22 @@ export default function TotalPrice(props) {
             newItems[index].approve = parseFloat(value) === 0 ? 'yes' : 'no';
             newItems[index].approve_status = parseFloat(value) === 0 ? 'no' : 'yes';
         }
-        setLocalItems(newItems);
         if (parseFloat(value) === 0) {
+            newItems[index].remark = 'ไม่มีความเห็น';
+            newItems[index].claim = true;
             setAlertZero(true)
             setTargetSpZero(newItems[index])
+        } else {
+            newItems[index].remark = null;
+            newItems[index].claim = false;
         }
-        console.log(parseFloat(value), value)
+        setLocalItems(newItems);
     };
 
     const onSubmit = async (e) => {
         e.preventDefault();
+        // console.log(localItems);
         setOpen(false);
-
         // Prepare items with required fields for submission
         const itemsForSubmission = localItems.map(item => ({
             spcode: item.spcode,
@@ -77,14 +83,13 @@ export default function TotalPrice(props) {
             spunit: item.spunit,
             warranty: item.warranty,
             qty: item.qty,
+            remark: item.remark ? item.remark : null,
+            claim: item.claim,
             price_multiple_gp: item.price_multiple_gp,
             approve: item.approve,
             approve_status: item.approve_status,
             gp: gpDefault
         }));
-
-        console.log(itemsForSubmission)
-        // return ;
         try {
             const {data} = await axios.post('/spare-part/store', {
                 serial_id,
@@ -118,58 +123,35 @@ export default function TotalPrice(props) {
         }
     };
 
-    const handleClose = (event, reason) => {
-        if (reason === "backdropClick" || reason === "escapeKeyDown") {
-            return; // ป้องกันการปิดเมื่อคลิกข้างนอกหรือกด ESC
-        }
-        setAlertZero(false);
-    };
-
-    const AlertNo = () => {
-        const [claim, setClaim] = useState('claim');
-        return (
-            <Dialog
-                maxWidth='lg'
-                disableBackdropClick={true}
-                open={alertZero}
-                onClose={handleClose}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-            >
-                <DialogTitle id="alert-dialog-title">
-                    {"คุณได้กรอกราคาอะไหล่ เป็น 0 กรุณากรอกรายละเอียดดังนี้"}
-                </DialogTitle>
-
-                    <DialogContent>
-                        <Alert severity='warning'>กำลังอยู่ในช่วงพัฒนา</Alert>
-                        <Stack direction='column' spacing={2}>
-                            <select required onChange={(e) => setClaim(e.target.value)} defaultValue={claim} name=""
-                                    id="">
-                                <option value={'claim'}>เคลม</option>
-                                <option value={'dis_claim'}>ไม่เคลม</option>
-                            </select>
-                            {claim === 'claim' && (
-                                <textarea
-                                    required
-                                    placeholder='โปรดระบุเหตุผล'
-                                />
-                            )}
-
-                        </Stack>
-                    </DialogContent>
-
-
-                    <DialogActions>
-                        <Button onClick={()=>setAlertZero(false)}>targetSpZero</Button>
-                    </DialogActions>
-
-            </Dialog>
-        )
+    const handelUpdateSp = (target) => {
+        setSelected((prevSelected) => ({
+            ...prevSelected,
+            sp: prevSelected.sp.map((item) =>
+                item.spcode === target.spcode ? {...target} : item
+            ),
+        }));
     }
+
+    const handelChangeName = (e,itemSel) => {
+        setSelected((prevSelected) => ({
+            ...prevSelected,
+            sp: prevSelected.sp.map((item) =>
+                item.spcode === itemSel.spcode ? {...item,spname : e.target.value} : item
+            ),
+        }));
+    }
+
 
     return (
         <>
-            {alertZero && <AlertNo/>}
+            {
+                alertZero &&
+                <AlertNo
+                    alertZero={alertZero} setAlertZero={setAlertZero}
+                    targetSpZero={targetSpZero} setTargetSpZero={setTargetSpZero}
+                    onPassed={(target) => handelUpdateSp(target)}
+                />
+            }
             <Dialog fullWidth maxWidth='lg' open={open} onClose={() => setOpen(false)}>
                 <DialogTitle fontWeight='bold'>สรุปรายการอะไหล่</DialogTitle>
                 <DialogContent>
@@ -212,41 +194,40 @@ export default function TotalPrice(props) {
                                                     <ImagePreview src={image_sp_path}/>
                                                 </TableCell>
                                                 <TableCell>{item.spcode}</TableCell>
-                                                <TableCell>{item.spname}</TableCell>
+                                                <TableCell>
+                                                    <TextField
+                                                        variant="standard"
+                                                        size='small'
+                                                        label='เปลี่ยนชื่ออะไหล่ได้ที่นี่'
+                                                        value={item.spname}
+                                                        onChange={(e) => handelChangeName(e,item)}
+                                                    />
+                                                </TableCell>
                                                 <TableCell>
                                                     {parseFloat(item.price_per_unit + (item.price_per_unit * (gpDefault / 100))).toFixed(2)}
-                                                    <br/>
-                                                    {/*{parseFloat(item.price_per_unit).toFixed(2)}*/}
                                                 </TableCell>
                                                 <TableCell>
                                                     <TextField
                                                         value={parseFloat(item.price_multiple_gp).toFixed(2)}
+                                                        type="number" size="small"
                                                         onChange={(e) => handlePriceChange(index, e.target.value)}
                                                         disabled={isWarranty}
-                                                        type="number"
                                                         inputProps={{min: 0, step: 0.01}}
-                                                        size="small"
                                                     />
                                                     <br/>
                                                     {item.remark &&
                                                         <>
-                                                            <Typography variant='caption'>
-                                                                {item.remark}
-                                                            </Typography>
+                                                            <Typography variant='caption'>{item.remark}</Typography>
                                                             แก้ไข
                                                         </>
-
                                                     }
-
                                                 </TableCell>
                                                 <TableCell>
                                                     <TextField
-                                                        type='number'
-                                                        value={item.qty}
-                                                        onChange={(e) => handleQtyChange(index, parseInt(e.target.value))}
+                                                        type='number' value={item.qty}
                                                         disabled={isWarranty}
-                                                        inputProps={{min: 1}}
-                                                        size="small"
+                                                        onChange={(e) => handleQtyChange(index, parseInt(e.target.value))}
+                                                        inputProps={{min: 1}} size="small"
                                                     />
                                                 </TableCell>
                                                 <TableCell>{item.spunit}</TableCell>
@@ -280,13 +261,82 @@ export default function TotalPrice(props) {
 
     );
 }
-import {AlertDialog} from "@/Components/AlertDialog.js";
-import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
 
-import axios from 'axios';
+
+const AlertNo = (props) => {
+
+    const {targetSpZero, alertZero, setAlertZero, onPassed} = props;
+    const [claim, setClaim] = useState('claim');
+    const [target, setTarget] = useState(targetSpZero);
+
+    const handleClose = (event, reason) => {
+        if (reason === "backdropClick" || reason === "escapeKeyDown") {
+            return;
+        }
+        setAlertZero(false);
+    };
+
+    const onSubmit = (e) => {
+        e.preventDefault();
+        setAlertZero(false)
+        onPassed(target)
+    }
+    return (
+        <Dialog
+            maxWidth='lg'
+            disableBackdropClick={true}
+            open={alertZero}
+            onClose={handleClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+        >
+            <DialogTitle id="alert-dialog-title">
+                {"คุณได้กรอกราคาอะไหล่ เป็น 0 กรุณากรอกรายละเอียดดังนี้"}
+            </DialogTitle>
+            <form onSubmit={onSubmit}>
+                <DialogContent>
+                    <Alert onClick={() => console.log(targetSpZero)} severity='warning'>กำลังอยู่ในช่วงพัฒนา</Alert>
+                    <Stack direction='column' spacing={2}>
+                        <select
+                            required
+                            onChange={(e) => {
+                                setClaim(e.target.value);
+                                setTarget(prevState => {
+                                    return {...prevState, claim: e.target.value === 'claim'}
+                                })
+                            }}
+                            defaultValue={targetSpZero.claim ? 'claim' : 'dis_claim'}
+                        >
+                            <option value={'claim'}>เคลม</option>
+                            <option value={'dis_claim'}>ไม่เคลม</option>
+                        </select>
+
+                        <textarea
+                            onChange={(e) => setTarget(prevState => {
+                                return {...prevState, remark: e.target.value}
+                            })}
+                            required={claim === 'claim'} placeholder='โปรดระบุเหตุผล'
+                        />
+                    </Stack>
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        type='submit'
+                        onClick={() => onPassed(target)}
+                        variant='contained' color='warning'
+                    >
+                        บันทึก
+                    </Button>
+                </DialogActions>
+            </form>
+
+
+        </Dialog>
+    )
+}
+
 
 const SPARE_PART_IMAGE_PATH = import.meta.env.VITE_IMAGE_PATH;
-
 const TABLE_HEADER_STYLE = {
     backgroundColor: '#c7c7c7',
     fontWeight: 'bold',

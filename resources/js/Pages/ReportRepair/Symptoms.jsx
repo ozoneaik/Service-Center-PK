@@ -1,18 +1,70 @@
 import {Button, Grid2, Stack} from "@mui/material";
+import {useState} from "react";
+import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
 
-export default function Symptoms() {
+export default function Symptoms({detail, setDetail}) {
+    const [symptom, setSymptom] = useState(detail.selected.symptom ?? '');
+
+    const onSubmit = (e) => {
+        e.preventDefault();
+        AlertDialogQuestion({
+            text: 'กดตกลงเพื่ออัพเดท',
+            onPassed: async (confirm) => {
+                confirm && await storeSymptom();
+            }
+        })
+    }
+    const storeSymptom = async () => {
+        let Status,Message;
+        try {
+            const {data, status} = await axios.post('/symptom/store', {
+                job_id: detail.job.job_id,
+                serial_id: detail.serial,
+                symptom: symptom
+            });
+            Status = status;
+            Message = data.message;
+        }catch (error){
+            Status = error.response.status;
+            Message = error.response.data.message;
+        }finally {
+            AlertDialog({
+                icon : Status === 200 ? 'success' : 'error',
+                text : Message,
+                onPassed : () => {
+                    if (Status === 200) {
+                        setDetail(prevDetail => ({
+                            ...prevDetail,
+                            selected: {
+                                ...prevDetail.selected,
+                                symptom
+                            }
+                        }));
+                    }
+                }
+            })
+        }
+
+    }
     return (
-        <Grid2 container spacing={2}>
-            <Grid2 size={12}>
-                <textarea style={{width : '100%'}} placeholder='กรอกอาการเบื้องต้น'></textarea>
+        <form onSubmit={onSubmit}>
+            <Grid2 container spacing={2}>
+                <Grid2 size={12}>
+                    <textarea
+                        onChange={(e) => setSymptom(e.target.value)}
+                        style={{width: '100%'}}
+                        defaultValue={symptom}
+                        placeholder='กรอกอาการเบื้องต้น'
+                    />
+                </Grid2>
+                <Grid2 size={12}>
+                    <Stack direction='row-reverse'>
+                        <Button variant='contained' color='primary' type='submit'>
+                            บันทึก
+                        </Button>
+                    </Stack>
+                </Grid2>
             </Grid2>
-            <Grid2 size={12}>
-                <Stack direction='row-reverse'>
-                    <Button variant='contained' color='primary'>
-                        บันทึก
-                    </Button>
-                </Stack>
-            </Grid2>
-        </Grid2>
+        </form>
     )
 }

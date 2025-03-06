@@ -15,6 +15,7 @@ use App\Http\Controllers\RemarkController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SpareClaimController;
 use App\Http\Controllers\SparePartController;
+use App\Http\Controllers\SymptomController;
 use App\Http\Controllers\WarrantyProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -67,6 +68,10 @@ Route::middleware('auth')->group(function () {
     Route::prefix('spare-part')->group(function () {
         Route::get('/show/{serial_id}', [SparePartController::class, 'show'])->name('sparePart.show');
         Route::post('/store', [SparePartController::class, 'store'])->name('sparePart.store');
+    });
+
+    Route::prefix('symptom')->group(function (){
+       Route::post('/store',[SymptomController::class,'store'])->name('symptom.store');
     });
 
     // Remark

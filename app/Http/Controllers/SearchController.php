@@ -11,11 +11,13 @@ use App\Models\JobList;
 use App\Models\MenuFileUpload;
 use App\Models\Remark;
 use App\Models\SparePart;
+use App\Models\Symptom;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use function Laravel\Prompts\select;
 
 class SearchController extends Controller
 {
@@ -38,6 +40,7 @@ class SearchController extends Controller
                 $searchResults['job'] = $this->storeJob($searchResults);
                 $job_id = $searchResults['job']['job_id'];
                 $searchResults['selected']['behavior'] = $this->BehaviorSelected($job_id);
+                $searchResults['selected']['symptom'] = $this->SymptomSelected($job_id);
                 $searchResults['selected']['remark'] = $this->RemarkSelected($job_id);
                 $searchResults['selected']['fileUpload'] = $this->FileSelected($job_id);
                 $findGP = Gp::query()->where('is_code_cust_id', auth()->user()->is_code_cust_id)->first();
@@ -65,6 +68,11 @@ class SearchController extends Controller
                 'time' => Carbon::now()
             ], 400);
         }
+    }
+
+    private function SymptomSelected($job_id){
+        $symptom = Symptom::query()->where('job_id', $job_id)->first();
+        return $symptom ? $symptom->symptom : null;
     }
 
     private function BehaviorSelected($job_id): Collection

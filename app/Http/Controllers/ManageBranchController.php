@@ -80,6 +80,8 @@ class ManageBranchController extends Controller
                 'email' => $request->input('email'),
                 'password' => Hash::make($request->input('password')),
                 'is_code_cust_id' => auth()->user()->is_code_cust_id,
+                'address' => auth()->user()->address,
+                'phone' => auth()->user()->phone,
                 'role' => 'service',
                 'admin_that_branch' => $request->input('role') === 'admin',
             ]);

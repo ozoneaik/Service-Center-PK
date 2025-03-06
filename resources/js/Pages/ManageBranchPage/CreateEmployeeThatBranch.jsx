@@ -1,7 +1,19 @@
-import {Button, Card, FormControl, InputLabel, MenuItem, Stack, TextField, Typography} from "@mui/material";
+import {
+    Button,
+    Card,
+    FormControl,
+    FormLabel,
+    Grid2,
+    InputLabel,
+    MenuItem,
+    Stack,
+    TextField,
+    Typography
+} from "@mui/material";
 import Select from "@mui/material/Select";
 import {useRef} from "react";
 import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
+import {usePage} from "@inertiajs/react";
 
 export default function CreateEmployeeThatBranch({listEmployeeThatBranch}) {
     const name = useRef(null);
@@ -16,7 +28,7 @@ export default function CreateEmployeeThatBranch({listEmployeeThatBranch}) {
             password : password.current.value,
             confirm_password : confirmPassword.current.value,
             email : email.current.value,
-            role : role.current.value
+            role : role.current.value,
         }
         AlertDialogQuestion({
             text : 'กดตกลงเพื่อสร้างผู้ใช้ใหม่',
@@ -51,54 +63,92 @@ export default function CreateEmployeeThatBranch({listEmployeeThatBranch}) {
     return (
         <Card sx={{p: 2}}>
             <form onSubmit={onSubmit}>
-                <Stack direction='column' spacing={3}>
-                    <Typography variant='h6'>เพิ่มผู้ใช้</Typography>
-                    <TextField
-                        required
-                        inputRef={name}
-                        placeholder='ex.สมศรี มานี'
-                        label="ชื่อ-นามสกุล" type='text'
-                        variant="outlined" size='small'
-                    />
-                    <TextField
-                        required
-                        inputRef={email}
-                        placeholder='ex.user001@local.com'
-                        label="อีเมล" type='email'
-                        size='small' variant="outlined"
-                    />
-                    <TextField
-                        required
-                        inputRef={password}
-                        placeholder='ex.1234'
-                        label="รหัสผ่าน" type='password'
-                        size='small' variant="outlined"
-                    />
-                    <TextField
-                        required
-                        inputRef={confirmPassword}
-                        placeholder='ex.1234'
-                        label="ยืนยันรหัสผ่าน" type='password'
-                        size='small' variant="outlined"
-                    />
-                    <FormControl fullWidth>
-                        <InputLabel id="demo-simple-select-label">สิทธิ์</InputLabel>
+                <Grid2 container spacing={2}>
+                    <Grid2 size={12}>
+                        <Typography variant='h6'>เพิ่มผู้ใช้</Typography>
+                    </Grid2>
+                    <Grid2 size={{lg: 6, md: 6, sm: 12}}>
+                        <FormLabel htmlFor="name" required>
+                            ชื่อ-นามสกุล
+                        </FormLabel>
+                        <TextField
+                            id='name'
+                            fullWidth
+                            required
+                            inputRef={name}
+                            type='text'
+                            variant="outlined"
+                            size='small'
+                            placeholder='ex.มานี มานะ'
+                        />
+                    </Grid2>
+                    <Grid2 size={{lg : 6, md :6,sm : 12}}>
+                        <FormLabel htmlFor="email" required>
+                            อีเมล
+                        </FormLabel>
+                        <TextField
+                            id='email'
+                            fullWidth
+                            required
+                            inputRef={email}
+                            placeholder='ex.user001@local.com'
+                            type='email'
+                            size='small'
+                        />
+                    </Grid2>
+                    <Grid2 size={{lg : 6, md :6,sm : 12}}>
+                        <FormLabel htmlFor="pasword" required>
+                            รหัสผ่าน
+                        </FormLabel>
+                        <TextField
+                            id='pasword'
+                            fullWidth
+                            required
+                            inputRef={password}
+                            placeholder='ex.1234'
+                            type='password'
+                            size='small'
+                        />
+                    </Grid2>
+
+                    <Grid2 size={{lg : 6, md :6,sm : 12}}>
+                        <FormLabel htmlFor="confirmPassword" required>
+                            ยืนยันรหัสผ่าน
+                        </FormLabel>
+                        <TextField
+                            id='confirmPassword'
+                            fullWidth
+                            required
+                            inputRef={confirmPassword}
+                            placeholder='ex.1234'
+                            type='password'
+                            size='small'
+                        />
+                    </Grid2>
+                    <Grid2 size={12}>
+                        <FormLabel htmlFor="confirmPassword" required>
+                            สิทธิ์
+                        </FormLabel>
                         <Select
+                            fullWidth
                             required
                             inputRef={role}
                             labelId="demo-simple-select-label"
                             id="demo-simple-select"
-                            size='small' variant='outlined'
-                            label="สิทธิ์" defaultValue='user'
+                            size='small'
+                            defaultValue='user'
                         >
                             <MenuItem value={'admin'}>ผู้ดูแลระบบ</MenuItem>
                             <MenuItem value={'user'}>ผู้ใช้</MenuItem>
                         </Select>
-                    </FormControl>
-                    <Stack direction='row-reverse' spacing={2}>
-                        <Button type='submit' variant='contained'>สร้าง</Button>
-                    </Stack>
-                </Stack>
+                    </Grid2>
+                    <Grid2 size={12}>
+                        <Stack direction='row-reverse' spacing={2}>
+                            <Button type='submit' fullWidth variant='contained'>สร้าง</Button>
+                        </Stack>
+                    </Grid2>
+
+                </Grid2>
             </form>
         </Card>
     )
