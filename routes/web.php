@@ -19,6 +19,7 @@ use App\Http\Controllers\SymptomController;
 use App\Http\Controllers\WarrantyProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -143,5 +144,18 @@ Route::get('/home', function () {
 })->name('home');
 
 Route::post('/genQuPdf',[genQuPdfController::class,'genQuPdf'])->name('genQuPdf');
+
+Route::get('/image-dm/{pid}', function ($pid) {
+    // ค้นหาข้อมูลจากตาราง data_file
+    $data = DB::connection('diagram')->table('data_file')
+        ->where('skufg', 'like', $pid)
+        ->limit(1)
+        ->first();
+    // ตรวจสอบว่าพบข้อมูลหรือไม่
+    if (!$data) {
+        return response()->json(['message' => 'ไม่พบข้อมูล'], 404);
+    }
+    return response()->json($data);
+});
 
 require __DIR__ . '/auth.php';

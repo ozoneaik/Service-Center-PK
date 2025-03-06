@@ -59,6 +59,7 @@ const TableService = () => (
 export const AddSp = ({detail, setDetail}) => {
     const DIAGRAM_PATH = import.meta.env.VITE_IMAGE_PATH + detail.pid + `/Diagrams_${detail.pid}-DM01.jpg`
     const [open, setOpen] = useState(false)
+    const [dmPath,setDmPart] = useState('');
     const [btnSelected, setBtnSelected] = useState(0);
     useEffect(() => {
         if (detail.selected.sp.length > 0 || detail.selected.sp_warranty.length > 0) {
@@ -71,6 +72,20 @@ export const AddSp = ({detail, setDetail}) => {
     const [spW, setSpW] = useState(detail.selected.sp.filter((item) => item.warranty === true))
     const handelOpen = () => {
         setOpen(true)
+    }
+
+    useEffect(() => {
+        testH();
+    }, []);
+
+    const testH = async () => {
+        try {
+            const {data, status} = await axios.get(`/image-dm/${detail.pid}`)
+            console.log(data,status)
+            setDmPart(data.pathfile_dm+data.namefile_dm);
+        }catch (error){
+            console.error(error)
+        }
     }
     return (
         <>
@@ -88,9 +103,10 @@ export const AddSp = ({detail, setDetail}) => {
             />
             <Grid2 container spacing={2}>
                 <Grid2 size={{xs: 12, lg: 4}} sx={{cursor: 'pointer'}}>
-                    <ImagePreview src={DIAGRAM_PATH} width='100%'/>
+                    <ImagePreview src={dmPath} width='100%'/>
                 </Grid2>
                 <Grid2 size={{xs: 12, lg: 8}}>
+                    <Button onClick={()=>testH()}>CLick show Log</Button>
                     {(detail.selected.sp.length > 0 || detail.selected.sp_warranty.length > 0) && btnSelected === 1 ?
                         <>
                             <Grid2 container spacing={2}>
