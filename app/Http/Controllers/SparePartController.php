@@ -47,7 +47,7 @@ class SparePartController extends Controller
                     'price_multiple_gp' => $item['price_multiple_gp'],
                     'qty' => $item['qty'] ?? 0,
                     'sp_unit' => $item['spunit'] ?? 'อัน',
-                    'claim' => (bool)$item['claim'],
+                    'claim' => $item['spcode'] === 'SV001' ? false : (bool)$item['claim'],
                     'remark' => $item['remark'] ?? null,
                 ]);
             }, $list['sp']);

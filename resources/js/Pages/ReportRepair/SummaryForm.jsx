@@ -64,7 +64,7 @@ const SpDetail = ({sp, sp_warranty}) => {
                         <TableCell>{item.spname}</TableCell>
                         <TableCell>{item.price_multiple_gp}</TableCell>
                         <TableCell>{item.qty}</TableCell>
-                        <TableCell>{item.unit ?? 'อัน'}</TableCell>
+                        <TableCell>{item.sp_unit ?? 'อัน'}</TableCell>
                         <TableCell>{item.price_multiple_gp * item.qty}</TableCell>
                     </TableRow>
                 ))}

@@ -20,6 +20,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import PaletteIcon from '@mui/icons-material/Palette';
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormGroup from "@mui/material/FormGroup";
+import {data} from "autoprefixer";
 
 const TableSummary = ({pid, data}) => (
     <Table stickyHeader>
@@ -49,14 +50,64 @@ const TableSummary = ({pid, data}) => (
     </Table>
 );
 
-const TableService = () => (
-    <FormGroup>
-        <FormControlLabel control={<Checkbox />} label="บริการซ่อมฟรี" />
-    </FormGroup>
-)
+const TableService = ({data,setSelected,selected}) => {
+
+    const handelSelected = (e) => {
+        const checked = e.target.checked;
+        setSelected(prevSelected =>
+            checked
+                ? {...prevSelected, sp: [...prevSelected.sp, {
+                    spcode : 'SV001',
+                    spname  : 'SV001',
+                    spunit : 'ครั้ง',
+                    claim : false,
+                    remark: null,
+                    price_per_unit : 0
+                    }]}
+                : {
+                    ...prevSelected,
+                    sp: prevSelected.sp.filter(spItem => spItem.spcode !== 'SV001')
+                }
+        );
+    }
+    return (
+        <Table stickyHeader>
+            <TableHead>
+                <TableRow sx={{fontWeight: 'bold'}}>
+                    <TableCell width={10}>#</TableCell>
+                    <TableCell>รูปภาพ</TableCell>
+                    <TableCell>รหัสอะไหล่</TableCell>
+                    <TableCell>ชื่ออะไหล่</TableCell>
+                    {/*<TableCell>จำนวน</TableCell>*/}
+                    {/*<TableCell>หน่วย</TableCell>*/}
+                </TableRow>
+            </TableHead>
+            <TableBody>
+                <TableRow>
+
+                    <TableCell>
+                        <Checkbox
+                            checked={selected.sp.some(l => l.spcode === 'SV001')}
+                            onChange={(e) =>handelSelected(e)}
+                            // checked={selected.sp.some(l => item.spcode === l.spcode)}
+                            // disabled={item.price_per_unit === '-'}
+                            // onChange={(e) => handleOnChange(item, e)}
+                        />
+                    </TableCell>
+                    <TableCell><ImagePreview
+                        src='https://images.dcpumpkin.com/images/product/500/default.jpg'/></TableCell>
+                    <TableCell>SV001</TableCell>
+                    <TableCell>ค่าบริการ</TableCell>
+                    {/*<TableCell>sdfsd</TableCell>*/}
+                    {/*<TableCell>sdfsd</TableCell>*/}
+                </TableRow>
+            </TableBody>
+        </Table>
+    )
+}
 
 
-export const AddSp = ({detail, setDetail}) => {
+export const  AddSp = ({detail, setDetail}) => {
     const DIAGRAM_PATH = import.meta.env.VITE_IMAGE_PATH + detail.pid + `/Diagrams_${detail.pid}-DM01.jpg`
     const [open, setOpen] = useState(false)
     const [dmPath,setDmPart] = useState('');
@@ -130,7 +181,7 @@ export const AddSp = ({detail, setDetail}) => {
                             <Grid2 container spacing={2}>
                                 <Typography fontWeight='bold'>บริการ</Typography>
                                 <Grid2 size={12}>
-                                    <TableService/>
+                                    <TableService data={detail} selected={selected} setSelected={setSelected}/>
                                     <Divider/>
                                 </Grid2>
                                 <Grid2 size={12}>

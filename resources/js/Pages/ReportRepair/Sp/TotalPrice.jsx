@@ -81,10 +81,10 @@ export default function TotalPrice(props) {
             spname: item.spname,
             price_per_unit: item.price_per_unit,
             spunit: item.spunit,
-            warranty: item.warranty,
+            warranty: item.warranty ?? false,
             qty: item.qty,
             remark: item.remark ? item.remark : null,
-            claim: item.claim,
+            claim: item.claim ?? false,
             price_multiple_gp: item.price_multiple_gp,
             approve: item.approve,
             approve_status: item.approve_status,
@@ -195,13 +195,15 @@ export default function TotalPrice(props) {
                                                 </TableCell>
                                                 <TableCell>{item.spcode}</TableCell>
                                                 <TableCell>
-                                                    <TextField
-                                                        variant="standard"
-                                                        size='small'
-                                                        label='เปลี่ยนชื่ออะไหล่ได้ที่นี่'
-                                                        value={item.spname}
-                                                        onChange={(e) => handelChangeName(e,item)}
-                                                    />
+                                                    {item.spcode === 'SV001' ? (
+                                                        <TextField
+                                                            variant="standard"
+                                                            size='small'
+                                                            label='เปลี่ยนชื่ออะไหล่ได้ที่นี่'
+                                                            value={item.spname}
+                                                            onChange={(e) => handelChangeName(e,item)}
+                                                        />
+                                                    ) : item.spname}
                                                 </TableCell>
                                                 <TableCell>
                                                     {parseFloat(item.price_per_unit + (item.price_per_unit * (gpDefault / 100))).toFixed(2)}
@@ -230,7 +232,7 @@ export default function TotalPrice(props) {
                                                         inputProps={{min: 1}} size="small"
                                                     />
                                                 </TableCell>
-                                                <TableCell>{item.spunit}</TableCell>
+                                                <TableCell onClick={()=>console.log(item)}>{item.sp_unit}</TableCell>
                                                 <TableCell>{itemTotal}</TableCell>
                                             </TableRow>
                                         )
