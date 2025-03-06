@@ -84,7 +84,7 @@ export default function FormRepair({detail, setDetail}) {
                     <ButtonStyle action={2} title={'รูปภาพ'} icon={<CameraAltIcon/>}/>
                     <ButtonStyle action={3} title={'อาการ/สาเหตุ'} icon={<PsychologyIcon/>}/>
                     <ButtonStyle action={4} title={'อะไหล่'} icon={<BuildIcon/>}/>
-                    <ButtonStyle action={6} title={'หมายเหตุ'} icon={<MoreHorizIcon/>}/>
+                    {/*<ButtonStyle action={6} title={'หมายเหตุ'} icon={<MoreHorizIcon/>}/>*/}
                     {approve && <ButtonStyle action={7} title={'แจ้งเตือน'} icon={<WarningIcon/>}/>}
                 </Stack>
             </Grid2>
@@ -99,7 +99,7 @@ export default function FormRepair({detail, setDetail}) {
                         {showDetail === 3 && <AddBehavior setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
                         {showDetail === 4 && <AddSp setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
                         {showDetail === 5 && <Customer setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
-                        {showDetail === 6 && <AddMore setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
+                        {/*{showDetail === 6 && <AddMore setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}*/}
                         {showDetail === 7 && <WarningApprove setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
                         {showDetail === 8 && <Symptoms setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
                     </Grid2>

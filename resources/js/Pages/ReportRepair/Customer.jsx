@@ -132,7 +132,7 @@ export const Customer = ({detail, setDetail}) => {
                     required
                     value={customer.remark}
                     onChange={(e) => {setCustomer(prevState => ({...prevState, remark: e.target.value}))}}
-                    placeholder="หมายเหตุ"
+                    placeholder="หมายเหตุสำหรับลูกค้าในการสื่อสาร เช่น ลูกค้าให้ส่งใบเสนอราคาก่อนซ่อม"
                 />
 
 

@@ -16,14 +16,32 @@ class SpareClaimController extends Controller
 {
     public function index(): Response
     {
-        $spareParts = SparePart::query()->select('sp_code', 'sp_name', DB::raw('SUM(qty) as qty'), 'sp_unit')
+//        $spareParts = SparePart::query()->select('sp_code', 'sp_name', DB::raw('SUM(qty) as qty'), 'sp_unit')
+//            ->leftJoin('job_lists', 'job_lists.job_id', '=', 'spare_parts.job_id')
+//            ->where('spare_parts.status', 'pending')
+//            ->where('spare_parts.sp_warranty',true)
+//            ->orWhere('spare_parts.approve','yes')
+//            ->orWhere('spare_parts.approve_status','yes')
+//            ->where('job_lists.status', 'like', 'success')
+//            ->where('job_lists.user_id', auth()->user()->is_code_cust_id)
+//            ->Orwhere('spare_parts.claim', true)
+//            ->groupBy('sp_code', 'sp_name', 'sp_unit')
+//            ->get();
+
+        $spareParts = SparePart::query()
+            ->select('spare_parts.sp_code', 'spare_parts.sp_name', 'spare_parts.sp_unit', DB::raw('SUM(spare_parts.qty) as qty'))
             ->leftJoin('job_lists', 'job_lists.job_id', '=', 'spare_parts.job_id')
-            ->where('spare_parts.status', 'pending')
-            ->where('spare_parts.sp_warranty',true)
+            ->where(function ($query) {
+                $query->where('spare_parts.sp_warranty', true)
+                    ->orWhere('spare_parts.approve', 'yes');
+            })
+            ->where('spare_parts.status', 'like', 'pending')
             ->where('job_lists.status', 'like', 'success')
-            ->where('job_lists.user_id', auth()->user()->is_code_cust_id)
-            ->groupBy('sp_code', 'sp_name', 'sp_unit')
+            ->groupBy('spare_parts.sp_code', 'spare_parts.sp_name', 'spare_parts.sp_unit')
             ->get();
+
+//        dd($spareParts->toArray());
+
         foreach ($spareParts as $key => $sp) {
             $sp['detail'] = SparePart::query()
                 ->leftJoin('job_lists','job_lists.job_id','spare_parts.job_id')

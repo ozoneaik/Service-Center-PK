@@ -34,7 +34,7 @@ class SymptomRequest extends FormRequest
         return [
             'job_id.required' => 'job_id is required',
             'serial_id.required' => 'serial_id is required',
-            'symptom.required' => 'symptom is required',
+            'symptom.required' => 'จำเป็นต้องกรอกอาการเบื้องต้น',
         ];
     }
 }

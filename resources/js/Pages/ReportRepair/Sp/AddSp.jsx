@@ -16,11 +16,7 @@ import TotalPrice from "@/Pages/ReportRepair/Sp/TotalPrice.jsx";
 import SelectSP from "@/Pages/ReportRepair/Sp/SelectSP.jsx";
 import {ImagePreview} from "@/Components/ImagePreview.jsx";
 import Checkbox from "@mui/material/Checkbox";
-import CheckIcon from "@mui/icons-material/Check";
 import PaletteIcon from '@mui/icons-material/Palette';
-import FormControlLabel from "@mui/material/FormControlLabel";
-import FormGroup from "@mui/material/FormGroup";
-import {data} from "autoprefixer";
 
 const TableSummary = ({pid, data}) => (
     <Table stickyHeader>
@@ -62,7 +58,9 @@ const TableService = ({data,setSelected,selected}) => {
                     spunit : 'ครั้ง',
                     claim : false,
                     remark: null,
-                    price_per_unit : 0
+                    price_per_unit : 0,
+                    approve : 'yes',
+                    approve_status : 'no'
                     }]}
                 : {
                     ...prevSelected,

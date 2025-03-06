@@ -14,15 +14,16 @@ export default function GP({gpVal,setGpVal,onSubmit}){
                     เพื่อวางแผนการดำเนินงานและเพิ่มประสิทธิภาพในการบริหารธุรกิจได้อย่างแม่นยำ
                 </Typography>
                 <TextField
+                    disabled
                     type='number' fullWidth
                     defaultValue={gpVal}
                     onChange={(e) => setGpVal(e.target.value)}
                 />
-                <Stack direction='row-reverse' mt={2}>
-                    <form onSubmit={onSubmit}>
-                        <Button type='submit' size="small" variant='contained'>บันทึก</Button>
-                    </form>
-                </Stack>
+                {/*<Stack direction='row-reverse' mt={2}>*/}
+                {/*    <form onSubmit={onSubmit}>*/}
+                {/*        <Button type='submit' size="small" variant='contained'>บันทึก</Button>*/}
+                {/*    </form>*/}
+                {/*</Stack>*/}
             </CardContent>
         </Card>
     )

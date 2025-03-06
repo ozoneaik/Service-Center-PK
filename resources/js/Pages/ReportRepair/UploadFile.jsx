@@ -197,9 +197,7 @@ export const UploadFile = ({ detail, setDetail, setShowDetail }) => {
                         <Grid2 size={12}>
                             <Alert severity="warning">
                                 <Typography fontSize={18}>
-                                    หากคุณมีการเลือกอะไหล่ที่อยู่ในรับประกันในหน้าเลือกอะไหล่
-                                    <br/>
-                                    อย่าลืมอัปโหลด <b>"ภาพอะไหล่ที่เสียส่งเคลม"</b>
+                                    กรณีที่เป็นการเคลมอะไหล่สินค้าที่อยู่ในประกัน และเคลมอะไหล่สินค้านอกประกัน ต้องมีภาพประกอบในการพิจารณา
                                 </Typography>
                             </Alert>
                         </Grid2>
@@ -212,8 +210,8 @@ export const UploadFile = ({ detail, setDetail, setShowDetail }) => {
                                 onChange={(_, newValue) => setTabValue(newValue)}
                                 aria-label="tabs"
                             >
-                                <Tab label="สำหรับลูกค้า" />
-                                <Tab label="สำหรับร้านค้า" />
+                                <Tab label="สำหรับการเคลม" />
+                                <Tab label="เพิ่มเติมสำหรับร้านค้า" />
                             </Tabs>
                         </Box>
 

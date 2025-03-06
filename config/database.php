@@ -124,6 +124,9 @@ return [
             'prefix' => '',
             'strict' => true,
             'engine' => null,
+            'options'   => extension_loaded('pdo_mysql') ? [
+                PDO::ATTR_TIMEOUT => 10, // ตั้งค่า timeout เป็น 10 วินาที
+            ] : [],
         ],
 
     ],

@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\MenuFileUploadController;
 use App\Http\Controllers\ApprovalSpController;
 use App\Http\Controllers\BehaviorController;
 use App\Http\Controllers\CustomerInJobController;
+use App\Http\Controllers\DmImageController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\genQuPdfController;
 use App\Http\Controllers\HistoryRepairController;
@@ -145,17 +146,6 @@ Route::get('/home', function () {
 
 Route::post('/genQuPdf',[genQuPdfController::class,'genQuPdf'])->name('genQuPdf');
 
-Route::get('/image-dm/{pid}', function ($pid) {
-    // ค้นหาข้อมูลจากตาราง data_file
-    $data = DB::connection('diagram')->table('data_file')
-        ->where('skufg', 'like', $pid)
-        ->limit(1)
-        ->first();
-    // ตรวจสอบว่าพบข้อมูลหรือไม่
-    if (!$data) {
-        return response()->json(['message' => 'ไม่พบข้อมูล'], 404);
-    }
-    return response()->json($data);
-});
+Route::get('/image-dm/{pid}', [DmImageController::class, 'index'])->name('dmImage');
 
 require __DIR__ . '/auth.php';
