@@ -15,7 +15,7 @@ class SymptomController extends Controller
         $symptom = $request->input('symptom');
         $serial_id = $request->input('serial_id');
         $job_id = $request->input('job_id');
-        $remark = $request->input('remark') ?? null;
+        $remark = $request->input('remark') ? $request->input('remark') : null;
         try {
             DB::beginTransaction();
             Symptom::query()->where('job_id', $job_id)->where('serial_id', $serial_id)->delete();
@@ -24,7 +24,8 @@ class SymptomController extends Controller
                 'job_id' => $job_id,
                 'symptom' => $symptom,
             ]);
-            if (!isNull($remark)){
+
+            if (isNull($remark)){
                 Remark::query()->where('job_id', $job_id)->where('serial_id', $serial_id)->delete();
                 $new_remark = Remark::query()->create([
                     'serial_id' => $serial_id,

@@ -39,13 +39,15 @@ class SearchController extends Controller
                 $searchResults['warranty_status'] = $warrantyexpire;
                 $searchResults['job'] = $this->storeJob($searchResults);
                 $job_id = $searchResults['job']['job_id'];
+                $hisSystem = $this->historyInSystem($request->sn, $searchResults);
+                $searchResults['history'] = array_merge($hisSystem,$searchResults['history']);
                 $searchResults['selected']['behavior'] = $this->BehaviorSelected($job_id);
                 $searchResults['selected']['symptom'] = $this->SymptomSelected($job_id);
                 $searchResults['selected']['remark'] = $this->RemarkSelected($job_id);
                 $searchResults['selected']['fileUpload'] = $this->FileSelected($job_id);
                 $findGP = Gp::query()->where('is_code_cust_id', auth()->user()->is_code_cust_id)->first();
                 $searchResults['selected']['globalGP'] = $findGP ? $findGP->gp_val : 0;
-                $searchResults['selected']['customerInJob'] = $this->CustomerInJob($request->sn,$job_id) ?? [];
+                $searchResults['selected']['customerInJob'] = $this->CustomerInJob($request->sn, $job_id) ?? [];
                 $sp = $this->SpSelected($job_id);
                 $searchResults['selected']['sp_warranty'] = $sp['sp_warranty'];
                 $searchResults['selected']['sp'] = $sp['sp'];
@@ -70,7 +72,8 @@ class SearchController extends Controller
         }
     }
 
-    private function SymptomSelected($job_id){
+    private function SymptomSelected($job_id)
+    {
         $symptom = Symptom::query()->where('job_id', $job_id)->first();
         return $symptom ? $symptom->symptom : null;
     }
@@ -202,6 +205,26 @@ class SearchController extends Controller
         }
 
         return [];
+    }
+
+    private function historyInSystem($serial_id, $searchResults)
+    {
+        $jobs = JobList::query()->where('serial_id', $serial_id)
+            ->where('user_id', auth()->user()->is_code_cust_id)
+            ->orderBy('id', 'desc')
+            ->get();
+        $histories = [];
+        foreach ($jobs as $key => $job) {
+            $remark = Remark::query()->where('job_id', $job->job_id)->first();
+            $histories[$key]['remark'] = $remark ? $remark->remark : 'ไม่มีข้อมูล';
+            $histories[$key]['endservice'] = $job->updated_at ? $job->updated_at->format('Y-m-d H:i:s') : 'N/A';
+            $sparePart = SparePart::query()->where('job_id', $job->job_id)
+                ->select('qty', 'sp_unit as unit', 'sp_code as spcode', 'sp_name as spname')->get();
+            $histories[$key]['sparepart'] = $sparePart->toArray();
+            $behavior = Behavior::query()->where('job_id', $job->job_id)->select('behavior_name as behaviorname')->get();
+            $histories[$key]['behavior'] = $behavior->toArray();
+        }
+        return $histories;
     }
 
 }
