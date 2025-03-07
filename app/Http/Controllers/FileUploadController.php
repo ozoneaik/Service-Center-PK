@@ -55,7 +55,7 @@ class FileUploadController extends Controller
                 foreach ($file['list'] as $key1=>$file1) {
                     if (isset($file1['image']) && $file1['image']->isValid()) {
                         // ตั้งชื่อไฟล์ใหม่ (สามารถเปลี่ยนแปลงได้)
-                        $fileName = time() . '_' . $file1['image']->getClientOriginalName();
+                        $fileName = time() . rand(0,9999) . '_' . $file1['image']->getClientOriginalName();
 
                         // บันทึกไฟล์ในโฟลเดอร์ public/uploads
                         $filePath = $file1['image']->storeAs('uploads', $fileName, 'public');

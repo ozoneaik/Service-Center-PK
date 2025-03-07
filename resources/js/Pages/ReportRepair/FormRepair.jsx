@@ -17,6 +17,7 @@ import {Customer} from "@/Pages/ReportRepair/Customer.jsx";
 import {useProductTarget} from "@/Context/ProductContext.jsx";
 import {WarningApprove} from "@/Pages/ReportRepair/WarningApprove.jsx";
 import Symptoms from "@/Pages/ReportRepair/Symptoms.jsx";
+import SpMain from "@/Pages/ReportRepair/SpNew/SpMain.jsx";
 
 export default function FormRepair({detail, setDetail}) {
     const [showDetail, setShowDetail] = useState(1);
@@ -97,7 +98,8 @@ export default function FormRepair({detail, setDetail}) {
                         {showDetail === 1 && <SummaryForm setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
                         {showDetail === 2 && <UploadFile setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
                         {showDetail === 3 && <AddBehavior setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
-                        {showDetail === 4 && <AddSp setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
+                        {/*{showDetail === 4 && <AddSp setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}*/}
+                        {showDetail === 4 && <SpMain setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
                         {showDetail === 5 && <Customer setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
                         {/*{showDetail === 6 && <AddMore setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}*/}
                         {showDetail === 7 && <WarningApprove setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
