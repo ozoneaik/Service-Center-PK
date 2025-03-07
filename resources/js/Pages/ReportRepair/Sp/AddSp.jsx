@@ -18,50 +18,64 @@ import {ImagePreview} from "@/Components/ImagePreview.jsx";
 import Checkbox from "@mui/material/Checkbox";
 import PaletteIcon from '@mui/icons-material/Palette';
 
-const TableSummary = ({pid, data}) => (
-    <Table stickyHeader>
-        <TableHead>
-            <TableRow sx={{fontWeight: 'bold'}}>
-                <TableCell width={10}>#</TableCell>
-                <TableCell>รหัสอะไหล่</TableCell>
-                <TableCell>ชื่ออะไหล่</TableCell>
-                <TableCell>จำนวน</TableCell>
-                <TableCell>หน่วย</TableCell>
-            </TableRow>
-        </TableHead>
-        <TableBody>
-            {data && data.map((item, index) => {
-                const spPath = import.meta.env.VITE_IMAGE_PATH + `${pid}/` + item.spcode + '.jpg';
-                return (
-                    <TableRow key={index}>
-                        <TableCell><ImagePreview src={spPath}/></TableCell>
-                        <TableCell>{item.spcode}</TableCell>
-                        <TableCell>{item.spname}</TableCell>
-                        <TableCell>{item.qty}</TableCell>
-                        <TableCell>{item.sp_unit ?? 'อัน'} </TableCell>
-                    </TableRow>
-                )
-            })}
-        </TableBody>
-    </Table>
-);
+const TableSummary = ({ pid, data, warranty }) => {
+    const filteredData = data?.filter(item =>
+        warranty ? (item.warranty === true || item.spcode === 'SV001')
+            : (item.warranty !== true && item.spcode !== 'SV001')
+    );
 
-const TableService = ({data,setSelected,selected}) => {
+    console.log(filteredData)
+
+    return (
+        <Table stickyHeader>
+            <TableHead>
+                <TableRow sx={{ fontWeight: 'bold' }}>
+                    <TableCell width={10}>#</TableCell>
+                    <TableCell>รหัสอะไหล่</TableCell>
+                    <TableCell>ชื่ออะไหล่</TableCell>
+                    <TableCell>จำนวน</TableCell>
+                    <TableCell>หน่วย</TableCell>
+                    {/*<TableCell>warranty</TableCell>*/}
+                </TableRow>
+            </TableHead>
+            <TableBody>
+                {filteredData.map((item, index) => {
+                    const spPath = import.meta.env.VITE_IMAGE_PATH + `${pid}/` + item.spcode + '.jpg';
+                    return (
+                        <TableRow key={index}>
+                            <TableCell><ImagePreview src={spPath} /></TableCell>
+                            <TableCell>{item.spcode}</TableCell>
+                            <TableCell>{item.spname}</TableCell>
+                            <TableCell>{item.qty}</TableCell>
+                            <TableCell>{item.sp_unit ?? 'อัน'}</TableCell>
+                            {/*<TableCell>{item.warranty ? 'w' : 'n'}</TableCell>*/}
+                        </TableRow>
+                    );
+                })}
+            </TableBody>
+        </Table>
+    );
+};
+
+
+const TableService = ({data, setSelected, selected}) => {
 
     const handelSelected = (e) => {
         const checked = e.target.checked;
         setSelected(prevSelected =>
             checked
-                ? {...prevSelected, sp: [...prevSelected.sp, {
-                    spcode : 'SV001',
-                    spname  : 'SV001',
-                    spunit : 'ครั้ง',
-                    claim : false,
-                    remark: null,
-                    price_per_unit : 0,
-                    approve : 'yes',
-                    approve_status : 'no'
-                    }]}
+                ? {
+                    ...prevSelected, sp: [...prevSelected.sp, {
+                        spcode: 'SV001',
+                        spname: 'SV001',
+                        spunit: 'ครั้ง',
+                        claim: false,
+                        remark: null,
+                        price_per_unit: 0,
+                        approve: 'yes',
+                        approve_status: 'no'
+                    }]
+                }
                 : {
                     ...prevSelected,
                     sp: prevSelected.sp.filter(spItem => spItem.spcode !== 'SV001')
@@ -86,7 +100,7 @@ const TableService = ({data,setSelected,selected}) => {
                     <TableCell>
                         <Checkbox
                             checked={selected.sp.some(l => l.spcode === 'SV001')}
-                            onChange={(e) =>handelSelected(e)}
+                            onChange={(e) => handelSelected(e)}
                             // checked={selected.sp.some(l => item.spcode === l.spcode)}
                             // disabled={item.price_per_unit === '-'}
                             // onChange={(e) => handleOnChange(item, e)}
@@ -105,10 +119,10 @@ const TableService = ({data,setSelected,selected}) => {
 }
 
 
-export const  AddSp = ({detail, setDetail}) => {
+export const AddSp = ({detail, setDetail}) => {
     const DIAGRAM_PATH = import.meta.env.VITE_IMAGE_PATH + detail.pid + `/Diagrams_${detail.pid}-DM01.jpg`
     const [open, setOpen] = useState(false)
-    const [dmPath,setDmPart] = useState('');
+    const [dmPath, setDmPart] = useState('');
     const [btnSelected, setBtnSelected] = useState(0);
     useEffect(() => {
         if (detail.selected.sp.length > 0 || detail.selected.sp_warranty.length > 0) {
@@ -130,9 +144,9 @@ export const  AddSp = ({detail, setDetail}) => {
     const testH = async () => {
         try {
             const {data, status} = await axios.get(`/image-dm/${detail.pid}`)
-            console.log(data,status)
-            setDmPart(data.pathfile_dm+data.namefile_dm);
-        }catch (error){
+            console.log(data, status)
+            setDmPart(data.pathfile_dm + data.namefile_dm);
+        } catch (error) {
             console.error(error)
         }
     }
@@ -155,17 +169,17 @@ export const  AddSp = ({detail, setDetail}) => {
                     <ImagePreview src={dmPath} width='100%'/>
                 </Grid2>
                 <Grid2 size={{xs: 12, lg: 8}}>
-                    <Button onClick={()=>testH()}>CLick show Log</Button>
+                    {/*<Button onClick={() => testH()}>CLick show Log</Button>*/}
                     {(detail.selected.sp.length > 0 || detail.selected.sp_warranty.length > 0) && btnSelected === 1 ?
                         <>
                             <Grid2 container spacing={2}>
                                 <Typography fontWeight='bold'>อะไหล่ที่อยู่ในรับประกัน</Typography>
                                 <Grid2 size={12} sx={{maxHeight: 300, overflowY: 'scroll'}}>
-                                    <TableSummary pid={detail.pid} data={spW}/>
+                                    <TableSummary pid={detail.pid} warranty={true} data={detail.selected.sp}/>
                                 </Grid2>
                                 <Typography fontWeight='bold'>อะไหล่ที่ไม่อยู่ในรับประกัน</Typography>
                                 <Grid2 size={12} sx={{maxHeight: 300, overflowY: 'scroll'}}>
-                                    <TableSummary pid={detail.pid} data={sp}/>
+                                    <TableSummary pid={detail.pid} warranty={false} data={detail.selected.sp}/>
                                 </Grid2>
                             </Grid2>
                             <Stack mt={3} direction='row' justifyContent='end' spacing={2}>
@@ -184,10 +198,10 @@ export const  AddSp = ({detail, setDetail}) => {
                                 </Grid2>
                                 <Grid2 size={12}>
                                     <Stack direction='row' spacing={2}>
-                                        <Alert sx={{mb: 1}} icon={<PaletteIcon fontSize="inherit" />} severity="success">
+                                        <Alert sx={{mb: 1}} icon={<PaletteIcon fontSize="inherit"/>} severity="success">
                                             อะไหร่ที่อยู่ในรับประกัน
                                         </Alert>
-                                        <Alert icon={<PaletteIcon fontSize="inherit" />} severity="error">
+                                        <Alert icon={<PaletteIcon fontSize="inherit"/>} severity="error">
                                             อะไหร่ที่ไม่พบราคา
                                         </Alert>
                                     </Stack>

@@ -211,10 +211,11 @@ export default function TotalPrice(props) {
                                                 <TableCell>
                                                     <TextField
                                                         value={parseFloat(item.price_multiple_gp).toFixed(2)}
-                                                        type="number" size="small"
+                                                        size="small"
+                                                        type='number'
                                                         onChange={(e) => handlePriceChange(index, e.target.value)}
                                                         disabled={isWarranty}
-                                                        inputProps={{min: 0, step: 0.01}}
+                                                        inputProps={{min: 0}}
                                                     />
                                                     <br/>
                                                     {item.remark &&

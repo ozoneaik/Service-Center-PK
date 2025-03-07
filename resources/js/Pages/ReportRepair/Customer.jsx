@@ -99,12 +99,14 @@ export const Customer = ({detail, setDetail}) => {
     return (
         <form onSubmit={onSubmit}>
             <Stack direction='column' spacing={2}>
+                <Typography>เบอร์โทรศัพท์</Typography>
                 <Stack direction='row' spacing={2}>
+
                     <TextField
                         required
                         value={customer.phone} onChange={(e) => {
                         setCustomer(prevState => ({...prevState, phone: e.target.value}))}}
-                        inputRef={tel} fullWidth placeholder='ค้นหาเบอร์โทรศัพท์' type='number' size='small'
+                        inputRef={tel} fullWidth placeholder='เบอร์โทรศัพท์' type='number' size='small'
                     />
                     <Button disabled={loading} size='small' variant='contained' onClick={() => searchCustomer()}>
                         {loading ? <CircularProgress/> : 'ค้นหา'}
@@ -134,8 +136,6 @@ export const Customer = ({detail, setDetail}) => {
                     onChange={(e) => {setCustomer(prevState => ({...prevState, remark: e.target.value}))}}
                     placeholder="หมายเหตุสำหรับลูกค้าในการสื่อสาร เช่น ลูกค้าให้ส่งใบเสนอราคาก่อนซ่อม"
                 />
-
-
                 <Stack direction='row-reverse' spacing={2}>
                     <Button variant='contained' type='submit'>บันทึก</Button>
                     <Button variant='outlined'>ยกเลิก</Button>
