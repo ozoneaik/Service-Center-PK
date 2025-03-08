@@ -19,6 +19,8 @@ class HistoryRepairController extends Controller
     {
         $jobs = JobList::query()
             ->where('is_code_key', auth()->user()->is_code_cust_id)
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
             ->orderBy('id', 'desc')
             ->get();
         return Inertia::render('HistoryPage/HistoryMain',['jobs' => $jobs]);
@@ -50,10 +52,12 @@ class HistoryRepairController extends Controller
         $searchResults = $response->json();
         $data = [];
         $hisSystem = $this->historyInSystem($serial_id);
+        $data['detail'] = $searchResults['assets'][0];
         $data['history'] = array_merge($hisSystem, $searchResults['assets'][0]['history']);
         return response()->json([
             'message' => 'success',
             'history' => $data['history'],
+            'detail' => $data['detail'],
         ]);
     }
 
@@ -61,12 +65,14 @@ class HistoryRepairController extends Controller
     private function historyInSystem($serial_id)
     {
         $jobs = JobList::query()->where('serial_id', $serial_id)
-            ->where('user_id', auth()->user()->is_code_cust_id)
+            ->where('is_code_key', auth()->user()->is_code_cust_id)
             ->orderBy('id', 'desc')
             ->get();
         $histories = [];
         foreach ($jobs as $key => $job) {
             $remark = Remark::query()->where('job_id', $job->job_id)->first();
+            $histories[$key]['status'] = $job->status;
+            $histories[$key]['close_job_by'] = $job->close_job_by;
             $histories[$key]['remark'] = $remark ? $remark->remark : 'ไม่มีข้อมูล';
             $histories[$key]['endservice'] = $job->updated_at ? $job->updated_at->format('Y-m-d H:i:s') : 'N/A';
             $sparePart = SparePart::query()->where('job_id', $job->job_id)
