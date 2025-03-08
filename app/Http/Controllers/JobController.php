@@ -8,12 +8,39 @@ use App\Models\CustomerInJob;
 use App\Models\FileUpload;
 use App\Models\JobList;
 use App\Models\SparePart;
-use GuzzleHttp\Psr7\UploadedFile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class JobController extends Controller
 {
+
+    public function check($serial_id): JsonResponse
+    {
+        try {
+            $check = JobList::query()
+                ->where('serial_id', $serial_id)
+                ->orderBy('id', 'desc')
+                ->first();
+            if ($check) {
+                if ($check->status === 'pending') {
+                    $message = 'พบ job กำลังดำเนินการ';
+                    return response()->json(['message' => $message,]);
+                } else {
+                    $message = 'serial_id นี้เคยมีการซ่อมไปแล้ว';
+                    return response()->json(['message' => $message,], 400);
+                }
+            } else {
+                $message = 'ไม่พบประวัติการซ่อมจากระบบ';
+                return response()->json(['message' => $message,], 400);
+            }
+        } catch (\Exception $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 500);
+        }
+
+    }
+
     public function update(JobRequest $request): JsonResponse
     {
         $job_id = $request->input('job_id');
@@ -25,10 +52,10 @@ class JobController extends Controller
                 if (($job->warranty === true) && (($sp->approve == 'yes') && ($sp->approve_status == 'no'))) {
                     throw new \Exception('ตรวจพบอะไหล่ที่ยังไม่ถูก approve กรุณาตรวจสอบในปุ่มแจ้งเตือน');
                 }
-                if ($job->warranty === true){
-                    if ($sp->sp_warranty === true){
+                if ($job->warranty === true) {
+                    if ($sp->sp_warranty === true) {
                         $findUploadFile = FileUpload::query()->where('job_id', $job_id)
-                            ->where('menu_id',3)
+                            ->where('menu_id', 3)
                             ->first();
                         if (!$findUploadFile) {
                             throw new \Exception('จำเป็นต้องอัปโหลดภาพอะไหล่ที่เสียส่งเคลม กรุณาตรวจสอบในปุ่มแจ้งเตือน');
@@ -44,11 +71,11 @@ class JobController extends Controller
 
             if (count($findBehavior) <= 0) {
                 throw new \Exception('จำเป็นต้องกรอกฟอร์มอาการอย่างน้อย 1 รายการ');
-            }elseif (count($findUploadFile) <= 0) {
+            } elseif (count($findUploadFile) <= 0) {
                 throw new \Exception('จำเป็นต้องกรอกฟอร์มรูปภาพอย่างน้อย 1 รายการ');
-            }elseif (count($findSparePart) <= 0) {
+            } elseif (count($findSparePart) <= 0) {
                 throw new \Exception('จำเป็นต้องเลือกอะไหล่อย่างน้อย 1 รายการ');
-            }elseif (count($findCustomerInJob) <= 0) {
+            } elseif (count($findCustomerInJob) <= 0) {
                 throw new \Exception('จำเป็นต้องกรอกข้อมูลลูกค้า');
             }
 

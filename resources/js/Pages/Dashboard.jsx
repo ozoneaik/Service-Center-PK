@@ -5,7 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ProductDetail from '@/Components/ProductDetail';
 import {useEffect, useState} from 'react';
 import Progress from "@/Components/Progress.jsx";
-import {AlertDialog} from "@/Components/AlertDialog.js";
+import {AlertDialog, AlertDialogQuestion, AlertDialogQuestionForSearch} from "@/Components/AlertDialog.js";
 import EditIcon from '@mui/icons-material/Edit';
 import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
 import FormRepair from "@/Pages/ReportRepair/FormRepair.jsx";
@@ -21,10 +21,14 @@ export default function Dashboard() {
     const [sn, setSn] = useState();
     const [showContent, setShowContent] = useState();
 
-    const fetchData = async (ser) => {
+    const fetchData = async (ser,createJob) => {
         setProcessing(true)
         try {
-            const {data} = await axios.post('/search', {sn : ser, views: 'single'});
+            const {data} = await axios.post('/search', {
+                sn : ser,
+                views: 'single',
+                createJob : createJob
+            });
             if (data.status === 'SUCCESS') {
                 const responseData = data.searchResults;
                 console.log(data.searchResults)
@@ -45,9 +49,53 @@ export default function Dashboard() {
         }
     }
 
+    const checkSn = async () => {
+        try {
+            const {data, status} = await axios.get(`/jobs/check/${sn}`);
+            console.log(data,status)
+            return {
+                message : data.message,
+                status : status
+            }
+        }catch (error){
+            console.error(error.response.data.message)
+            return {
+                message : error.response.data.message,
+                status : error.response.status  ??  500
+            }
+        }
+
+
+    }
+
+
     const searchDetail = async (e) => {
         e.preventDefault();
-        await fetchData(sn);
+        const {message, status} = await checkSn();
+        console.log(message, status);
+        if (status === 200){
+            await fetchData(sn,false);
+        }else if (status === 400){
+            AlertDialogQuestionForSearch ({
+                title : message,
+                cancelButtonText : message === 'ไม่พบประวัติการซ่อมจากระบบ' ? 'ปิด' : 'ดูแค่ประวัติการซ่อม',
+                text : 'เลือกเมนูดังต่อไปนี้',
+                onPassed : async (confirm) => {
+                    if (confirm){
+                        await fetchData(sn , true);
+                    }else{
+                        if (message === 'ไม่พบประวัติการซ่อมจากระบบ') return;
+                        await fetchData(sn , false)
+                    }
+                }
+            })
+        }else{
+            AlertDialog({
+                title : 'เกิดข้อผิดพลาด',
+                text : message,
+            })
+        }
+
     }
 
     const ButtonLink = ({icon, title, color, menu}) => (

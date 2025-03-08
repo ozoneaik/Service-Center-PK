@@ -18,7 +18,7 @@ import {usePage} from "@inertiajs/react";
 export default function CreateEmployeeThatBranch({listEmployeeThatBranch}) {
     const name = useRef(null);
     const password = useRef(null)
-    const confirmPassword = useRef(null)
+    const password_confirmation = useRef(null)
     const email = useRef(null);
     const role = useRef(null);
     const onSubmit = (e) => {
@@ -26,7 +26,7 @@ export default function CreateEmployeeThatBranch({listEmployeeThatBranch}) {
         const formData = {
             name : name.current.value,
             password : password.current.value,
-            confirm_password : confirmPassword.current.value,
+            password_confirmation : password_confirmation.current.value,
             email : email.current.value,
             role : role.current.value,
         }
@@ -112,21 +112,21 @@ export default function CreateEmployeeThatBranch({listEmployeeThatBranch}) {
                     </Grid2>
 
                     <Grid2 size={{lg : 6, md :6,sm : 12}}>
-                        <FormLabel htmlFor="confirmPassword" required>
+                        <FormLabel htmlFor="password_confirmation" required>
                             ยืนยันรหัสผ่าน
                         </FormLabel>
                         <TextField
-                            id='confirmPassword'
+                            id='password_confirmation'
                             fullWidth
                             required
-                            inputRef={confirmPassword}
+                            inputRef={password_confirmation}
                             placeholder='ex.1234'
                             type='password'
                             size='small'
                         />
                     </Grid2>
                     <Grid2 size={12}>
-                        <FormLabel htmlFor="confirmPassword" required>
+                        <FormLabel htmlFor="password_confirmation" required>
                             สิทธิ์
                         </FormLabel>
                         <Select

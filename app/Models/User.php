@@ -26,7 +26,8 @@ class User extends Authenticatable
         'admin_that_branch',
         'address',
         'phone',
-        'shop_name'
+        'user_code',
+        'shop_name',
     ];
 
     /**

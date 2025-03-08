@@ -28,6 +28,7 @@ class SearchController extends Controller
                 'sn' => $request->sn,
                 'views' => $request->views,
             ]);
+            $createJob = $request->input('createJob');
             if ($response->status() === 200) {
                 $searchResults = $response->json();
                 $warrantyexpire = $searchResults['warrantyexpire'];
@@ -37,7 +38,7 @@ class SearchController extends Controller
                 }
                 $searchResults = $searchResults['assets'][0];
                 $searchResults['warranty_status'] = $warrantyexpire;
-                $searchResults['job'] = $this->storeJob($searchResults);
+                $searchResults['job'] = $this->storeJob($searchResults,$createJob);
                 $job_id = $searchResults['job']['job_id'];
                 $hisSystem = $this->historyInSystem($request->sn, $searchResults);
                 $searchResults['history'] = array_merge($hisSystem,$searchResults['history']);
@@ -139,13 +140,14 @@ class SearchController extends Controller
         ];
     }
 
-    private function storeJob($data)
+    private function storeJob($data,$createJob)
     {
         $job = JobList::query()
             ->where('serial_id', $data['serial'])
             ->orderBy('id', 'desc')
             ->first();
-        if (!$job || $job->status === 'success') {
+        if ($createJob){
+//        if (!$job || $job->status === 'success') {
             $job = JobList::query()->create([
                 'serial_id' => $data['serial'],
                 'job_id' => "JOB-" . Carbon::now()->timestamp,
@@ -158,8 +160,8 @@ class SearchController extends Controller
                 'fac_model' => $data['facmodel'],
                 'image_sku' => $data['imagesku'],
                 'warranty' => $data['warranty_status'],
-                'user_id' => auth()->user()->is_code_cust_id,
-//                'auth_key' => auth()->user()->id,
+                'is_code_key' => auth()->user()->is_code_cust_id,
+                'user_key' => auth()->user()->user_code,
                 'status' => 'pending',
             ]);
         }
@@ -210,12 +212,15 @@ class SearchController extends Controller
     private function historyInSystem($serial_id, $searchResults)
     {
         $jobs = JobList::query()->where('serial_id', $serial_id)
-            ->where('user_id', auth()->user()->is_code_cust_id)
+            ->where('is_code_key', auth()->user()->is_code_cust_id)
+            ->where('status', 'success')
             ->orderBy('id', 'desc')
             ->get();
         $histories = [];
         foreach ($jobs as $key => $job) {
             $remark = Remark::query()->where('job_id', $job->job_id)->first();
+            $histories[$key]['status'] = $job->status;
+            $histories[$key]['close_job_by'] = $job->close_job_by;
             $histories[$key]['remark'] = $remark ? $remark->remark : 'ไม่มีข้อมูล';
             $histories[$key]['endservice'] = $job->updated_at ? $job->updated_at->format('Y-m-d H:i:s') : 'N/A';
             $sparePart = SparePart::query()->where('job_id', $job->job_id)

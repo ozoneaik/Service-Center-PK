@@ -6,6 +6,7 @@ use App\Http\Requests\EmpRequest;
 use App\Http\Requests\GpRequest;
 use App\Models\Gp;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -76,12 +77,14 @@ class ManageBranchController extends Controller
             $status = 200;
             $message = 'บันทึกข้อมูลเสร็จสิ้น';
             $newEmp = User::query()->create([
+                'user_code' => 'SV-'.rand(1000000, 9999999).auth()->user()->user_code,
                 'name' => $request->input('name'),
                 'email' => $request->input('email'),
                 'password' => Hash::make($request->input('password')),
                 'is_code_cust_id' => auth()->user()->is_code_cust_id,
                 'address' => auth()->user()->address,
                 'phone' => auth()->user()->phone,
+                'shop_name' => auth()->user()->shop_name,
                 'role' => 'service',
                 'admin_that_branch' => $request->input('role') === 'admin',
             ]);

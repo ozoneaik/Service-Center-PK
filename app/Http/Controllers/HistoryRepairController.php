@@ -17,7 +17,11 @@ class HistoryRepairController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('HistoryPage/HistoryMain');
+        $jobs = JobList::query()
+            ->where('is_code_key', auth()->user()->is_code_cust_id)
+            ->orderBy('id', 'desc')
+            ->get();
+        return Inertia::render('HistoryPage/HistoryMain',['jobs' => $jobs]);
     }
 
     public function search(Request $request): JsonResponse
@@ -29,10 +33,10 @@ class HistoryRepairController extends Controller
 
         $search = CustomerInJob::query()
             ->leftJoin('job_lists', 'job_lists.job_id', '=', 'customer_in_jobs.job_id')
-            ->where('phone',$request->get('search'))
-            ->where('job_lists.status','success')
-            ->select('job_lists.serial_id','job_lists.pid','job_lists.p_name','job_lists.image_sku','job_lists.warranty as warranty_status')
-            ->groupBy('job_lists.serial_id','job_lists.pid','job_lists.p_name','job_lists.image_sku','job_lists.warranty')
+            ->where('phone', $request->get('search'))
+            ->where('job_lists.status', 'success')
+            ->select('job_lists.serial_id', 'job_lists.pid', 'job_lists.p_name', 'job_lists.image_sku', 'job_lists.warranty as warranty_status')
+            ->groupBy('job_lists.serial_id', 'job_lists.pid', 'job_lists.p_name', 'job_lists.image_sku', 'job_lists.warranty')
             ->get();
         return response()->json($search);
     }
@@ -46,7 +50,7 @@ class HistoryRepairController extends Controller
         $searchResults = $response->json();
         $data = [];
         $hisSystem = $this->historyInSystem($serial_id);
-        $data['history'] = array_merge($hisSystem,$searchResults['assets'][0]['history']);
+        $data['history'] = array_merge($hisSystem, $searchResults['assets'][0]['history']);
         return response()->json([
             'message' => 'success',
             'history' => $data['history'],

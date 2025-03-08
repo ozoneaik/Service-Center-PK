@@ -25,7 +25,9 @@ return new class extends Migration
             $table->string('image_sku')->nullable();
             $table->string('status')->default('pending');
             $table->boolean('warranty')->default(false)->comment('สถานะรับประกัน');
-            $table->string('user_id')->comment('ผู้สร้าง job');
+            $table->string('user_key')->comment('ผู้สร้าง job');
+            $table->string('is_code_key')->comment('ร้านที่รับผิดชอบ');
+            $table->string('close_job_by')->nullable()->comment('ปิด job โดย');
             $table->timestamps();
         });
     }

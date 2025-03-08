@@ -16,7 +16,7 @@ import Select from '@mui/material/Select';
 import {useRef, useState} from "react";
 import {ListDetailModal} from "@/Pages/HistoryPage/ListDetailModal.jsx";
 
-export default function HistoryMain() {
+export default function HistoryMain({jobs}) {
     const [open ,setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const custPhone = useRef(null);
@@ -24,6 +24,7 @@ export default function HistoryMain() {
     const [searchBy, setSearchBy] = useState(0);
     const [listSku, setListSku] = useState([]);
     const [listSelected, setListSelected] = useState()
+    console.log(jobs)
 
     const handelSearch = async () => {
         setLoading(true)
@@ -63,42 +64,42 @@ export default function HistoryMain() {
                             </FormControl>
                             <Button variant='contained' onClick={()=>handelSearch()}>ค้นหา</Button>
                         </Stack>
-                        {!loading ? (
-                            <Grid2 container spacing={2}>
-                                {listSku.map((item,index) => (
-                                    <Grid2 key={index} size={{md: 3, xl: 2, sm: 6}}>
-                                        <Card>
-                                            <CardMedia
-                                                sx={{height: 140, width: '100%'}}
-                                                image={item.image_sku}
-                                                title="green iguana"
-                                            />
-                                            <CardContent>
-                                                <Stack direction='column' spacing={1}>
-                                                    <Typography variant="h6">
-                                                        SN : {item.serial_id}
-                                                    </Typography>
-                                                    <Typography variant="body2" sx={{color: 'text.secondary'}}>
-                                                        รหัสสินค้า : {item.pid}
-                                                    </Typography>
-                                                    <Typography variant="body2" sx={{color: 'text.secondary'}}>
-                                                        ชื่อสินค้า : {item.p_name}
-                                                    </Typography>
-                                                </Stack>
-                                            </CardContent>
-                                            <CardActions>
-                                                <Button onClick={() => {
-                                                    setListSelected(item)
-                                                    setOpen(true)
-                                                }} size="small">ประวัติการซ่อม</Button>
-                                            </CardActions>
-                                        </Card>
-                                    </Grid2>
-                                ))}
-                            </Grid2>
-                        ) : (
-                            <CircularProgress/>
-                        )}
+                        {/*{!loading ? (*/}
+                        {/*    <Grid2 container spacing={2}>*/}
+                        {/*        {listSku.map((item,index) => (*/}
+                        {/*            <Grid2 key={index} size={{md: 3, xl: 2, sm: 6}}>*/}
+                        {/*                <Card>*/}
+                        {/*                    <CardMedia*/}
+                        {/*                        sx={{height: 140, width: '100%'}}*/}
+                        {/*                        image={item.image_sku}*/}
+                        {/*                        title="green iguana"*/}
+                        {/*                    />*/}
+                        {/*                    <CardContent>*/}
+                        {/*                        <Stack direction='column' spacing={1}>*/}
+                        {/*                            <Typography variant="h6">*/}
+                        {/*                                SN : {item.serial_id}*/}
+                        {/*                            </Typography>*/}
+                        {/*                            <Typography variant="body2" sx={{color: 'text.secondary'}}>*/}
+                        {/*                                รหัสสินค้า : {item.pid}*/}
+                        {/*                            </Typography>*/}
+                        {/*                            <Typography variant="body2" sx={{color: 'text.secondary'}}>*/}
+                        {/*                                ชื่อสินค้า : {item.p_name}*/}
+                        {/*                            </Typography>*/}
+                        {/*                        </Stack>*/}
+                        {/*                    </CardContent>*/}
+                        {/*                    <CardActions>*/}
+                        {/*                        <Button onClick={() => {*/}
+                        {/*                            setListSelected(item)*/}
+                        {/*                            setOpen(true)*/}
+                        {/*                        }} size="small">ประวัติการซ่อม</Button>*/}
+                        {/*                    </CardActions>*/}
+                        {/*                </Card>*/}
+                        {/*            </Grid2>*/}
+                        {/*        ))}*/}
+                        {/*    </Grid2>*/}
+                        {/*) : (*/}
+                        {/*    <CircularProgress/>*/}
+                        {/*)}*/}
 
                     </div>
 

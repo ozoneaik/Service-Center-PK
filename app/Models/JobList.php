@@ -21,7 +21,7 @@ class JobList extends Model
         'warranty',
         'auth_key',
         'is_code_key',
-        'user_id'
-
+        'user_key',
+        'close_job_by'
     ];
 }

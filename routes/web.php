@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\MenuFileUploadController;
+use App\Http\Controllers\Admin\UserManageController;
 use App\Http\Controllers\ApprovalSpController;
 use App\Http\Controllers\BehaviorController;
 use App\Http\Controllers\CustomerInJobController;
@@ -42,8 +43,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/search', [SearchController::class, 'detail'])->name('search');
 
 
-    // ปืดงานซ่อม
+    // จัดการ Jobs
     Route::prefix('jobs')->group(function () {
+        Route::get('/check/{serial_id}', [JobController::class, 'check'])->name('jobs.check');
         Route::post('/update', [JobController::class, 'update'])->name('jobs.update');
     });
 
@@ -101,6 +103,9 @@ Route::middleware('auth')->group(function () {
             Route::prefix('approval')->group(function (){
                Route::get('/index',[ApprovalSpController::class, 'index'])->name('approvalSp.index');
                Route::put('/update/{spId}/{approve_status}',[ApprovalSpController::class,'updateStatus'])->name('approvalSp.update');
+            });
+            Route::prefix('users-manage')->group(function(){
+               Route::get('/list', [UserManageController::class, 'list'])->name('userManage.list');
             });
         });
     });

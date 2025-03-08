@@ -24,19 +24,24 @@ class EmpRequest extends FormRequest
     {
         return [
             'name' => 'required',
-            'email' => 'required',
-            'password' => 'required',
-            'confirm_password' => 'required|same:password',
+            'email' => ['required', 'unique:users,email'],
+            'password' => ['required', 'confirmed'],
+            'password_confirmation' => 'required',
             'role' => 'required',
         ];
     }
-    public function messages(): array{
+
+    public function messages(): array
+    {
         return [
-            'name.required' => 'Name is required.',
-            'email.required' => 'Email is required.',
-            'password.required' => 'Password is required.',
-            'confirm_password.required' => 'Confirm Password is required.',
-            'role.required' => 'Role is required.',
+            'name.required' => 'กรุณากรอกชื่อ',
+            'email.required' => 'กรุณากรอกอีเมล',
+            'password.required' => 'กรุณากรอกรหัสผ่าน',
+            'password_confirmation.required' => 'กรุณายืนยันรหัสผ่าน',
+            'role.required' => 'กรุณาเลือกสิทธิ์การใช้งาน',
+            'email.unique' => 'อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่น',
+            'password.confirmed' => 'รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน',
         ];
     }
+
 }

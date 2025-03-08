@@ -23,14 +23,9 @@ export default function LayoutMangeAdmin({children}) {
             path: "approvalSp.index"
         },
         {
-            text: "เมนูอัปโหลดรูปภาพ",
-            icon: <DashboardIcon/>,
-            path: "approvalSp.index"
-        },
-        {
             text: "จัดการผู้ใช้",
             icon: <DashboardIcon/>,
-            path: "approvalSp.index"
+            path: "userManage.list"
         },
     ];
 

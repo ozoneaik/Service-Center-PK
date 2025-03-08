@@ -25,6 +25,7 @@ class SearchRequest extends FormRequest
         return [
             'sn' => 'required',
             'views' => 'required',
+            'createJob' => ['required','boolean'],
         ];
     }
 
@@ -32,6 +33,8 @@ class SearchRequest extends FormRequest
         return [
             'sn.required' => 'sn is required',
             'views.required' => 'views is required',
+            'createJob.required' => 'create job is required',
+            'createJob.boolean' => 'create job must be an boolean',
         ];
     }
 }

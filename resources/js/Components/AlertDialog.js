@@ -11,7 +11,7 @@ export function AlertDialog({
                                 title,
                                 text,
                                 icon = 'error',
-                                onPassed,
+                                onPassed = () => {},
                                 showCancelButton = true,
                             }) {
     Swal.fire({
@@ -45,13 +45,27 @@ export function AlertWithFormDialog({title, text, icon = 'error', res}) {
     });
 }
 
-export function AlertDialogQuestion({text, onPassed, showCancelButton = true}) {
+export function AlertDialogQuestion({title='แน่ใจหรือไม่',text, onPassed, showCancelButton = true}) {
     Swal.fire({
         icon: 'question',
-        title: 'แน่ใจหรือไม่',
+        title,
         text,
         showCancelButton,
         ...options
+    }).then((result) => {
+        onPassed(result.isConfirmed)
+    })
+}
+
+export function AlertDialogQuestionForSearch({title='แน่ใจหรือไม่',text,cancelButtonText = 'ดูแค่ประวัติการซ่อม', onPassed=()=>{}}) {
+    Swal.fire({
+        icon: 'question',
+        title,
+        text,
+        showCancelButton : true,
+        cancelButtonText,
+        confirmButtonText : 'สร้าง job ใหม่',
+        allowOutsideClick : false,
     }).then((result) => {
         onPassed(result.isConfirmed)
     })
