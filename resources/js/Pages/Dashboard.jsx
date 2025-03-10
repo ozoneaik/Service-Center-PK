@@ -22,7 +22,7 @@ export default function Dashboard() {
     const [showContent, setShowContent] = useState();
 
     const fetchData = async (ser,createJob) => {
-        setProcessing(true)
+        setProcessing(true);
         try {
             const {data} = await axios.post('/search', {
                 sn : ser,
@@ -71,6 +71,7 @@ export default function Dashboard() {
 
     const searchDetail = async (e) => {
         e.preventDefault();
+        setProcessing(true)
         const {message, status} = await checkSn();
         console.log(message, status);
         if (status === 200){
@@ -95,6 +96,7 @@ export default function Dashboard() {
                 text : message,
             })
         }
+        setProcessing(false);
 
     }
 

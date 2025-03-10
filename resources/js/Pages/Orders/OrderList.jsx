@@ -1,223 +1,129 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {
-    Button, Card,
-    Container,
-    Grid2,
-    Stack,
-    Table, TableBody, TableCell, TableHead, TableRow, TextField,
-    Typography,
-    Box
-} from "@mui/material";
-import { useRef, useState } from "react";
-import { ImagePreview } from "@/Components/ImagePreview.jsx";
-import Checkbox from "@mui/material/Checkbox";
+import {Button, Card, Container, Grid2, Paper, Stack, TextField, Badge} from "@mui/material";
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import HistoryIcon from '@mui/icons-material/History';
+import {useMemo, useRef, useState} from "react";
+import RowView from "@/Pages/Orders/RowView.jsx";
+import SumOrder, {CartProvider, useCart} from "@/Pages/Orders/SumOrder.jsx";
+import {Link} from "@inertiajs/react";
+
 
 export default function OrderList() {
-    const search = useRef(null);
-    const [diagram, setDiagram] = useState('');
-    const [productDetail, setProductDetail] = useState([]);
-    const [selectedItems, setSelectedItems] = useState({});
-    const [quantities, setQuantities] = useState({});
+    const [dmPreview, setDmPreview] = useState('');
+    const [spList, setSpList] = useState([]);
+    const searchSku = useRef(null);
+    const [open, setOpen] = useState(false);
 
-    const searchProduct = async () => {
-        const productOrModel = search.current.value;
-        const { data, status } = await axios.post('https://slip.pumpkin.tools/diagrams/diagram.php', {
-            productOrModel,
-            serialNumber: ""
-        });
+    const handleSearch = async (e) => {
+        e.preventDefault();
+        const {data, status} = await axios.get(`/orders/search/${searchSku.current.value}`);
 
         if (status === 200) {
-            console.log(data, status)
-            setProductDetail(data.data);
-            setDiagram(data.data[0].pathfile_dm + data.data[0].namefile_dm);
-            // Reset selections when new search is performed
-            setSelectedItems({});
-            setQuantities({});
-        } else {
-            setProductDetail([]);
-            setDiagram('');
-        }
-    };
-
-    const handleSelectAll = (event) => {
-        const newSelectedItems = {};
-        const newQuantities = {};
-
-        if (event.target.checked) {
-            productDetail.forEach(item => {
-                newSelectedItems[item.skusp] = true;
-                newQuantities[item.skusp] = quantities[item.skusp] || 1;
-            });
-        }
-
-        setSelectedItems(newSelectedItems);
-        setQuantities(newQuantities);
-    };
-
-    const handleSelectItem = (skusp) => {
-        setSelectedItems(prev => {
-            const newSelected = { ...prev };
-            if (newSelected[skusp]) {
-                delete newSelected[skusp];
-                // Also remove quantity when unselecting
-                setQuantities(prev => {
-                    const newQuantities = { ...prev };
-                    delete newQuantities[skusp];
-                    return newQuantities;
-                });
-            } else {
-                newSelected[skusp] = true;
-                // Set default quantity of 1 when selecting
-                setQuantities(prev => ({
-                    ...prev,
-                    [skusp]: 1
-                }));
+            console.log(data, status);
+            setSpList(data.result.sp);
+            if (data.result.sp && data.result.sp.length > 0) {
+                await fetchDm();
             }
-            return newSelected;
-        });
+        } else {
+            setSpList([]);
+            setDmPreview('');
+        }
     };
 
-    const handleQuantityChange = (skusp, value) => {
-        const quantity = Math.max(1, parseInt(value) || 1);
-        setQuantities(prev => ({
-            ...prev,
-            [skusp]: quantity
-        }));
-    };
+    const fetchDm = async () => {
+        try {
+            const {data, status} = await axios.get(`/image-dm/${searchSku.current.value}`)
+            console.log(data, status)
+            setDmPreview(data.pathfile_dm + data.namefile_dm);
+        } catch (error) {
+            console.error(error)
+        }
+    }
 
-    const handleOrder = () => {
-        const orderItems = productDetail
-            .filter(item => selectedItems[item.skusp])
-            .map(item => ({
-                skusp: item.skusp,
-                skuspname: item.skuspname,
-                quantity: quantities[item.skusp] || 1,
-                price: item.stdprice,
-                total: (quantities[item.skusp] || 1) * item.stdprice
-            }));
+    return (
+        <CartProvider> {/* ครอบ component ด้วย CartProvider */}
+            <OrderListContent
+                dmPreview={dmPreview}
+                spList={spList}
+                searchSku={searchSku}
+                handleSearch={handleSearch}
+                open={open}
+                setOpen={setOpen}
+            />
+        </CartProvider>
+    );
+}
 
-        // Calculate order total
-        const orderTotal = orderItems.reduce((sum, item) => sum + item.total, 0);
+// แยก component เนื้อหาออกมาเพื่อให้สามารถใช้ useCart ได้
+function OrderListContent({dmPreview, spList, setCardView, searchSku, handleSearch, open, setOpen}) {
+    const {cartItems} = useCart(); // ใช้ hook useCart เพื่อเข้าถึงข้อมูลตะกร้า
 
-        console.log('Order Details:', { items: orderItems, total: orderTotal });
-        // Here you would typically make an API call to submit the order
-    };
-
-    const getSelectedItemsCount = () => Object.keys(selectedItems).length;
-
-    const getOrderTotal = () => {
-        return productDetail
-            .filter(item => selectedItems[item.skusp])
-            .reduce((total, item) => total + (item.stdprice * (quantities[item.skusp] || 1)), 0);
-    };
+    const handleBuyOrder = async (cartItems) => {
+        const {data,status} = await axios.post('/orders/store',{
+            spList : cartItems
+        })
+        console.log(data, status)
+        if (status === 200) {
+            alert('คำสั่งซื้อได้รับการยืนยันแล้ว');
+            window.location.href = '/orders/history';
+        }
+    }
 
     return (
         <AuthenticatedLayout>
-            <Container maxWidth='false' sx={{marginTop: 10}}>
+            {open && <SumOrder open={open} setOpen={setOpen} onBuyOrder={(cartItems) => handleBuyOrder(cartItems)}/>}
+            <Container maxWidth='false' sx={{backgroundColor: 'white', p: 3}}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
-                        <Stack direction='row' spacing={1}>
-                            <TextField
-                                inputRef={search}
-                                fullWidth
-                                size='small'
-                                sx={{backgroundColor: 'white'}}
-                                placeholder={'ค้นหา serial'}
-                            />
-                            <Button
-                                onClick={searchProduct}
-                                variant='contained'
-                            >
-                                ค้นหา
-                            </Button>
-                        </Stack>
-                    </Grid2>
-                    <Grid2 size={{lg: 5, md: 6}}>
-                        <ImagePreview width='70%' src={diagram}/>
-                    </Grid2>
-                    <Grid2 size={{lg: 7, md: 6}} height={700} overflow='scroll'>
-                        <Table stickyHeader>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>
-                                        <Checkbox
-                                            checked={getSelectedItemsCount() === productDetail.length && productDetail.length > 0}
-                                            onChange={handleSelectAll}
-                                            indeterminate={getSelectedItemsCount() > 0 && getSelectedItemsCount() < productDetail.length}
-                                        />
-                                    </TableCell>
-                                    <TableCell>รูปภาพ</TableCell>
-                                    <TableCell>รหัสอะไหล่</TableCell>
-                                    <TableCell>ชื่ออะไหล่</TableCell>
-                                    <TableCell>ราคาต่อหน่วย</TableCell>
-                                    <TableCell>จำนวน</TableCell>
-                                    <TableCell>ราคารวม</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {productDetail.map((item, index) => (
-                                    <TableRow key={index}>
-                                        <TableCell>
-                                            <Checkbox
-                                                checked={!!selectedItems[item.skusp]}
-                                                onChange={() => handleSelectItem(item.skusp)}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <ImagePreview
-                                                src={item.pathfile_sp + item.skufg + '/' + item.namefile_sp}
-                                            />
-                                        </TableCell>
-                                        <TableCell>{item.skusp}</TableCell>
-                                        <TableCell>{item.skuspname}</TableCell>
-                                        {/*<TableCell>{item.stdprice.toLocaleString()} บาท</TableCell>*/}
-                                        <TableCell>{item.price ?? 0}</TableCell>
-                                        <TableCell>
-                                            {selectedItems[item.skusp] && (
-                                                <TextField
-                                                    type="number"
-                                                    size="small"
-                                                    value={quantities[item.skusp] || 1}
-                                                    onChange={(e) => handleQuantityChange(item.skusp, e.target.value)}
-                                                    inputProps={{ min: 1 }}
-                                                    sx={{ width: '80px' }}
-                                                />
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            {selectedItems[item.skusp]
-                                                ? ((quantities[item.skusp] || 1) * item.price).toLocaleString() + ' บาท'
-                                                : '-'
-                                            }
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </Grid2>
-                    <Grid2 size={{lg: 12, md: 6}}>
-                        <Card sx={{ p: 2, mt: 2 }}>
-                            <Stack spacing={2}>
-                                <Typography variant='h5'>สั่งซื้ออะไหล่</Typography>
-                                <Box display="flex" justifyContent="space-between" alignItems="center">
-                                    <Typography>
-                                        รายการที่เลือก: {getSelectedItemsCount()} รายการ
-                                    </Typography>
-                                    <Typography variant="h6">
-                                        ยอดรวมทั้งสิ้น: {getOrderTotal().toLocaleString()} บาท
-                                    </Typography>
+                        <form onSubmit={handleSearch}>
+                            <Stack direction='row' spacing={2}>
+                                <TextField required inputRef={searchSku} fullWidth label='ค้นหารหัสสินค้า' type='text'/>
+                                <Button type='submit' variant='contained'>ค้นหา</Button>
+                                <Badge badgeContent={cartItems.length} color="error">
                                     <Button
-                                        variant="contained"
-                                        color="primary"
-                                        disabled={getSelectedItemsCount() === 0}
-                                        onClick={handleOrder}
-                                    >
-                                        ยืนยันการสั่งซื้อ
-                                    </Button>
-                                </Box>
+                                        onClick={() => setOpen(true)}
+                                        startIcon={<AddShoppingCartIcon/>}
+                                        color='secondary'
+                                        variant='contained'
+                                    />
+                                </Badge>
+                                <Button
+                                    component={Link}
+                                    href='/orders/history'
+                                    startIcon={<HistoryIcon/>}
+                                    color='secondary'
+                                    variant='contained'
+                                >
+                                    ประวัติการสั่งซื้อ
+                                </Button>
                             </Stack>
-                        </Card>
+                        </form>
                     </Grid2>
+                    {spList.length > 0 && (
+                        <>
+                            <Grid2 size={{md: 3, sm: 12}}>
+                                <Card variant='outlined'>
+                                    <img
+                                        width='100%'
+                                        src={dmPreview || ''}
+                                        alt='no image'
+                                    />
+                                </Card>
+                            </Grid2>
+                            <Grid2 size={{md: 9, sm: 12}}>
+                                <Paper variant='outlined' sx={{p: 3}}>
+                                    <Grid2 container spacing={2}>
+                                        {/*<Stack direction='row' spacing={2} sx={{width: '100%'}}>*/}
+                                        {/*    <TextField fullWidth label={'ค้นหาอะไหล่'}/>*/}
+                                        {/*</Stack>*/}
+                                        <Grid2 container spacing={2} height={650} sx={{overflowY: 'scroll'}}>
+                                            <RowView spList={spList}/>
+                                        </Grid2>
+                                    </Grid2>
+                                </Paper>
+                            </Grid2>
+                        </>
+                    )}
                 </Grid2>
             </Container>
         </AuthenticatedLayout>

@@ -12,6 +12,7 @@ use App\Http\Controllers\genQuPdfController;
 use App\Http\Controllers\HistoryRepairController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\ManageBranchController;
+use App\Http\Controllers\Orders\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RemarkController;
 use App\Http\Controllers\SearchController;
@@ -121,10 +122,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/fetchDataLocal/{serial_id}',[WarrantyProductController::class,'fetchDataLocal'])->name('warranty.fetchDataLocal');
     });
 
+    // สั่งซื้ออะไหล่
     Route::prefix('orders')->group(function () {
-        Route::get('/list', function () {
-            return Inertia::render('Orders/OrderList0');
-        })->name('orders.list');
+        Route::get('/list', [OrderController::class,'index'])->name('orders.list');
+        Route::get('/search/{sku}',[OrderController::class,'search'])->name('orders.search');
+        Route::post('/store',[OrderController::class,'store'])->name('orders.store');
+        Route::get('/history',[OrderController::class,'history'])->name('orders.history');
     });
 
     Route::prefix('history')->group(function () {
