@@ -128,9 +128,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/search/{sku}',[OrderController::class,'search'])->name('orders.search');
         Route::post('/store',[OrderController::class,'store'])->name('orders.store');
         Route::get('/history',[OrderController::class,'history'])->name('orders.history');
+        Route::get('/history-detail/{order_id}',[OrderController::class,'historyDetail'])->name('orders.historyDetail');
+        Route::get('/success',[OrderController::class,'orderSuccess'])->name('orders.success');
     });
 
-    Route::prefix('history')->group(function () {
+    Route::prefix('history')->group(function (  ) {
        Route::get('/index', [HistoryRepairController::class,'index'])->name('history.index');
        Route::post('/search',[HistoryRepairController::class,'search'])->name('history.search');
        Route::get('/detail/{serial_id}' ,[HistoryRepairController::class,'detail'])->name('history.detail');

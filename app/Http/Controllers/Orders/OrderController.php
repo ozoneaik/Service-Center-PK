@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
 use App\Models\Order;
 use App\Models\OrderSpList;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -107,6 +109,25 @@ class OrderController extends Controller
             ->where('is_code_key',auth()->user()->is_code_cust_id)
             ->orderBy('id', 'desc')->paginate(100);
         return Inertia::render('Orders/OrderHistory', ['history' => $history]);
+    }
+
+    public function historyDetail($order_id): Response|RedirectResponse
+    {
+        $order = Order::query()->where('order_id', $order_id)->first();
+        $listSp = OrderSpList::query()->where('order_id', $order_id)->get();
+        if (!$order) return redirect()->route('unauthorized');
+        $customer = User::query()->where('is_code_cust_id', $order->is_code_key)->first();
+        $totalPrice = 0;
+        foreach ($listSp as $sp) {
+            $totalPrice += $sp->price_per_unit * $sp->qty;
+        }
+        $order['totalPrice'] = round($totalPrice, 2);
+        return Inertia::render('Orders/OrderHistoryDetail',['order' => $order,'listSp' => $listSp,'customer'=>$customer]);
+    }
+
+    public function orderSuccess(): Response
+    {
+        return Inertia::render('Orders/OrderSuccess');
     }
 
 }

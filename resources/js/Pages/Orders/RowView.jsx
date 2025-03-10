@@ -1,5 +1,5 @@
 import { Button, Card, CardContent,Grid2, Stack, Typography } from "@mui/material";
-import { useCart } from "@/Pages/Orders/SumOrder";
+import {useCart} from "@/Pages/Orders/CartContext.jsx";
 
 export default function RowView({ spList }) {
     const { cartItems, addToCart } = useCart();

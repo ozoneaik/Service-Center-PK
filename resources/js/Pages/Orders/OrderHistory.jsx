@@ -12,6 +12,7 @@ import {
     Chip,
     Button
 } from "@mui/material";
+import {Link} from "@inertiajs/react";
 
 export default function OrderHistory({history}) {
     const historyList = history.data;
@@ -44,12 +45,18 @@ export default function OrderHistory({history}) {
                                             <Chip
                                                 label={item.status_text}
                                                 color={
-                                                    item.status === "pending" ? "warning" : item.status === "success" ? "success" : item.status === 'progress' ? 'secondary':  item.status === 'calceled' ? 'error' : 'info'
+                                                    item.status === "pending" ? "warning" : item.status === "success" ? "success" : item.status === 'progress' ? 'secondary' : item.status === 'calceled' ? 'error' : 'info'
                                                 }
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <Button variant='contained' size='small'>ดู</Button>
+                                            <Button
+                                                variant='contained'
+                                                size='small'
+                                                composer={Link}
+                                                href={`/orders/history-detail/${item.order_id}`}
+                                            >
+                                                ดู</Button>
                                         </TableCell>
                                     </TableRow>
                                 ))

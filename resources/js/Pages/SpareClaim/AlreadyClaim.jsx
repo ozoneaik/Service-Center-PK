@@ -14,7 +14,6 @@ export default function AlreadyClaim({spareParts}) {
         checked: false,
         detail: item.detail.map(detailItem => ({...detailItem, checked: false}))
     })));
-    // const [selected, setSelected] = useState([]);
 
     useEffect(() => {
         console.log(spareParts)
