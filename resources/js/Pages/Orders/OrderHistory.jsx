@@ -1,22 +1,19 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {
-    Container,
-    Typography,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    Chip,
-    Button
+    Container, Paper,
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    Typography, Chip, Button
 } from "@mui/material";
 import {Link} from "@inertiajs/react";
 
 export default function OrderHistory({history}) {
     const historyList = history.data;
-
+    const ColorStatus = (status) => ({
+        pending: 'warning',
+        success: 'success',
+        progress: 'secondary',
+        canceled: 'error'
+    }[status] || 'info');
     return (
         <AuthenticatedLayout>
             <Container maxWidth="false" sx={{mt: 4}}>
@@ -30,6 +27,7 @@ export default function OrderHistory({history}) {
                                 <TableCell>#</TableCell>
                                 <TableCell>หมายเลขคำสั่งซื้อ</TableCell>
                                 <TableCell>วันที่สั่งซื้อ</TableCell>
+                                <TableCell>ที่อยู่</TableCell>
                                 <TableCell>สถานะ</TableCell>
                                 <TableCell>รายละเอียด</TableCell>
                             </TableRow>
@@ -41,22 +39,17 @@ export default function OrderHistory({history}) {
                                         <TableCell>{index + 1}</TableCell>
                                         <TableCell>{item.order_id}</TableCell>
                                         <TableCell>{new Date(item.buy_at).toLocaleString()}</TableCell>
+                                        <TableCell>{item.address}</TableCell>
                                         <TableCell>
-                                            <Chip
-                                                label={item.status_text}
-                                                color={
-                                                    item.status === "pending" ? "warning" : item.status === "success" ? "success" : item.status === 'progress' ? 'secondary' : item.status === 'calceled' ? 'error' : 'info'
-                                                }
-                                            />
+                                            <Chip label={item.status_text} color={ColorStatus(item.status)}/>
                                         </TableCell>
                                         <TableCell>
                                             <Button
-                                                variant='contained'
-                                                size='small'
-                                                composer={Link}
+                                                variant='contained' size='small' component={Link}
                                                 href={`/orders/history-detail/${item.order_id}`}
                                             >
-                                                ดู</Button>
+                                                ดู
+                                            </Button>
                                         </TableCell>
                                     </TableRow>
                                 ))

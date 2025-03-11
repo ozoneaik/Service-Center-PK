@@ -18,6 +18,9 @@ return new class extends Migration
             $table->string('user_key')->comment('คนสั่งซื้อ');
             $table->string('status')->default('pending')->comment('สถานะคำสั่งซื้อ');
             $table->dateTime('buy_at')->comment('สั่งซื้อเมื่อ');
+            $table->longText('address')->comment('ที่อยู่');
+            $table->string('pay_by', 50)->default('บัญชีธนาคาร')->comment('ชำระเงินโดย');
+            $table->dateTime('pay_at')->nullable()->comment('ชำระเงินเมื่อ');
             $table->dateTime('process_at')->nullable()->comment('รับคำสั่งซื้อเมื่อ');
             $table->string('process_user_key')->nullable()->comment('คนรับคำสั่งซื้อ');
             $table->dateTime('success_at')->nullable()->comment('สั่งซื้อสำเร็จเมื่อ');

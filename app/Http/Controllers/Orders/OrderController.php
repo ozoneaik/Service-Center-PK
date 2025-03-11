@@ -41,6 +41,8 @@ class OrderController extends Controller
                     foreach ($result['sp'] as $key => $resultItem) {
                         $result['sp'][$key] = $resultItem;
                         $result['sp'][$key]['skufg'] = $sku;
+                        $result['sp'][$key]['pname'] = $data['assets'][0]['pname'];
+                        $result['sp'][$key]['imagesku'] = $data['assets'][0]['imagesku'];
                         $result['sp'][$key]['path_file'] = $imagePath . "$sku/" . $result['sp'][$key]['spcode'] . ".jpg";
                     }
                 } else throw new \Exception('ไม่พบรหัสสินค้านี้');
@@ -70,6 +72,7 @@ class OrderController extends Controller
                 'is_code_key' => $is_code_cust_id,
                 'user_key' => $user_code,
                 'buy_at' => Carbon::now(),
+                'address' => $request->input('address') . $request->input('phone'),
             ]);
             if (!$order) throw new \Exception('ไม่สามารถสร้าง order ได้');
             $dataSp = [];

@@ -28,6 +28,8 @@ class OrderRequest extends FormRequest
             'spList.*.path_file' => 'required|string',
             'spList.*.quantity' => 'required|integer|min:1',
             'spList.*.price_per_unit' => 'required|numeric|min:0',
+            'address' => 'required|string',
+            'phone' => 'required|string',
         ];
     }
 
@@ -44,6 +46,8 @@ class OrderRequest extends FormRequest
             'spList.*.price_per_unit.required' => 'ต้องระบุราคาอะไหล่',
             'spList.*.price_per_unit.numeric' => 'ราคาอะไหล่ต้องเป็นตัวเลข',
             'spList.*.price_per_unit.min' => 'ราคาอะไหล่ต้องไม่น้อยกว่า 0',
+            'address.required' => 'ไม่พบที่อยู่ในการจัดส่งสินค้า',
+            'phone.required' => 'ไม่พบหมายเลขโทรศัพท์'
         ];
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class UserManageController extends Controller
 {
@@ -19,5 +20,10 @@ class UserManageController extends Controller
             $list[$key]['users'] = User::query()->where('is_code_cust_id', $group->is_code_cust_id)->get();
         }
         return Inertia::render('Admin/Users/UserList', ['list' => $list]);
+    }
+
+    public function create(): Response
+    {
+        return Inertia::render('Admin/Users/UserCreate');
     }
 }

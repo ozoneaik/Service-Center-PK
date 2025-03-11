@@ -16,13 +16,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
         User::query()->create([
             'user_code' => 'A'.rand(1000000, 9999999),
             'email' => 'admin@local',
             'password' => Hash::make('1111'),
             'name' => 'ภูวเดช พาณิชยโสภา',
+            'phone' => '0931622330',
             'role' => 'admin',
             'admin_that_branch' => true,
             'is_code_cust_id' => 'IS-CODE-001415445',
@@ -35,7 +34,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('1111'),
             'name' => 'มานีการช่าง',
             'role' => 'service',
-            'phone' => '0931622330',
+            'phone' => '0931235648',
             'admin_that_branch' => true,
             'shop_name' => 'มานีการช่าง',
             'is_code_cust_id' => 'IS-CODE-0014144-875412',
@@ -48,7 +47,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('1111'),
             'name' => 'John Doe',
             'role' => 'service',
-            'phone' => '0931622330',
+            'phone' => '0931235648',
             'admin_that_branch' => false,
             'shop_name' => 'มานีการช่าง',
             'is_code_cust_id' => 'IS-CODE-0014144-875412',

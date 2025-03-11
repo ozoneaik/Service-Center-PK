@@ -2,7 +2,7 @@ import { Button, Card, CardContent,Grid2, Stack, Typography } from "@mui/materia
 import {useCart} from "@/Pages/Orders/CartContext.jsx";
 
 export default function RowView({ spList }) {
-    const { cartItems, addToCart } = useCart();
+    const { cartItems, addToCart} = useCart();
 
     // ตรวจสอบว่าสินค้าอยู่ในตะกร้าหรือไม่
     const isInCart = (spcode) => {

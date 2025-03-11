@@ -1,52 +1,43 @@
 import {
-    alpha,
-    AppBar,
-    Button,
-    Dialog,
-    Divider,
-    IconButton,
-    List,
-    ListItem,
-    ListItemText,
-    Toolbar,
-    Typography,
-    TextField,
-    Box,
-    Stack,
-    Card,
-    CardContent,
-    Grid2, CircularProgress
+    AppBar, Button, Dialog, Divider, IconButton,
+    List, ListItem, ListItemText, Toolbar,
+    Typography, TextField,
+    Box, Stack, Card, CardContent,
+    Grid2, CircularProgress, Avatar
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {useTheme} from '@mui/material/styles';
-import {useState, useEffect, useMemo, useContext, createContext} from "react";
+import {useState, useMemo} from "react";
 import {useCart} from "@/Pages/Orders/CartContext.jsx";
+import React from "react";
+import RemoveIcon from '@mui/icons-material/Remove';
+import AddIcon from '@mui/icons-material/Add';
+import {usePage} from "@inertiajs/react";
 
 
 export default function SumOrder({
                                      open, setOpen, onBuyOrder = cartItems => {
-    }
+    }, address, setAddress, phone, setPhone
                                  }) {
+    const user = usePage().props.auth.user;
     const theme = useTheme();
     const {cartItems, removeFromCart, updateQuantity, clearCart} = useCart();
     const [loading, setLoading] = useState(false);
-    // จัดกลุ่มสินค้าตาม SKU
-    const groupedItems = useMemo(() => {
+    const PumpkinColor = theme.palette.pumpkinColor.main;
+    const groupedItems = useMemo(() => { // จัดกลุ่มสินค้าตาม SKU
         const groups = {};
-
-        cartItems.forEach(item => {
-            // ดึงส่วนแรกของ SKU เพื่อใช้เป็น key ในการจัดกลุ่ม
-            // สมมติว่า skufg คือรหัสกลุ่มสินค้า ถ้าไม่มีจะแยกตามตัวอักษรแรกของ skusp
+        cartItems.forEach(item => { // สมมติว่า skufg คือรหัสกลุ่มสินค้า ถ้าไม่มีจะแยกตามตัวอักษรแรกของ skusp
             const groupKey = item.skufg || item.skufg.substring(0, 3);
+            if (!groups[groupKey]) groups[groupKey] = {
+                namesku: item.pname, // ใช้ชื่อสินค้าหลักเป็น namesku
+                sku_image_path: item.imagesku, // ใช้รูปภาพของ SKU
+                items: [] // เก็บรายการสินค้าในกลุ่ม
+            };
+            groups[groupKey].items.push(item);
 
-            if (!groups[groupKey]) {
-                groups[groupKey] = [];
-            }
-
-            groups[groupKey].push(item);
         });
-
+        console.log(groups)
         return groups;
     }, [cartItems]);
 
@@ -57,7 +48,7 @@ export default function SumOrder({
         }, 0);
     }, [cartItems]);
 
-    const formatFloat = (price_per_unit, quantity,item) => {
+    const formatFloat = (price_per_unit, quantity, item) => {
         const PricePerUnitForCal = parseFloat(price_per_unit) || 0;
         const Qty = parseFloat(quantity);
         const totalPriceSp = (PricePerUnitForCal * Qty).toFixed(2);
@@ -70,38 +61,65 @@ export default function SumOrder({
         console.log("Order confirmed:", cartItems);
         setLoading(true)
         await onBuyOrder(cartItems).then(() => setLoading(false)).catch((error) => setLoading(false))
-        clearCart();
-        setOpen(false);
+        // clearCart();
+        // setOpen(false);
     };
 
 
+    const ListSp = ({sp}) => {
+        return (
+            <Card variant='outlined' sx={{p: 1}}>
+                <Stack direction='row' width='100%' justifyContent='space-between' alignItems='center'>
+                    <Stack direction='row' spacing={2} alignItems='center'>
+                        <img src={sp.path_file} alt={sp.spname} width='100'/>
+                        <Stack direction='column' spacing={1}>
+                            <Typography fontWeight='bold'>{sp.spcode}</Typography>
+                            <Typography variant='body2'>{sp.spname}</Typography>
+                            <Typography variant="body2" color="green">
+                                {formatFloat(sp.price_per_unit, sp.quantity, sp)}
+                            </Typography>
+                        </Stack>
+                    </Stack>
+
+                    <Stack direction="row" spacing={1} sx={{alignItems: 'center', mt: {xs: 1, sm: 0}}}>
+                        <IconButton
+                            color="primary" size="small"
+                            onClick={() => updateQuantity(sp.spcode, Math.max(1, sp.quantity - 1))}
+                        >
+                            <RemoveIcon/>
+                        </IconButton>
+                        <Typography variant="body1" sx={{width: '40px', textAlign: 'center'}}>
+                            {sp.quantity}
+                        </Typography>
+
+                        <IconButton
+                            color="primary" size="small"
+                            onClick={() => updateQuantity(sp.spcode, sp.quantity + 1)}
+                        >
+                            <AddIcon/>
+                        </IconButton>
+                        <IconButton color="error" size="small" onClick={() => removeFromCart(sp.spcode)}>
+                            <DeleteIcon/>
+                        </IconButton>
+                    </Stack>
+
+                </Stack>
+            </Card>
+        )
+    }
+
+
     return (
-        <Dialog
-            fullScreen
-            open={open}
-            onClose={() => setOpen(false)}
-        >
-            <AppBar sx={{
-                position: 'relative',
-                backgroundColor: theme.palette.pumpkinColor?.main || theme.palette.primary.main
-            }}>
+        <Dialog fullScreen open={open} onClose={() => setOpen(false)}>
+            <AppBar sx={{position: 'relative', backgroundColor: PumpkinColor}}>
                 <Toolbar>
-                    <IconButton
-                        edge="start"
-                        color="inherit"
-                        onClick={() => setOpen(false)}
-                        aria-label="close"
-                    >
+                    <IconButton edge="start" color="inherit" onClick={() => setOpen(false)} aria-label="close">
                         <CloseIcon/>
                     </IconButton>
                     <Typography sx={{ml: 2, flex: 1}} variant="h6" component="div">
                         สรุปรายการคำสั่งซื้อ
                     </Typography>
-                    <Button
-                        color="inherit"
-                        onClick={clearCart}
-                        disabled={cartItems.length === 0}
-                    >
+                    <Button color="inherit" onClick={clearCart} disabled={cartItems.length === 0}>
                         ล้างตะกร้า
                     </Button>
                 </Toolbar>
@@ -116,69 +134,41 @@ export default function SumOrder({
                     </Box>
                 ) : (
                     <>
+                        <Card variant="outlined" sx={{p: 2}}>
+                            <Typography variant='h6'>ที่อยู่จัดส่ง</Typography>
+                            <TextField
+                                variant='standard' defaultValue={address} sx={{width: '100%'}}
+                                onChange={(e) => setAddress(e.target.value)}
+                            />
+                        </Card>
+                        <br/>
+                        <Card variant="outlined" sx={{p: 2}}>
+                            <Typography variant='h6'>เบอร์โทรศัพท์</Typography>
+                            <TextField
+                                variant='standard' defaultValue={phone} sx={{width: '100%'}}
+                                onChange={(e) => setPhone(e.target.value)}
+                            />
+                        </Card>
+                        <br/>
+
                         <Box sx={{flexGrow: 1, overflow: 'auto', mb: 2}}>
-                            {Object.entries(groupedItems).map(([groupKey, items]) => (
+                            {Object.entries(groupedItems).map(([groupKey, group]) => (
                                 <Card key={groupKey} variant="outlined" sx={{mb: 2}}>
                                     <CardContent>
-                                        <Typography variant="h6"
-                                                    sx={{mb: 2, backgroundColor: 'rgba(0,0,0,0.05)', p: 1}}>
-                                            กลุ่มสินค้า: {groupKey}
-                                        </Typography>
-
-                                        <List>
-                                            {items.map((item) => (
-                                                <Box key={item.spcode}>
-                                                    <ListItem
-                                                        sx={{
-                                                            display: 'flex', flexDirection: {xs: 'column', sm: 'row'},
-                                                            alignItems: {xs: 'flex-start', sm: 'center'}
-                                                        }}
-                                                    >
-                                                        <Box sx={{
-                                                            display: 'flex', flexGrow: 1,
-                                                            width: '100%', alignItems: 'center'
-                                                        }}>
-                                                            <ListItemText
-                                                                primary={
-                                                                    <Typography fontWeight="bold">
-                                                                        {item.spcode}
-                                                                    </Typography>
-                                                                }
-                                                                secondary={
-                                                                    <>
-                                                                        <Typography variant="body2">
-                                                                            {item.spname}
-                                                                        </Typography>
-                                                                        <Typography variant="body2" color="green">
-                                                                            {formatFloat(item.price_per_unit, item.quantity,item)}
-                                                                        </Typography>
-                                                                    </>
-                                                                }
-                                                                sx={{mr: 2}}
-                                                            />
-
-                                                            <Stack direction="row" spacing={1}
-                                                                   sx={{alignItems: 'center', mt: {xs: 1, sm: 0}}}>
-                                                                <TextField
-                                                                    label="จำนวน" type="number"
-                                                                    InputProps={{inputProps: {min: 1}}}
-                                                                    value={item.quantity}
-                                                                    onChange={(e) => updateQuantity(item.spcode, parseInt(e.target.value) || 0)}
-                                                                    size="small" sx={{width: '100px'}}
-                                                                />
-                                                                <IconButton
-                                                                    color="error" size="small"
-                                                                    onClick={() => removeFromCart(item.spcode)}
-                                                                >
-                                                                    <DeleteIcon/>
-                                                                </IconButton>
-                                                            </Stack>
-                                                        </Box>
-                                                    </ListItem>
-                                                    <Divider/>
-                                                </Box>
+                                        <Stack direction="row" alignItems="center" spacing={2}
+                                               sx={{mb: 2, backgroundColor: '#0000000D', p: 1}}>
+                                            <Avatar src={group.sku_image_path} variant="square"
+                                                    sx={{width: 48, height: 48}}/>
+                                            <Typography
+                                                variant="h6">กลุ่มสินค้า: {group.namesku} ( {groupKey} )</Typography>
+                                        </Stack>
+                                        <Stack direction="column" spacing={1}>
+                                            {group.items.map((item) => (
+                                                <React.Fragment key={item.spcode}>
+                                                    <ListSp sp={item}/>
+                                                </React.Fragment>
                                             ))}
-                                        </List>
+                                        </Stack>
                                     </CardContent>
                                 </Card>
                             ))}
@@ -197,9 +187,7 @@ export default function SumOrder({
                                 <Grid2 size={{xs: 12, sm: 6}} sx={{textAlign: 'right'}}>
                                     <Button
                                         disabled={loading}
-                                        variant="contained"
-                                        color="primary"
-                                        size="large"
+                                        variant="contained" color="primary" size="large"
                                         onClick={handleConfirmOrder}
                                         startIcon={loading && <CircularProgress/>}
                                     >

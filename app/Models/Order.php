@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property mixed $status
+ */
 class Order extends Model
 {
     protected $fillable = [
@@ -17,6 +20,9 @@ class Order extends Model
         'process_user_key',
         'success_at',
         'cancel_user_key',
+        'address',
+        'pay_at',
+        'pay_by'
     ];
 
     protected $appends = ['status_text'];

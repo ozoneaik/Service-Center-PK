@@ -23,7 +23,7 @@ export default function OrderHistoryDetail({order, listSp, customer}) {
             <Head title='รายละเอียดคำสั่งซื้อ'/>
             <Container sx={{mt: 3}} maxWidth='false'>
                 {/* ส่วนหัวข้อและสถานะ */}
-                <Paper elevation={1} sx={{p: 2, mb: 2}}>
+                <Paper variant='outlined' sx={{p: 2, mb: 2}}>
                     <Box sx={{display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2}}>
                         <Typography variant="h6">รายละเอียดคำสั่งซื้อ #{order.order_id}</Typography>
                         <Chip
@@ -45,20 +45,25 @@ export default function OrderHistoryDetail({order, listSp, customer}) {
                 </Paper>
 
                 {/* ข้อมูลการจัดส่ง */}
-                <Paper elevation={1} sx={{p: 2, mb: 2}}>
+                <Paper variant='outlined' sx={{p: 2, mb: 2}}>
                     <Box sx={{display: "flex", alignItems: "center", mb: 1}}>
                         <LocalShippingIcon sx={{mr: 1}} color="primary"/>
-                        <Typography variant="subtitle1" fontWeight="bold">ข้อมูลการจัดส่ง</Typography>
+                        <Typography variant="subtitle1" fontWeight="bold">
+                            ข้อมูลการจัดส่ง
+                        </Typography>
                     </Box>
                     <Divider sx={{mb: 2}}/>
                     <Grid2 container spacing={2}>
                         <Grid2 size={12}>
-                            <Box sx={{display: "flex", mb: 1}}>
-                                <LocationOnIcon sx={{mr: 1}} fontSize="small" color="action"/>
+                            <Box sx={{display: "flex", mb: 1,alignItems : 'center'}}>
+                                <LocationOnIcon sx={{mr: 1}} color="action"/>
                                 <Box>
-                                    <Typography variant="body1"
-                                                fontWeight="bold">{customer.shop_name} | {customer.phone}</Typography>
-                                    <Typography variant="body2">{customer.address}</Typography>
+                                    <Typography variant="body1" fontWeight="bold">
+                                        {customer.shop_name} | {customer.phone}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        {order.address}
+                                    </Typography>
                                 </Box>
                             </Box>
                         </Grid2>
@@ -74,7 +79,7 @@ export default function OrderHistoryDetail({order, listSp, customer}) {
                 </Paper>
 
                 {/* รายการสินค้า */}
-                <Paper elevation={1} sx={{p: 2, mb: 2}}>
+                <Paper variant='outlined' sx={{p: 2, mb: 2}}>
                     <Box sx={{display: "flex", alignItems: "center", mb: 1}}>
                         <StoreIcon sx={{mr: 1}} color="primary"/>
                         <Typography variant="subtitle1" fontWeight="bold">รายการสินค้า</Typography>
@@ -82,7 +87,7 @@ export default function OrderHistoryDetail({order, listSp, customer}) {
                     <Divider sx={{mb: 2}}/>
 
                     {listSp.map((item) => (
-                        <Card key={item.id} sx={{mb: 2, boxShadow: "none", border: "1px solid #f0f0f0"}}>
+                        <Card variant='outlined' key={item.id} sx={{mb: 2}}>
                             <CardContent sx={{padding: 2}}>
                                 <Grid2 container spacing={2}>
                                     <Grid2 size={{xs: 2, sm: 1}}>
@@ -141,7 +146,7 @@ export default function OrderHistoryDetail({order, listSp, customer}) {
                 </Paper>
 
                 {/* ข้อมูลการชำระเงิน */}
-                <Paper elevation={1} sx={{p: 2, mb: 3}}>
+                <Paper variant='outlined' sx={{p: 2, mb: 3}}>
                     <Box sx={{display: "flex", alignItems: "center", mb: 1}}>
                         <PaymentIcon sx={{mr: 1}} color="primary"/>
                         <Typography variant="subtitle1" fontWeight="bold">ข้อมูลการชำระเงิน</Typography>
@@ -150,7 +155,7 @@ export default function OrderHistoryDetail({order, listSp, customer}) {
                     <Grid2 container spacing={2}>
                         <Grid2 size={{xs: 12, sm: 6}}>
                             <Typography variant="body2">วิธีการชำระเงิน:</Typography>
-                            <Typography variant="body1" fontWeight="medium">{order.paymentMethod}</Typography>
+                            <Typography variant="body1" fontWeight="medium">{order.pay_by}</Typography>
                         </Grid2>
                         <Grid2 size={{xs: 12, sm: 6}}>
                             <Typography variant="body2">สถานะการชำระเงิน:</Typography>

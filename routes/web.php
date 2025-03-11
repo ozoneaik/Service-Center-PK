@@ -75,8 +75,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/store', [SparePartController::class, 'store'])->name('sparePart.store');
     });
 
-    Route::prefix('symptom')->group(function (){
-       Route::post('/store',[SymptomController::class,'store'])->name('symptom.store');
+    Route::prefix('symptom')->group(function () {
+        Route::post('/store', [SymptomController::class, 'store'])->name('symptom.store');
     });
 
     // Remark
@@ -101,12 +101,13 @@ Route::middleware('auth')->group(function () {
                 Route::put('/update', [MenuFileUploadController::class, 'update'])->name('menuFileUpload.update');
                 Route::delete('/destroy', [MenuFileUploadController::class, 'destroy'])->name('menuFileUpload.destroy');
             });
-            Route::prefix('approval')->group(function (){
-               Route::get('/index',[ApprovalSpController::class, 'index'])->name('approvalSp.index');
-               Route::put('/update/{spId}/{approve_status}',[ApprovalSpController::class,'updateStatus'])->name('approvalSp.update');
+            Route::prefix('approval')->group(function () {
+                Route::get('/index', [ApprovalSpController::class, 'index'])->name('approvalSp.index');
+                Route::put('/update/{spId}/{approve_status}', [ApprovalSpController::class, 'updateStatus'])->name('approvalSp.update');
             });
-            Route::prefix('users-manage')->group(function(){
-               Route::get('/list', [UserManageController::class, 'list'])->name('userManage.list');
+            Route::prefix('users-manage')->group(function () {
+                Route::get('/create', [UserManageController::class, 'create'])->name('userManage.create');
+                Route::get('/list', [UserManageController::class, 'list'])->name('userManage.list');
             });
         });
     });
@@ -116,32 +117,32 @@ Route::middleware('auth')->group(function () {
         Route::get('/index', function () {
             return Inertia::render('Warranty/Form');
         })->name('warranty.index');
-        Route::post('/search',[WarrantyProductController::class, 'search'])->name('warranty.search');
+        Route::post('/search', [WarrantyProductController::class, 'search'])->name('warranty.search');
         Route::post('/store', [WarrantyProductController::class, 'store'])->name('warranty.store');
         Route::put('/update', [WarrantyProductController::class, 'update'])->name('warranty.update');
-        Route::get('/fetchDataLocal/{serial_id}',[WarrantyProductController::class,'fetchDataLocal'])->name('warranty.fetchDataLocal');
+        Route::get('/fetchDataLocal/{serial_id}', [WarrantyProductController::class, 'fetchDataLocal'])->name('warranty.fetchDataLocal');
     });
 
     // สั่งซื้ออะไหล่
     Route::prefix('orders')->group(function () {
-        Route::get('/list', [OrderController::class,'index'])->name('orders.list');
-        Route::get('/search/{sku}',[OrderController::class,'search'])->name('orders.search');
-        Route::post('/store',[OrderController::class,'store'])->name('orders.store');
-        Route::get('/history',[OrderController::class,'history'])->name('orders.history');
-        Route::get('/history-detail/{order_id}',[OrderController::class,'historyDetail'])->name('orders.historyDetail');
-        Route::get('/success',[OrderController::class,'orderSuccess'])->name('orders.success');
+        Route::get('/list', [OrderController::class, 'index'])->name('orders.list');
+        Route::get('/search/{sku}', [OrderController::class, 'search'])->name('orders.search');
+        Route::post('/store', [OrderController::class, 'store'])->name('orders.store');
+        Route::get('/history', [OrderController::class, 'history'])->name('orders.history');
+        Route::get('/history-detail/{order_id}', [OrderController::class, 'historyDetail'])->name('orders.historyDetail');
+        Route::get('/success', [OrderController::class, 'orderSuccess'])->name('orders.success');
     });
 
-    Route::prefix('history')->group(function (  ) {
-       Route::get('/index', [HistoryRepairController::class,'index'])->name('history.index');
-       Route::post('/search',[HistoryRepairController::class,'search'])->name('history.search');
-       Route::get('/detail/{serial_id}' ,[HistoryRepairController::class,'detail'])->name('history.detail');
+    Route::prefix('history')->group(function () {
+        Route::get('/index', [HistoryRepairController::class, 'index'])->name('history.index');
+        Route::post('/search', [HistoryRepairController::class, 'search'])->name('history.search');
+        Route::get('/detail/{serial_id}', [HistoryRepairController::class, 'detail'])->name('history.detail');
     });
 
-    Route::middleware('AdminBranchAccess')->group(function() {
-       Route::get('index', [ManageBranchController::class,'index'])->name('Manage.index');
-       Route::post('gp/store',[ManageBranchController::class,'storeGp'])->name('Manage.gp.store');
-       Route::post('emp/store',[ManageBranchController::class,'storeEmp'])->name('Manage.emp.store');
+    Route::middleware('AdminBranchAccess')->group(function () {
+        Route::get('index', [ManageBranchController::class, 'index'])->name('Manage.index');
+        Route::post('gp/store', [ManageBranchController::class, 'storeGp'])->name('Manage.gp.store');
+        Route::post('emp/store', [ManageBranchController::class, 'storeEmp'])->name('Manage.emp.store');
     });
 
 });
@@ -154,7 +155,7 @@ Route::get('/home', function () {
     return view('home');
 })->name('home');
 
-Route::post('/genQuPdf',[genQuPdfController::class,'genQuPdf'])->name('genQuPdf');
+Route::post('/genQuPdf', [genQuPdfController::class, 'genQuPdf'])->name('genQuPdf');
 
 Route::get('/image-dm/{pid}', [DmImageController::class, 'index'])->name('dmImage');
 

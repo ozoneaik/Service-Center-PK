@@ -8,13 +8,15 @@ import {
 import React, {useState, useEffect} from "react";
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import {Head} from "@inertiajs/react";
+import {Head, Link} from "@inertiajs/react";
 
 export default function UserList({list}) {
     // สถานะสำหรับค้นหาและกรอง
     const [searchTerm, setSearchTerm] = useState("");
     const [roleFilter, setRoleFilter] = useState("all");
     const [ownerFilter, setOwnerFilter] = useState("all");
+
+    const [open, setOpen] = useState(false);
 
     // สถานะสำหรับการแบ่งหน้า
     const [page, setPage] = useState(1);
@@ -122,159 +124,168 @@ export default function UserList({list}) {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title="จัดการผู้ใช้"/>
-            <LayoutMangeAdmin>
-                <Container maxWidth="false">
-                    <Paper elevation={3} sx={{p: 3, mt: 3}}>
-                        <Typography variant="h5" sx={{mb: 2}}>รายการผู้ใช้งาน</Typography>
+        <>
+            <AuthenticatedLayout>
+                <Head title="จัดการผู้ใช้"/>
+                <LayoutMangeAdmin>
+                    <Container maxWidth="false">
+                        <Paper elevation={3} sx={{p: 3, mt: 3}}>
+                            <Typography variant="h5" sx={{mb: 2}}>รายการผู้ใช้งาน</Typography>
 
-                        {/* ส่วนของตัวกรองและค้นหา */}
-                        <Box sx={{mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2}}>
-                            {/* ช่องค้นหา */}
-                            <TextField
-                                label="ค้นหา"
-                                variant="outlined"
-                                size="small"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                sx={{minWidth: 200}}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <SearchIcon/>
-                                        </InputAdornment>
-                                    ),
-                                }}
-                            />
+                            {/* ส่วนของตัวกรองและค้นหา */}
+                            <Box sx={{mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2}}>
+                                {/* ช่องค้นหา */}
+                                <TextField
+                                    label="ค้นหา"
+                                    variant="outlined"
+                                    size="small"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    sx={{minWidth: 200}}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <SearchIcon/>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
 
-                            {/* ตัวกรองตามสิทธิ์ */}
-                            <FormControl variant="outlined" size="small" sx={{minWidth: 150}}>
-                                <InputLabel>สิทธิ์</InputLabel>
-                                <Select
-                                    value={roleFilter}
-                                    onChange={(e) => setRoleFilter(e.target.value)}
-                                    label="สิทธิ์"
-                                >
-                                    <MenuItem value="all">ทั้งหมด</MenuItem>
-                                    <MenuItem value="admin">Admin</MenuItem>
-                                    <MenuItem value="user">User</MenuItem>
-                                    <MenuItem value="manager">Manager</MenuItem>
-                                </Select>
-                            </FormControl>
+                                {/* ตัวกรองตามสิทธิ์ */}
+                                <FormControl variant="outlined" size="small" sx={{minWidth: 150}}>
+                                    <InputLabel>สิทธิ์</InputLabel>
+                                    <Select
+                                        variant='outlined'
+                                        value={roleFilter}
+                                        onChange={(e) => setRoleFilter(e.target.value)}
+                                        label="สิทธิ์"
+                                    >
+                                        <MenuItem value="all">ทั้งหมด</MenuItem>
+                                        <MenuItem value="admin">Admin</MenuItem>
+                                        <MenuItem value="user">User</MenuItem>
+                                        <MenuItem value="manager">Manager</MenuItem>
+                                    </Select>
+                                </FormControl>
 
-                            {/* ตัวกรองตามสถานะเจ้าของร้าน */}
-                            <FormControl variant="outlined" size="small" sx={{minWidth: 150}}>
-                                <InputLabel>สถานะเจ้าของ</InputLabel>
-                                <Select
-                                    value={ownerFilter}
-                                    onChange={(e) => setOwnerFilter(e.target.value)}
-                                    label="สถานะเจ้าของ"
-                                >
-                                    <MenuItem value="all">ทั้งหมด</MenuItem>
-                                    <MenuItem value="owner">เจ้าของร้าน</MenuItem>
-                                    <MenuItem value="not-owner">ไม่ใช่เจ้าของร้าน</MenuItem>
-                                </Select>
-                            </FormControl>
+                                {/* ตัวกรองตามสถานะเจ้าของร้าน */}
+                                <FormControl variant="outlined" size="small" sx={{minWidth: 150}}>
+                                    <InputLabel>สถานะเจ้าของ</InputLabel>
+                                    <Select
+                                        variant='outlined'
+                                        value={ownerFilter}
+                                        onChange={(e) => setOwnerFilter(e.target.value)}
+                                        label="สถานะเจ้าของ"
+                                    >
+                                        <MenuItem value="all">ทั้งหมด</MenuItem>
+                                        <MenuItem value="owner">เจ้าของร้าน</MenuItem>
+                                        <MenuItem value="not-owner">ไม่ใช่เจ้าของร้าน</MenuItem>
+                                    </Select>
+                                </FormControl>
 
-                            {/* ตัวเลือกจำนวนแถวต่อหน้า */}
-                            <FormControl variant="outlined" size="small" sx={{minWidth: 150}}>
-                                <InputLabel>แถวต่อหน้า</InputLabel>
-                                <Select
-                                    value={rowsPerPage}
-                                    onChange={handleChangeRowsPerPage}
-                                    label="แถวต่อหน้า"
-                                >
-                                    <MenuItem value={5}>5</MenuItem>
-                                    <MenuItem value={10}>10</MenuItem>
-                                    <MenuItem value={25}>25</MenuItem>
-                                    <MenuItem value={50}>50</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Box>
+                                {/* ตัวเลือกจำนวนแถวต่อหน้า */}
+                                <FormControl variant="outlined" size="small" sx={{minWidth: 150}}>
+                                    <InputLabel>แถวต่อหน้า</InputLabel>
+                                    <Select
+                                        value={rowsPerPage}
+                                        onChange={handleChangeRowsPerPage}
+                                        label="แถวต่อหน้า"
+                                        variant='outlined'>
+                                        <MenuItem value={5}>5</MenuItem>
+                                        <MenuItem value={10}>10</MenuItem>
+                                        <MenuItem value={25}>25</MenuItem>
+                                        <MenuItem value={50}>50</MenuItem>
+                                    </Select>
+                                </FormControl>
 
-                        {/* ส่วนแสดงข้อมูลผู้ใช้ */}
-                        <Box sx={{overflowX: 'auto'}}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow sx={{backgroundColor: '#f5f5f5'}}>
-                                        <TableCell>ชื่อร้าน</TableCell>
-                                        <TableCell>ชื่อผู้ใช้</TableCell>
-                                        <TableCell>อีเมล</TableCell>
-                                        <TableCell>สิทธิ์</TableCell>
-                                        <TableCell>เจ้าของร้าน</TableCell>
-                                        <TableCell>จัดการ</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {currentPageUsers.map((user, index) => {
-                                        // ตรวจสอบว่าควรแสดงข้อมูลร้านหรือไม่
-                                        const isFirstUserOfShop = index === 0 ||
-                                            currentPageUsers[index - 1]?.shopId !== user.shopId;
+                                <Button variant='contained' component={Link} href='/admin/users-manage/create'>
+                                    เพิ่มผู้ใช้
+                                </Button>
+                            </Box>
 
-                                        // คำนวณจำนวนแถวที่ต้องรวม (rowspan) สำหรับร้านปัจจุบัน
-                                        const rowSpan = isFirstUserOfShop ?
-                                            currentPageUsers.filter(u => u.shopId === user.shopId &&
-                                                currentPageUsers.indexOf(u) >= index &&
-                                                currentPageUsers.indexOf(u) < index + rowsPerPage).length : 0;
+                            {/* ส่วนแสดงข้อมูลผู้ใช้ */}
+                            <Box sx={{overflowX: 'auto'}}>
+                                <Table>
+                                    <TableHead>
+                                        <TableRow sx={{backgroundColor: '#f5f5f5'}}>
+                                            <TableCell>ชื่อร้าน</TableCell>
+                                            <TableCell>ชื่อผู้ใช้</TableCell>
+                                            <TableCell>อีเมล</TableCell>
+                                            <TableCell>สิทธิ์</TableCell>
+                                            <TableCell>เจ้าของร้าน</TableCell>
+                                            <TableCell>จัดการ</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {currentPageUsers.map((user, index) => {
+                                            // ตรวจสอบว่าควรแสดงข้อมูลร้านหรือไม่
+                                            const isFirstUserOfShop = index === 0 ||
+                                                currentPageUsers[index - 1]?.shopId !== user.shopId;
 
-                                        return (
-                                            <TableRow key={`user-${index}`}
-                                                      sx={index % 2 ? {backgroundColor: '#fafafa'} : {}}>
-                                                {isFirstUserOfShop && (
-                                                    <TableCell rowSpan={rowSpan}>
-                                                        <Typography>ชื่อร้าน : <span
-                                                            style={{color: '#f15922'}}>{user.shop_name}</span></Typography>
-                                                        <br/>
-                                                        <Typography>รหัส : <span
-                                                            style={{color: '#f15922'}}>{user.is_code_cust_id}</span></Typography>
+                                            // คำนวณจำนวนแถวที่ต้องรวม (rowspan) สำหรับร้านปัจจุบัน
+                                            const rowSpan = isFirstUserOfShop ?
+                                                currentPageUsers.filter(u => u.shopId === user.shopId &&
+                                                    currentPageUsers.indexOf(u) >= index &&
+                                                    currentPageUsers.indexOf(u) < index + rowsPerPage).length : 0;
+
+                                            return (
+                                                <TableRow key={`user-${index}`}
+                                                          sx={index % 2 ? {backgroundColor: '#fafafa'} : {}}>
+                                                    {isFirstUserOfShop && (
+                                                        <TableCell rowSpan={rowSpan}>
+                                                            <Typography>ชื่อร้าน : <span
+                                                                style={{color: '#f15922'}}>{user.shop_name}</span></Typography>
+                                                            <br/>
+                                                            <Typography>รหัส : <span
+                                                                style={{color: '#f15922'}}>{user.is_code_cust_id}</span></Typography>
+                                                        </TableCell>
+                                                    )}
+                                                    <TableCell>{user.name}</TableCell>
+                                                    <TableCell>{user.email}</TableCell>
+                                                    <TableCell>{user.role}</TableCell>
+                                                    <TableCell>{!user.admin_that_branch ? '❌' : '✅'}</TableCell>
+                                                    <TableCell>
+                                                        <Button variant='contained' size='small'>แก้ไข</Button>
+                                                        &nbsp;
+                                                        <Button variant='contained' color='error'
+                                                                size='small'>ลบ</Button>
                                                     </TableCell>
-                                                )}
-                                                <TableCell>{user.name}</TableCell>
-                                                <TableCell>{user.email}</TableCell>
-                                                <TableCell>{user.role}</TableCell>
-                                                <TableCell>{!user.admin_that_branch ? '❌' : '✅'}</TableCell>
-                                                <TableCell>
-                                                    <Button variant='contained' size='small'>แก้ไข</Button>
-                                                    &nbsp;
-                                                    <Button variant='contained' color='error' size='small'>ลบ</Button>
+                                                </TableRow>
+                                            );
+                                        })}
+
+                                        {currentPageUsers.length === 0 && (
+                                            <TableRow>
+                                                <TableCell colSpan={6} align="center" sx={{py: 3}}>
+                                                    ไม่พบข้อมูลที่ตรงกับเงื่อนไขการค้นหา
                                                 </TableCell>
                                             </TableRow>
-                                        );
-                                    })}
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </Box>
 
-                                    {currentPageUsers.length === 0 && (
-                                        <TableRow>
-                                            <TableCell colSpan={6} align="center" sx={{py: 3}}>
-                                                ไม่พบข้อมูลที่ตรงกับเงื่อนไขการค้นหา
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </Box>
+                            {/* ส่วนแสดงการแบ่งหน้า */}
+                            <Box sx={{display: 'flex', justifyContent: 'center', mt: 3}}>
+                                <Pagination
+                                    count={totalPages}
+                                    page={page}
+                                    onChange={handleChangePage}
+                                    color="primary"
+                                    showFirstButton
+                                    showLastButton
+                                />
+                            </Box>
 
-                        {/* ส่วนแสดงการแบ่งหน้า */}
-                        <Box sx={{display: 'flex', justifyContent: 'center', mt: 3}}>
-                            <Pagination
-                                count={totalPages}
-                                page={page}
-                                onChange={handleChangePage}
-                                color="primary"
-                                showFirstButton
-                                showLastButton
-                            />
-                        </Box>
-
-                        {/* แสดงข้อมูลสรุป */}
-                        <Box sx={{mt: 2, textAlign: 'right'}}>
-                            <Typography variant="body2" color="text.secondary">
-                                แสดง {Math.min((page - 1) * rowsPerPage + 1, totalUsers)} - {Math.min(page * rowsPerPage, totalUsers)} จากทั้งหมด {totalUsers} รายการ
-                            </Typography>
-                        </Box>
-                    </Paper>
-                </Container>
-            </LayoutMangeAdmin>
-        </AuthenticatedLayout>
+                            {/* แสดงข้อมูลสรุป */}
+                            <Box sx={{mt: 2, textAlign: 'right'}}>
+                                <Typography variant="body2" color="text.secondary">
+                                    แสดง {Math.min((page - 1) * rowsPerPage + 1, totalUsers)} - {Math.min(page * rowsPerPage, totalUsers)} จากทั้งหมด {totalUsers} รายการ
+                                </Typography>
+                            </Box>
+                        </Paper>
+                    </Container>
+                </LayoutMangeAdmin>
+            </AuthenticatedLayout>
+        </>
     )
 }
