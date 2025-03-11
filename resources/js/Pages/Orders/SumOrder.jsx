@@ -134,24 +134,25 @@ export default function SumOrder({
                     </Box>
                 ) : (
                     <>
-                        <Card variant="outlined" sx={{p: 2}}>
-                            <Typography variant='h6'>ที่อยู่จัดส่ง</Typography>
-                            <TextField
-                                variant='standard' defaultValue={address} sx={{width: '100%'}}
-                                onChange={(e) => setAddress(e.target.value)}
-                            />
-                        </Card>
-                        <br/>
-                        <Card variant="outlined" sx={{p: 2}}>
-                            <Typography variant='h6'>เบอร์โทรศัพท์</Typography>
-                            <TextField
-                                variant='standard' defaultValue={phone} sx={{width: '100%'}}
-                                onChange={(e) => setPhone(e.target.value)}
-                            />
-                        </Card>
-                        <br/>
-
                         <Box sx={{flexGrow: 1, overflow: 'auto', mb: 2}}>
+
+                            <Card variant="outlined" sx={{p: 2}}>
+                                <Typography variant='h6'>ที่อยู่จัดส่ง</Typography>
+                                <TextField
+                                    variant='standard' defaultValue={address} sx={{width: '100%'}}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                />
+                            </Card>
+                            <br/>
+                            <Card variant="outlined" sx={{p: 2}}>
+                                <Typography variant='h6'>เบอร์โทรศัพท์</Typography>
+                                <TextField
+                                    variant='standard' defaultValue={phone} sx={{width: '100%'}}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                />
+                            </Card>
+                            <br/>
+
                             {Object.entries(groupedItems).map(([groupKey, group]) => (
                                 <Card key={groupKey} variant="outlined" sx={{mb: 2}}>
                                     <CardContent>
