@@ -4,7 +4,7 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
-    DialogTitle, Grid2,
+    DialogTitle, Grid2, MenuItem,
     Stack, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography,
 } from "@mui/material";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
@@ -14,6 +14,7 @@ import {ImagePreview} from "@/Components/ImagePreview.jsx";
 import Select from "@mui/material/Select";
 import axios from "axios";
 import {AlertDialog} from "@/Components/AlertDialog.js";
+import {usePage} from "@inertiajs/react";
 
 const ShowDetail = ({gp}) => (
     <Stack direction={{md: 'column', lg: 'row'}} spacing={2} alignItems='center'>
@@ -130,6 +131,8 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
     const DialogSpZero = () => {
         const [claim, setClaim] = useState(false);
         const [remark, setRemark] = useState('');
+        const user = usePage().props.auth.user;
+        console.log(user)
 
         const handleSaveZero = () => {
             const index = selectWorking.findIndex(i => i.spcode === targetZero.spcode);
@@ -157,27 +160,29 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                 aria-describedby="alert-dialog-description"
             >
                 <DialogTitle id="alert-dialog-title">
-                    คุณได้กรอกราคาอะไหล่ เป็น 0 กรุณากรอกรายละเอียดดังนี้
+                    {user.name}ได้กรอกราคาอะไหล่ เป็น 0 กรุณากรอกรายละเอียดดังนี้
                 </DialogTitle>
                 <DialogContent>
                     <Stack spacing={2} sx={{ mt: 2 }}>
                         <Stack direction="row" spacing={2} alignItems="center">
                             <Typography>เคลม:</Typography>
                             <Select
-                                native
+                                fullWidth
+                                // native
                                 value={claim ? "true" : "false"}
                                 onChange={(e) => setClaim(e.target.value === "true")}
                              variant='standard'
                             >
-                                <option value="false">ไม่เคลม</option>
-                                <option value="true">เคลม</option>
+                                <MenuItem value="false">ไม่เคลม</MenuItem>
+                                <MenuItem value="true">เคลม</MenuItem>
                             </Select>
                         </Stack>
 
                         <TextField
-                            label="หมายเหตุ"
+                            id='claim-remark'
                             multiline
                             rows={4}
+                            placeholder='กรุณากรอกหมายเหตุการเคลม'
                             fullWidth
                             required={claim}
                             value={remark}

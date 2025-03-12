@@ -58,13 +58,13 @@ export default function Symptoms({detail, setDetail}) {
                             onChange={(e) => setSymptom(e.target.value)}
                             style={{width: '100%'}}
                             defaultValue={symptom}
-                            placeholder='กรอกอาการเบื้องต้น'
+                            placeholder='กรอกอาการเบื้องต้นก่อนแกะเครื่อง'
                         />
                     </Grid2>
                     <Grid2 size={12}>
                         <Stack direction='row' spacing={2} alignItems='center' mb={2}>
                             <Typography variant='h5' fontWeight='bold' sx={{textDecoration: 'underline'}}>
-                                <ChecklistIcon/>&nbsp;หมายเหตุ
+                                <ChecklistIcon/>&nbsp;หมายเหตุสำหรับสื่อสารภายใน
                             </Typography>
                         </Stack>
                     </Grid2>

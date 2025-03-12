@@ -129,7 +129,7 @@ export const Customer = ({detail, setDetail}) => {
                     placeholder="ที่อยู่"
                 />
 
-                <Typography>หมายเหตุ</Typography>
+                <Typography>หมายเหตุสำหรับลูกค้า</Typography>
                 <textarea
                     required
                     value={customer.remark}

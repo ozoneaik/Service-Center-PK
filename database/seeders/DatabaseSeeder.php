@@ -55,10 +55,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         MenuFileUpload::query()->create([
-           'menu_name' => 'สถาพสินค้าก่อนซ่อม'
+           'menu_name' => 'สภาพสินค้าก่อนซ่อม'
         ]);
         MenuFileUpload::query()->create([
-            'menu_name' => 'สถาพสินค้าหลังซ่อม'
+            'menu_name' => 'สภาพสินค้าหลังซ่อม'
         ]);
         MenuFileUpload::query()->create([
             'menu_name' => 'ภาพอะไหล่ที่เสียส่งเคลม'

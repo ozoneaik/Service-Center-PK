@@ -183,9 +183,9 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
                                 <Button
                                     variant="outlined"
                                     component="label"
-                                    sx={{width: 150, height: 150}}
+                                    sx={{width: 160, height: 160}}
                                 >
-                                    + เพิ่มรูปภาพ
+                                    + เพิ่มรูปภาพ/วิดีโอ
                                     <input
                                         type="file"
                                         hidden
@@ -224,7 +224,7 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
                                 onChange={(_, newValue) => setTabValue(newValue)}
                                 aria-label="tabs"
                             >
-                                <Tab label="สำหรับการเคลม"/>
+                                <Tab label="สำหรับศูนย์ซ่อมใช้ภายใน"/>
                                 <Tab label="เพิ่มเติมสำหรับร้านค้า"/>
                             </Tabs>
                         </Box>

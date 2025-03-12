@@ -26,20 +26,35 @@ const BehaviorDetail = ({detail}) => (
     </Stack>
 )
 
-const FileDetail = ({menu}) => (
-    <Grid2 container>
-        {menu.map((item, index) => (
-            <Grid2 key={index} size={6}>
-                <Typography>{item.menu_name}</Typography>
-                <Stack direction='row' spacing={2}>
-                    {item.list.length > 0 ? item.list.map((image, i) => (
-                        <ImagePreview key={i} src={image.full_file_path} width={100}/>
-                    )) : <>{'-'}</>}
-                </Stack>
-            </Grid2>
-        ))}
-    </Grid2>
-)
+const FileDetail = ({ menu, forService = false }) => {
+    const displayStartIndex = forService ? 3 : 0;
+    const displayEndIndex = forService ? menu.length : 3;
+    return (
+        <Grid2 container mt={2} spacing={2} sx={{overflowX : 'scroll'}}>
+            {menu
+                .filter((_, index) => index >= displayStartIndex && index < displayEndIndex)
+                .map((item, index) => (
+                    <Grid2 key={index} size={12}>
+                        <Typography>{item.menu_name}</Typography>
+                        <Stack direction='row' spacing={2}>
+                            {item.list.length > 0 ?
+                                item.list.map((image, i) => (
+                                    <ImagePreview
+                                        key={i}
+                                        src={image.full_file_path}
+                                        width={100}
+                                    />
+                                )) :
+                                <>-</>
+                            }
+                        </Stack>
+                    </Grid2>
+                ))}
+        </Grid2>
+    );
+};
+
+
 
 const SpDetail = ({sp, sp_warranty}) => {
     const highlight = {backgroundColor: '#e6ffe6'}
@@ -75,7 +90,7 @@ const SpDetail = ({sp, sp_warranty}) => {
 
 
 const CardDetail = ({children}) => (
-    <Card variant="outlined">
+    <Card variant="outlined" sx={{width : '100%'}}>
         <CardContent>
             {children}
         </CardContent>
@@ -198,10 +213,17 @@ export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
                                 </Stack>
                             </Stack>
                         </CardDetail>
-                        <CardDetail>
-                            <Typography variant='h6' fontWeight='bold'>รูปภาพ</Typography>
-                            <FileDetail menu={selected.fileUpload}/>
-                        </CardDetail>
+                        <Stack direction='row' spacing={2}>
+                            <CardDetail>
+                                <Typography variant='h6' fontWeight='bold'>รูปภาพ/วิดีโอสำหรับเคลมสินค้า</Typography>
+                                <FileDetail menu={selected.fileUpload} />
+                            </CardDetail>
+                            <CardDetail>
+                                <Typography variant='h6' fontWeight='bold'>รูปภาพ/วิดีโอสำหรับร้านค้าใช้ภายใน</Typography>
+                                <FileDetail menu={selected.fileUpload} forService={true}/>
+                            </CardDetail>
+                        </Stack>
+
                         <CardDetail>
                             <Typography variant='h6' fontWeight='bold'>อาการ / สาเหตุ</Typography>
                             <BehaviorDetail detail={selected.behavior}/>
@@ -211,7 +233,11 @@ export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
                             <SpDetail sp={selected.sp} sp_warranty={selected.sp_warranty}/>
                         </CardDetail>
                         <CardDetail>
-                            <Typography variant='h6' fontWeight='bold'>หมายเหตุ</Typography>
+                            <Typography variant='h6' fontWeight='bold'>หมายเหตุสำหรับลูกค้า</Typography>
+                            <Typography variant='body1' color='gray'>- {selected.customerInJob.remark}</Typography>
+                        </CardDetail>
+                        <CardDetail>
+                            <Typography variant='h6' fontWeight='bold'>หมายเหตุสำหรับสื่อสารภายใน</Typography>
                             <Typography variant='body1' color='gray'>- {selected.remark}</Typography>
                         </CardDetail>
                         <CardDetail>
@@ -225,6 +251,7 @@ export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
                                    <Button variant='contained'>รับสินค้า</Button>
                             </Stack>
                         </CardDetail>
+
                         <Stack direction='row' spacing={2} justifyContent='end'>
                             <Button variant='contained' color='error'
                                     onClick={() => console.log(selected)}>ยกเลิกงานซ่อม</Button>
