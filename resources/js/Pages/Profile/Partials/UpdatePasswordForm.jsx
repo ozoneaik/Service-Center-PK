@@ -1,7 +1,5 @@
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
 import { Transition } from '@headlessui/react';
 import { useForm } from '@inertiajs/react';
 import { useRef } from 'react';
@@ -71,10 +69,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                         size='small'
                     />
 
-                    <InputError
-                        message={errors.current_password}
-                        className="mt-2"
-                    />
+                    <InputError message={errors.current_password} className="mt-2"/>
                 </div>
 
                 <div>
@@ -96,11 +91,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                 </div>
 
                 <div>
-                    <InputLabel
-                        htmlFor="password_confirmation"
-                        value="ยืนยันรหัสผ่าน"
-                    />
-
+                    <InputLabel htmlFor="password_confirmation" value="ยืนยันรหัสผ่าน"/>
                     <TextField
                         id="password_confirmation"
                         value={data.password_confirmation}
@@ -112,9 +103,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                         size='small'
                     />
 
-                    <InputError
-                        message={errors.password_confirmation}
-                        className="mt-2"
+                    <InputError message={errors.password_confirmation} className="mt-2"
                     />
                 </div>
 

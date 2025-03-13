@@ -160,7 +160,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                 aria-describedby="alert-dialog-description"
             >
                 <DialogTitle id="alert-dialog-title">
-                    {user.name}ได้กรอกราคาอะไหล่ เป็น 0 กรุณากรอกรายละเอียดดังนี้
+                    ด้วยคุณได้กรอกราคาอะไหล่ เป็น 0 กรุณากรอกรายละเอียดดังนี้
                 </DialogTitle>
                 <DialogContent>
                     <Stack spacing={2} sx={{ mt: 2 }}>
