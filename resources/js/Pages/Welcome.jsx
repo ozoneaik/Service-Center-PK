@@ -265,12 +265,9 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                             Laravel's robust library of
                                             first-party tools and libraries,
                                             such as{' '}
-                                            <a
-                                                href="https://forge.laravel.com"
-                                                className="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white dark:focus-visible:ring-[#FF2D20]"
-                                            >
+                                            <Link href="https://forge.laravel.com">
                                                 Forge
-                                            </a>
+                                            </Link>
                                             ,{' '}
                                             <a
                                                 href="https://vapor.laravel.com"
@@ -330,12 +327,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                                 Horizon
                                             </a>
                                             ,{' '}
-                                            <a
-                                                href="https://laravel.com/docs/sanctum"
-                                                className="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
-                                            >
-                                                Sanctum
-                                            </a>
+                                            <Link href="https://laravel.com/docs/sanctum">Sanctum</Link>
                                             ,{' '}
                                             <a
                                                 href="https://laravel.com/docs/telescope"

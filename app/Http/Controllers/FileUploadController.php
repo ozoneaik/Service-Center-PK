@@ -80,10 +80,6 @@ class FileUploadController extends Controller
 
     }
 
-    private function UploadFile($files){
-
-    }
-
     private function deleteFile($job_id,$keep): void
     {
         FileUpload::query()->where('job_id', $job_id)->whereNotIn('id', $keep)->delete();

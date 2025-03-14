@@ -10,7 +10,6 @@ import {
     Tabs,
     Typography
 } from "@mui/material";
-import CheckIcon from "@mui/icons-material/Check";
 import axios from "axios";
 
 import Progress from "@/Components/Progress.jsx";
@@ -224,8 +223,8 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
                                 onChange={(_, newValue) => setTabValue(newValue)}
                                 aria-label="tabs"
                             >
+                                <Tab label="ภาพประกอบสำหรับการเคลม"/>
                                 <Tab label="สำหรับศูนย์ซ่อมใช้ภายใน"/>
-                                <Tab label="เพิ่มเติมสำหรับร้านค้า"/>
                             </Tabs>
                         </Box>
 

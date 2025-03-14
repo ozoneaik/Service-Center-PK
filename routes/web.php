@@ -21,9 +21,8 @@ use App\Http\Controllers\SpareClaimController;
 use App\Http\Controllers\SparePartController;
 use App\Http\Controllers\SymptomController;
 use App\Http\Controllers\WarrantyProductController;
-use Illuminate\Http\Request;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -156,9 +155,14 @@ Route::get('/Unauthorized', function () {
     return Inertia::render('Unauthorized');
 })->name('unauthorized');
 
-Route::get('/home', function () {
-    return view('home');
-})->name('home');
+Route::get('/welcome', function () {
+    return Inertia::render('Welcome',[
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => Application::VERSION,
+        'phpVersion' => PHP_VERSION,
+    ]);
+})->name('welcome');
 
 Route::post('/genQuPdf', [genQuPdfController::class, 'genQuPdf'])->name('genQuPdf');
 

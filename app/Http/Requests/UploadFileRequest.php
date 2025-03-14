@@ -26,6 +26,7 @@ class UploadFileRequest extends FormRequest
             'serial_id' => 'required',
             'job_id' => 'required',
             'list' => 'required | array',
+            // 'list.*.list.*.image' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf,doc,docx', 'max:512000'], // 500MB
         ];
     }
 
@@ -36,6 +37,7 @@ class UploadFileRequest extends FormRequest
             'job_id.required' => 'Job ID is required.',
             'list.required' => 'List is required.',
             'list.array' => 'List must be an array.',
+
         ];
     }
 }

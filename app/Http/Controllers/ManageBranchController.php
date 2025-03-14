@@ -101,7 +101,7 @@ class ManageBranchController extends Controller
         }
     }
 
-    public function deleteEmployee() : Integer
+    public function deleteEmployee() : int
     {
         return 0;
     }

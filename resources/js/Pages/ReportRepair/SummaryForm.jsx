@@ -248,13 +248,13 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
                         <CardDetail>
                             <Typography variant='h6' fontWeight='bold'>เอกสาร</Typography>
                             <Stack direction='row' spacing={2}>
+                                <Button variant='contained'>รับสินค้า</Button>
                                 {detail.selected.sp.length > 0 && (
                                     <Button onClick={exportQu} startIcon={<PictureAsPdfIcon/>}
                                             variant='contained' disabled={loading}>
-                                        {loading ? <CircularProgress size={18}/> : 'QU'}
+                                        {loading ? <CircularProgress size={18}/> : 'ออกใบเสนอราคา'}
                                     </Button>
                                 )}
-                                <Button variant='contained'>รับสินค้า</Button>
                             </Stack>
                         </CardDetail>
 

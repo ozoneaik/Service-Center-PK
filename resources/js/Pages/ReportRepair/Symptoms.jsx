@@ -58,7 +58,7 @@ export default function Symptoms({detail, setDetail}) {
                             onChange={(e) => setSymptom(e.target.value)}
                             style={{width: '100%'}}
                             defaultValue={symptom}
-                            placeholder='กรอกอาการเบื้องต้นก่อนแกะเครื่อง'
+                            placeholder='กรอกอาการเบื้องต้นที่ได้รับเข้าจากลูกค้า'
                         />
                     </Grid2>
                     <Grid2 size={12}>
@@ -74,7 +74,7 @@ export default function Symptoms({detail, setDetail}) {
                             style={{width: '100%'}}
                             defaultValue={remark}
                             rows={8}
-                            placeholder='หมายเหตุการซ่อมของช่างเทคนิค สำหรับการสื่อสารภายในศูนย์ซ่อม'
+                            placeholder='หมายเหตุการซ่อมของช่างเทคนิค สำหรับการสื่อสารภายในศูนย์ซ่อม เช่น ตวรจสอบเครื่องเรียบร้อยแล้ว รอเสนอราคา'
                         />
                     </Grid2>
                     <Grid2 size={12}>

@@ -18,12 +18,12 @@ import {usePage} from "@inertiajs/react";
 
 const ShowDetail = ({gp}) => (
     <Stack direction={{md: 'column', lg: 'row'}} spacing={2} alignItems='center'>
-        <Alert sx={{width: {lg: '80%', xs: '100%'}}} severity="success" icon={<BookmarkIcon/>}>
+        <Alert sx={{width: {lg: '100%', xs: '100%'}}} severity="success" icon={<BookmarkIcon/>}>
             สีเขียว {'=>'} อะไหล่อยู่ในประกัน
         </Alert>
-        <Alert sx={{width: {lg: '20%', xs: '100%'}}} severity="info" icon={<BookmarkAddIcon/>}>
+        {/* <Alert sx={{width: {lg: '20%', xs: '100%'}}} severity="info" icon={<BookmarkAddIcon/>}>
             GP {gp} % ตั้งต้น
-        </Alert>
+        </Alert> */}
     </Stack>
 )
 

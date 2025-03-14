@@ -78,11 +78,11 @@ export default function SpAdd({detail, showAdd, setShowAdd,setDetail }) {
                     <Stack direction='row' spacing={2}>
                         <Alert onClick={() => console.log(selected)} sx={{mb: 1}}
                                icon={<PaletteIcon fontSize="inherit"/>} severity="success">
-                            อะไหล่ที่อยู่ในรับประกัน
+                            แถบสีเขียว คือ อะไหล่ที่อยู่ในรับประกัน
                         </Alert>
                         <Alert onClick={() => console.log(spAll)} icon={<PaletteIcon fontSize="inherit"/>}
                                severity="error">
-                            อะไหล่ที่ไม่พบราคา
+                            แถบสีแดง คือ อะไหล่ที่ยังไม่ถูกตั้งราคา
                         </Alert>
                     </Stack>
                 </Grid2>
