@@ -37,6 +37,7 @@ class SpareClaimController extends Controller
             })
             ->where('spare_parts.status', 'like', 'pending')
             ->where('job_lists.status', 'like', 'success')
+            ->where('job_lists.is_code_key', auth()->user()->is_code_cust_id)
             ->groupBy('spare_parts.sp_code', 'spare_parts.sp_name', 'spare_parts.sp_unit')
             ->get();
 
