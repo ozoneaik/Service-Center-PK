@@ -138,7 +138,7 @@ export const Customer = ({detail, setDetail}) => {
                 />
                 <Stack direction='row-reverse' spacing={2}>
                     <Button variant='contained' type='submit'>บันทึก</Button>
-                    <Button variant='outlined'>ยกเลิก</Button>
+                    {/*<Button variant='outlined'>ยกเลิก</Button>*/}
                 </Stack>
             </Stack>
         </form>

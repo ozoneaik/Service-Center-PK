@@ -1,21 +1,22 @@
-import {
-    Avatar,
-    Button,
-    Card,
-    CardContent,
-    Grid2,
-    Stack,
-    Table, TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Typography
-} from "@mui/material"
+import Avatar from "@mui/material/Avatar";
+import Button from "@mui/material/Button";
+import Grid2 from "@mui/material/Grid2";
+import Stack from "@mui/material/Stack";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CircularProgress from "@mui/material/CircularProgress";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Typography from "@mui/material/Typography";
 import FormGroup from '@mui/material/FormGroup';
 import {AlertDialog} from "@/Components/AlertDialog.js";
 import {ImagePreview} from "@/Components/ImagePreview.jsx";
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import {useProductTarget} from "@/Context/ProductContext.jsx";
+import {useState} from "react";
 
 
 const BehaviorDetail = ({detail}) => (
@@ -26,11 +27,11 @@ const BehaviorDetail = ({detail}) => (
     </Stack>
 )
 
-const FileDetail = ({ menu, forService = false }) => {
+const FileDetail = ({menu, forService = false}) => {
     const displayStartIndex = forService ? 3 : 0;
     const displayEndIndex = forService ? menu.length : 3;
     return (
-        <Grid2 container mt={2} spacing={2} sx={{overflowX : 'scroll'}}>
+        <Grid2 container mt={2} spacing={2} sx={{overflowX: 'scroll'}}>
             {menu
                 .filter((_, index) => index >= displayStartIndex && index < displayEndIndex)
                 .map((item, index) => (
@@ -40,12 +41,10 @@ const FileDetail = ({ menu, forService = false }) => {
                             {item.list.length > 0 ?
                                 item.list.map((image, i) => (
                                     <ImagePreview
-                                        key={i}
+                                        key={i} width={100}
                                         src={image.full_file_path}
-                                        width={100}
                                     />
-                                )) :
-                                <>-</>
+                                )) : <>-</>
                             }
                         </Stack>
                     </Grid2>
@@ -53,7 +52,6 @@ const FileDetail = ({ menu, forService = false }) => {
         </Grid2>
     );
 };
-
 
 
 const SpDetail = ({sp, sp_warranty}) => {
@@ -90,7 +88,7 @@ const SpDetail = ({sp, sp_warranty}) => {
 
 
 const CardDetail = ({children}) => (
-    <Card variant="outlined" sx={{width : '100%'}}>
+    <Card variant="outlined" sx={{width: '100%'}}>
         <CardContent>
             {children}
         </CardContent>
@@ -98,9 +96,11 @@ const CardDetail = ({children}) => (
 )
 
 
-export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
+export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
     const selected = detail.selected;
+    const [loading, setLoading] = useState(false);
     const {productTarget} = useProductTarget()
+
     async function endJob() {
         AlertDialog({
             icon: 'question',
@@ -126,10 +126,10 @@ export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
                     } catch (error) {
                         Status = error.response.status;
                         message = error.response.data.message;
-                        if (message === 'ตรวจพบอะไหล่ที่ยังไม่ถูก approve กรุณาตรวจสอบในปุ่มแจ้งเตือน'){
+                        if (message === 'ตรวจพบอะไหล่ที่ยังไม่ถูก approve กรุณาตรวจสอบในปุ่มแจ้งเตือน') {
                             setShowDetail(7)
                         }
-                        if (message === 'จำเป็นต้องอัปโหลดภาพอะไหล่ที่เสียส่งเคลม กรุณาตรวจสอบในปุ่มแจ้งเตือน'){
+                        if (message === 'จำเป็นต้องอัปโหลดภาพอะไหล่ที่เสียส่งเคลม กรุณาตรวจสอบในปุ่มแจ้งเตือน') {
                             setShowDetail(2)
                         }
                     } finally {
@@ -148,6 +148,7 @@ export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
 
     const exportQu = async () => {
         console.log(detail)
+        setLoading(true)
         let newDataFormat = [];
         detail.selected.sp.forEach((item) => {
             newDataFormat.push({
@@ -165,8 +166,8 @@ export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
             "regenqu": "Y",
             "typeservice": "SC",
             "docqu": `QU-${detail.job.job_id.replace('JOB-', '')}`,
-            "custaddr" : detail.selected.customerInJob.address,
-            'custnamesc' : detail.selected.customerInJob.name,
+            "custaddr": detail.selected.customerInJob.address,
+            'custnamesc': detail.selected.customerInJob.name,
             "sku": newDataFormat,
             "assno": "",
             "fgcode": detail.job.skusp,
@@ -184,16 +185,19 @@ export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
             "emprepair": ""
         };
         try {
-            const {data, status} = await axios.post('/genQuPdf',{
+            const {data, status} = await axios.post('/genQuPdf', {
                 ...dataJson
             })
-            window.open(data.pathUrl,'_blank');
-        }catch (error){
+            window.open(data.pathUrl, '_blank');
+        } catch (error) {
             AlertDialog({
-                title : 'เกิดข้อผิดพลาด',
-                text : error.response.data.message,
-                onPassed : () => {}
+                title: 'เกิดข้อผิดพลาด',
+                text: error.response.data.message,
+                onPassed: () => {
+                }
             })
+        } finally {
+            setLoading(false);
         }
 
 
@@ -216,10 +220,11 @@ export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
                         <Stack direction='row' spacing={2}>
                             <CardDetail>
                                 <Typography variant='h6' fontWeight='bold'>รูปภาพ/วิดีโอสำหรับเคลมสินค้า</Typography>
-                                <FileDetail menu={selected.fileUpload} />
+                                <FileDetail menu={selected.fileUpload}/>
                             </CardDetail>
                             <CardDetail>
-                                <Typography variant='h6' fontWeight='bold'>รูปภาพ/วิดีโอสำหรับร้านค้าใช้ภายใน</Typography>
+                                <Typography variant='h6'
+                                            fontWeight='bold'>รูปภาพ/วิดีโอสำหรับร้านค้าใช้ภายใน</Typography>
                                 <FileDetail menu={selected.fileUpload} forService={true}/>
                             </CardDetail>
                         </Stack>
@@ -243,20 +248,30 @@ export const SummaryForm = ({detail, setDetail,setShowDetail}) => {
                         <CardDetail>
                             <Typography variant='h6' fontWeight='bold'>เอกสาร</Typography>
                             <Stack direction='row' spacing={2}>
-                                {
-                                    detail.selected.sp.length > 0 && (
-                                        <Button onClick={exportQu} startIcon={<PictureAsPdfIcon/>} variant='contained'>QU</Button>
-                                    )
-                                }
-                                   <Button variant='contained'>รับสินค้า</Button>
+                                {detail.selected.sp.length > 0 && (
+                                    <Button onClick={exportQu} startIcon={<PictureAsPdfIcon/>}
+                                            variant='contained' disabled={loading}>
+                                        {loading ? <CircularProgress size={18}/> : 'QU'}
+                                    </Button>
+                                )}
+                                <Button variant='contained'>รับสินค้า</Button>
                             </Stack>
                         </CardDetail>
 
                         <Stack direction='row' spacing={2} justifyContent='end'>
-                            <Button variant='contained' color='error'
-                                    onClick={() => console.log(selected)}>ยกเลิกงานซ่อม</Button>
-                            <Button variant='contained' color='success' disabled={detail.job.status === 'success'}
-                                    onClick={() => endJob()}>ปิดงานซ่อม</Button>
+                            <Button
+                                variant='contained' color='error'
+                                onClick={() => console.log(selected)}
+                            >
+                                ยกเลิกงานซ่อม
+                            </Button>
+                            <Button
+                                variant='contained' color='success'
+                                disabled={detail.job.status === 'success'}
+                                onClick={() => endJob()}
+                            >
+                                ปิดงานซ่อม
+                            </Button>
                         </Stack>
                     </Stack>
                 </FormGroup>

@@ -9,6 +9,8 @@ import SpSummary from "@/Pages/ReportRepair/SpNew/SpSummary.jsx";
 export default function SpAdd({detail, showAdd, setShowAdd,setDetail }) {
     const [selected, setSelected] = useState(detail.selected.sp);
     const [open, setOpen] = useState(false);
+    const pid = detail.pid;
+    const spPath = import.meta.env.VITE_IMAGE_PATH + pid;
     const [sv, setSv] = useState([{
         spcode: 'SV001',
         spname: 'ค่าบริการ',
@@ -154,7 +156,7 @@ export default function SpAdd({detail, showAdd, setShowAdd,setDetail }) {
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <ImagePreview src={''}/>
+                                            <ImagePreview src={spPath + '/' + item.spcode + '.jpg'}/>
                                         </TableCell>
                                         <TableCell>{item.spcode}</TableCell>
                                         <TableCell>{item.spname}</TableCell>

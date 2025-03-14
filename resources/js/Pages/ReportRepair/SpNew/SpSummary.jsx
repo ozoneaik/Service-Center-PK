@@ -38,7 +38,10 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
         calculateTotal();
     }, [selectWorking]);
 
-    const handleClose = () => {
+    const handleClose = (e,reason) => {
+        if (reason === "backdropClick" || reason === "escapeKeyDown") {
+            return ;
+        }
         setOpen(false);
     };
 
@@ -151,11 +154,19 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
             }
         };
 
+        const handleOnClose = (e,reason) => {
+            console.log(e,reason)
+            if (reason === "backdropClick" || reason === "escapeKeyDown") {
+                return ;
+            }
+            setShowAlertZero(false)
+        }
+
         return (
             <Dialog
                 fullWidth
                 open={showAlertZero}
-                onClose={() => setShowAlertZero(false)}
+                onClose={(e,reason)=>handleOnClose(e,reason)}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
             >
@@ -251,7 +262,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                 fullWidth
                 maxWidth='xl'
                 open={open}
-                onClose={handleClose}
+                onClose={(e,reason) => handleClose(e,reason)}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
             >

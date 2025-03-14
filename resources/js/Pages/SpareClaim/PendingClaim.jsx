@@ -79,7 +79,7 @@ export default function PendingClaim({list}){
                                         <TableRow key={index}>
                                             <TableCell>{item.claim_id}</TableCell>
                                             <TableCell>{item.job_id}</TableCell>
-                                            <TableCell>{item.job_id}</TableCell>
+                                            <TableCell>{item.name} {'('} {item.phone} {')'}</TableCell>
                                             <TableCell>{item.sp_code}</TableCell>
                                             <TableCell>{item.sp_name}</TableCell>
                                             <TableCell>

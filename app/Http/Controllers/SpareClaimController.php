@@ -48,7 +48,7 @@ class SpareClaimController extends Controller
                 ->where('sp_code', $sp['sp_code'])
                 ->where('spare_parts.status', 'pending')
                 ->where('job_lists.status', 'success')
-                ->where('job_lists.user_id', auth()->user()->is_code_cust_id)
+                ->where('job_lists.is_code_key', auth()->user()->is_code_cust_id)
                 ->get();
         }
         return Inertia::render('SpareClaim/ClaimMain', ['spareParts' => $spareParts]);
@@ -110,11 +110,23 @@ class SpareClaimController extends Controller
 
     public function pendingShow(): Response
     {
-        $list = Claim::query()->leftJoin('claim_details','claim_details.claim_id','claims.claim_id')
+        $list = Claim::query()->leftJoin('claim_details','claim_details.claim_id','=','claims.claim_id')
+            ->leftJoin('job_lists','claim_details.job_id','=','job_lists.job_id')
+            ->leftJoin('customer_in_jobs' ,'job_lists.job_id','=','customer_in_jobs.job_id')
             ->where('claim_details.status', 'pending')
             ->where('user_id',auth()->user()->is_code_cust_id)
+            ->select(
+                'claims.*',
+                'claim_details.job_id',
+                'customer_in_jobs.name','customer_in_jobs.phone',
+                'claim_details.serial_id',
+                'claim_details.sp_code','claim_details.sp_name',
+                'claim_details.unit','claim_details.qty',
+                'claim_details.claim_submit_date',
+            )
             ->orderByDesc('claim_details.created_at')
             ->get();
+//        dd($list->toArray());
         return Inertia::render('SpareClaim/PendingClaim',[
             'list' => $list
         ]);

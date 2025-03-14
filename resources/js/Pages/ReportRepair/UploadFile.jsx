@@ -244,12 +244,12 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
                             justifyContent='end'
                             spacing={2}
                         >
-                            <Button
-                                variant='outlined'
-                                disabled={detail.job.status === 'success'}
-                            >
-                                ยกเลิก
-                            </Button>
+                            {/*<Button*/}
+                            {/*    variant='outlined'*/}
+                            {/*    disabled={detail.job.status === 'success'}*/}
+                            {/*>*/}
+                            {/*    ยกเลิก*/}
+                            {/*</Button>*/}
                             <Button
                                 onClick={handleSave}
                                 disabled={detail.job.status === 'success'}
