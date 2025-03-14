@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\MenuFileUploadController;
+use App\Http\Controllers\Admin\OrderManageController;
 use App\Http\Controllers\Admin\UserManageController;
 use App\Http\Controllers\ApprovalSpController;
 use App\Http\Controllers\BehaviorController;
@@ -108,6 +109,10 @@ Route::middleware('auth')->group(function () {
             Route::prefix('users-manage')->group(function () {
                 Route::get('/create', [UserManageController::class, 'create'])->name('userManage.create');
                 Route::get('/list', [UserManageController::class, 'list'])->name('userManage.list');
+            });
+
+            Route::prefix('orders')->group(function (){
+               Route::get('/list',[OrderManageController::class,'list'])->name('admin.orders.list');
             });
         });
     });

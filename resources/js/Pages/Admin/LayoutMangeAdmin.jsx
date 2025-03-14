@@ -27,6 +27,11 @@ export default function LayoutMangeAdmin({children}) {
             icon: <DashboardIcon/>,
             path: "userManage.list"
         },
+        {
+            text: "รายการคำสั่งซื้อ",
+            icon: <DashboardIcon/>,
+            path: "admin.orders.list"
+        },
     ];
 
     return (
