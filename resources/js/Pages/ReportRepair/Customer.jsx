@@ -137,7 +137,7 @@ export const Customer = ({detail, setDetail}) => {
                     placeholder="หมายเหตุสำหรับลูกค้าในการสื่อสาร เช่น ลูกค้าให้ส่งใบเสนอราคาก่อนซ่อม"
                 />
                 <Stack direction='row-reverse' spacing={2}>
-                    <Button variant='contained' type='submit'>บันทึก</Button>
+                    <Button variant='contained' type='submit' disabled={detail.job.status !== 'pending'}>บันทึก</Button>
                     {/*<Button variant='outlined'>ยกเลิก</Button>*/}
                 </Stack>
             </Stack>

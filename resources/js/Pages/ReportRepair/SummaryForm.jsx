@@ -260,6 +260,7 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
 
                         <Stack direction='row' spacing={2} justifyContent='end'>
                             <Button
+                                disabled={detail.job.status !== 'pending'}
                                 variant='contained' color='error'
                                 onClick={() => console.log(selected)}
                             >
@@ -267,7 +268,7 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
                             </Button>
                             <Button
                                 variant='contained' color='success'
-                                disabled={detail.job.status === 'success'}
+                                disabled={detail.job.status !== 'pending'}
                                 onClick={() => endJob()}
                             >
                                 ปิดงานซ่อม

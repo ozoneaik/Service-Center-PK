@@ -64,6 +64,7 @@ export default function SpSelected({detail, setShowAdd, showAdd}) {
             <Grid2 size={12}>
                 <Stack direction='row-reverse'>
                     <Button
+                        disabled={detail.job.status !== 'pending'}
                         onClick={handelChangeShow}
                         variant='contained'
                         startIcon={<ModeEditIcon/>}

@@ -79,7 +79,7 @@ export default function Symptoms({detail, setDetail}) {
                     </Grid2>
                     <Grid2 size={12}>
                         <Stack direction='row-reverse'>
-                            <Button variant='contained' color='primary' type='submit'>
+                            <Button disabled={detail.job.status === 'success'} variant='contained' color='primary' type='submit'>
                                 บันทึก
                             </Button>
                         </Stack>

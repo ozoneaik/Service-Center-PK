@@ -356,7 +356,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                 <DialogActions>
                     {/*<Button variant='contained' color='warning' onClick={() => console.log(selectWorking)}>log show</Button>*/}
                     <Button variant='contained' color='error' onClick={handleClose}>ยกเลิก</Button>
-                    <Button variant='contained' onClick={handleSubmit} autoFocus>
+                    <Button variant='contained' disabled={detail.job.status === 'success'} onClick={handleSubmit} autoFocus>
                         บันทึก
                     </Button>
                 </DialogActions>

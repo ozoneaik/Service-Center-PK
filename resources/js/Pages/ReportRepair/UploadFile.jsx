@@ -252,7 +252,7 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
                             {/*</Button>*/}
                             <Button
                                 onClick={handleSave}
-                                disabled={detail.job.status === 'success'}
+                                disabled={detail.job.status !== 'pending'}
                                 variant='contained'
                             >
                                 บันทึก

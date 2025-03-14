@@ -129,7 +129,13 @@ export const AddBehavior = ({detail,setDetail}) => {
                     <form onSubmit={onSubmit}>
                         < Stack direction='row' justifyContent='end' spacing={2}>
                             {/*<Button variant='outlined'>ยกเลิก</Button>*/}
-                            <Button variant='contained'  disabled={detail.job.status === 'success'} color='primary' type='submit'>บันทึก</Button>
+                            <Button
+                                variant='contained'
+                                disabled={detail.job.status !== 'pending'}
+                                color='primary' type='submit'
+                            >
+                                บันทึก
+                            </Button>
                         </Stack>
                     </form>
                 </>
