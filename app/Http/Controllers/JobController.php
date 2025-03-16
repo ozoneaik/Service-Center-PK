@@ -48,18 +48,28 @@ class JobController extends Controller
             DB::beginTransaction();
             $job = JobList::query()->where('job_id', $job_id)->first();
             $findSpApprove = SparePart::query()->where('job_id', $job_id)->get();
+            // dd($job);
             foreach ($findSpApprove as $sp) {
-                if (($job->warranty === true) && (($sp->approve == 'yes') && ($sp->approve_status == 'no'))) {
-                    throw new \Exception('ตรวจพบอะไหล่ที่ยังไม่ถูก approve กรุณาตรวจสอบในปุ่มแจ้งเตือน');
-                }
-                if ($job->warranty === true) {
-                    if ($sp->sp_warranty === true) {
-                        $findUploadFile = FileUpload::query()->where('job_id', $job_id)
-                            ->where('menu_id', 3)
-                            ->first();
-                        if (!$findUploadFile) {
-                            throw new \Exception('จำเป็นต้องอัปโหลดภาพอะไหล่ที่เสียส่งเคลม กรุณาตรวจสอบในปุ่มแจ้งเตือน');
-                        }
+                // if (($job->warranty === true) && (($sp->approve == 'yes') && ($sp->approve_status == 'no'))) {
+                //     throw new \Exception('ตรวจพบอะไหล่ที่ยังไม่ถูก approve กรุณาตรวจสอบในปุ่มแจ้งเตือน');
+                // }
+                if ($sp->sp_warranty === true) {
+                    $uploadedMenus = FileUpload::query()
+                        ->where('job_id', $job_id)
+                        ->whereIn('menu_id', [1, 2, 3])
+                        ->pluck('menu_id')
+                        ->toArray();
+                
+                    // ตรวจสอบว่าเมนูที่ต้องมีครบทั้ง 1, 2, 3 ขาดเมนูอะไรไปบ้าง
+                    $missingMenus = array_diff([1, 2, 3], $uploadedMenus);
+                
+                    if (!empty($missingMenus)) {
+                        $missingMenusText = implode(', ', $missingMenus);
+                        if($missingMenusText === '1') $missingMenusText = "สภาพสินค้าก่อนซ่อม";
+                        elseif ($missingMenusText === '2') $missingMenusText = "สภาพสินค้าก่อนซ่อม";
+                        elseif ($missingMenusText === '3') $missingMenusText = "ภาพอะไหล่ที่เสียส่งเคลม";
+                        else $missingMenusText = "ไม่สามารถระบุได้";
+                        throw new \Exception("เนื่องจาก job นี้มีการส่งเคลมอะไหล่ กรุณาตรวจสอบข้อมูลสำหรับการเคลมอะไหล่ให้ครบถ้วน ขาดเมนู: {$missingMenusText}");
                     }
                 }
             }

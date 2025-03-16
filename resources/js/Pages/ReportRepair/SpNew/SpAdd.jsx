@@ -3,7 +3,7 @@ import PaletteIcon from "@mui/icons-material/Palette";
 import {ImagePreview} from "@/Components/ImagePreview.jsx";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
 import Checkbox from "@mui/material/Checkbox";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import SpSummary from "@/Pages/ReportRepair/SpNew/SpSummary.jsx";
 
 export default function SpAdd({detail, showAdd, setShowAdd,setDetail }) {
@@ -140,29 +140,34 @@ export default function SpAdd({detail, showAdd, setShowAdd,setDetail }) {
                         </TableHead>
                         <TableBody>
                             {spAll.map((item, index) => {
-                                return (
-                                    <TableRow key={index}
-                                              sx={
-                                                  item.price_per_unit === '-' ? {backgroundColor: '#fdeded'}
-                                                      : detail.sp_warranty.find(it => it.spcode === item.spcode) ?
-                                                          {backgroundColor: '#edf7ed'} : {backgroundColor: 'white'}
-                                              }
-                                    >
-                                        <TableCell>
-                                            <Checkbox
-                                                checked={isSelected(item)}
-                                                disabled={item.price_per_unit === '-'}
-                                                onChange={(e) => handelSelect(e, item)}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <ImagePreview src={spPath + '/' + item.spcode + '.jpg'}/>
-                                        </TableCell>
-                                        <TableCell>{item.spcode}</TableCell>
-                                        <TableCell>{item.spname}</TableCell>
-                                        <TableCell>{item.spunit ? item.spunit : item.sp_unit}</TableCell>
-                                    </TableRow>
-                                )
+                                if(item.spcode !== 'SV001'){
+                                    return (
+                                        <TableRow key={index}
+                                                  sx={
+                                                      item.price_per_unit === '-' ? {backgroundColor: '#fdeded'}
+                                                          : detail.sp_warranty.find(it => it.spcode === item.spcode) ?
+                                                              {backgroundColor: '#edf7ed'} : {backgroundColor: 'white'}
+                                                  }
+                                        >
+                                            <TableCell>
+                                                <Checkbox
+                                                    checked={isSelected(item)}
+                                                    disabled={item.price_per_unit === '-'}
+                                                    onChange={(e) => handelSelect(e, item)}
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <ImagePreview src={spPath + '/' + item.spcode + '.jpg'}/>
+                                            </TableCell>
+                                            <TableCell>{item.spcode}</TableCell>
+                                            <TableCell>{item.spname}</TableCell>
+                                            <TableCell>{item.spunit ? item.spunit : item.sp_unit}</TableCell>
+                                        </TableRow>
+                                    )
+                                }else{
+                                    return <React.Fragment key={index}></React.Fragment>
+                                }
+                                
                             })}
                         </TableBody>
                     </Table>

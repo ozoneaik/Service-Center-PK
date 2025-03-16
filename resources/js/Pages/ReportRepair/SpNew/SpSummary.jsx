@@ -1,24 +1,18 @@
 import {
-    Alert,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle, Grid2, MenuItem,
+    Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid2, MenuItem,
     Stack, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography,
 } from "@mui/material";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
-import BookmarkAddIcon from "@mui/icons-material/BookmarkAdd";
-import {useState, useEffect} from "react";
-import {ImagePreview} from "@/Components/ImagePreview.jsx";
+import BorderColorIcon from '@mui/icons-material/BorderColor';
+import { useState, useEffect } from "react";
+import { ImagePreview } from "@/Components/ImagePreview.jsx";
 import Select from "@mui/material/Select";
 import axios from "axios";
-import {AlertDialog} from "@/Components/AlertDialog.js";
-import {usePage} from "@inertiajs/react";
+import { AlertDialog } from "@/Components/AlertDialog.js";
 
-const ShowDetail = ({gp}) => (
-    <Stack direction={{md: 'column', lg: 'row'}} spacing={2} alignItems='center'>
-        <Alert sx={{width: {lg: '100%', xs: '100%'}}} severity="success" icon={<BookmarkIcon/>}>
+const ShowDetail = ({ gp }) => (
+    <Stack direction={{ md: 'column', lg: 'row' }} spacing={2} alignItems='center'>
+        <Alert sx={{ width: { lg: '100%', xs: '100%' } }} severity="success" icon={<BookmarkIcon />}>
             สีเขียว {'=>'} อะไหล่อยู่ในประกัน
         </Alert>
         {/* <Alert sx={{width: {lg: '20%', xs: '100%'}}} severity="info" icon={<BookmarkAddIcon/>}>
@@ -27,20 +21,22 @@ const ShowDetail = ({gp}) => (
     </Stack>
 )
 
-export default function SpSummary({open, setOpen, detail, selected, setSelected,setDetail,setShowAdd}) {
+export default function SpSummary({ open, setOpen, detail, selected, setSelected, setDetail, setShowAdd }) {
     const globalGP = detail.selected.globalGP;
     const [targetZero, setTargetZero] = useState();
     const [showAlertZero, setShowAlertZero] = useState(false);
     const [selectWorking, setSelectWorking] = useState(selected);
     const [totalPrice, setTotalPrice] = useState(0);
+    const [showAlertRemark, setShowAlertRemark] = useState(false);
+    const [selectedRemark, setSelectedRemark] = useState();
 
     useEffect(() => {
         calculateTotal();
     }, [selectWorking]);
 
-    const handleClose = (e,reason) => {
+    const handleClose = (e, reason) => {
         if (reason === "backdropClick" || reason === "escapeKeyDown") {
-            return ;
+            return;
         }
         setOpen(false);
     };
@@ -49,9 +45,16 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
         let total = 0;
         selectWorking.forEach(item => {
             // ถ้าเป็นอะไหล่ที่อยู่ในประกัน ราคารวมเป็น 0
-            if (!item.warranty) {
+            console.log(item.price_multiple_gp, item.qty, item.spcode, item.warranty, detail.job.warranty);
+
+            if (!detail.job.warranty) {
                 const itemTotal = parseFloat(item.price_multiple_gp) * parseInt(item.qty || 1);
                 total += itemTotal;
+            } else {
+                if (!item.warranty) {
+                    const itemTotal = parseFloat(item.price_multiple_gp) * parseInt(item.qty || 1);
+                    total += itemTotal;
+                }
             }
         });
         setTotalPrice(total);
@@ -104,7 +107,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
         }
     };
 
-    const handelChangeNameSv = (e,item) => {
+    const handelChangeNameSv = (e, item) => {
         const value = e.target.value;
         const index = selectWorking.findIndex(i => i.spcode === item.spcode);
 
@@ -114,7 +117,6 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                 ...updatedItems[index],
                 spname: value
             };
-
             setSelectWorking(updatedItems);
             // setSelected(updatedItems);
         }
@@ -122,10 +124,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
 
     const calculateItemTotal = (item) => {
         // ถ้าเป็นอะไหล่ที่อยู่ในประกัน ราคารวมเป็น 0
-        if (item.warranty) {
-            return 0;
-        }
-
+        if (item.warranty && detail.job.warranty) return 0;
         const pricePerUnit = parseFloat(item.price_multiple_gp) || 0;
         const quantity = parseInt(item.qty || 1);
         return (pricePerUnit * quantity).toFixed(2);
@@ -133,9 +132,8 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
 
     const DialogSpZero = () => {
         const [claim, setClaim] = useState(false);
+        const [claimRemark, setClaimRemark] = useState('');
         const [remark, setRemark] = useState('');
-        const user = usePage().props.auth.user;
-        console.log(user)
 
         const handleSaveZero = () => {
             const index = selectWorking.findIndex(i => i.spcode === targetZero.spcode);
@@ -145,6 +143,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                 updatedItems[index] = {
                     ...updatedItems[index],
                     claim: claim,
+                    claim_remark: claimRemark,
                     remark: remark
                 };
 
@@ -154,19 +153,29 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
             }
         };
 
-        const handleOnClose = (e,reason) => {
-            console.log(e,reason)
+        const handleOnClose = (e, reason) => {
+            console.log(e, reason)
+
             if (reason === "backdropClick" || reason === "escapeKeyDown") {
-                return ;
+                return;
             }
             setShowAlertZero(false)
+        }
+
+        const handelOnChangeSelect = (value) => {
+            if (value === 'เคลมสินค้านี้ซีเรียลนี้หมดประกันตามเงื่อนไขไปแล้ว' || value === 'เคลมอะไหล่นอกประกันที่เกิดจากความเสียหายต่อเนื่อง') {
+                setClaim(true);
+            } else {
+                setClaim(false);
+            }
+            setClaimRemark(value);
         }
 
         return (
             <Dialog
                 fullWidth
                 open={showAlertZero}
-                onClose={(e,reason)=>handleOnClose(e,reason)}
+                onClose={(e, reason) => handleOnClose(e, reason)}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
             >
@@ -179,13 +188,13 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                             <Typography>เคลม:</Typography>
                             <Select
                                 fullWidth
-                                // native
-                                value={claim ? "true" : "false"}
-                                onChange={(e) => setClaim(e.target.value === "true")}
-                             variant='standard'
+                                value={claimRemark}
+                                onChange={(e) => handelOnChangeSelect(e.target.value)}
+                                variant='standard'
                             >
-                                <MenuItem value="false">ไม่เคลม</MenuItem>
-                                <MenuItem value="true">เคลม</MenuItem>
+                                <MenuItem value="ไม่เคลม">ไม่เคลม</MenuItem>
+                                <MenuItem value="เคลมสินค้านี้ซีเรียลนี้หมดประกันตามเงื่อนไขไปแล้ว">เคลมสินค้านี้ซีเรียลนี้หมดประกันตามเงื่อนไขไปแล้ว</MenuItem>
+                                <MenuItem value="เคลมอะไหล่นอกประกันที่เกิดจากความเสียหายต่อเนื่อง">เคลมอะไหล่นอกประกันที่เกิดจากความเสียหายต่อเนื่อง</MenuItem>
                             </Select>
                         </Stack>
 
@@ -204,7 +213,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                     </Stack>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setShowAlertZero(false)} color="error">ยกเลิก</Button>
+                    {/* <Button onClick={buttonHandleOnClose} color="error">ยกเลิก</Button> */}
                     <Button
                         onClick={handleSaveZero}
                         variant="contained"
@@ -221,8 +230,8 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
     const handleSubmit = async () => {
         console.log(selectWorking)
         try {
-            const {data} = await axios.post('/spare-part/store', {
-                serial_id : detail.serial,
+            const { data } = await axios.post('/spare-part/store', {
+                serial_id: detail.serial,
                 list: {
                     sp: selectWorking,
                 },
@@ -250,19 +259,60 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                 onPassed: () => {
                 }
             });
-        }finally {
+        } finally {
             setOpen(false)
         }
     }
 
+    const DialogOnChangeRemark = () => {
+        const [r, setR] = useState(selectedRemark.remark)
+        const handelOnSave = () => {
+            const index = selectWorking.findIndex(i => i.spcode === selectedRemark.spcode);
+            if (index !== -1) {
+                const updatedItems = [...selectWorking];
+                updatedItems[index] = {
+                    ...updatedItems[index],
+                    remark: r
+                };
+    
+                setSelectWorking(updatedItems);
+            
+            }
+        
+            setShowAlertRemark(false);
+        }
+        console.log(selectedRemark)
+        return (
+            <Dialog
+            fullWidth
+            maxWidth='lg'
+                open={showAlertRemark}
+                onClose={() => setShowAlertRemark(false)}
+            >
+                <DialogTitle id="alert-dialog-title">
+                    แก้ไขหมายเหตุ อะไหล่ {selectedRemark.spname} {selectedRemark.spcode}
+                </DialogTitle>
+                <DialogContent>
+                    <Stack direction='column' spacing={2}>
+                        <textarea defaultValue={r} onChange={(e)=>setR(e.target.value)}/>
+                        <Stack direction='row-reverse'>
+                            <Button onClick={handelOnSave}>บันทึก</Button>
+                        </Stack>
+                    </Stack>
+                </DialogContent>
+            </Dialog>
+        )
+    }
+
     return (
         <>
-            {showAlertZero && <DialogSpZero/>}
+            {showAlertZero && <DialogSpZero />}
+            {showAlertRemark && <DialogOnChangeRemark />}
             <Dialog
                 fullWidth
                 maxWidth='xl'
                 open={open}
-                onClose={(e,reason) => handleClose(e,reason)}
+                onClose={(e, reason) => handleClose(e, reason)}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
             >
@@ -272,7 +322,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                 <DialogContent>
                     <Grid2 container spacing={2}>
                         <Grid2 size={12}>
-                            <ShowDetail gp={globalGP}/>
+                            <ShowDetail gp={globalGP} />
                         </Grid2>
                         <Grid2 size={12}>
                             <Table stickyHeader>
@@ -291,42 +341,68 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                                 <TableBody>
                                     {selectWorking.map((item, index) => {
                                         const image_sp_path = SPARE_PART_IMAGE_PATH + detail.pid + '/' + item.spcode + '.jpg';
-                                        const isWarranty = item.warranty === true;
-                                        const rowStyle = isWarranty ? {backgroundColor: '#e8f5e9'} : {};
+                                        const isWarranty = item.warranty && detail.job.warranty === true;
+                                        const rowStyle = item.warranty ? { backgroundColor: '#e8f5e9' } : {};
                                         return (
                                             <TableRow key={index} sx={rowStyle}>
                                                 <TableCell width={10}>
-                                                    <ImagePreview src={image_sp_path}/>
+                                                    <ImagePreview src={image_sp_path} />
                                                 </TableCell>
                                                 <TableCell>
                                                     {item.spcode}
                                                 </TableCell>
                                                 <TableCell>
                                                     {item.spcode === 'SV001' ? (
-                                                        <TextField onChange={(e) =>handelChangeNameSv(e,item)} variant="standard" defaultValue={item.spname}/>
+                                                        <TextField onChange={(e) => handelChangeNameSv(e, item)} variant="standard" defaultValue={item.spname} />
                                                     ) : <>{item.spname}</>}
                                                 </TableCell>
                                                 <TableCell>
                                                     {(parseFloat(item.price_per_unit) + (globalGP / 100) * item.price_per_unit).toFixed(2)}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <TextField
-                                                        required
-                                                        disabled={isWarranty}
-                                                        size='small'
-                                                        type='number'
-                                                        onChange={(e) => handleChangePrice(e, item)}
-                                                        defaultValue={parseFloat(item.price_multiple_gp).toFixed(2)}
-                                                    />
-                                                    <br/>
-                                                    {item.remark && <span>หมายเหตุ : {item.remark}</span>}
+                                                    <Stack direction='column' spacing={2}>
+                                                        <TextField
+                                                            required
+                                                            disabled={isWarranty}
+                                                            size='small'
+                                                            type='number'
+                                                            onChange={(e) => handleChangePrice(e, item)}
+                                                            defaultValue={parseFloat(item.price_multiple_gp).toFixed(2)}
+                                                        />
+                                                        {item.remark && (
+                                                            <>
+                                                                <Divider />
+                                                                <Stack direction='column'>
+                                                                    {item.remark && (
+                                                                        <Typography variant="body2">
+                                                                            <BorderColorIcon
+                                                                                onClick={() => {
+                                                                                    setSelectedRemark(item);
+                                                                                    setShowAlertRemark(true)
+                                                                                }}
+                                                                                fontSize="10px" sx={{ cursor: 'pointer' }}
+                                                                            />
+                                                                            &nbsp;
+                                                                            {<span>หมายเหตุ : {item.remark}</span>}
+                                                                        </Typography>
+                                                                    )}
+                                                                    <Typography variant="body2">
+                                                                        {item.remark && <span>เลือก : {item.claim_remark}</span>}
+                                                                    </Typography>
+                                                                </Stack>
+                                                            </>
+                                                        )}
+
+                                                    </Stack>
+
                                                 </TableCell>
                                                 <TableCell>
                                                     <TextField
                                                         required
-                                                        inputProps={{min: 1}}
+                                                        inputProps={{ min: 1 }}
                                                         disabled={item.spcode === 'SV001'}
                                                         size="small"
+                                                        sx={{ minWidth: 100 }}
                                                         type="number"
                                                         defaultValue={item.qty}
                                                         onInput={(e) => e.target.value === "0" && (e.target.value = "")}

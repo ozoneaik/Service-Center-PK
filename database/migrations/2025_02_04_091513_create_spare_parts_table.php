@@ -28,6 +28,7 @@ return new class extends Migration
             $table->string('approve_status')->default('yes')->comment('สถานะอะไหล่รอ approve');
             $table->string('remark')->nullable()->comment('หมายเหตุ');
             $table->boolean('claim')->nullable()->comment('สถานะเคลม');
+            $table->string('claim_remark',255)->nullable()->comment('หมายเหตุ เมื่อกรอกราคาอะไหล่เท่ากับ 0');
             $table->timestamps();
         });
     }

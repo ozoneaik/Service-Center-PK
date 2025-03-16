@@ -7,7 +7,7 @@ import InfoIcon from '@mui/icons-material/Info';
 export const WarningApprove = ({detail, setDetail}) => {
     const spPath = import.meta.env.VITE_IMAGE_PATH + detail.pid;
     const sp = detail.selected.sp;
-    const spTargetZero = sp.filter(item => parseFloat(item.price_multiple_gp) === 0 && detail.job.warranty === true);
+    const spTargetZero = sp.filter(item => parseFloat(item.price_multiple_gp) === 0);
     const files = detail.selected.fileUpload;
     const claimedPartsImage = files.find(item => item.id === 3);
     const foundFile = claimedPartsImage.list.length > 0;

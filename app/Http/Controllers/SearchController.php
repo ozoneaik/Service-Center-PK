@@ -117,6 +117,7 @@ class SearchController extends Controller
                 'approve_status',
                 'remark',
                 'claim',
+                'claim_remark',
                 'sp_warranty as warranty',
                 'created_at', 'updated_at'
             )->get();

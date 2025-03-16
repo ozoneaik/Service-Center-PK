@@ -4,8 +4,8 @@ import ModeEditIcon from '@mui/icons-material/ModeEdit';
 
 const TableC = ({detail = [], warranty = false}) => {
     const filteredData = detail.selected.sp?.filter(item =>
-        warranty ? (item.warranty === true || item.spcode === 'SV001')
-            : (item.warranty !== true && item.spcode !== 'SV001')
+        warranty ? (item.spcode === 'SV001')
+            : (item.spcode !== 'SV001')
     );
     return (
         <Table>
@@ -16,20 +16,22 @@ const TableC = ({detail = [], warranty = false}) => {
                     <TableCell>ชื่ออะไหล่</TableCell>
                     <TableCell>จำนวน</TableCell>
                     <TableCell>หน่วย</TableCell>
-                    <TableCell>warranty</TableCell>
                 </TableRow>
             </TableHead>
             <TableBody>
                 {filteredData.map((item, index) => {
                     const spPath = import.meta.env.VITE_IMAGE_PATH + `${detail.pid}/` + item.spcode + '.jpg';
                     return (
-                        <TableRow key={index}>
+                        <TableRow key={index} sx={
+                            item.price_per_unit === '-' ? {backgroundColor: '#fdeded'}
+                                : detail.sp_warranty.find(it => it.spcode === item.spcode) ?
+                                    {backgroundColor: '#edf7ed'} : {backgroundColor: 'white'}
+                        }>
                             <TableCell><ImagePreview src={spPath}/></TableCell>
                             <TableCell>{item.spcode}</TableCell>
                             <TableCell>{item.spname}</TableCell>
                             <TableCell>{item.qty}</TableCell>
                             <TableCell>{item.sp_unit ?? 'อัน'}</TableCell>
-                            <TableCell>{item.warranty ? 'w' : 'n'}</TableCell>
                         </TableRow>
                     );
                 })}
@@ -47,7 +49,7 @@ export default function SpSelected({detail, setShowAdd, showAdd}) {
         <Grid2 container spacing={2}>
             <Grid2 size={12}>
                 <Typography fontWeight='bold'>
-                    อะไหล่ที่อยู่ในรับประกัน
+                    บริการ
                 </Typography>
             </Grid2>
             <Grid2 size={12}>
@@ -55,7 +57,7 @@ export default function SpSelected({detail, setShowAdd, showAdd}) {
             </Grid2>
             <Grid2 size={12}>
                 <Typography fontWeight='bold'>
-                    อะไหล่ที่ไม่อยู่ในรับประกัน
+                อะไหล่
                 </Typography>
             </Grid2>
             <Grid2 size={12}>

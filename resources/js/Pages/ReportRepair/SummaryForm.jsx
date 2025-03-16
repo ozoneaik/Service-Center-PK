@@ -12,14 +12,14 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import FormGroup from '@mui/material/FormGroup';
-import {AlertDialog} from "@/Components/AlertDialog.js";
-import {ImagePreview} from "@/Components/ImagePreview.jsx";
+import { AlertDialog } from "@/Components/AlertDialog.js";
+import { ImagePreview } from "@/Components/ImagePreview.jsx";
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import {useProductTarget} from "@/Context/ProductContext.jsx";
-import {useState} from "react";
+import { useProductTarget } from "@/Context/ProductContext.jsx";
+import { useState } from "react";
 
 
-const BehaviorDetail = ({detail}) => (
+const BehaviorDetail = ({ detail }) => (
     <Stack flexWrap='wrap' direction='row'>
         {detail.map((item, index) => (
             <Typography variant='body1' color='gray' key={index}>{item.causename}&nbsp;/&nbsp;</Typography>
@@ -27,11 +27,11 @@ const BehaviorDetail = ({detail}) => (
     </Stack>
 )
 
-const FileDetail = ({menu, forService = false}) => {
+const FileDetail = ({ menu, forService = false }) => {
     const displayStartIndex = forService ? 3 : 0;
     const displayEndIndex = forService ? menu.length : 3;
     return (
-        <Grid2 container mt={2} spacing={2} sx={{overflowX: 'scroll'}}>
+        <Grid2 container mt={2} spacing={2} sx={{ overflowX: 'scroll' }}>
             {menu
                 .filter((_, index) => index >= displayStartIndex && index < displayEndIndex)
                 .map((item, index) => (
@@ -54,8 +54,8 @@ const FileDetail = ({menu, forService = false}) => {
 };
 
 
-const SpDetail = ({sp, sp_warranty}) => {
-    const highlight = {backgroundColor: '#e6ffe6'}
+const SpDetail = ({ sp, sp_warranty }) => {
+    const highlight = { backgroundColor: '#e6ffe6' }
     return (
         <Table>
             <TableHead>
@@ -87,8 +87,8 @@ const SpDetail = ({sp, sp_warranty}) => {
 }
 
 
-const CardDetail = ({children}) => (
-    <Card variant="outlined" sx={{width: '100%'}}>
+const CardDetail = ({ children }) => (
+    <Card variant="outlined" sx={{ width: '100%' }}>
         <CardContent>
             {children}
         </CardContent>
@@ -96,10 +96,10 @@ const CardDetail = ({children}) => (
 )
 
 
-export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
+export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
     const selected = detail.selected;
     const [loading, setLoading] = useState(false);
-    const {productTarget} = useProductTarget()
+    const { productTarget } = useProductTarget()
 
     async function endJob() {
         AlertDialog({
@@ -111,7 +111,7 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
                     let message = '';
                     let Status = 400;
                     try {
-                        const {data, status} = await axios.post('jobs/update', {
+                        const { data, status } = await axios.post('jobs/update', {
                             job_id: detail.job.job_id
                         });
                         Status = status;
@@ -129,8 +129,8 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
                         if (message === 'ตรวจพบอะไหล่ที่ยังไม่ถูก approve กรุณาตรวจสอบในปุ่มแจ้งเตือน') {
                             setShowDetail(7)
                         }
-                        if (message === 'จำเป็นต้องอัปโหลดภาพอะไหล่ที่เสียส่งเคลม กรุณาตรวจสอบในปุ่มแจ้งเตือน') {
-                            setShowDetail(2)
+                        if (message.includes('เนื่องจาก job นี้มีการส่งเคลมอะไหล่ กรุณาตรวจสอบข้อมูลสำหรับการเคลมอะไหล่ให้ครบถ้วน')) {
+                            setShowDetail(2);
                         }
                     } finally {
                         AlertDialog({
@@ -185,7 +185,7 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
             "emprepair": ""
         };
         try {
-            const {data, status} = await axios.post('/genQuPdf', {
+            const { data, status } = await axios.post('/genQuPdf', {
                 ...dataJson
             })
             window.open(data.pathUrl, '_blank');
@@ -210,7 +210,7 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
                     <Stack direction='column' spacing={2}>
                         <CardDetail>
                             <Stack direction='row' spacing={2} alignItems='center'>
-                                <Avatar sizes='lg' sx={{backgroundColor: '#eb5b1f', width: 50, height: 50}}/>
+                                <Avatar sizes='lg' sx={{ backgroundColor: '#eb5b1f', width: 50, height: 50 }} />
                                 <Stack direction='column'>
                                     <Typography>ชื่อ : {selected.customerInJob.name}</Typography>
                                     <Typography>เบอร์โทร : {selected.customerInJob.phone}</Typography>
@@ -220,22 +220,22 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
                         <Stack direction='row' spacing={2}>
                             <CardDetail>
                                 <Typography variant='h6' fontWeight='bold'>รูปภาพ/วิดีโอสำหรับเคลมสินค้า</Typography>
-                                <FileDetail menu={selected.fileUpload}/>
+                                <FileDetail menu={selected.fileUpload} />
                             </CardDetail>
                             <CardDetail>
                                 <Typography variant='h6'
-                                            fontWeight='bold'>รูปภาพ/วิดีโอสำหรับร้านค้าใช้ภายใน</Typography>
-                                <FileDetail menu={selected.fileUpload} forService={true}/>
+                                    fontWeight='bold'>รูปภาพ/วิดีโอสำหรับร้านค้าใช้ภายใน</Typography>
+                                <FileDetail menu={selected.fileUpload} forService={true} />
                             </CardDetail>
                         </Stack>
 
                         <CardDetail>
                             <Typography variant='h6' fontWeight='bold'>อาการ / สาเหตุ</Typography>
-                            <BehaviorDetail detail={selected.behavior}/>
+                            <BehaviorDetail detail={selected.behavior} />
                         </CardDetail>
                         <CardDetail>
                             <Typography variant='h6' fontWeight='bold'>บันทึกอะไหล่</Typography>
-                            <SpDetail sp={selected.sp} sp_warranty={selected.sp_warranty}/>
+                            <SpDetail sp={selected.sp} sp_warranty={selected.sp_warranty} />
                         </CardDetail>
                         <CardDetail>
                             <Typography variant='h6' fontWeight='bold'>หมายเหตุสำหรับลูกค้า</Typography>
@@ -250,9 +250,9 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
                             <Stack direction='row' spacing={2}>
                                 <Button variant='contained'>รับสินค้า</Button>
                                 {detail.selected.sp.length > 0 && (
-                                    <Button onClick={exportQu} startIcon={<PictureAsPdfIcon/>}
-                                            variant='contained' disabled={loading}>
-                                        {loading ? <CircularProgress size={18}/> : 'ออกใบเสนอราคา'}
+                                    <Button onClick={exportQu} startIcon={<PictureAsPdfIcon />}
+                                        variant='contained' disabled={loading}>
+                                        {loading ? <CircularProgress size={18} /> : 'ออกใบเสนอราคา'}
                                     </Button>
                                 )}
                             </Stack>

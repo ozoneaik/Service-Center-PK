@@ -21,6 +21,7 @@ class SparePart extends Model
         'approve',
         'approve_status',
         'remark',
-        'claim'
+        'claim',
+        'claim_remark'
     ];
 }

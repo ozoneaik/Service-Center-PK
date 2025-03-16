@@ -28,14 +28,16 @@ export default function FormRepair({detail, setDetail}) {
 
     useEffect(() => {
         // เช็คว่า detail นี้ อยู่ใน ประกัน แล้วมีราคาอะไหร่เป็น 0 ด้วย
-        const findPriceMultipleGpZero = detail.selected.sp.filter(item => parseInt(item.price_multiple_gp) === 0);
-        const trueOrFalsePriceZero = !!(detail.job.warranty && (findPriceMultipleGpZero.length > 0))
+        const findPriceMultipleGpZero = detail.selected.sp.filter(item => parseFloat(item.price_multiple_gp) === 0);
+        // const trueOrFalsePriceZero = !!(detail.job.warranty && (findPriceMultipleGpZero.length > 0))
+        const trueOrFalsePriceZero = !!((findPriceMultipleGpZero.length > 0))
         // เช็คว่า detail นี้ อยู่ในประกันหรือไม่ แล้วมีการเลือกอะไหล่ที่อยู่ในประกัน แต่ไม่ได้อัปโหลดภาพอะไหล่ที่เสียส่งเคลม
         const findSpWarranty = detail.selected.sp.filter(item => item.warranty === true);
         const findUploadImage = detail.selected.fileUpload.find(item => item.id === 3);
         const findListUploadImage = findUploadImage.list;
         console.log(findUploadImage, findUploadImage.list, findListUploadImage)
-        const trueOrFalseUploadFile = !!(detail.job.warranty && (findSpWarranty.length > 0) && (findListUploadImage.length === 0))
+        // const trueOrFalseUploadFile = !!(detail.job.warranty && (findSpWarranty.length > 0) && (findListUploadImage.length === 0))
+        const trueOrFalseUploadFile = !!((findSpWarranty.length > 0) && (findListUploadImage.length === 0))
         console.log(`trueOrFalseUploadFile >> ${trueOrFalseUploadFile} ` + `trueOrFalsePriceZero >> ${trueOrFalsePriceZero}`)
         setApprove(trueOrFalseUploadFile || trueOrFalsePriceZero);
         setProductTarget(trueOrFalseUploadFile || trueOrFalsePriceZero)
