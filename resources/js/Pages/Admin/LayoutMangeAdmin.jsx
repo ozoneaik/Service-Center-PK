@@ -13,9 +13,9 @@ export default function LayoutMangeAdmin({children}) {
 
     const menuItems = [
         {
-            text: "อะไหล่รอเคลม",
+            text: "เอกสารรอเคลม",
             icon: <DashboardIcon/>,
-            path: "dashboard"
+            path: "claimSP.index"
         },
         {
             text: "อนุมัติอะไหล่",

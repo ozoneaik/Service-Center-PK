@@ -1,22 +1,14 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
-    Alert,
-    Box,
-    Button,
-    Card,
-    Grid2,
-    Stack,
-    Tab,
-    Tabs,
-    Typography
+    Alert, Box, Button, Card, Grid2,
+    Stack, Tab, Tabs, Typography
 } from "@mui/material";
 import axios from "axios";
-
 import Progress from "@/Components/Progress.jsx";
-import {ImagePreview} from "@/Components/ImagePreview.jsx";
-import {AlertDialog} from "@/Components/AlertDialog.js";
+import { ImagePreview } from "@/Components/ImagePreview.jsx";
+import { AlertDialog } from "@/Components/AlertDialog.js";
 
-export const UploadFile = ({detail, setDetail, setShowDetail}) => {
+export const UploadFile = ({ detail, setDetail, setShowDetail }) => {
     const [loading, setLoading] = useState(true);
     const [menuList, setMenuList] = useState([]);
     const [selected, setSelected] = useState(detail.selected.fileUpload);
@@ -25,8 +17,8 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
     // ดึงรายการเมนูจาก API
     const fetchMenu = async () => {
         try {
-            const {data} = await axios.get('menu-upload-file/show');
-            const menuWithImages = data.list.map(menu => ({...menu, list: []}));
+            const { data } = await axios.get('menu-upload-file/show');
+            const menuWithImages = data.list.map(menu => ({ ...menu, list: [] }));
             setMenuList(menuWithImages);
             setLoading(false);
         } catch (error) {
@@ -61,7 +53,7 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
                                 id: menu.list.length + 1,
                                 image: file,
                                 full_file_path: URL.createObjectURL(file),
-                                type : fileType
+                                type: fileType
                             }
                         ]
                     }
@@ -74,9 +66,7 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
     const removeImage = (menuId, imageId) => {
         setSelected(prevList =>
             prevList.map(menu =>
-                menu.id === menuId
-                    ? {...menu, list: menu.list.filter(img => img.id !== imageId)}
-                    : menu
+                menu.id === menuId ? { ...menu, list: menu.list.filter(img => img.id !== imageId) } : menu
             )
         );
     };
@@ -90,14 +80,11 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
             onPassed: async (confirm) => {
                 if (confirm) {
                     try {
-                        const {data} = await axios.post('/upload-file/store', {
+                        const { data } = await axios.post('/upload-file/store', {
                             serial_id: detail.serial,
                             list: selected,
                             job_id: detail.job.job_id
-                        }, {
-                            headers: {"Content-Type": 'multipart/form-data'}
-                        });
-
+                        }, { headers: { "Content-Type": 'multipart/form-data' } });
                         setSelected(data.data);
                         setDetail(prevDetail => ({
                             ...prevDetail,
@@ -106,12 +93,7 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
                                 fileUpload: data.data
                             }
                         }));
-
-                        AlertDialog({
-                            icon: "success",
-                            title: 'สำเร็จ',
-                            text: data.message
-                        });
+                        AlertDialog({ icon: "success", title: 'สำเร็จ', text: data.message });
                     } catch (error) {
                         AlertDialog({
                             title: 'เกิดข้อผิดพลาด',
@@ -124,7 +106,7 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
     };
 
     // สร้าง Tab Panel แบบกำหนดเอง
-    const CustomTabPanel = ({children, value, index, ...other}) => (
+    const CustomTabPanel = ({ children, value, index, ...other }) => (
         <div
             role="tabpanel"
             hidden={value !== index}
@@ -132,7 +114,7 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
             aria-labelledby={`simple-tab-${index}`}
             {...other}
         >
-            {value === index && <Box sx={{p: 3}}>{children}</Box>}
+            {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
         </div>
     );
 
@@ -147,12 +129,12 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
                             <Stack
                                 direction='row'
                                 spacing={2}
-                                sx={{flexWrap: 'wrap', gap: 2}}
+                                sx={{ flexWrap: 'wrap', gap: 2 }}
                             >
                                 {item.list.map((image) => (
                                     <Card
                                         key={image.id}
-                                        sx={{width: 150, height: 150, position: 'relative'}}
+                                        sx={{ width: 150, height: 150, position: 'relative' }}
                                     >
                                         {/\.(mp4|webm|ogg|avi|mov)$/i.test(image.full_file_path) ? (
                                             <video
@@ -169,7 +151,7 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
                                             size="small"
                                             color="error"
                                             onClick={() => removeImage(item.id, image.id)}
-                                            sx={{position: 'absolute', top: 0, right: 0}}
+                                            sx={{ position: 'absolute', top: 0, right: 0 }}
                                         >
                                             ลบ
                                         </Button>
@@ -179,20 +161,13 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
 
                                 ))}
 
-                                <Button
-                                    variant="outlined"
-                                    component="label"
-                                    sx={{width: 160, height: 160}}
-                                >
+                                <Button variant="outlined" component="label" sx={{ width: 160, height: 160 }}>
                                     + เพิ่มรูปภาพ/วิดีโอ
                                     <input
-                                        type="file"
-                                        hidden
-                                        accept="image/*,video/*"
+                                        type="file" hidden accept="image/*,video/*"
                                         onChange={(e) => handleImageUpload(item.id, e)}
                                     />
                                 </Button>
-
                             </Stack>
                         </Grid2>
                     )
@@ -217,14 +192,14 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
                     )}
 
                     <Grid2 size={12}>
-                        <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                             <Tabs
                                 value={tabValue}
                                 onChange={(_, newValue) => setTabValue(newValue)}
                                 aria-label="tabs"
                             >
-                                <Tab label="ภาพประกอบสำหรับการเคลม"/>
-                                <Tab label="สำหรับศูนย์ซ่อมใช้ภายใน"/>
+                                <Tab label="ภาพประกอบสำหรับการเคลม" />
+                                <Tab label="สำหรับศูนย์ซ่อมใช้ภายใน" />
                             </Tabs>
                         </Box>
 
@@ -260,7 +235,7 @@ export const UploadFile = ({detail, setDetail, setShowDetail}) => {
                     </Grid2>
                 </Grid2>
             ) : (
-                <Progress/>
+                <Progress />
             )}
         </>
     );

@@ -4,6 +4,7 @@ import { Head } from "@inertiajs/react";
 import SearchIcon from '@mui/icons-material/Search';
 import {
     Button, Chip, Container, Grid2, MenuItem, Paper, Select,
+    Stack,
     Table, TableBody, TableCell, TableHead, TableRow, TextField,
     Typography
 } from "@mui/material";
@@ -76,7 +77,7 @@ export default function HistoryMain({ jobs }) {
         setOpen(true);
     }
     return (
-        <>
+<>
             {open && <ListDetailModal open={open} setOpen={setOpen} selected={selected} />}
             <AuthenticatedLayout>
                 <Head title="ประวัติซ่อม" />
@@ -156,10 +157,13 @@ export default function HistoryMain({ jobs }) {
                             </Grid2>
                         </Grid2>
                         <Grid2 size={12}>
+                            <Stack direction='row' justifyContent='space-between' alignItems='center'>
                             <Typography variant='h5' fontWeight='bold'>ประวัติซ่อม</Typography>
+                            <Typography variant="subtitle1">รายการทั้งหมด {jobs.length} รายการ</Typography>
+                            </Stack>
                         </Grid2>
                         <Grid2 size={12}>
-                            <Paper variant='outlined' sx={{ p: 2 }}>
+                            <Paper variant='outlined' sx={{ p: 2,overflowX : 'auto' }}>
                                 <TableDetail jobs={jobs} handleShowDetail={handleShowDetail} />
                             </Paper>
                         </Grid2>
@@ -168,6 +172,8 @@ export default function HistoryMain({ jobs }) {
             </AuthenticatedLayout>
         </>
     )
+        
+    
 }
 const TABLE_HEADER_STYLE = {
     backgroundColor: '#c7c7c7',

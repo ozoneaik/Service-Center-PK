@@ -11,7 +11,6 @@ use App\Http\Controllers\HistoryRepairController;
 use App\Http\Controllers\ManageBranchController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
-use App\Http\Controllers\SpareClaimController;
 use App\Http\Controllers\WarrantyProductController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
@@ -38,12 +37,8 @@ Route::middleware('auth')->group(function () {
     // จัดการ Jobs
     require __DIR__ . '/jobs.php';
 
-    Route::prefix('spare-claim')->group(function () {
-        Route::get('/index', [SpareClaimController::class, 'index'])->name('spareClaim.index');
-        Route::get('/history', [SpareClaimController::class, 'historyShow'])->name('spareClaim.history');
-        Route::get('/pending', [SpareClaimController::class, 'pendingShow'])->name('spareClaim.pending');
-        Route::post('/store', [SpareClaimController::class, 'store'])->name('spareClaim.store');
-    });
+    // จัดการเอกสารการเคลมอะไหล่
+    require __DIR__.'/spareClaim.php';
 
     // Admin Only
     Route::middleware('adminPermission')->group(function () {

@@ -127,7 +127,6 @@ export default function UserList({list}) {
         <>
             <AuthenticatedLayout>
                 <Head title="จัดการผู้ใช้"/>
-                <LayoutMangeAdmin>
                     <Container maxWidth="false">
                         <Paper elevation={3} sx={{p: 3, mt: 3}}>
                             <Typography variant="h5" sx={{mb: 2}}>รายการผู้ใช้งาน</Typography>
@@ -284,7 +283,6 @@ export default function UserList({list}) {
                             </Box>
                         </Paper>
                     </Container>
-                </LayoutMangeAdmin>
             </AuthenticatedLayout>
         </>
     )

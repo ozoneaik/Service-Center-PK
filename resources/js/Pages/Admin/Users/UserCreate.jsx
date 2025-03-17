@@ -43,7 +43,6 @@ export default function UserCreate() {
     return (
         <AuthenticatedLayout>
             <Head title="สร้างผู้ใช้" />
-            <LayoutMangeAdmin>
                 <Container maxWidth="false" sx={{ p: 3 }}>
                     <form onSubmit={handleSubmit}>
                         <Grid2 container spacing={2}>
@@ -186,7 +185,6 @@ export default function UserCreate() {
                         </Grid2>
                     </form>
                 </Container>
-            </LayoutMangeAdmin>
         </AuthenticatedLayout>
     );
 }

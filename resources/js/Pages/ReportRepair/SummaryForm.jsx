@@ -31,7 +31,7 @@ const FileDetail = ({ menu, forService = false }) => {
     const displayStartIndex = forService ? 3 : 0;
     const displayEndIndex = forService ? menu.length : 3;
     return (
-        <Grid2 container mt={2} spacing={2} sx={{ overflowX: 'scroll' }}>
+        <Grid2 container mt={2} spacing={2} sx={{ overflowX: 'auto' }}>
             {menu
                 .filter((_, index) => index >= displayStartIndex && index < displayEndIndex)
                 .map((item, index) => (

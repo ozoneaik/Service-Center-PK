@@ -1,6 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {Head} from "@inertiajs/react";
-import LayoutMangeAdmin from "@/Pages/Admin/LayoutMangeAdmin.jsx";
 import {
     Button,
     Container,
@@ -14,14 +13,12 @@ import {
     Typography
 } from "@mui/material";
 import React from "react";
-import {DateFormat} from "@/Components/DateFormat.jsx";
 
 export default function OrderMain({orderList}){
     console.log(orderList)
     return(
         <AuthenticatedLayout>
             <Head title={'รายการสั่งซื้อ'}/>
-            <LayoutMangeAdmin>
                 <Container maxWidth="false">
                     <Paper variant='outlined' sx={{p: 3, mt: 3}}>
                         <Typography variant='h6' fontWeight='bold'>
@@ -65,8 +62,6 @@ export default function OrderMain({orderList}){
                         </Grid2>
                     </Paper>
                 </Container>
-            </LayoutMangeAdmin>
-
         </AuthenticatedLayout>
     )
 }
