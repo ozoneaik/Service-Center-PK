@@ -1,6 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import InputAdornment from '@mui/material/InputAdornment';
-import { Head } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import SearchIcon from '@mui/icons-material/Search';
 import {
     Button, Chip, Container, Grid2, MenuItem, Paper, Select,
@@ -57,6 +57,11 @@ export const TableDetail = ({ jobs, handleShowDetail }) => {
 };
 
 export default function HistoryMain({ jobs }) {
+    const {url} = usePage();
+    console.log(url);
+    // /admin/history-job?*
+    // /history/index?*
+    
     const [filters, setFilters] = useState({
         serial_id: "",
         job_id: "",
@@ -68,7 +73,8 @@ export default function HistoryMain({ jobs }) {
         setFilters({ ...filters, [e.target.name]: e.target.value });
     };
     const searchJobs = () => {
-        router.get(route("history.index"), filters, { preserveState: true });
+        const routeName = url.startsWith("/admin/history-job") ? "admin.history-job" : "history.index";
+        router.get(route(routeName), filters, { preserveState: true });
     };
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState();

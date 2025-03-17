@@ -15,7 +15,7 @@ Route::prefix('spare-claim')->group(function () {
 Route::middleware('adminPermission')->group(function(){
     Route::prefix('admin')->group(function(){
         Route::prefix('claimSP')->group(function(){
-            Route::get('/index',[ClaimSpController::class,'index'])->name('claimSP.index');
+            Route::get('/index/{status}',[ClaimSpController::class,'index'])->name('claimSP.index');
             Route::get('/detail/{claim_id}',[ClaimSpController::class,'detail'])->name('claimSP.detail');
             Route::put('/update-by-sp-id/{claimDetail_id}/{status}',[ClaimSpController::class,'updateByIdSp'])->name('claimSP.updateByIdSp');
             Route::put('/update-all/{claim_id}/{status}',[ClaimSpController::class,'updateAll'])->name('claimSP.updateAll');

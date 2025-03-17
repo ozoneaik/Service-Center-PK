@@ -2,6 +2,9 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link } from "@inertiajs/react";
 import { Button, Chip, Container, Grid2, Paper, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography, useTheme } from "@mui/material";
 import { useState } from "react";
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
+import CancelIcon from '@mui/icons-material/Cancel';
+import PendingActionsIcon from '@mui/icons-material/PendingActions';
 
 const CustomerDetail = ({ detail }) => {
     const theme = useTheme();
@@ -66,9 +69,26 @@ const TableDetail = ({ claims }) => {
 }
 
 
-export default function ClaimList({ claimList }) {
+export default function ClaimList({ claimList, statusClaim }) {
     const [claims, setClaims] = useState(claimList.data);
 
+    const statusList = [
+        {
+            status: 'approved', color: 'success', text: 'อนุมัติแล้ว',
+            path: route("claimSP.index", { status: 'approved' }),
+            icon: <AssignmentTurnedInIcon />
+        },
+        {
+            status: 'pending', color: 'secondary', text: 'กำลังรออนุมัติ',
+            path: route("claimSP.index", { status: 'pending' }),
+            icon: <PendingActionsIcon />
+        },
+        {
+            status: 'rejected', color: 'error', text: 'ไม่อนุมัติ',
+            path: route("claimSP.index", { status: 'rejected' }),
+            icon: <CancelIcon />
+        },
+    ]
     return (
         <AuthenticatedLayout>
             <Head title="เอกสารรอเคลม" />
@@ -77,19 +97,35 @@ export default function ClaimList({ claimList }) {
                     <Grid2 container spacing={2}>
                         <Grid2 size={12}>
                             <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                                <Typography variant="h5" fontWeight='bold'>รายการเอกสารรอเคลม</Typography>
-                                <Typography >รายการทั้งหมด {claims.length} รายการ</Typography>
+                                <Typography variant="h5" fontWeight='bold'>
+                                    รายการเอกสารรอเคลม
+                                </Typography>
+                                <Stack direction='row' spacing={2} alignItems='center'>
+                                    <Typography>
+                                        รายการทั้งหมด {claims.length} รายการ
+                                    </Typography>
+                                    {statusList.map(({ status, color, text, path, icon }) => (
+                                        <Button
+                                            startIcon={icon}
+                                            component={Link}
+                                            href={path}
+                                            key={status}
+                                            variant={statusClaim === status ? 'contained' : 'outlined'}
+                                            color={color}
+                                        >
+                                            {text}
+                                        </Button>
+                                    ))}
+                                </Stack>
                             </Stack>
                         </Grid2>
                         <Grid2 size={12}>
                             <Paper variant="outlined" sx={{ p: 2, overflowX: 'auto' }}>
                                 <TableDetail claims={claims} />
                             </Paper>
-
                         </Grid2>
                     </Grid2>
                 </Paper>
-
             </Container>
         </AuthenticatedLayout>
     )

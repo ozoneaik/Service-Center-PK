@@ -106,7 +106,6 @@ export default function ApprovalSp({listSp}) {
 
     return (
         <AuthenticatedLayout>
-            <LayoutMangeAdmin>
                 <Container maxWidth='false'>
                     <Grid2 container mt={3} spacing={2}>
                         <Grid2 size={12}>
@@ -116,7 +115,6 @@ export default function ApprovalSp({listSp}) {
                         </Grid2>
                     </Grid2>
                 </Container>
-            </LayoutMangeAdmin>
         </AuthenticatedLayout>
     )
 }

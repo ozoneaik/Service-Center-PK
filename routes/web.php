@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\HistorySpController;
 use App\Http\Controllers\Admin\MenuFileUploadController;
 use App\Http\Controllers\Admin\OrderManageController;
 use App\Http\Controllers\Admin\UserManageController;
@@ -57,10 +58,10 @@ Route::middleware('auth')->group(function () {
                 Route::get('/create', [UserManageController::class, 'create'])->name('userManage.create');
                 Route::get('/list', [UserManageController::class, 'list'])->name('userManage.list');
             });
-
             Route::prefix('orders')->group(function (){
                Route::get('/list',[OrderManageController::class,'list'])->name('admin.orders.list');
             });
+            Route::get('history-job',[HistorySpController::class,'index'])->name('admin.history-job');
         });
     });
 

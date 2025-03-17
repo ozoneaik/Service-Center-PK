@@ -9,15 +9,17 @@ use Inertia\Inertia;
 
 class ClaimSpController extends Controller
 {
-    public function index()
+    public function index($status)
     {
+        if(!isset($status)) $status = 'pending';
         $claimList = Claim::query()
             ->leftJoin('users', 'users.is_code_cust_id', '=', 'claims.user_id')
             ->whereRaw('users.id = (SELECT MAX(id) FROM users WHERE users.is_code_cust_id = claims.user_id)')
+            ->where('claims.status',$status)
             ->orderBy('claims.id', 'desc')
             ->select('claims.*', 'users.shop_name', 'users.is_code_cust_id', 'users.address')
             ->paginate(100);
-        return Inertia::render('SpareClaim/Manage/ClaimList', ['claimList' => $claimList]);
+        return Inertia::render('SpareClaim/Manage/ClaimList', ['claimList' => $claimList,'statusClaim' => $status]);
     }
     public function detail($claim_id)
     {

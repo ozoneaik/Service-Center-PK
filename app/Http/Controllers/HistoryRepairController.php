@@ -29,7 +29,7 @@ class HistoryRepairController extends Controller
         if ($request->filled('serial_id')) {
             $query->where('job_lists.serial_id', 'like', "%{$request->serial_id}%");
         }
-
+        
         // ค้นหาตาม job_id
         if ($request->filled('job_id')) {
             $query->where('job_lists.job_id', 'like', "%{$request->job_id}%");
