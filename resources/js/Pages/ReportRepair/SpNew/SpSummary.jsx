@@ -1,5 +1,5 @@
 import {
-    Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid2, MenuItem,
+    Alert, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid2, MenuItem,
     Stack, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography,
 } from "@mui/material";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
@@ -23,6 +23,7 @@ const ShowDetail = ({ gp }) => (
 
 export default function SpSummary({ open, setOpen, detail, selected, setSelected, setDetail, setShowAdd }) {
     const globalGP = detail.selected.globalGP;
+    const [loading, setLoading] = useState(false);
     const [targetZero, setTargetZero] = useState();
     const [showAlertZero, setShowAlertZero] = useState(false);
     const [selectWorking, setSelectWorking] = useState(selected);
@@ -228,8 +229,8 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
 
 
     const handleSubmit = async () => {
-        console.log(selectWorking)
         try {
+            setLoading(true);
             const { data } = await axios.post('/spare-part/store', {
                 serial_id: detail.serial,
                 list: {
@@ -260,7 +261,8 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                 }
             });
         } finally {
-            setOpen(false)
+            setOpen(false);
+            setLoading(false);
         }
     }
 
@@ -432,7 +434,13 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                 <DialogActions>
                     {/*<Button variant='contained' color='warning' onClick={() => console.log(selectWorking)}>log show</Button>*/}
                     <Button variant='contained' color='error' onClick={handleClose}>ยกเลิก</Button>
-                    <Button variant='contained' disabled={detail.job.status === 'success'} onClick={handleSubmit} autoFocus>
+                    <Button variant='contained' disabled={detail.job.status === 'success' || loading} onClick={handleSubmit} autoFocus>
+                        {loading && (
+                            <>
+                            <CircularProgress/>
+                            &nbsp;
+                            </>
+                        )}
                         บันทึก
                     </Button>
                 </DialogActions>

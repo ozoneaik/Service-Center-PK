@@ -5,21 +5,13 @@ use App\Http\Controllers\Admin\MenuFileUploadController;
 use App\Http\Controllers\Admin\OrderManageController;
 use App\Http\Controllers\Admin\UserManageController;
 use App\Http\Controllers\ApprovalSpController;
-use App\Http\Controllers\BehaviorController;
-use App\Http\Controllers\CustomerInJobController;
 use App\Http\Controllers\DmImageController;
-use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\genQuPdfController;
 use App\Http\Controllers\HistoryRepairController;
-use App\Http\Controllers\JobController;
 use App\Http\Controllers\ManageBranchController;
-use App\Http\Controllers\Orders\OrderController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\RemarkController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SpareClaimController;
-use App\Http\Controllers\SparePartController;
-use App\Http\Controllers\SymptomController;
 use App\Http\Controllers\WarrantyProductController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
@@ -43,47 +35,8 @@ Route::middleware('auth')->group(function () {
     // Search from API outsource
     Route::post('/search', [SearchController::class, 'detail'])->name('search');
 
-
     // จัดการ Jobs
-    Route::prefix('jobs')->group(function () {
-        Route::get('/check/{serial_id}', [JobController::class, 'check'])->name('jobs.check');
-        Route::post('/update', [JobController::class, 'update'])->name('jobs.update');
-    });
-
-    // Upload File and Menu Upload File
-    Route::get('/menu-upload-file/show', [MenuFileUploadController::class, 'show'])->name('menuFileUpload.show');
-    Route::prefix('upload-file')->group(function () {
-        Route::get('/list', [FileUploadController::class, 'list'])->name('uploadFile.show');
-        Route::post('/store', [FileUploadController::class, 'store'])->name('uploadFile.store');
-    });
-
-    // Behavior
-    Route::prefix('behavior')->group(function () {
-        Route::get('/show/{serial_id}', [BehaviorController::class, 'show'])->name('behavior.show');
-        Route::post('/store', [BehaviorController::class, 'store'])->name('behavior.store');
-    });
-
-    // Customer in Job
-    Route::prefix('customer-in-job')->group(function () {
-        Route::post('/store', [CustomerInJobController::class, 'store'])->name('customerInJob.store');
-        Route::get('/searchPhone/{phone}', [CustomerInJobController::class, 'searchPhone'])->name('customerInJob.searchPhone');
-    });
-
-    // SparePart
-    Route::prefix('spare-part')->group(function () {
-        Route::get('/show/{serial_id}', [SparePartController::class, 'show'])->name('sparePart.show');
-        Route::post('/store', [SparePartController::class, 'store'])->name('sparePart.store');
-    });
-
-    Route::prefix('symptom')->group(function () {
-        Route::post('/store', [SymptomController::class, 'store'])->name('symptom.store');
-    });
-
-    // Remark
-    Route::prefix('remark')->group(function () {
-        Route::get('/show/{serial_id}', [RemarkController::class, 'show'])->name('remark.show');
-        Route::post('/storeOrUpdate', [RemarkController::class, 'storeOrUpdate'])->name('remark.store');
-    });
+    require __DIR__ . '/jobs.php';
 
     Route::prefix('spare-claim')->group(function () {
         Route::get('/index', [SpareClaimController::class, 'index'])->name('spareClaim.index');
@@ -128,14 +81,8 @@ Route::middleware('auth')->group(function () {
     });
 
     // สั่งซื้ออะไหล่
-    Route::prefix('orders')->group(function () {
-        Route::get('/list', [OrderController::class, 'index'])->name('orders.list');
-        Route::get('/search/{sku}', [OrderController::class, 'search'])->name('orders.search');
-        Route::post('/store', [OrderController::class, 'store'])->name('orders.store');
-        Route::get('/history', [OrderController::class, 'history'])->name('orders.history');
-        Route::get('/history-detail/{order_id}', [OrderController::class, 'historyDetail'])->name('orders.historyDetail');
-        Route::get('/success', [OrderController::class, 'orderSuccess'])->name('orders.success');
-    });
+    require __DIR__ . '/orders.php';
+    
 
     Route::prefix('history')->group(function () {
         Route::get('/index', [HistoryRepairController::class, 'index'])->name('history.index');
@@ -165,7 +112,5 @@ Route::get('/welcome', function () {
 })->name('welcome');
 
 Route::post('/genQuPdf', [genQuPdfController::class, 'genQuPdf'])->name('genQuPdf');
-
 Route::get('/image-dm/{pid}', [DmImageController::class, 'index'])->name('dmImage');
-
 require __DIR__ . '/auth.php';

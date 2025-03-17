@@ -1,19 +1,58 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import { Head } from "@inertiajs/react";
 import InputAdornment from '@mui/material/InputAdornment';
+import { Head } from "@inertiajs/react";
 import SearchIcon from '@mui/icons-material/Search';
 import {
-    Button, Container, Grid2, MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableHead, TableRow, TextField
+    Button, Chip, Container, Grid2, MenuItem, Paper, Select, 
+    Table, TableBody, TableCell, TableHead, TableRow, TextField,
+    Typography
 } from "@mui/material";
 import { useState } from "react";
 import { ListDetailModal } from "@/Pages/HistoryPage/ListDetailModal.jsx";
+import { router } from "@inertiajs/react";
 
 export default function HistoryMain({ jobs }) {
+    const [filters, setFilters] = useState({
+        serial_id: "",
+        job_id: "",
+        phone: "",
+        name: "",
+        status: "",
+    });
+    const handleFilterChange = (e) => {
+        setFilters({ ...filters, [e.target.name]: e.target.value });
+    };
+    const searchJobs = () => {
+        router.get(route("history.index"), filters, { preserveState: true });
+    };
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState();
     const handleShowDetail = (item) => {
         setSelected(item);
         setOpen(true);
+    }
+
+    const checkStatus = (status) => {
+        if (status === 'pending') {
+            return 'กำลังดำเนินการซ่อม'
+        } else if (status === 'success') {
+            return 'ปิดการซ่อมแล้ว'
+        } else if (status === 'canceled') {
+            return 'ยกเลิกการซ่อมแล้ว'
+        } else {
+            return 'ไม่สามารถระบุสถานะได้';
+        }
+    }
+    const checkStatusColor = (status) => {
+        if (status === 'pending') {
+            return 'secondary'
+        } else if (status === 'success') {
+            return 'success'
+        } else if (status === 'canceled') {
+            return 'error'
+        } else {
+            return 'info';
+        }
     }
     return (
         <>
@@ -23,68 +62,127 @@ export default function HistoryMain({ jobs }) {
                 <Container maxWidth='false' sx={{ backgroundColor: 'white', p: 3 }}>
                     <Grid2 container spacing={2}>
                         <Grid2 size={12}>
-                            <Stack direction='row' spacing={2}>
-                                <TextField
-                                    slotProps={{
-                                        input: {
-                                            startAdornment: (
-                                                <InputAdornment position="start">
-                                                    <SearchIcon />
-                                                </InputAdornment>
-                                            ),
-                                        },
-                                    }}
-                                    fullWidth label='ค้นหา ซีเรียล,รหัสจ็อบ หรือ เบอร์โทรศัพท์,ชื่อลูกค้า'
-                                />
-                                <Button variant='contained'>ค้นหา</Button>
-                            </Stack>
+                            <Grid2 container spacing={2}>
+                                <Grid2 size={{ md: 4, xs: 12 }}>
+                                    <TextField
+                                        fullWidth size="small" label='ค้นหา Serial ID' 
+                                        type="text" name="serial_id" value={filters.serial_id}
+                                        onChange={handleFilterChange}
+                                        slotProps={{
+                                            input: {
+                                                startAdornment: <InputAdornment position="start">Sn</InputAdornment>
+                                            }
+                                        }}
+                                    />
+                                </Grid2>
+                                <Grid2 size={{ md: 4, xs: 12 }}>
+                                    <TextField
+                                        fullWidth value={filters.job_id} name="job_id"
+                                        label='ค้นหา Job ID' size="small" type="text" 
+                                        onChange={handleFilterChange}
+                                        slotProps={{
+                                            input: {
+                                                startAdornment: <InputAdornment position="start">Job ID</InputAdornment>
+                                            }
+                                        }}
+                                    />
+                                </Grid2>
+                                <Grid2 size={{ md: 4, xs: 12 }}>
+                                    <TextField
+                                        fullWidth label='ค้นหาเบอร์โทรศัพท์' size="small"
+                                        type="text" name="phone" value={filters.phone}
+                                        onChange={handleFilterChange}
+                                        slotProps={{
+                                            input: {
+                                                startAdornment: <InputAdornment position="start">Tel</InputAdornment>
+                                            }
+                                        }}
+                                    />
+                                </Grid2>
+                                <Grid2 size={{ md: 4, xs: 12 }}>
+                                    <TextField
+                                        fullWidth label='ค้นหาชื่อลูกค้า' size="small"
+                                        type="text" name="name" value={filters.name}
+                                        onChange={handleFilterChange}
+                                        slotProps={{
+                                            input: {
+                                                startAdornment: <InputAdornment position="start">name</InputAdornment>
+                                            }
+                                        }}
+                                    />
+                                </Grid2>
+                                <Grid2 size={{ md: 4, xs: 12 }}>
+                                    <Select
+                                        fullWidth value={filters.status || 'select'}
+                                        onChange={handleFilterChange}
+                                        sx={{ minWidth: 300 }}
+                                        name="status" size="small"
+                                    >
+                                        <MenuItem disabled value={'select'}>เลือกสถานะการซ่อม</MenuItem>
+                                        <MenuItem value={'pending'}>กำลังดำเนินการซ่อม</MenuItem>
+                                        <MenuItem value={'success'}>ปิดการซ่อมแล้ว</MenuItem>
+                                        <MenuItem value={'canceled'}>ยกเลิกการซ่อมแล้ว</MenuItem>
+                                    </Select>
+                                </Grid2>
+                                <Grid2 size={{ md: 4, xs: 12 }}>
+                                    <Button onClick={searchJobs} startIcon={<SearchIcon/>} variant='contained'>ค้นหา</Button>
+                                </Grid2>
+                            </Grid2>
                         </Grid2>
-                        <Grid2 size={12} sx={{ display: 'flex', justifyContent: 'end' }}>
-                            <Select
-                                sx={{ minWidth: 300 }} labelId="demo-simple-select-label"
-                                id="demo-simple-select" value={'select'} variant="filled"
-                            >
-                                <MenuItem disabled value={'select'}>เลือกสถานะการซ่อม</MenuItem>
-                                <MenuItem value={'pending'}>กำลังกำเนินการซ่อม</MenuItem>
-                                <MenuItem value={'success'}>ปิดการซ่อมปล้ว</MenuItem>
-                            </Select>
+                        <Grid2 size={12}>
+                            <Typography variant='h5' fontWeight='bold'>ประวัติซ่อม</Typography>
                         </Grid2>
                         <Grid2 size={12}>
                             <Paper variant='outlined' sx={{ p: 2 }}>
                                 <Table>
                                     <TableHead>
-                                        <TableRow>
+                                        <TableRow sx={TABLE_HEADER_STYLE}>
                                             <TableCell>รูปภาพ</TableCell>
                                             <TableCell>ซีเรียล</TableCell>
                                             <TableCell>รหัส job</TableCell>
+                                            <TableCell>ข้อมูลลูกค้า</TableCell>
+                                            <TableCell>สถานะ</TableCell>
                                             <TableCell>รายละเอียด</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
                                         {jobs.map((job, index) => (
-                                            <TableRow key={index}>
-                                                <TableCell>
-                                                    <img src={job.image_sku} width={50} alt={'no image'} />
-                                                </TableCell>
-                                                <TableCell>{job.serial_id}</TableCell>
-                                                <TableCell>{job.job_id}</TableCell>
-                                                <TableCell>
-                                                    <Button variant='contained' size='small'
-                                                        onClick={() => handleShowDetail(job)}>
-                                                        ดู
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
+                                                <TableRow key={index}>
+                                                    <TableCell>
+                                                        <img src={job.image_sku} width={50} alt={'no image'} />
+                                                    </TableCell>
+                                                    <TableCell>{job.serial_id}</TableCell>
+                                                    <TableCell>{job.job_id}</TableCell>
+                                                    <TableCell>
+                                                        <span style={{ fontWeight: 'bold' }}>ชื่อ : </span>
+                                                        <span style={{ color: '#f15922' }}>{job.name}</span>
+                                                        <br />
+                                                        <span style={{ fontWeight: 'bold' }}>เบอร์โทร : </span>
+                                                        <span style={{ color: '#f15922' }}>{job.phone}</span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Chip label={checkStatus(job.status)} color={checkStatusColor(job.status)}/>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button variant='contained' size='small'
+                                                            onClick={() => handleShowDetail(job)}>
+                                                            ดู
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
                                     </TableBody>
                                 </Table>
                             </Paper>
                         </Grid2>
                     </Grid2>
-
-
                 </Container>
             </AuthenticatedLayout>
         </>
     )
 }
+const TABLE_HEADER_STYLE = {
+    backgroundColor: '#c7c7c7',
+    fontWeight: 'bold',
+    fontSize: 16
+};

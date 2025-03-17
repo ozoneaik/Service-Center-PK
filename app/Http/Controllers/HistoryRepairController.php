@@ -9,21 +9,50 @@ use App\Models\Remark;
 use App\Models\SparePart;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class HistoryRepairController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $jobs = JobList::query()
-            ->where('is_code_key', auth()->user()->is_code_cust_id)
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->orderBy('id', 'desc')
-            ->get();
-        return Inertia::render('HistoryPage/HistoryMain',['jobs' => $jobs]);
+        $query = JobList::query()
+            ->leftJoin('customer_in_jobs', 'customer_in_jobs.job_id', '=', 'job_lists.job_id')
+            ->where('is_code_key', Auth::user()->is_code_cust_id)
+            ->whereMonth('job_lists.created_at', now()->month)
+            ->whereYear('job_lists.created_at', now()->year)
+            ->select('job_lists.*', 'customer_in_jobs.name', 'customer_in_jobs.phone');
+
+        // ค้นหาตาม serial_id
+        if ($request->filled('serial_id')) {
+            $query->where('job_lists.serial_id', 'like', "%{$request->serial_id}%");
+        }
+
+        // ค้นหาตาม job_id
+        if ($request->filled('job_id')) {
+            $query->where('job_lists.job_id', 'like', "%{$request->job_id}%");
+        }
+
+        // ค้นหาตามเบอร์โทรศัพท์
+        if ($request->filled('phone')) {
+            $query->where('customer_in_jobs.phone', 'like', "%{$request->phone}%");
+        }
+
+        // ค้นหาตามชื่อลูกค้า
+        if ($request->filled('name')) {
+            $query->where('customer_in_jobs.name', 'like', "%{$request->name}%");
+        }
+
+        // ค้นหาตามสถานะการซ่อม
+        if ($request->filled('status')) {
+            $query->where('job_lists.status', $request->status);
+        }
+
+        $jobs = $query->orderBy('job_lists.id', 'desc')->get();
+        
+        return Inertia::render('HistoryPage/HistoryMain', ['jobs' => $jobs]);
     }
 
     public function search(Request $request): JsonResponse
@@ -67,7 +96,7 @@ class HistoryRepairController extends Controller
     private function historyInSystem($serial_id)
     {
         $jobs = JobList::query()->where('serial_id', $serial_id)
-            ->where('is_code_key', auth()->user()->is_code_cust_id)
+            ->where('is_code_key', Auth::user()->is_code_cust_id)
             ->orderBy('id', 'desc')
             ->get();
         $histories = [];

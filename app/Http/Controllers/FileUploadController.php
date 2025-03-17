@@ -7,7 +7,6 @@ use App\Models\FileUpload;
 use App\Models\MenuFileUpload;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
 
 class FileUploadController extends Controller
 {
@@ -21,7 +20,7 @@ class FileUploadController extends Controller
             ]);
         } catch (\Exception $exception) {
             return response()->json([
-                'message' => $exception->geextMessage(),
+                'message' => $exception->getMessage(),
                 'data' => []
             ], 400);
         }
@@ -34,12 +33,12 @@ class FileUploadController extends Controller
         $list = $request->file('list');
         $menu = $request->input('list');
         $keep = [];
-//        dd($list,$menu);
+        //        dd($list,$menu);
         $count = 0;
-        foreach ($menu as $mk=>$m) {
-            if(isset($m['list'])){
-                foreach ($m['list'] as $k=>$l){
-                    if(isset($l['file_path'])){
+        foreach ($menu as $mk => $m) {
+            if (isset($m['list'])) {
+                foreach ($m['list'] as $k => $l) {
+                    if (isset($l['file_path'])) {
                         $keep[$count] = $l['id'];
                     }
                     $count++;
@@ -48,14 +47,14 @@ class FileUploadController extends Controller
         }
 
         $this->deleteFile($job_id, $keep);
-//        dd($keep); // [4,5]
+        //        dd($keep); // [4,5]
 
-        if (isset($list) && count($list) > 0){
-            foreach ($list as $key=>$file) {
-                foreach ($file['list'] as $key1=>$file1) {
+        if (isset($list) && count($list) > 0) {
+            foreach ($list as $key => $file) {
+                foreach ($file['list'] as $key1 => $file1) {
                     if (isset($file1['image']) && $file1['image']->isValid()) {
                         // ตั้งชื่อไฟล์ใหม่ (สามารถเปลี่ยนแปลงได้)
-                        $fileName = time() . rand(0,9999) . '_' . $file1['image']->getClientOriginalName();
+                        $fileName = time() . rand(0, 9999) . '_' . $file1['image']->getClientOriginalName();
 
                         // บันทึกไฟล์ในโฟลเดอร์ public/uploads
                         $filePath = $file1['image']->storeAs('uploads', $fileName, 'public');
@@ -68,28 +67,26 @@ class FileUploadController extends Controller
                             'serial_id' => $serial_id
                         ]);
                     }
-
                 }
             }
         }
         $new_data = $this->FileSelected($job_id);
         return response()->json([
-           'message' => 'success',
-           'data' => $new_data
+            'message' => 'success',
+            'data' => $new_data
         ]);
-
     }
 
-    private function deleteFile($job_id,$keep): void
+    private function deleteFile($job_id, $keep): void
     {
         FileUpload::query()->where('job_id', $job_id)->whereNotIn('id', $keep)->delete();
     }
 
     private function FileSelected($job_id): Collection
     {
-        $lists = MenuFileUpload::query()->select('menu_name','id')->get();
-        foreach ($lists as $list){
-            $files = FileUpload::query()->where('job_id', $job_id)->where('menu_id',$list->id)->get();
+        $lists = MenuFileUpload::query()->select('menu_name', 'id')->get();
+        foreach ($lists as $list) {
+            $files = FileUpload::query()->where('job_id', $job_id)->where('menu_id', $list->id)->get();
             $list['list'] = $files;
         }
         return $lists;
