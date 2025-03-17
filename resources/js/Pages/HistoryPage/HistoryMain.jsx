@@ -3,13 +3,57 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { Head } from "@inertiajs/react";
 import SearchIcon from '@mui/icons-material/Search';
 import {
-    Button, Chip, Container, Grid2, MenuItem, Paper, Select, 
+    Button, Chip, Container, Grid2, MenuItem, Paper, Select,
     Table, TableBody, TableCell, TableHead, TableRow, TextField,
     Typography
 } from "@mui/material";
 import { useState } from "react";
 import { ListDetailModal } from "@/Pages/HistoryPage/ListDetailModal.jsx";
 import { router } from "@inertiajs/react";
+import PersonIcon from '@mui/icons-material/Person';
+import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
+import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
+
+export const TableDetail = ({ jobs, handleShowDetail }) => {
+    const statusLabels = { pending: 'กำลังดำเนินการซ่อม', success: 'ปิดการซ่อมแล้ว', canceled: 'ยกเลิกการซ่อมแล้ว' };
+    const statusColors = { pending: 'secondary', success: 'success', canceled: 'error' };
+    return (
+        <Table>
+            <TableHead>
+                <TableRow sx={TABLE_HEADER_STYLE}>
+                    {["รูปภาพ", "ซีเรียล", "รหัส job", "ข้อมูลลูกค้า", "สถานะ", "รายละเอียด"].map((head, i) => (
+                        <TableCell key={i}>{head}</TableCell>
+                    ))}
+                </TableRow>
+            </TableHead>
+            <TableBody>
+                {jobs.map((job, index) => (
+                    <TableRow key={index}>
+                        <TableCell><img src={job.image_sku} width={50} alt="no image" /></TableCell>
+                        <TableCell>{job.serial_id}</TableCell>
+                        <TableCell>{job.job_id}</TableCell>
+                        <TableCell>
+                            <b>ชื่อ :</b> <span style={{ color: '#f15922' }}>{job.name}</span><br />
+                            <b>เบอร์โทร :</b> <span style={{ color: '#f15922' }}>{job.phone}</span>
+                        </TableCell>
+                        <TableCell>
+                            <Chip label={statusLabels[job.status] || 'ไม่สามารถระบุสถานะได้'} color={statusColors[job.status] || 'info'} />
+                        </TableCell>
+                        <TableCell>
+                            <Button
+                                startIcon={<ManageHistoryIcon />}
+                                variant="contained" size="small"
+                                onClick={() => handleShowDetail(job)}
+                            >
+                                ดูรายละเอียด
+                            </Button>
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    );
+};
 
 export default function HistoryMain({ jobs }) {
     const [filters, setFilters] = useState({
@@ -31,29 +75,6 @@ export default function HistoryMain({ jobs }) {
         setSelected(item);
         setOpen(true);
     }
-
-    const checkStatus = (status) => {
-        if (status === 'pending') {
-            return 'กำลังดำเนินการซ่อม'
-        } else if (status === 'success') {
-            return 'ปิดการซ่อมแล้ว'
-        } else if (status === 'canceled') {
-            return 'ยกเลิกการซ่อมแล้ว'
-        } else {
-            return 'ไม่สามารถระบุสถานะได้';
-        }
-    }
-    const checkStatusColor = (status) => {
-        if (status === 'pending') {
-            return 'secondary'
-        } else if (status === 'success') {
-            return 'success'
-        } else if (status === 'canceled') {
-            return 'error'
-        } else {
-            return 'info';
-        }
-    }
     return (
         <>
             {open && <ListDetailModal open={open} setOpen={setOpen} selected={selected} />}
@@ -65,7 +86,7 @@ export default function HistoryMain({ jobs }) {
                             <Grid2 container spacing={2}>
                                 <Grid2 size={{ md: 4, xs: 12 }}>
                                     <TextField
-                                        fullWidth size="small" label='ค้นหา Serial ID' 
+                                        fullWidth size="small" label='ค้นหา Serial ID'
                                         type="text" name="serial_id" value={filters.serial_id}
                                         onChange={handleFilterChange}
                                         slotProps={{
@@ -78,7 +99,7 @@ export default function HistoryMain({ jobs }) {
                                 <Grid2 size={{ md: 4, xs: 12 }}>
                                     <TextField
                                         fullWidth value={filters.job_id} name="job_id"
-                                        label='ค้นหา Job ID' size="small" type="text" 
+                                        label='ค้นหา Job ID' size="small" type="text"
                                         onChange={handleFilterChange}
                                         slotProps={{
                                             input: {
@@ -94,7 +115,9 @@ export default function HistoryMain({ jobs }) {
                                         onChange={handleFilterChange}
                                         slotProps={{
                                             input: {
-                                                startAdornment: <InputAdornment position="start">Tel</InputAdornment>
+                                                startAdornment: <InputAdornment position="start">
+                                                    <LocalPhoneIcon />
+                                                </InputAdornment>
                                             }
                                         }}
                                     />
@@ -106,7 +129,9 @@ export default function HistoryMain({ jobs }) {
                                         onChange={handleFilterChange}
                                         slotProps={{
                                             input: {
-                                                startAdornment: <InputAdornment position="start">name</InputAdornment>
+                                                startAdornment: <InputAdornment position="start">
+                                                    <PersonIcon />
+                                                </InputAdornment>
                                             }
                                         }}
                                     />
@@ -119,13 +144,14 @@ export default function HistoryMain({ jobs }) {
                                         name="status" size="small"
                                     >
                                         <MenuItem disabled value={'select'}>เลือกสถานะการซ่อม</MenuItem>
+                                        <MenuItem value={''}>ทั้งหมด</MenuItem>
                                         <MenuItem value={'pending'}>กำลังดำเนินการซ่อม</MenuItem>
                                         <MenuItem value={'success'}>ปิดการซ่อมแล้ว</MenuItem>
                                         <MenuItem value={'canceled'}>ยกเลิกการซ่อมแล้ว</MenuItem>
                                     </Select>
                                 </Grid2>
                                 <Grid2 size={{ md: 4, xs: 12 }}>
-                                    <Button onClick={searchJobs} startIcon={<SearchIcon/>} variant='contained'>ค้นหา</Button>
+                                    <Button onClick={searchJobs} startIcon={<SearchIcon />} variant='contained'>ค้นหา</Button>
                                 </Grid2>
                             </Grid2>
                         </Grid2>
@@ -134,45 +160,7 @@ export default function HistoryMain({ jobs }) {
                         </Grid2>
                         <Grid2 size={12}>
                             <Paper variant='outlined' sx={{ p: 2 }}>
-                                <Table>
-                                    <TableHead>
-                                        <TableRow sx={TABLE_HEADER_STYLE}>
-                                            <TableCell>รูปภาพ</TableCell>
-                                            <TableCell>ซีเรียล</TableCell>
-                                            <TableCell>รหัส job</TableCell>
-                                            <TableCell>ข้อมูลลูกค้า</TableCell>
-                                            <TableCell>สถานะ</TableCell>
-                                            <TableCell>รายละเอียด</TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {jobs.map((job, index) => (
-                                                <TableRow key={index}>
-                                                    <TableCell>
-                                                        <img src={job.image_sku} width={50} alt={'no image'} />
-                                                    </TableCell>
-                                                    <TableCell>{job.serial_id}</TableCell>
-                                                    <TableCell>{job.job_id}</TableCell>
-                                                    <TableCell>
-                                                        <span style={{ fontWeight: 'bold' }}>ชื่อ : </span>
-                                                        <span style={{ color: '#f15922' }}>{job.name}</span>
-                                                        <br />
-                                                        <span style={{ fontWeight: 'bold' }}>เบอร์โทร : </span>
-                                                        <span style={{ color: '#f15922' }}>{job.phone}</span>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Chip label={checkStatus(job.status)} color={checkStatusColor(job.status)}/>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Button variant='contained' size='small'
-                                                            onClick={() => handleShowDetail(job)}>
-                                                            ดู
-                                                        </Button>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                    </TableBody>
-                                </Table>
+                                <TableDetail jobs={jobs} handleShowDetail={handleShowDetail} />
                             </Paper>
                         </Grid2>
                     </Grid2>
