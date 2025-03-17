@@ -15,14 +15,17 @@ import PersonIcon from '@mui/icons-material/Person';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
 
-export const TableDetail = ({ jobs, handleShowDetail }) => {
+export const TableDetail = ({ jobs, handleShowDetail, url }) => {
     const statusLabels = { pending: 'กำลังดำเนินการซ่อม', success: 'ปิดการซ่อมแล้ว', canceled: 'ยกเลิกการซ่อมแล้ว' };
     const statusColors = { pending: 'secondary', success: 'success', canceled: 'error' };
     return (
         <Table>
             <TableHead>
                 <TableRow sx={TABLE_HEADER_STYLE}>
-                    {["รูปภาพ", "ซีเรียล", "รหัส job", "ข้อมูลลูกค้า", "สถานะ", "รายละเอียด"].map((head, i) => (
+                    {(url.startsWith("/admin/history-job")
+                        ? ["รูปภาพ", "ซีเรียล", "รหัส job", "ศูนย์บริการ", "ข้อมูลลูกค้า", "สถานะ", "รายละเอียด"]
+                        : ["รูปภาพ", "ซีเรียล", "รหัส job", "ข้อมูลลูกค้า", "สถานะ", "รายละเอียด"]
+                    ).map((head, i) => (
                         <TableCell key={i}>{head}</TableCell>
                     ))}
                 </TableRow>
@@ -33,6 +36,13 @@ export const TableDetail = ({ jobs, handleShowDetail }) => {
                         <TableCell><img src={job.image_sku} width={50} alt="no image" /></TableCell>
                         <TableCell>{job.serial_id}</TableCell>
                         <TableCell>{job.job_id}</TableCell>
+                        {url.startsWith("/admin/history-job") && (
+                            <TableCell>
+                                <b>รหัสร้านค้า :</b> <span style={{ color: '#f15922' }}>{job.is_code_cust_id}</span>
+                                <br />
+                                <b>ชื่อร้าน :</b> <span style={{ color: '#f15922' }}>{job.shop_name}</span>
+                            </TableCell>
+                        )}
                         <TableCell>
                             <b>ชื่อ :</b> <span style={{ color: '#f15922' }}>{job.name}</span><br />
                             <b>เบอร์โทร :</b> <span style={{ color: '#f15922' }}>{job.phone}</span>
@@ -57,11 +67,10 @@ export const TableDetail = ({ jobs, handleShowDetail }) => {
 };
 
 export default function HistoryMain({ jobs }) {
-    const {url} = usePage();
-    console.log(url);
-    // /admin/history-job?*
-    // /history/index?*
-    
+    const { url } = usePage();
+    console.log(jobs);
+
+
     const [filters, setFilters] = useState({
         serial_id: "",
         job_id: "",
@@ -83,7 +92,7 @@ export default function HistoryMain({ jobs }) {
         setOpen(true);
     }
     return (
-<>
+        <>
             {open && <ListDetailModal open={open} setOpen={setOpen} selected={selected} />}
             <AuthenticatedLayout>
                 <Head title="ประวัติซ่อม" />
@@ -164,13 +173,13 @@ export default function HistoryMain({ jobs }) {
                         </Grid2>
                         <Grid2 size={12}>
                             <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                            <Typography variant='h5' fontWeight='bold'>ประวัติซ่อม</Typography>
-                            <Typography variant="subtitle1">รายการทั้งหมด {jobs.length} รายการ</Typography>
+                                <Typography variant='h5' fontWeight='bold'>ประวัติซ่อม</Typography>
+                                <Typography variant="subtitle1">รายการทั้งหมด {jobs.length} รายการ</Typography>
                             </Stack>
                         </Grid2>
                         <Grid2 size={12}>
-                            <Paper variant='outlined' sx={{ p: 2,overflowX : 'auto' }}>
-                                <TableDetail jobs={jobs} handleShowDetail={handleShowDetail} />
+                            <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
+                                <TableDetail url={url} jobs={jobs} handleShowDetail={handleShowDetail} />
                             </Paper>
                         </Grid2>
                     </Grid2>
@@ -178,8 +187,8 @@ export default function HistoryMain({ jobs }) {
             </AuthenticatedLayout>
         </>
     )
-        
-    
+
+
 }
 const TABLE_HEADER_STYLE = {
     backgroundColor: '#c7c7c7',

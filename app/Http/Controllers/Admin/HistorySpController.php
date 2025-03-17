@@ -13,9 +13,12 @@ class HistorySpController extends Controller
     public function index(Request $request){
         $query = JobList::query()
             ->leftJoin('customer_in_jobs', 'customer_in_jobs.job_id', '=', 'job_lists.job_id')
+            ->leftJoin('users', 'users.is_code_cust_id', '=', 'job_lists.is_code_key')
+            ->whereRaw('users.id = (SELECT MAX(id) FROM users WHERE users.is_code_cust_id = job_lists.is_code_key)')
             ->whereMonth('job_lists.created_at', now()->month)
             ->whereYear('job_lists.created_at', now()->year)
-            ->select('job_lists.*', 'customer_in_jobs.name', 'customer_in_jobs.phone');
+       
+            ->select('job_lists.*', 'customer_in_jobs.name', 'customer_in_jobs.phone','users.shop_name','users.is_code_cust_id');
 
         // ค้นหาตาม serial_id
         if ($request->filled('serial_id')) {

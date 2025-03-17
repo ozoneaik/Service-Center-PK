@@ -14,29 +14,29 @@ import {
     TextField,
     Typography
 } from "@mui/material";
-import {Link} from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
 import SearchIcon from '@mui/icons-material/Search';
-import {DateFormat} from "@/Components/DateFormat.jsx";
+import { DateFormat } from "@/Components/DateFormat.jsx";
 
 
-const StatusClaim = ({status}) =>
-    (<Chip
-        variant='outlined'
+const StatusClaim = ({ status }) => (
+    <Chip
         size='small'
-        color={status === 'pending' ? 'primary' : 'success'}
-        label={status === 'pending' ? 'รอดำเนินงาน' : 'เสร็จสิ้น'}
-    />)
+        color={status === 'pending' ? 'secondary' : status === 'approved' ? 'success' : status === 'rejected' ? 'error' : 'info'}
+        label={status === 'pending' ? 'รอดำเนินงาน' : status === 'approved' ? 'เสร็จสิ้น' : status === 'rejected' ? 'ไม่อนุมัติ' : 'ไม่สามารถระบุได้'}
+    />
+)
 
 
-export default function HistoryClaim({history}) {
+export default function HistoryClaim({ history }) {
     return (
         <AuthenticatedLayout>
             <Container maxWidth='false'>
                 <Grid2 container spacing={2} mt={3}>
                     <Grid2 size={12}>
                         <Breadcrumbs>
-                            <Typography sx={{color: 'text.primary'}}>แจ้งเคลมอะไหล่</Typography>
-                            <Typography sx={{color: 'text.primary'}}>ประวัติเคลม</Typography>
+                            <Typography sx={{ color: 'text.primary' }}>แจ้งเคลมอะไหล่</Typography>
+                            <Typography sx={{ color: 'text.primary' }}>ประวัติเคลม</Typography>
                         </Breadcrumbs>
                     </Grid2>
                     <Grid2 size={12}>
@@ -59,13 +59,13 @@ export default function HistoryClaim({history}) {
                                 ค้างเคลมอะไหล่
                             </Button>
                         </Stack>
-                        <Card sx={{padding: 3,overflowX : 'scroll'}}>
+                        <Card sx={{ padding: 3, overflowX: 'scroll' }}>
                             <Stack direction='row' spacing={2} mb={2} alignItems='center'>
-                                <TextField size='small' type='date'/>
+                                <TextField size='small' type='date' />
                                 <Typography>ถึง</Typography>
-                                <TextField size='small' type='date'/>
-                                <Button onClick={() => console.log(history)} startIcon={<SearchIcon/>}
-                                        variant='contained'>ค้นหา</Button>
+                                <TextField size='small' type='date' />
+                                <Button onClick={() => console.log(history)} startIcon={<SearchIcon />}
+                                    variant='contained'>ค้นหา</Button>
                             </Stack>
                             <Table>
                                 <TableHead>
@@ -88,7 +88,7 @@ export default function HistoryClaim({history}) {
                                         item.list.map((part, idx) => (
                                             <TableRow
                                                 key={`${index}-${idx}`}
-                                                sx={{backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'transparent'}}
+                                                sx={{ backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'transparent' }}
                                             >
                                                 {idx === 0 && (
                                                     <TableCell rowSpan={item.list.length}>
@@ -109,7 +109,7 @@ export default function HistoryClaim({history}) {
                                                 <TableCell>{part.claim_qty ?? '-'}</TableCell>
                                                 <TableCell>{part.claim_unit}</TableCell>
                                                 <TableCell>
-                                                    <StatusClaim status={part.status}/>
+                                                    <StatusClaim status={part.status} />
                                                 </TableCell>
                                             </TableRow>
                                         ))
