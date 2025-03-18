@@ -25,6 +25,7 @@
         "@emotion/styled": "^11.14.0",
         "@mui/icons-material": "^6.4.1",
         "@mui/material": "^6.4.1",
+        "@react-pdf/renderer": "^4.3.0",
         "flowbite-react": "^0.10.2",
         "react-photo-view": "^1.2.7",
         "sweetalert2": "^11.15.10"

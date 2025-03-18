@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Behavior;
+use App\Models\JobList;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Inertia\Inertia;
 
 class genQuPdfController extends Controller
 {
@@ -58,5 +61,22 @@ class genQuPdfController extends Controller
             ],$status);
         }
 
+    }
+
+    public function genReCieveSpPdf($job_id){
+        $job = JobList::query()->where('job_id',$job_id)
+        ->leftJoin('users','users.user_code','=','job_lists.user_key')
+        ->select('job_lists.*','users.name as username','users.user_code','users.shop_name','users.address')
+        ->first();
+        $behaviors = Behavior::query()->where('job_id',$job_id)->get();
+        $behaviorToString = '';
+        foreach ($behaviors as $key => $behavior) {
+            if ($key === 0) {
+                $behaviorToString = $behaviorToString.$behavior->cause_name;
+            }else{
+                $behaviorToString = $behaviorToString.' / '.$behavior->cause_name;
+            }
+        }
+        return Inertia::render('ReportRepair/ReceiveSpPdf',['job' => $job,'behaviors' => $behaviorToString]);
     }
 }

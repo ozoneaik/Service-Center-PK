@@ -17,6 +17,7 @@ import { ImagePreview } from "@/Components/ImagePreview.jsx";
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { useProductTarget } from "@/Context/ProductContext.jsx";
 import { useState } from "react";
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 
 
 const BehaviorDetail = ({ detail }) => (
@@ -193,9 +194,7 @@ export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
                 text: error.response.data.message,
-                onPassed: () => {
-                }
-            })
+            });
         } finally {
             setLoading(false);
         }
@@ -248,7 +247,11 @@ export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
                         <CardDetail>
                             <Typography variant='h6' fontWeight='bold'>เอกสาร</Typography>
                             <Stack direction='row' spacing={2}>
-                                <Button variant='contained'>รับสินค้า</Button>
+                                <a href={route('genReCieveSpPdf', { job_id: detail.job.job_id })} target='_blank'>
+                                    <Button variant='contained' startIcon={<ReceiptLongIcon/>}>
+                                        รับสินค้า
+                                    </Button>
+                                </a>
                                 {detail.selected.sp.length > 0 && (
                                     <Button onClick={exportQu} startIcon={<PictureAsPdfIcon />}
                                         variant='contained' disabled={loading}>

@@ -26,4 +26,20 @@ class UserManageController extends Controller
     {
         return Inertia::render('Admin/Users/UserCreate');
     }
+
+    public function delete($user_code)
+    {
+        $user = User::where('user_code', $user_code)->first();
+        if (!$user) {
+            return response()->json([
+                'message' => 'ไม่พบผู้ใช้รายนี้',
+                'user_deleted' => false
+            ], 400);
+        }
+        $user->delete();
+        return response()->json([
+            'message' => 'ลบผู้ใช้สำเร็จ',
+            'user_deleted' => true
+        ]);
+    }
 }

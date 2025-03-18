@@ -57,6 +57,7 @@ Route::middleware('auth')->group(function () {
             Route::prefix('users-manage')->group(function () {
                 Route::get('/create', [UserManageController::class, 'create'])->name('userManage.create');
                 Route::get('/list', [UserManageController::class, 'list'])->name('userManage.list');
+                Route::delete('/delete/{user_code}',[UserManageController::class,'delete'])->name('userManage.delete');
             });
             Route::prefix('orders')->group(function (){
                Route::get('/list',[OrderManageController::class,'list'])->name('admin.orders.list');
@@ -108,5 +109,6 @@ Route::get('/welcome', function () {
 })->name('welcome');
 
 Route::post('/genQuPdf', [genQuPdfController::class, 'genQuPdf'])->name('genQuPdf');
+Route::get('/genReCieveSpPdf/{job_id}',[genQuPdfController::class,'genReCieveSpPdf'])->name('genReCieveSpPdf');
 Route::get('/image-dm/{pid}', [DmImageController::class, 'index'])->name('dmImage');
 require __DIR__ . '/auth.php';

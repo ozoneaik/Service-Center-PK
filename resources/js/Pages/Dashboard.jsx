@@ -1,26 +1,23 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {Head} from '@inertiajs/react';
-import {Breadcrumbs, Button, Container, Grid2, Stack, TextField, Typography, useStepContext} from '@mui/material';
+import {Button, Container, Grid2, Stack, TextField} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ProductDetail from '@/Components/ProductDetail';
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import Progress from "@/Components/Progress.jsx";
-import {AlertDialog, AlertDialogQuestion, AlertDialogQuestionForSearch} from "@/Components/AlertDialog.js";
+import {AlertDialog, AlertDialogQuestionForSearch} from "@/Components/AlertDialog.js";
 import EditIcon from '@mui/icons-material/Edit';
 import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
 import FormRepair from "@/Pages/ReportRepair/FormRepair.jsx";
 import {PathDetail} from "@/Components/PathDetail.jsx";
 import ListHistoryRepair from "@/Pages/HistoryRepair/ListHistoryRepair.jsx";
-import {useProductTarget} from "@/Context/ProductContext.jsx";
 
 export default function Dashboard() {
     const [check, setCheck] = useState('before');
     const [detail, setDetail] = useState();
-    const [newData, setNewData] = useState();
     const [processing, setProcessing] = useState(false);
     const [sn, setSn] = useState();
     const [showContent, setShowContent] = useState();
-
     const fetchData = async (ser,createJob) => {
         setProcessing(true);
         try {
@@ -67,7 +64,6 @@ export default function Dashboard() {
 
 
     }
-
 
     const searchDetail = async (e) => {
         e.preventDefault();
@@ -166,8 +162,7 @@ export default function Dashboard() {
                                     />
                                 }
                             </>
-                        ) : <Progress/>
-                        }
+                        ) : <Progress/>}
                     </Stack>
                 </div>
             </Container>
