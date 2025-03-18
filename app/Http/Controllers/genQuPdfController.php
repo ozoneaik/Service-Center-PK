@@ -10,73 +10,74 @@ use Inertia\Inertia;
 
 class genQuPdfController extends Controller
 {
-    public function genQuPdf(Request $request){
+    public function genQuPdf(Request $request)
+    {
         try {
             $data = [
                 'req' => $request['req'],
-                "regenqu"=> "Y",
-                "typeservice"=> "SC",
-                "docqu"=> $request['docqu'],
+                "regenqu" => "Y",
+                "typeservice" => "SC",
+                "docqu" => $request['docqu'],
                 "custaddr" => $request['custaddr'],
                 'custnamesc' => $request['custnamesc'],
-                "sku"=> $request['sku'],
-                "assno"=> "",
-                "fgcode"=> $request['fgcode'],
-                "fgname"=> $request['fgname'],
-                "custcode"=> $request['custcode'],
-                "custname"=> "custname",
-                "docdate"=> "",
-                "custtel"=> $request['custtel'],
-                "empcode"=> "empcode",
-                "empname"=> "empname",
-                "remark"=> $request['remark'],
-                "cause_remark"=> "",
-                "docmt"=> "",
-                "serial"=> $request['serial'],
-                "emprepair"=> ""
+                "sku" => $request['sku'],
+                "assno" => "",
+                "fgcode" => $request['fgcode'],
+                "fgname" => $request['fgname'],
+                "custcode" => $request['custcode'],
+                "custname" => "custname",
+                "docdate" => "",
+                "custtel" => $request['custtel'],
+                "empcode" => "empcode",
+                "empname" => "empname",
+                "remark" => $request['remark'],
+                "cause_remark" => "",
+                "docmt" => "",
+                "serial" => $request['serial'],
+                "emprepair" => ""
             ];
-            $response = Http::post('http://192.168.0.13/genpdf/api/qu_ass',$data);
+            $response = Http::post('http://192.168.0.13/genpdf/api/qu_ass', $data);
             if ($response->status() == 200) {
                 $Json = $response->json();
-                if (gettype($Json) === 'array' && $Json['status']){
+                if (gettype($Json) === 'array' && $Json['status']) {
                     throw new \Exception($Json['message']);
-                }else{
+                } else {
                     $status = 200;
                     $message = "ทำใบ QU สำเร็จ";
                     $pathUrl = trim($response->body(), '"');
                 }
-            }else{
+            } else {
                 throw new \Exception('ไม่สามารถ ทำใบ QU สำเร็จ');
             }
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             $message = "Error: " . $exception->getMessage() . " on line " . $exception->getLine();
             $status = 400;
             $pathUrl = '';
-        }
-        finally{
+        } finally {
             return response()->json([
                 'status' => $status,
                 'message' => $message,
                 'pathUrl' => $pathUrl,
-            ],$status);
+            ], $status);
         }
-
     }
 
-    public function genReCieveSpPdf($job_id){
-        $job = JobList::query()->where('job_id',$job_id)
-        ->leftJoin('users','users.user_code','=','job_lists.user_key')
-        ->select('job_lists.*','users.name as username','users.user_code','users.shop_name','users.address')
-        ->first();
-        $behaviors = Behavior::query()->where('job_id',$job_id)->get();
+    public function genReCieveSpPdf($job_id)
+    {
+        $job = JobList::query()->where('job_id', $job_id)
+            ->leftJoin('users', 'users.user_code', '=', 'job_lists.user_key')
+            ->leftJoin('store_information as store', 'store.is_code_cust_id', '=', 'users.is_code_cust_id')
+            ->select('job_lists.*', 'users.name as username', 'users.user_code', 'store.shop_name', 'store.address', 'store.phone')
+            ->first();
+        $behaviors = Behavior::query()->where('job_id', $job_id)->get();
         $behaviorToString = '';
         foreach ($behaviors as $key => $behavior) {
             if ($key === 0) {
-                $behaviorToString = $behaviorToString.$behavior->cause_name;
-            }else{
-                $behaviorToString = $behaviorToString.' / '.$behavior->cause_name;
+                $behaviorToString = $behaviorToString . $behavior->cause_name;
+            } else {
+                $behaviorToString = $behaviorToString . ' / ' . $behavior->cause_name;
             }
         }
-        return Inertia::render('ReportRepair/ReceiveSpPdf',['job' => $job,'behaviors' => $behaviorToString]);
+        return Inertia::render('ReportRepair/ReceiveSpPdf', ['job' => $job, 'behaviors' => $behaviorToString]);
     }
 }

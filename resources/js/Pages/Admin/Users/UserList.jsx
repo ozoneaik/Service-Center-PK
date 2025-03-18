@@ -277,6 +277,8 @@ export default function UserList({ list }) {
                                                 <TableCell>
                                                     <Stack direction='row' spacing={2}>
                                                         <Button
+                                                        component={Link}
+                                                        href={route('userManage.edit',{user_code : user.user_code})}
                                                             variant='contained' startIcon={<EditIcon />}
                                                         >
                                                             แก้ไข

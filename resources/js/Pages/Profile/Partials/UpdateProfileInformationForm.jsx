@@ -13,9 +13,9 @@ export default function UpdateProfileInformation({mustVerifyEmail, status, class
         useForm({
             name: user.name,
             email: user.email,
-            phone: user.phone,
-            address: user.address,
-            shop_name: user.shop_name,
+            phone: user.store_info.phone,
+            address: user.store_info.address,
+            shop_name: user.store_info.shop_name,
             is_code_cust_id: user.is_code_cust_id,
             role: user.role,
             admin_that_branch: user.admin_that_branch,

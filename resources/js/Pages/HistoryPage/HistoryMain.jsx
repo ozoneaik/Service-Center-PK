@@ -38,7 +38,7 @@ export const TableDetail = ({ jobs, handleShowDetail, url }) => {
                         <TableCell>{job.job_id}</TableCell>
                         {url.startsWith("/admin/history-job") && (
                             <TableCell>
-                                <b>รหัสร้านค้า :</b> <span style={{ color: '#f15922' }}>{job.is_code_cust_id}</span>
+                                <b>รหัสร้านค้า :</b> <span style={{ color: '#f15922' }}>{job.is_code_key}</span>
                                 <br />
                                 <b>ชื่อร้าน :</b> <span style={{ color: '#f15922' }}>{job.shop_name}</span>
                             </TableCell>

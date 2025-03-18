@@ -13,6 +13,7 @@ use App\Http\Controllers\ManageBranchController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\WarrantyProductController;
+use App\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -57,6 +58,8 @@ Route::middleware('auth')->group(function () {
             Route::prefix('users-manage')->group(function () {
                 Route::get('/create', [UserManageController::class, 'create'])->name('userManage.create');
                 Route::get('/list', [UserManageController::class, 'list'])->name('userManage.list');
+                Route::get('/edit/{user_code}',[UserManageController::class,'edit'])->name('userManage.edit');
+                Route::put('/update',[UserManageController::class,'update'])->name('userManage.update');
                 Route::delete('/delete/{user_code}',[UserManageController::class,'delete'])->name('userManage.delete');
             });
             Route::prefix('orders')->group(function (){
@@ -79,6 +82,9 @@ Route::middleware('auth')->group(function () {
 
     // สั่งซื้ออะไหล่
     require __DIR__ . '/orders.php';
+
+    // จัดการ stock
+    require __DIR__. '/stockSp.php';
     
 
     Route::prefix('history')->group(function () {
@@ -112,3 +118,14 @@ Route::post('/genQuPdf', [genQuPdfController::class, 'genQuPdf'])->name('genQuPd
 Route::get('/genReCieveSpPdf/{job_id}',[genQuPdfController::class,'genReCieveSpPdf'])->name('genReCieveSpPdf');
 Route::get('/image-dm/{pid}', [DmImageController::class, 'index'])->name('dmImage');
 require __DIR__ . '/auth.php';
+
+
+Route::get('/test',function(){
+    $users = User::with('store_info')->get();
+    // foreach ($users as $key => $user) {
+    //     dump($user->store_info->shop_name);
+    // }
+    return response()->json([
+        'users' => $users
+    ]);
+});

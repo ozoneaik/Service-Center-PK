@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\StoreInformation;
 use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
@@ -19,9 +20,10 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        // dd($request->user()->toArray());
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-            'status' => session('status'),
+            'status' => session('status'), 
         ]);
     }
 
@@ -35,17 +37,12 @@ class ProfileController extends Controller
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }
-
-        $updateAllUserThatBranch = User::query()->where('is_code_cust_id', auth()->user()->is_code_cust_id)->get();
-        foreach ($updateAllUserThatBranch as $user) {
-            $user->address = $request->address;
-            $user->phone = $request->phone;
-            $user->shop_name = $request->shop_name;
-            $user->save();
-        }
-
+        $StoreInformation = StoreInformation::query()->where('is_code_cust_id', Auth::user()->is_code_cust_id)->first();
+        $StoreInformation->address = $request->address;
+        $StoreInformation->phone = $request->phone;
+        $StoreInformation->shop_name = $request->shop_name;
+        $StoreInformation->save();
         $request->user()->save();
-
         return Redirect::route('profile.edit');
     }
 

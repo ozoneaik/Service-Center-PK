@@ -8,15 +8,14 @@ import SumOrder from "@/Pages/Orders/SumOrder.jsx";
 import {Link, router, usePage} from "@inertiajs/react";
 import {CartProvider, useCart} from "@/Pages/Orders/CartContext.jsx";
 
-
 export default function OrderList() {
     const [dmPreview, setDmPreview] = useState('');
     const user = usePage().props.auth.user;
     const [spList, setSpList] = useState([]);
     const searchSku = useRef(null);
     const [open, setOpen] = useState(false);
-    const [address,setAddress] = useState(user.address);
-    const [phone, setPhone] = useState(user.phone);
+    const [address,setAddress] = useState(user.store_info.address);
+    const [phone, setPhone] = useState(user.store_info.phone);
     const [loading, setLoading] = useState(false);
     const handleSearch = async (e) => {
         e.preventDefault();
@@ -27,7 +26,7 @@ export default function OrderList() {
                 console.log(data, status);
                 setSpList(data.result.sp || []);
                 if (data.result.sp && data.result.sp.length > 0) {
-                    await fetchDm(); // เรียก fetchDm() แต่ไม่ปิด loading ที่นี่
+                    await fetchDm();
                 } else setDmPreview('');
             } else {
                 setSpList([]);
@@ -55,7 +54,7 @@ export default function OrderList() {
     };
 
     return (
-        <CartProvider> {/* ครอบ component ด้วย CartProvider */}
+        <CartProvider>
             <OrderListContent
                 dmPreview={dmPreview}
                 spList={spList}
@@ -74,11 +73,11 @@ export default function OrderList() {
     );
 }
 
-// แยก component เนื้อหาออกมาเพื่อให้สามารถใช้ useCart ได้
+
 function OrderListContent(props) {
     const {dmPreview, spList, setCardView, searchSku, handleSearch, open, setOpen,loading,setLoading} = props;
     const {address,setAddress,phone,setPhone} = props;
-    const {cartItems,clearCart} = useCart(); // ใช้ hook useCart เพื่อเข้าถึงข้อมูลตะกร้า
+    const {cartItems,clearCart} = useCart();
 
     const handleBuyOrder = async (cartItems) => {
         const {data,status} = await axios.post('/orders/store',{

@@ -13,11 +13,10 @@ class ClaimSpController extends Controller
     {
         if(!isset($status)) $status = 'pending';
         $claimList = Claim::query()
-            ->leftJoin('users', 'users.is_code_cust_id', '=', 'claims.user_id')
-            ->whereRaw('users.id = (SELECT MAX(id) FROM users WHERE users.is_code_cust_id = claims.user_id)')
+            ->leftJoin('store_information as store', 'store.is_code_cust_id', '=', 'claims.user_id')
             ->where('claims.status',$status)
             ->orderBy('claims.id', 'desc')
-            ->select('claims.*', 'users.shop_name', 'users.is_code_cust_id', 'users.address')
+            ->select('claims.*', 'store.shop_name', 'store.is_code_cust_id', 'store.address')
             ->paginate(100);
         return Inertia::render('SpareClaim/Manage/ClaimList', ['claimList' => $claimList,'statusClaim' => $status]);
     }
@@ -25,11 +24,10 @@ class ClaimSpController extends Controller
     {
         $detail = ClaimDetail::query()->where('claim_id', $claim_id)->orderBy('id', 'desc')->get();
         $claim = Claim::query()
-            ->leftJoin('users', 'users.is_code_cust_id', '=', 'claims.user_id')
-            ->whereRaw('users.id = (SELECT MAX(id) FROM users WHERE users.is_code_cust_id = claims.user_id)')
+            ->leftJoin('store_information as store', 'store.is_code_cust_id', '=', 'claims.user_id')
             ->where('claim_id', $claim_id)
             ->orderBy('claims.id', 'desc')
-            ->select('claims.*', 'users.shop_name', 'users.is_code_cust_id', 'users.address')
+            ->select('claims.*', 'store.shop_name', 'store.is_code_cust_id', 'store.address')
             ->first();
         // dd($detail->toArray());
         return Inertia::render('SpareClaim/Manage/ClaimDetail', ['detail' => $detail, 'claim' => $claim]);

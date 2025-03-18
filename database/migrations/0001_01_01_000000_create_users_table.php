@@ -20,10 +20,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('is_code_cust_id')->nullable()->comment('รหัสลูกค้า ISCode');
-            $table->string('shop_name')->nullable()->default('Pumpkin')->comment('ชื่อร้าน');
-            $table->string('phone',20)->nullable()->comment('เบอร์โทรศัพท์');
             $table->boolean('admin_that_branch')->default(false)->comment('admin ของสาขานั้นๆ');
-            $table->string('address')->nullable()->default('ไม่ได้ระบุที่อยู่')->comment('ที่อยู่');
             $table->rememberToken();
             $table->timestamps();
         });

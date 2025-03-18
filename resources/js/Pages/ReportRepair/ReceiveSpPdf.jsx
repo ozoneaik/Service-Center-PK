@@ -1,3 +1,4 @@
+import { Head } from '@inertiajs/react';
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Font } from '@react-pdf/renderer';
 
 Font.register({
@@ -119,6 +120,7 @@ const GenPDF = ({ job, behaviors }) => (
                     <View style={styles.leftColumn}>
                         <DetailText label={'ชื่อร้าน'} value={job.shop_name} />
                         <DetailText label={'ที่อยู่'} value={job.address} />
+                        <DetailText label={'เบอร์โทรศัพท์'} value={job.phone} />
                         <DetailText label={'ซีเรียลนัมเบอร์'} value={job.serial_id} />
                         <DetailText label={'ส่งซ่อม'} value={job.p_name} />
                         <DetailText label={'อาการ'} value={behaviors} />
@@ -136,7 +138,7 @@ const GenPDF = ({ job, behaviors }) => (
 
                 <View style={styles.footer}>
                     <Text>
-                        เอกสารนี้เป็นหลักฐานการรับสินค้าเพื่อซ่อม กรุณาเก็บไว้เพื่อยืนยันตัวตนเมื่อมารับสินค้า
+                        เอกสารนี้เป็นหลักฐานการรับสินค้าเพื่อซ่อม กรุณาเก็บไว้เพื่อยืนยันตัวตน
                     </Text>
                 </View>
             </View>
@@ -146,8 +148,12 @@ const GenPDF = ({ job, behaviors }) => (
 
 export default function ReceiveSpPdf({ job, behaviors }) {
     return (
+        <>
+        <Head title='ใบรับสินค้า'/>
         <PDFViewer style={{ width: '100vw', height: '100vh' }}>
             <GenPDF job={job} behaviors={behaviors} />
         </PDFViewer>
+        </>
+        
     );
 }

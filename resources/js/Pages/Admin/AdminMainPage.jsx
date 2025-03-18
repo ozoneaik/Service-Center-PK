@@ -6,6 +6,7 @@ import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import GroupIcon from '@mui/icons-material/Group';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import HistoryIcon from '@mui/icons-material/History';
+import StoreIcon from '@mui/icons-material/Store';
 export default function AdminMainPage() {
     const menuItems = [
         {
@@ -37,6 +38,12 @@ export default function AdminMainPage() {
             icon : <HistoryIcon/>,
             path : route('admin.history-job'),
             color : '#25347a'
+        },
+        {
+            text : "จัดการศูนย์ซ่อม (สต็อกอะไหล่,GP)",
+            icon : <StoreIcon/>,
+            path : route('stockSp.shopList'),
+            color : 'pink'
         }
     ];
 

@@ -15,9 +15,8 @@ use App\Models\Symptom;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
-use function Laravel\Prompts\select;
 
 class SearchController extends Controller
 {
@@ -39,6 +38,9 @@ class SearchController extends Controller
                 $searchResults = $searchResults['assets'][0];
                 $searchResults['warranty_status'] = $warrantyexpire;
                 $searchResults['job'] = $this->storeJob($searchResults,$createJob);
+                if ($searchResults['job']['is_code_key'] !== Auth::user()->is_code_cust_id) {
+                    throw new \Exception('สินค้าซีเรียลนี้ถูกสร้าง job โดยศูนย์บริการอื่นแล้ว และยังดำเนินการอยู่ หากสงสัย ติดต่อผู้ดูแลระบบ');
+                }
                 $job_id = $searchResults['job']['job_id'];
                 $hisSystem = $this->historyInSystem($request->sn, $searchResults);
                 $searchResults['history'] = array_merge($hisSystem,$searchResults['history']);
@@ -46,7 +48,7 @@ class SearchController extends Controller
                 $searchResults['selected']['symptom'] = $this->SymptomSelected($job_id);
                 $searchResults['selected']['remark'] = $this->RemarkSelected($job_id);
                 $searchResults['selected']['fileUpload'] = $this->FileSelected($job_id);
-                $findGP = Gp::query()->where('is_code_cust_id', auth()->user()->is_code_cust_id)->first();
+                $findGP = Gp::query()->where('is_code_cust_id', Auth::user()->is_code_cust_id)->first();
                 $searchResults['selected']['globalGP'] = $findGP ? $findGP->gp_val : 0;
                 $searchResults['selected']['customerInJob'] = $this->CustomerInJob($request->sn, $job_id) ?? [];
                 $sp = $this->SpSelected($job_id);
@@ -58,7 +60,7 @@ class SearchController extends Controller
             return response()->json([
                 'status' => $status,
                 'searchResults' => $searchResults,
-                'auth_user' => auth()->user(),
+                'auth_user' => Auth::user(),
                 'message' => 'success',
                 'time' => Carbon::now()
             ]);
@@ -66,7 +68,7 @@ class SearchController extends Controller
             return response()->json([
                 'status' => 'Fail',
                 'searchResults' => [],
-                'auth_user' => auth()->user(),
+                'auth_user' => Auth::user(),
                 'message' => $e->getMessage(),
                 'time' => Carbon::now()
             ], 400);
@@ -161,8 +163,8 @@ class SearchController extends Controller
                 'fac_model' => $data['facmodel'],
                 'image_sku' => $data['imagesku'],
                 'warranty' => $data['warranty_status'],
-                'is_code_key' => auth()->user()->is_code_cust_id,
-                'user_key' => auth()->user()->user_code,
+                'is_code_key' => Auth::user()->is_code_cust_id,
+                'user_key' => Auth::user()->user_code,
                 'status' => 'pending',
             ]);
         }
@@ -213,7 +215,7 @@ class SearchController extends Controller
     private function historyInSystem($serial_id, $searchResults)
     {
         $jobs = JobList::query()->where('serial_id', $serial_id)
-            ->where('is_code_key', auth()->user()->is_code_cust_id)
+            ->where('is_code_key', Auth::user()->is_code_cust_id)
             ->where('status', 'success')
             ->orderBy('id', 'desc')
             ->get();
