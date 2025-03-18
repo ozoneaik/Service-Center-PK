@@ -64,7 +64,7 @@ export default function FormWarranty() {
             text : 'กด บันทึก หรือ บันทึก/แจ้งซ่อม เพื่อบันทึกข้อมูลรับประกัน',
             onPassed : async (confirm, confirmAndRedirect) => {
                 if (confirm || confirmAndRedirect) {
-
+                    await handelSubmit(e);
                 }
             }
         })

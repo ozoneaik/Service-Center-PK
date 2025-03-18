@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('stock_spare_parts', function (Blueprint $table) {
             $table->id();
+            $table->string('is_code_cust_id')->comment('รหัสร้าน');
+            $table->string('sp_code')->comment('รหัสอะไหล่');
+            $table->string('sp_name')->comment('ชื่ออะไหล่');
+            $table->string('sku_code')->comment('รหัสสินค้า');
+            $table->string('sku_name')->comment('ชื่อสินค้า');
+            $table->bigInteger('qty_sp')->comment('จำนวนอะไหล่');
+            $table->bigInteger('old_qty_sp')->nullable()->default(0)->comment('จำนวนอะไหล่ก่อนหน้า');
             $table->timestamps();
         });
     }
