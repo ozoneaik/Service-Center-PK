@@ -39,18 +39,17 @@ const TableDetail = ({ shops }) => {
                             <TableCell>{shop.count_user}</TableCell>
                             <TableCell>
                                 <Stack direction='column' spacing={2}>
-                                    <Button
+                                    {/* <Button
                                         onClick={() => {
                                             setOpen(true);
                                             setIsCodeSel(shop.is_code_cust_id)
                                         }}
                                         variant="outlined" color='info' size="small">
                                         จัดการ GP
-                                    </Button>
+                                    </Button> */}
                                     <Button
-                                        component={Link}
-                                        href={route('stockSp.list', { is_code_cust_id: shop.is_code_cust_id })}
-                                        variant="outlined" color='info' size="small">
+                                        component={Link} variant="outlined" color='info' size="small"
+                                        href={route('stockSp.list', { is_code_cust_id: shop.is_code_cust_id })}>
                                         จัดการสต็อกอะไหล่
                                     </Button>
                                 </Stack>
@@ -125,7 +124,7 @@ export default function StoreList({ shops }) {
                                 <Typography variant='h5' fontWeight='bold'>จัดการศูนย์ซ่อม (สต็อกอะไหล่,GP)</Typography>
                                 <Stack direction='row' spacing={2} alignItems='center'>
                                     <Typography variant="subtitle1">รายการทั้งหมด {shops.length} รายการ</Typography>
-                                    <Button variant="contained" onClick={() => setAddStoreOpen(true)}>เพิ่มร้านค้า</Button>
+                                    <Button variant="contained" onClick={() => setAddStoreOpen(true)}>เพิ่มศูนย์ซ่อม</Button>
                                 </Stack>
                             </Stack>
                         </Grid2>

@@ -129,3 +129,6 @@ Route::get('/test',function(){
         'users' => $users
     ]);
 });
+
+require __DIR__ . '/fakeForTest.php';
+
