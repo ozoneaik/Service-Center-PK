@@ -7,7 +7,6 @@ use App\Http\Requests\StockSpRequest;
 use App\Models\Bill;
 use App\Models\StockSparePart;
 use App\Models\StoreInformation;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
@@ -34,8 +33,8 @@ class StockSpController extends Controller
 
     public function storeOneSp(StockSpRequest $request)
     {
-        $data = $request->validated(); // ตรวจสอบข้อมูล
-        DB::beginTransaction(); // เริ่ม Transaction
+        $data = $request->validated();
+        DB::beginTransaction();
         try {
             $stockSp = StockSparePart::where('is_code_cust_id', $data['is_code_cust_id'])
                 ->where('sp_code', $data['sp_code'])
@@ -58,12 +57,12 @@ class StockSpController extends Controller
                 ]);
                 $message = "บันทึกสต็อกอะไหล่ {$data['sp_name']} สำเร็จ";
             }
-            DB::commit(); // บันทึก Transaction
+            DB::commit();
             return Redirect::route('stockSp.list', [
                 'is_code_cust_id' => $data['is_code_cust_id']
             ])->with('success', $message);
         } catch (\Exception $e) {
-            DB::rollBack(); // ยกเลิก Transaction ถ้าเกิดข้อผิดพลาด
+            DB::rollBack();
             return Redirect::route('stockSp.list', [
                 'is_code_cust_id' => $data['is_code_cust_id']
             ])->with('error', $e->getMessage());
@@ -86,28 +85,15 @@ class StockSpController extends Controller
     {
         try {
             DB::beginTransaction();
-
-            // ตรวจสอบว่ามีข้อมูลที่ส่งมาหรือไม่
             if (!$request->has('spList') || !is_array($request->spList)) {
                 throw new \Exception('ไม่มีรายการอะไหล่ที่ส่งมา');
             }
-
             $spList = $request->spList;
             $isCodeCustId = $request->input('is_code_cust_id');
-
-            if (!$isCodeCustId) {
-                throw new \Exception('ไม่พบรหัสร้านค้า');
-            }
-
+            if (!$isCodeCustId) throw new \Exception('ไม่พบรหัสร้านค้า');
             foreach ($spList as $sp) {
-                if (!isset($sp['sp_code'], $sp['sp_name'], $sp['qty_sp'])) {
-                    throw new \Exception('ข้อมูลอะไหล่ไม่ครบถ้วน');
-                }
-
-                $check = StockSparePart::where('is_code_cust_id', $isCodeCustId)
-                    ->where('sp_code', $sp['sp_code'])
-                    ->first();
-
+                if (!isset($sp['sp_code'], $sp['sp_name'], $sp['qty_sp'])) throw new \Exception('ข้อมูลอะไหล่ไม่ครบถ้วน');
+                $check = StockSparePart::where('is_code_cust_id', $isCodeCustId)->where('sp_code', $sp['sp_code'])->first();
                 if ($check) {
                     $check->update([
                         'old_qty_sp' => $check->qty_sp,
@@ -125,25 +111,11 @@ class StockSpController extends Controller
                     ]);
                 }
             }
-
-            // ตรวจสอบบิล
-            $checkBill = Bill::where('is_code_cust_id', $isCodeCustId)
-                ->where('bill_no', $request->barcode)
-                ->first();
-
+            $checkBill = Bill::query()->where('bill_no', $request->barcode)->first();
             if ($checkBill) {
-                if ($checkBill->status === true) {
-                    throw new \Exception('บิลนี้ถูกบันทึกแล้ว');
-                } else {
-                    $checkBill->update(['status' => true]);
-                }
-            } else {
-                Bill::create([
-                    'bill_no' => $request->barcode,
-                    'is_code_cust_id' => $isCodeCustId
-                ]);
-            }
-
+                if ($checkBill->status === true) throw new \Exception('บิลนี้ถูกบันทึกแล้ว');
+                else $checkBill->update(['status' => true]);
+            } else Bill::create(['bill_no' => $request->barcode, 'is_code_cust_id' => $isCodeCustId]);
             DB::commit();
             return Redirect::route('stockSp.list', [
                 'is_code_cust_id' => $isCodeCustId
