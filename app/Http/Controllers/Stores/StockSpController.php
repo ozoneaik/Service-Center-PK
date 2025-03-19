@@ -113,7 +113,7 @@ class StockSpController extends Controller
             }
             $checkBill = Bill::query()->where('bill_no', $request->barcode)->first();
             if ($checkBill) {
-                if ($checkBill->status === true) throw new \Exception('บิลนี้ถูกบันทึกแล้ว');
+                if ($checkBill->status === true) throw new \Exception('บิลนี้เคยถูกบันทึกแล้ว');
                 else $checkBill->update(['status' => true]);
             } else Bill::create(['bill_no' => $request->barcode, 'is_code_cust_id' => $isCodeCustId]);
             DB::commit();

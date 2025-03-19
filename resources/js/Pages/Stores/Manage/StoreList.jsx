@@ -19,7 +19,7 @@ const TableDetail = ({ shops }) => {
             <Table>
                 <TableHead>
                     <TableRow sx={TABLE_HEADER_STYLE}>
-                        {['รหัสร้าน', 'ชื่อร้าน / เบอร์โทรศัพท์', 'ที่อยู่', 'GP', 'จำนวนผู้ใช้', 'สต็อกอะไหล่รวม', 'จัดการ'].map((head, index) => (
+                        {['รหัสร้าน', 'ชื่อร้าน / เบอร์โทรศัพท์', 'ที่อยู่', 'GP', 'จำนวนผู้ใช้', 'สต็อกอะไหล่รวม','ยอดปรับปรุง (AT)', 'จัดการ'].map((head, index) => (
                             <TableCell key={index}>{head}</TableCell>
                         ))}
                     </TableRow>
@@ -37,6 +37,7 @@ const TableDetail = ({ shops }) => {
                             <TableCell>{shop.gp ? shop.gp.gp_val : 0}</TableCell>
                             <TableCell>{shop.count_user}</TableCell>
                             <TableCell>{shop.count_user}</TableCell>
+                            <TableCell>กำลังพัฒนา</TableCell>
                             <TableCell>
                                 <Stack direction='column' spacing={2}>
                                     {/* <Button

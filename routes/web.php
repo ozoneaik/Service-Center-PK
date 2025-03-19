@@ -58,6 +58,7 @@ Route::middleware('auth')->group(function () {
             Route::prefix('users-manage')->group(function () {
                 Route::get('/create', [UserManageController::class, 'create'])->name('userManage.create');
                 Route::get('/list', [UserManageController::class, 'list'])->name('userManage.list');
+                Route::post('/store',[UserManageController::class,'store'])->name('userManage.store');
                 Route::get('/edit/{user_code}',[UserManageController::class,'edit'])->name('userManage.edit');
                 Route::put('/update',[UserManageController::class,'update'])->name('userManage.update');
                 Route::delete('/delete/{user_code}',[UserManageController::class,'delete'])->name('userManage.delete');

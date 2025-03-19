@@ -10,8 +10,12 @@ class StoreInformation extends Model
     protected $fillable = [
         'shop_name',
         'is_code_cust_id',
-        'address',
         'phone',
+        'address',
+        'address_sub',
+        'province',
+        'district',
+        'sub_district'
     ];
 
     public function gp () : HasOne {

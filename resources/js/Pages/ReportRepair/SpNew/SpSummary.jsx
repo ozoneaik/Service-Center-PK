@@ -181,12 +181,12 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                 aria-describedby="alert-dialog-description"
             >
                 <DialogTitle id="alert-dialog-title">
-                    ด้วยคุณได้กรอกราคาอะไหล่ เป็น 0 กรุณากรอกรายละเอียดดังนี้
+                    เนื่องจากคุณได้กรอกราคาอะไหล่เป็น 0 กรุณากรอกรายละเอียด
                 </DialogTitle>
                 <DialogContent>
                     <Stack spacing={2} sx={{ mt: 2 }}>
                         <Stack direction="row" spacing={2} alignItems="center">
-                            <Typography>เคลม:</Typography>
+                            <Typography>ระบุ :</Typography>
                             <Select
                                 fullWidth
                                 value={claimRemark}

@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\EmpRequest;
 use App\Models\StoreInformation;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -32,6 +35,36 @@ class UserManageController extends Controller
     {
         $user = User::query()->where('user_code', $user_code)->with('store_info')->first();
         return Inertia::render('Admin/Users/UserEdit', ['user' => $user]);
+    }
+
+    public function store(EmpRequest $request){
+        $request->validate([
+            'is_code_cust_id' => ['required'],
+            'admin_that_branch' => ['required']
+        ],[
+            'is_code_cust_id.required' => "ไม่พบ รหัสร้านค้า",
+            'admin_that_branch.required' => 'ไม่พบ สิทธ์ในร้าน'
+        ]);
+        $data = $request;
+        $user = User::query()->create([
+            'user_code' => 'A'.time().rand(1000,9999),
+            'name' => $data['name'],
+            'is_code_cust_id' => $data['is_code_cust_id'],
+            'role' => $data['role'],
+            'admin_that_branch' => $data['admin_that_branch'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password'])
+        ]);
+
+        if ($user) {
+            return Redirect::route('userManage.create', [
+                'is_code_cust_id' => $data['is_code_cust_id']
+            ])->with('success', 'บันทึกผู้ใช้สำเร็จ');
+        }else{
+            return Redirect::route('userManage.create', [
+                'is_code_cust_id' => $data['is_code_cust_id']
+            ])->with('error', 'บันทึกผู้ใช้ไม่สำเร็จ');
+        }
     }
 
     public function update(Request $request)
