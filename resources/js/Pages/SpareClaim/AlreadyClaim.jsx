@@ -3,7 +3,6 @@ import Checkbox from "@mui/material/Checkbox";
 import PreviewIcon from "@mui/icons-material/Preview";
 import {useEffect, useState} from "react";
 import DialogDetail from "@/Pages/SpareClaim/DialogDetail.jsx";
-import {router} from "@inertiajs/react";
 import {AlertDialog} from "@/Components/AlertDialog.js";
 
 export default function AlreadyClaim({spareParts}) {
@@ -106,7 +105,7 @@ export default function AlreadyClaim({spareParts}) {
                             </TableCell>
                             <TableCell>{item.sp_code}</TableCell>
                             <TableCell>{item.sp_name}</TableCell>
-                            <TableCell>0</TableCell>
+                            <TableCell>{item.stock_local?.qty_sp ?? 0}</TableCell>
                             <TableCell>0</TableCell>
                             <TableCell>{item.qty}</TableCell>
                             <TableCell>{item.sp_unit}</TableCell>

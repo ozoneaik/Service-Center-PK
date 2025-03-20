@@ -33,7 +33,6 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
         e.preventDefault();
 
         console.log("📤 ส่งข้อมูลไปยัง Backend:", data); // Log ข้อมูลที่ส่งไป
-
         try {
             await post(route('stockSp.storeOneSp'), {
                 preserveScroll: true,
@@ -68,7 +67,7 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
                 setData('sku_name', response.data.data.sku_name);
                 setData('sp_code', response.data.data.sp_code);
                 setData('sp_name', response.data.data.sp_name);
-                setData('qty_sp', response.data.data.qty_sp);
+                // setData('qty_sp', response.data.data.qty_sp);
             }
         } catch (error) {
             setData('sku_code', '');
@@ -99,7 +98,7 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
                             <TextField
                                 inputRef={searchSp}
                                 autoFocus fullWidth label='ค้นหารหัสอะไหล่ หากจำไม่ได้ว่าเคยกรอกไปแล้ว เพื่อดึงข้อมูลอะไหล่'
-                                placeholder="สแกนบิลหรือกรอกหมายเลขบิล"
+                                placeholder="ตัวอย่าง SP001"
                             />
                             <Button disabled={searching} variant="contained" onClick={handleSearch}>
                                 {searching && <CircularProgress size={24} />}
@@ -128,7 +127,7 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
                                     value={data.sku_code}
                                     onChange={(e) => setData('sku_code', e.target.value)}
                                     size="small"
-                                    autoFocus fullWidth label='รหัสสินค้า'
+                                    fullWidth label='รหัสสินค้า'
                                     placeholder="ตัวอย่าง 50277"
                                 />
                             </Grid2>
@@ -137,7 +136,7 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
                                     value={data.sku_name}
                                     onChange={(e) => setData('sku_name', e.target.value)}
                                     size="small"
-                                    autoFocus fullWidth label='ชื่อสินค้า'
+                                    fullWidth label='ชื่อสินค้า'
                                     placeholder="ตัวอย่าง เครื่องเจียรมือ"
                                 />
                             </Grid2>
@@ -150,7 +149,7 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
                                     value={data.sp_code}
                                     onChange={(e) => setData('sp_code', e.target.value)}
                                     required size="small"
-                                    autoFocus fullWidth label='รหัสอะไหล่'
+                                    fullWidth label='รหัสอะไหล่'
                                     placeholder="ตัวอย่าง SP001"
                                 />
                                 <InputError message={errors.sp_code} />
@@ -161,37 +160,21 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
                                     value={data.sp_name}
                                     onChange={(e) => setData('sp_name', e.target.value)}
                                     required size="small"
-                                    autoFocus fullWidth label='ชื่ออะไหล่'
+                                    fullWidth label='ชื่ออะไหล่'
                                     placeholder="ตัวอย่าง ประกบบน"
                                 />
                                 <InputError message={errors.sp_name} />
                             </Grid2>
                             <Grid2 size={{ md: 12, xs: 12 }}>
                                 <TextField
-                                    required
-                                    error={errors.qty_sp && !data.qty_sp}
-                                    value={data.qty_sp}
+                                    required fullWidth label='จำนวนที่รับเข้ามา'
+                                    error={errors.qty_sp && !data.qty_sp} value={data.qty_sp}
                                     onChange={(e) => setData('qty_sp', e.target.value)}
-                                    type="number"
-                                    size="small"
-                                    autoFocus fullWidth label='จำนวนที่รับเข้ามา'
+                                    type="number" size="small"
                                     placeholder="ตัวอย่าง ประกบบน"
                                 />
                                 <InputError message={errors.qty_sp} />
                             </Grid2>
-                            {/* <Grid2 size={{ md: 6, xs: 12 }}>
-                                <TextField
-                                    required
-                                    error={errors.received_date && !data.received_date}
-                                    value={data.received_date}
-                                    onChange={(e) => setData('received_date', e.target.value)}
-                                    type="date"
-                                    size="small"
-                                    autoFocus fullWidth label='รับมาเมื่อ'
-                                    placeholder="ตัวอย่าง ประกบบน"
-                                />
-                                <InputError message={errors.received_date} />
-                            </Grid2> */}
                             <Grid2 size={12}>
                                 <Stack direction={{ md: 'row', xs: 'column' }} spacing={2}>
                                     <Button disabled={processing} variant="outlined" onClick={() => setOpenAddSpBasic(false)} fullWidth>ยกเลิก</Button>

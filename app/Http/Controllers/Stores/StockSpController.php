@@ -33,7 +33,7 @@ class StockSpController extends Controller
 
     public function storeOneSp(StockSpRequest $request)
     {
-        $data = $request->validated();
+        $data = $request;
         DB::beginTransaction();
         try {
             $stockSp = StockSparePart::where('is_code_cust_id', $data['is_code_cust_id'])
@@ -42,7 +42,7 @@ class StockSpController extends Controller
             if ($stockSp) {
                 $stockSp->update([
                     'old_qty_sp' => $stockSp->qty_sp,
-                    'qty_sp' => $data['qty_sp'],
+                    'qty_sp' => $data['qty_sp'] + $stockSp->qty_sp,
                 ]);
                 $message = "อัปเดตสต็อกอะไหล่ {$data['sp_name']} เรียบร้อยแล้ว";
             } else {

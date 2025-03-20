@@ -52,6 +52,10 @@ class DatabaseSeeder extends Seeder
             'shop_name' => 'มานีการช่าง',
             'address' => 'ห้องสมุดบุญชูตรีทอง เรือนเพาะชำ ตำบล ปงยางคก อำเภอห้างฉัตร ลำปาง 52190',
             'phone' => '0931235648',
+            'address_sub' => 'ห้องสมุดบุญชูตรีทอง เรือนเพาะชำ',
+            'district' => 'ห้างฉัตร',
+            'province' => 'ลำปาง',
+            'sub_district' => 'ปงยางคก',
         ]);
 
         StoreInformation::query()->create([
@@ -59,6 +63,10 @@ class DatabaseSeeder extends Seeder
             'address' => 'บจก. พัมคิน คอร์ปอเรชั่น 4 พระรามที่ 2 ซอย 54 แยก 4 แขวงแสมดำ เขตบางขุนเทียน กรุงเทพมหานคร 10150',
             'shop_name' => 'Pumpkin Coporation',
             'phone' => '0931622330',
+            'address_sub' => 'บจก. พัมคิน คอร์ปอเรชั่น 4 พระรามที่ 2 ซอย 54 แยก 4',
+            'district' => 'เขตบางขุนเทียน',
+            'province' => 'กรุงเทพมหานคร',
+            'sub_district' => 'แขวงแสมดำ',
         ]);
 
         MenuFileUpload::query()->create([
