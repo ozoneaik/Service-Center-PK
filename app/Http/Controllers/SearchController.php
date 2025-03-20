@@ -14,6 +14,7 @@ use App\Models\SparePart;
 use App\Models\Symptom;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -27,6 +28,7 @@ class SearchController extends Controller
                 'sn' => $request->sn,
                 'views' => $request->views,
             ]);
+            if(!$response->successful()) throw new \Exception('ขาดการติดต่อกับ API');
             $createJob = $request->input('createJob');
             if ($response->status() === 200) {
                 $searchResults = $response->json();
@@ -64,6 +66,12 @@ class SearchController extends Controller
                 'message' => 'success',
                 'time' => Carbon::now()
             ]);
+        }catch (RequestException $e) {
+            // กรณี API ไม่ตอบสนอง หรือเชื่อมต่อไม่ได้
+            return response()->json([
+                'status' => 'error',
+                'message' => 'ขาดการติดต่อกับ API กรุณาตรวจสอบเครือข่าย',
+            ], 500);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'Fail',

@@ -1,15 +1,15 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import {Head} from '@inertiajs/react';
-import {Button, Container, Grid2, Stack, TextField} from '@mui/material';
+import { Head } from '@inertiajs/react';
+import { Button, Container, Grid2, Stack, TextField } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ProductDetail from '@/Components/ProductDetail';
-import {useState} from 'react';
+import { useState } from 'react';
 import Progress from "@/Components/Progress.jsx";
-import {AlertDialog, AlertDialogQuestionForSearch} from "@/Components/AlertDialog.js";
+import { AlertDialog, AlertDialogQuestionForSearch } from "@/Components/AlertDialog.js";
 import EditIcon from '@mui/icons-material/Edit';
 import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
 import FormRepair from "@/Pages/ReportRepair/FormRepair.jsx";
-import {PathDetail} from "@/Components/PathDetail.jsx";
+import { PathDetail } from "@/Components/PathDetail.jsx";
 import ListHistoryRepair from "@/Pages/HistoryRepair/ListHistoryRepair.jsx";
 
 export default function Dashboard() {
@@ -18,13 +18,13 @@ export default function Dashboard() {
     const [processing, setProcessing] = useState(false);
     const [sn, setSn] = useState();
     const [showContent, setShowContent] = useState();
-    const fetchData = async (ser,createJob) => {
+    const fetchData = async (ser, createJob) => {
         setProcessing(true);
         try {
-            const {data} = await axios.post('/search', {
-                sn : ser,
+            const { data } = await axios.post('/search', {
+                sn: ser,
                 views: 'single',
-                createJob : createJob
+                createJob: createJob
             });
             if (data.status === 'SUCCESS') {
                 const responseData = data.searchResults;
@@ -48,17 +48,17 @@ export default function Dashboard() {
 
     const checkSn = async () => {
         try {
-            const {data, status} = await axios.get(`/jobs/check/${sn}`);
-            console.log(data,status)
+            const { data, status } = await axios.get(`/jobs/check/${sn}`);
+            console.log(data, status)
             return {
-                message : data.message,
-                status : status
+                message: data.message,
+                status: status
             }
-        }catch (error){
+        } catch (error) {
             console.error(error.response.data.message)
             return {
-                message : error.response.data.message,
-                status : error.response.status  ??  500
+                message: error.response.data.message,
+                status: error.response.status ?? 500
             }
         }
 
@@ -68,37 +68,37 @@ export default function Dashboard() {
     const searchDetail = async (e) => {
         e.preventDefault();
         setProcessing(true)
-        const {message, status} = await checkSn();
+        const { message, status } = await checkSn();
         console.log(message, status);
-        if (status === 200){
-            await fetchData(sn,false);
-        }else if (status === 400){
-            AlertDialogQuestionForSearch ({
-                title : message,
-                cancelButtonText : message === 'ไม่พบประวัติการซ่อมจากระบบ' ? 'ปิด' : 'ดูแค่ประวัติการซ่อม',
-                text : 'เลือกเมนูดังต่อไปนี้',
-                onPassed : async (confirm) => {
-                    if (confirm){
-                        await fetchData(sn , true);
-                    }else{
+        if (status === 200) {
+            await fetchData(sn, false);
+        } else if (status === 400) {
+            AlertDialogQuestionForSearch({
+                title: message,
+                cancelButtonText: message === 'ไม่พบประวัติการซ่อมจากระบบ' ? 'ปิด' : 'ดูแค่ประวัติการซ่อม',
+                text: 'เลือกเมนูดังต่อไปนี้',
+                onPassed: async (confirm) => {
+                    if (confirm) {
+                        await fetchData(sn, true);
+                    } else {
                         if (message === 'ไม่พบประวัติการซ่อมจากระบบ') return;
-                        await fetchData(sn , false)
+                        await fetchData(sn, false)
                     }
                 }
             })
-        }else{
+        } else {
             AlertDialog({
-                title : 'เกิดข้อผิดพลาด',
-                text : message,
+                title: 'เกิดข้อผิดพลาด',
+                text: message,
             })
         }
         setProcessing(false);
 
     }
 
-    const ButtonLink = ({icon, title, color, menu}) => (
+    const ButtonLink = ({ icon, title, color, menu }) => (
         <Button disabled={showContent === menu} onClick={() => setShowContent(menu)} component='a' variant='contained'
-                color={color} sx={{width: 150}}>
+            color={color} sx={{ width: { xs: '100%', md: 150 } }}>
             <Stack direction='column' justifyContent='center' alignItems='center'>
                 {icon}
                 {title}
@@ -108,31 +108,31 @@ export default function Dashboard() {
     )
 
     const ButtonList = () => (
-        <Stack direction={{xs: 'column', sm: 'row'}} spacing={2} justifyContent='start' alignItems='center'>
-            <ButtonLink menu={1} icon={<EditIcon/>} title={'แจ้งซ่อม'} data={detail}
-                        color='primary'/>
-            <ButtonLink menu={2} icon={<ManageHistoryIcon/>} title={'ดูประวัติการซ่อม'}
-                        data={detail} color='secondary'/>
+        <Stack direction={{ xs: 'column', sm: 'row', width: '100%' }} spacing={2} justifyContent='start' alignItems='center'>
+            <ButtonLink menu={1} icon={<EditIcon />} title={'แจ้งซ่อม'} data={detail}
+                color='primary' />
+            <ButtonLink menu={2} icon={<ManageHistoryIcon />} title={'ดูประวัติการซ่อม'}
+                data={detail} color='secondary' />
         </Stack>
     )
 
     return (
         <AuthenticatedLayout>
-            <Head title="หน้าหลัก"/>
+            <Head title="หน้าหลัก" />
             <Container>
                 <div className=" mt-4 p-4 ">
                     <Stack direction='column' spacing={1}>
                         <form onSubmit={searchDetail}>
                             <Grid2 container spacing={2}>
                                 <Grid2 size={12} mb={10}>
-                                    <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>
-                                        <TextField id={'search'} sx={{backgroundColor: 'white'}} placeholder='ค้นหาหมายเลขซีเรียล'
-                                                   fullWidth autoComplete='off'
-                                                   defaultValue={sn || ''}
-                                                   onChange={(e) => setSn(e.target.value)}/>
-                                        <Button sx={{minWidth: 100}} disabled={processing || !sn} type='submit'
-                                                size='small' variant='contained'
-                                                startIcon={<SearchIcon/>}>
+                                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                                        <TextField id={'search'} sx={{ backgroundColor: 'white' }} placeholder='ค้นหาหมายเลขซีเรียล'
+                                            fullWidth autoComplete='off'
+                                            defaultValue={sn || ''}
+                                            onChange={(e) => setSn(e.target.value)} />
+                                        <Button sx={{ minWidth: 100 }} disabled={processing || !sn} type='submit'
+                                            size='small' variant='contained'
+                                            startIcon={<SearchIcon />}>
                                             {processing && 'กำลัง'}ค้นหา
                                         </Button>
                                     </Stack>
@@ -142,7 +142,7 @@ export default function Dashboard() {
                         {!processing ? (
                             <>
                                 {detail && <ProductDetail {...detail} />}
-                                {detail && !processing && <ButtonList/>}
+                                {detail && !processing && <ButtonList />}
                                 {detail && showContent &&
                                     <PathDetail
                                         name={showContent === 1 ? 'แจ้งซ่อม' : 'ดูประวัติการซ่อม'}
@@ -162,7 +162,7 @@ export default function Dashboard() {
                                     />
                                 }
                             </>
-                        ) : <Progress/>}
+                        ) : <Progress />}
                     </Stack>
                 </div>
             </Container>

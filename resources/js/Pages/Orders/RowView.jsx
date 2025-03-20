@@ -1,8 +1,11 @@
 import {Button, Card, CardContent, Grid2, Stack, Typography} from "@mui/material";
 import {useCart} from "@/Pages/Orders/CartContext.jsx";
+import {Box, useMediaQuery, useTheme} from "@mui/material";
 
 export default function RowView({spList}) {
     const {cartItems, addToCart} = useCart();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     // ตรวจสอบว่าสินค้าอยู่ในตะกร้าหรือไม่
     const isInCart = (spcode) => {
@@ -13,22 +16,50 @@ export default function RowView({spList}) {
         <>
             {spList.map((item, index) => (
                 <Grid2 size={12} key={index}>
-                    <Card variant="outlined" sx={{display: 'flex',alignItems : 'center'}}>
-                        <img
-                            width={151}
-                            src={item.path_file}
-                            alt="ไม่มีรูป"
-                            onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = "https://images.dcpumpkin.com/images/product/500/default.jpg";
+                    <Card 
+                        variant="outlined" 
+                        sx={{
+                            display: 'flex',
+                            flexDirection: isMobile ? 'column' : 'row',
+                            alignItems: isMobile ? 'stretch' : 'center',
+                            width: '100%'
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                padding: isMobile ? theme.spacing(2, 0, 0, 0) : 0
                             }}
-                        />
+                        >
+                            <img
+                                width={isMobile ? 120 : 151}
+                                height={isMobile ? 120 : 'auto'}
+                                style={{
+                                    objectFit: 'contain'
+                                }}
+                                src={item.path_file}
+                                alt="ไม่มีรูป"
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "https://images.dcpumpkin.com/images/product/500/default.jpg";
+                                }}
+                            />
+                        </Box>
                         <CardContent sx={{width: '100%'}}>
-                            <Stack direction='row' justifyContent='space-between'
-                                   alignItems='center'>
+                            <Stack 
+                                direction={isMobile ? 'column' : 'row'} 
+                                justifyContent='space-between'
+                                alignItems={isMobile ? 'flex-start' : 'center'}
+                                spacing={isMobile ? 2 : 0}
+                            >
                                 <Stack direction='column'>
-                                    <Typography fontWeight='bold' gutterBottom variant="h5"
-                                                component="div">
+                                    <Typography 
+                                        fontWeight='bold' 
+                                        gutterBottom 
+                                        variant={isMobile ? "body1" : "h5"}
+                                        component="div"
+                                    >
                                         {item.spcode}
                                     </Typography>
                                     <Typography variant="body2" sx={{color: 'text.secondary'}}>
@@ -47,21 +78,29 @@ export default function RowView({spList}) {
                                         )
                                     }
                                 </Stack>
-                                <Stack direction='column' spacing={2}>
+                                <Box sx={{ width: isMobile ? '100%' : 'auto' }}>
                                     {isInCart(item.spcode) ? (
-                                        <Button disabled color='inherit'>เพิ่มในตะกร้าแล้ว</Button>
+                                        <Button 
+                                            disabled 
+                                            color='inherit'
+                                            fullWidth={isMobile}
+                                        >
+                                            เพิ่มในตะกร้าแล้ว
+                                        </Button>
                                     ) : (
                                         !isNaN(parseFloat(item.price_per_unit)) &&
                                         <Button
                                             disabled={isNaN(parseFloat(item.price_per_unit))}
                                             variant='contained'
-                                            size="small" color='primary'
+                                            size="small" 
+                                            color='primary'
+                                            fullWidth={isMobile}
                                             onClick={() => addToCart(item)}
                                         >
                                             + เพิ่มลงในตะกร้า
                                         </Button>
                                     )}
-                                </Stack>
+                                </Box>
                             </Stack>
                         </CardContent>
                     </Card>

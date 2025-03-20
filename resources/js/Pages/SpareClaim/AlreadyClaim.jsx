@@ -1,4 +1,4 @@
-import {Button, Stack, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
+import {Button, Paper, Stack, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
 import Checkbox from "@mui/material/Checkbox";
 import PreviewIcon from "@mui/icons-material/Preview";
 import {useEffect, useState} from "react";
@@ -78,7 +78,7 @@ export default function AlreadyClaim({spareParts}) {
     return (
         <>
             {open && <DialogDetail sparePartsDetail={detail} open={open} setOpen={setOpen} data={[1, 2, 3, 4]}/>}
-
+            <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
             <Table>
                 <TableHead>
                     <TableRow>
@@ -118,6 +118,8 @@ export default function AlreadyClaim({spareParts}) {
                     ))}
                 </TableBody>
             </Table>
+            </Paper>
+            
 
             <form onSubmit={onSubmit}>
                 <Stack direction='row-reverse' spacing={2} m={2}>

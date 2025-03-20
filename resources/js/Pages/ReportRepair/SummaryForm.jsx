@@ -18,6 +18,7 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { useProductTarget } from "@/Context/ProductContext.jsx";
 import { useState } from "react";
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import { Box, Paper } from "@mui/material";
 
 
 const BehaviorDetail = ({ detail }) => (
@@ -57,7 +58,9 @@ const FileDetail = ({ menu, forService = false }) => {
 
 const SpDetail = ({ sp, sp_warranty }) => {
     const highlight = { backgroundColor: '#e6ffe6' }
+
     return (
+
         <Table>
             <TableHead>
                 <TableRow>
@@ -84,18 +87,30 @@ const SpDetail = ({ sp, sp_warranty }) => {
                 ))}
             </TableBody>
         </Table>
+
     )
 }
 
 
 const CardDetail = ({ children }) => (
+    <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
+        {/* <Card variant="outlined" sx={{ width: '100%' }}>
+            <CardContent> */}
+        {children}
+        {/* </CardContent>
+        </Card> */}
+    </Paper>
+
+)
+
+const CardDetailForTable = ({ children }) => (
+
     <Card variant="outlined" sx={{ width: '100%' }}>
-        <CardContent>
+        <CardContent sx={{ overflowX: 'auto' }}> {/* เพิ่ม scroll แนวนอน */}
             {children}
         </CardContent>
     </Card>
 )
-
 
 export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
     const selected = detail.selected;
@@ -207,60 +222,88 @@ export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
             <Grid2 size={12}>
                 <FormGroup>
                     <Stack direction='column' spacing={2}>
-                        <CardDetail>
-                            <Stack direction='row' spacing={2} alignItems='center'>
-                                <Avatar sizes='lg' sx={{ backgroundColor: '#eb5b1f', width: 50, height: 50 }} />
-                                <Stack direction='column'>
-                                    <Typography>ชื่อ : {selected.customerInJob.name}</Typography>
-                                    <Typography>เบอร์โทร : {selected.customerInJob.phone}</Typography>
+                        <Grid2 container spacing={2}>
+                            <Grid2 size={12}>
+                                <CardDetail>
+                                    <Stack direction='row' spacing={2} alignItems='center'>
+                                        <Avatar sizes='lg' sx={{ backgroundColor: '#eb5b1f', width: 50, height: 50 }} />
+                                        <Stack direction='column'>
+                                            <Typography>ชื่อ : {selected.customerInJob.name}</Typography>
+                                            <Typography>เบอร์โทร : {selected.customerInJob.phone}</Typography>
+                                        </Stack>
+                                    </Stack>
+                                </CardDetail>
+                            </Grid2>
+
+
+                            <Grid2 size={12}>
+                                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                                    <CardDetail>
+                                        <Typography variant='h6' fontWeight='bold'>รูปภาพ/วิดีโอสำหรับเคลมสินค้า</Typography>
+                                        <FileDetail menu={selected.fileUpload} />
+                                    </CardDetail>
+                                    <CardDetail>
+                                        <Typography variant='h6'
+                                            fontWeight='bold'>รูปภาพ/วิดีโอสำหรับร้านค้าใช้ภายใน</Typography>
+                                        <FileDetail menu={selected.fileUpload} forService={true} />
+                                    </CardDetail>
                                 </Stack>
-                            </Stack>
-                        </CardDetail>
-                        <Stack direction='row' spacing={2}>
-                            <CardDetail>
-                                <Typography variant='h6' fontWeight='bold'>รูปภาพ/วิดีโอสำหรับเคลมสินค้า</Typography>
-                                <FileDetail menu={selected.fileUpload} />
-                            </CardDetail>
-                            <CardDetail>
-                                <Typography variant='h6'
-                                    fontWeight='bold'>รูปภาพ/วิดีโอสำหรับร้านค้าใช้ภายใน</Typography>
-                                <FileDetail menu={selected.fileUpload} forService={true} />
-                            </CardDetail>
-                        </Stack>
+                            </Grid2>
 
-                        <CardDetail>
-                            <Typography variant='h6' fontWeight='bold'>อาการ / สาเหตุ</Typography>
-                            <BehaviorDetail detail={selected.behavior} />
-                        </CardDetail>
-                        <CardDetail>
-                            <Typography variant='h6' fontWeight='bold'>บันทึกอะไหล่</Typography>
-                            <SpDetail sp={selected.sp} sp_warranty={selected.sp_warranty} />
-                        </CardDetail>
-                        <CardDetail>
-                            <Typography variant='h6' fontWeight='bold'>หมายเหตุสำหรับลูกค้า</Typography>
-                            <Typography variant='body1' color='gray'>- {selected.customerInJob.remark}</Typography>
-                        </CardDetail>
-                        <CardDetail>
-                            <Typography variant='h6' fontWeight='bold'>หมายเหตุสำหรับสื่อสารภายใน</Typography>
-                            <Typography variant='body1' color='gray'>- {selected.remark}</Typography>
-                        </CardDetail>
-                        <CardDetail>
-                            <Typography variant='h6' fontWeight='bold'>เอกสาร</Typography>
-                            <Stack direction='row' spacing={2}>
-                                <a href={route('genReCieveSpPdf', { job_id: detail.job.job_id })} target='_blank'>
-                                    <Button variant='contained' startIcon={<ReceiptLongIcon/>}>
-                                        รับสินค้า
-                                    </Button>
-                                </a>
-                                {detail.selected.sp.length > 0 && (
-                                    <Button onClick={exportQu} startIcon={<PictureAsPdfIcon />}
-                                        variant='contained' disabled={loading}>
-                                        {loading ? <CircularProgress size={18} /> : 'ออกใบเสนอราคา'}
-                                    </Button>
-                                )}
-                            </Stack>
-                        </CardDetail>
+                            <Grid2 size={12}>
+                                <CardDetail>
+                                    <Typography variant='h6' fontWeight='bold'>อาการ / สาเหตุ</Typography>
+                                    <BehaviorDetail detail={selected.behavior} />
+                                </CardDetail>
+                            </Grid2>
 
+                            <Grid2 size={12}>
+                                <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
+                                <Typography variant='h6' fontWeight='bold'>บันทึกอะไหล่</Typography>
+                                <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
+                                    <SpDetail sp={selected.sp} sp_warranty={selected.sp_warranty} />
+                                </Paper>
+
+                                </Paper>
+                                {/* <CardDetailForTable>
+                                    <Typography variant='h6' fontWeight='bold'>บันทึกอะไหล่</Typography>
+                                    <SpDetail sp={selected.sp} sp_warranty={selected.sp_warranty} />
+                                </CardDetailForTable> */}
+                            </Grid2>
+
+                            <Grid2 size={12}>
+                                <CardDetail>
+                                    <Typography variant='h6' fontWeight='bold'>หมายเหตุสำหรับลูกค้า</Typography>
+                                    <Typography variant='body1' color='gray'>- {selected.customerInJob.remark}</Typography>
+                                </CardDetail>
+                            </Grid2>
+
+                            <Grid2 size={12}>
+                                <CardDetail>
+                                    <Typography variant='h6' fontWeight='bold'>หมายเหตุสำหรับสื่อสารภายใน</Typography>
+                                    <Typography variant='body1' color='gray'>- {selected.remark}</Typography>
+                                </CardDetail>
+                            </Grid2>
+
+                            <Grid2 size={12}>
+                                <CardDetail>
+                                    <Typography variant='h6' fontWeight='bold'>เอกสาร</Typography>
+                                    <Stack direction='row' spacing={2}>
+                                        <a href={route('genReCieveSpPdf', { job_id: detail.job.job_id })} target='_blank'>
+                                            <Button variant='contained' startIcon={<ReceiptLongIcon />}>
+                                                รับสินค้า
+                                            </Button>
+                                        </a>
+                                        {detail.selected.sp.length > 0 && (
+                                            <Button onClick={exportQu} startIcon={<PictureAsPdfIcon />}
+                                                variant='contained' disabled={loading}>
+                                                {loading ? <CircularProgress size={18} /> : 'ออกใบเสนอราคา'}
+                                            </Button>
+                                        )}
+                                    </Stack>
+                                </CardDetail>
+                            </Grid2>
+                        </Grid2>
                         <Stack direction='row' spacing={2} justifyContent='end'>
                             <Button
                                 disabled={detail.job.status !== 'pending'}

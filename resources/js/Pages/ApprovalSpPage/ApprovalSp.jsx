@@ -1,7 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {
     Button, Card, Chip,
-    Container, Grid2, Stack,
+    Container, Grid2, Paper, Stack,
     Table, TableBody, TableCell,
     TableHead, TableRow, Typography
 } from "@mui/material";
@@ -69,20 +69,15 @@ export default function ApprovalSp({listSp}) {
         return (
             <Table>
                 <TableHead>
-                    <TableRow>
-                        <TableCell>ลำดับ</TableCell>
-                        <TableCell>วันที่แจ้ง</TableCell>
-                        <TableCell>ข้อมูล</TableCell>
-                        <TableCell>จำนวน</TableCell>
-                        <TableCell>ราคา</TableCell>
-                        <TableCell>GP</TableCell>
-                        <TableCell>สถานะ</TableCell>
-                        <TableCell>จัดการ</TableCell>
+                    <TableRow sx={TABLE_HEADER_STYLE}>
+                        {['ลำดับ','วันที่แจ้ง','ข้อมูล','จำนวน','ราคา','GP','สถานะ','จัดการ'].map((item,index) => (
+                            <TableCell key={index}>{item}</TableCell>
+                        ))}
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {listSp.map((item, index) => (
-                        <TableRow key={index}>
+                        <TableRow key={index} >
                             <TableCell>{item.id}</TableCell>
                             <TableCell>{DateFormat(item.created_at)}</TableCell>
                             <TableCell><Detail detail={item}/></TableCell>
@@ -102,15 +97,15 @@ export default function ApprovalSp({listSp}) {
             </Table>
         )
     }
-
-
     return (
         <AuthenticatedLayout>
                 <Container maxWidth='false'>
                     <Grid2 container mt={3} spacing={2}>
                         <Grid2 size={12}>
                             <Card variant="outlined" sx={{p: 3}}>
-                                <TableList/>
+                                <Paper sx={{overflow : 'auto'}}>
+                                    <TableList/>
+                                </Paper>
                             </Card>
                         </Grid2>
                     </Grid2>
@@ -118,3 +113,8 @@ export default function ApprovalSp({listSp}) {
         </AuthenticatedLayout>
     )
 }
+const TABLE_HEADER_STYLE = {
+    backgroundColor: '#c7c7c7',
+    fontWeight: 'bold',
+    fontSize: 16
+};

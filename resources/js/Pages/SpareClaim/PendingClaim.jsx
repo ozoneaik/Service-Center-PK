@@ -4,6 +4,7 @@ import {
     Button, Card, Chip,
     Container,
     Grid2,
+    Paper,
     Stack,
     Table, TableBody,
     TableCell,
@@ -59,7 +60,7 @@ export default function PendingClaim({list}){
                         </Stack>
                     </Grid2>
                     <Grid2 size={12}>
-                        <Card>
+                        <Paper sx={{overflow : 'auto'}}>
                             <Table>
                                 <TableHead>
                                     <TableRow>
@@ -94,7 +95,7 @@ export default function PendingClaim({list}){
                                     ))}
                                 </TableBody>
                             </Table>
-                        </Card>
+                        </Paper>
                     </Grid2>
                 </Grid2>
             </Container>

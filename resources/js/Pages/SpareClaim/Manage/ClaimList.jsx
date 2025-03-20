@@ -1,6 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link } from "@inertiajs/react";
-import { Button, Chip, Container, Grid2, Paper, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography, useTheme } from "@mui/material";
+import { Button, Chip, Container, Grid2, Paper, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useState } from "react";
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -70,6 +70,8 @@ const TableDetail = ({ claims }) => {
 
 
 export default function ClaimList({ claimList, statusClaim }) {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [claims, setClaims] = useState(claimList.data);
 
     const statusList = [
@@ -96,16 +98,17 @@ export default function ClaimList({ claimList, statusClaim }) {
                 <Paper sx={{ p: 3 }}>
                     <Grid2 container spacing={2}>
                         <Grid2 size={12}>
-                            <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                            <Stack direction={isMobile ? 'column' : 'row'} justifyContent='space-between' alignItems='center'>
                                 <Typography variant="h5" fontWeight='bold'>
                                     รายการเอกสารรอเคลม
                                 </Typography>
-                                <Stack direction='row' spacing={2} alignItems='center'>
+                                <Stack direction={isMobile ? 'column' : 'row'} sx={ isMobile && {width : '100%'}} spacing={2} alignItems='center'>
                                     <Typography>
                                         รายการทั้งหมด {claims.length} รายการ
                                     </Typography>
                                     {statusList.map(({ status, color, text, path, icon }) => (
                                         <Button
+                                        fullWidth={isMobile}
                                             startIcon={icon}
                                             component={Link}
                                             href={path}

@@ -100,11 +100,12 @@ function OrderListContent(props) {
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
                         <form onSubmit={handleSearch}>
-                            <Stack direction='row' spacing={2}>
+                            <Stack direction={{xs : 'column',sm : 'row'}} spacing={2}>
                                 <TextField required inputRef={searchSku} fullWidth label='ค้นหารหัสสินค้า' type='text'/>
                                 <Button type='submit' variant='contained'>ค้นหา</Button>
                                 <Badge badgeContent={cartItems.length} color="error">
                                     <Button
+                                    fullWidth
                                         onClick={() => setOpen(true)}
                                         startIcon={<AddShoppingCartIcon/>}
                                         color='secondary' variant='contained'

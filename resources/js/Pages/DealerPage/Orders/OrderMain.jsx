@@ -31,6 +31,7 @@ export default function OrderMain({orderList}){
                                 </Stack>
                             </Grid2>
                             <Grid2 size={12}>
+                                <Paper sx={{overflow : 'auto'}}>
                                 <Table>
                                     <TableHead>
                                         <TableRow sx={{backgroundColor: '#f5f5f5'}}>
@@ -58,6 +59,8 @@ export default function OrderMain({orderList}){
 
                                     </TableBody>
                                 </Table>
+                                </Paper>
+                                
                             </Grid2>
                         </Grid2>
                     </Paper>

@@ -1,10 +1,10 @@
-import {Button, Grid2, Stack, Typography} from "@mui/material";
-import {useEffect, useState} from "react";
-import {SummaryForm} from "./SummaryForm";
-import {UploadFile} from "./UploadFile";
-import {AddBehavior} from "./AddBehavior";
-import {AddSp} from "./Sp/AddSp.jsx";
-import {AddMore} from "./AddMore";
+import { Button, Grid2, Stack, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
+import { SummaryForm } from "./SummaryForm";
+import { UploadFile } from "./UploadFile";
+import { AddBehavior } from "./AddBehavior";
+import { AddSp } from "./Sp/AddSp.jsx";
+import { AddMore } from "./AddMore";
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -13,17 +13,17 @@ import PsychologyIcon from '@mui/icons-material/Psychology';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import BuildIcon from '@mui/icons-material/Build';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import {Customer} from "@/Pages/ReportRepair/Customer.jsx";
-import {useProductTarget} from "@/Context/ProductContext.jsx";
-import {WarningApprove} from "@/Pages/ReportRepair/WarningApprove.jsx";
+import { Customer } from "@/Pages/ReportRepair/Customer.jsx";
+import { useProductTarget } from "@/Context/ProductContext.jsx";
+import { WarningApprove } from "@/Pages/ReportRepair/WarningApprove.jsx";
 import Symptoms from "@/Pages/ReportRepair/Symptoms.jsx";
 import SpMain from "@/Pages/ReportRepair/SpNew/SpMain.jsx";
 
-export default function FormRepair({detail, setDetail}) {
+export default function FormRepair({ detail, setDetail }) {
     const [showDetail, setShowDetail] = useState(1);
     const [headTitle, setHeadTitle] = useState('สรุปการทำงาน');
     const [approve, setApprove] = useState(false);
-    const {setProductTarget} = useProductTarget()
+    const { setProductTarget } = useProductTarget()
 
 
     useEffect(() => {
@@ -44,7 +44,7 @@ export default function FormRepair({detail, setDetail}) {
     }, [detail])
 
 
-    const handelChangeMenu = ({action}) => {
+    const handelChangeMenu = ({ action }) => {
         setShowDetail(action);
         if (action === 1) setHeadTitle('สรุปการทำงาน');
         else if (action === 2) setHeadTitle('รูปภาพ');
@@ -56,10 +56,11 @@ export default function FormRepair({detail, setDetail}) {
         else setHeadTitle('หมายเหตุ');
     }
 
-    const ButtonStyle = ({title, action, icon}) => (
-        <Button
-            sx={{height: {lg: 80}, width: {sm: 80, md: '100%'}}}
-            onClick={() => handelChangeMenu({action})}
+    const ButtonStyle = ({ title, action, icon }) => (
+        <Grid2 size={{md : 12}} sx={{width : '100%'}}>
+            <Button
+            sx={{ height: { lg: 80 },width : '100%' }} // width: { xs: 80, md: '100%' }
+            onClick={() => handelChangeMenu({ action })}
             variant={action === showDetail ? 'contained' : 'outlined'}
             color={action === 7 ? 'warning' : 'primary'}
         >
@@ -67,45 +68,49 @@ export default function FormRepair({detail, setDetail}) {
                 {icon}{title}
             </Stack>
         </Button>
+        </Grid2>
+        
     )
 
-    const HeadTitle = ({title}) => (
+    const HeadTitle = ({ title }) => (
         <Stack direction='row' spacing={2} alignItems='center' mb={2}>
-            <Typography variant='h5' fontWeight='bold' sx={{textDecoration: 'underline'}}>
-                <ChecklistIcon/>&nbsp;{title}
+            <Typography variant='h5' fontWeight='bold' sx={{ textDecoration: 'underline' }}>
+                <ChecklistIcon />&nbsp;{title}
             </Typography>
         </Stack>
     )
 
     return (
         <Grid2 container spacing={2}>
-            <Grid2 size={{xs: 12, lg: 2}}>
-                <Stack direction={{xs: 'row', lg: 'column'}} spacing={2}>
-                    <ButtonStyle action={1} title={'สรุปการทำงาน'} icon={<ViewListIcon/>}/>
-                    <ButtonStyle action={5} title={'ข้อมูลลูกค้า'} icon={<AccountCircleIcon/>}/>
-                    <ButtonStyle action={8} title={'อาการเบื้องต้น'} icon={<ViewListIcon/>}/>
-                    <ButtonStyle action={2} title={'รูปภาพ'} icon={<CameraAltIcon/>}/>
-                    <ButtonStyle action={3} title={'อาการ/สาเหตุ'} icon={<PsychologyIcon/>}/>
-                    <ButtonStyle action={4} title={'อะไหล่'} icon={<BuildIcon/>}/>
-                    {/*<ButtonStyle action={6} title={'หมายเหตุ'} icon={<MoreHorizIcon/>}/>*/}
-                    {approve && <ButtonStyle action={7} title={'แจ้งเตือน'} icon={<WarningIcon/>}/>}
-                </Stack>
+            <Grid2 size={{ xs: 12, lg: 2 }}>
+                {/* <Stack direction={{ xs: 'row', lg: 'column' }} spacing={2}> */}
+                    <Grid2 container spacing={2}>
+                        <ButtonStyle action={1} title={'สรุปการทำงาน'} icon={<ViewListIcon />} />
+                        <ButtonStyle action={5} title={'ข้อมูลลูกค้า'} icon={<AccountCircleIcon />} />
+                        <ButtonStyle action={8} title={'อาการเบื้องต้น'} icon={<ViewListIcon />} />
+                        <ButtonStyle action={2} title={'รูปภาพ'} icon={<CameraAltIcon />} />
+                        <ButtonStyle action={3} title={'อาการ/สาเหตุ'} icon={<PsychologyIcon />} />
+                        <ButtonStyle action={4} title={'อะไหล่'} icon={<BuildIcon />} />
+                        {/*<ButtonStyle action={6} title={'หมายเหตุ'} icon={<MoreHorizIcon/>}/>*/}
+                        {approve && <ButtonStyle action={7} title={'แจ้งเตือน'} icon={<WarningIcon />} />}
+                    </Grid2>
+                {/* </Stack> */}
             </Grid2>
-            <Grid2 size={{xs: 12, lg: 10}}>
+            <Grid2 size={{ xs: 12, lg: 10 }}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
-                        <HeadTitle title={headTitle}/>
+                        <HeadTitle title={headTitle} />
                     </Grid2>
                     <Grid2 size={12}>
-                        {showDetail === 1 && <SummaryForm setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
-                        {showDetail === 2 && <UploadFile setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
-                        {showDetail === 3 && <AddBehavior setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
+                        {showDetail === 1 && <SummaryForm setShowDetail={setShowDetail} detail={detail} setDetail={setDetail} />}
+                        {showDetail === 2 && <UploadFile setShowDetail={setShowDetail} detail={detail} setDetail={setDetail} />}
+                        {showDetail === 3 && <AddBehavior setShowDetail={setShowDetail} detail={detail} setDetail={setDetail} />}
                         {/*{showDetail === 4 && <AddSp setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}*/}
-                        {showDetail === 4 && <SpMain setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
-                        {showDetail === 5 && <Customer setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
+                        {showDetail === 4 && <SpMain setShowDetail={setShowDetail} detail={detail} setDetail={setDetail} />}
+                        {showDetail === 5 && <Customer setShowDetail={setShowDetail} detail={detail} setDetail={setDetail} />}
                         {/*{showDetail === 6 && <AddMore setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}*/}
-                        {showDetail === 7 && <WarningApprove setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
-                        {showDetail === 8 && <Symptoms setShowDetail={setShowDetail} detail={detail} setDetail={setDetail}/>}
+                        {showDetail === 7 && <WarningApprove setShowDetail={setShowDetail} detail={detail} setDetail={setDetail} />}
+                        {showDetail === 8 && <Symptoms setShowDetail={setShowDetail} detail={detail} setDetail={setDetail} />}
                     </Grid2>
                 </Grid2>
             </Grid2>
