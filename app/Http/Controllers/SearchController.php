@@ -33,7 +33,7 @@ class SearchController extends Controller
                 $warrantyexpire = $searchResults['warrantyexpire'];
                 $status = $searchResults['status'];
                 if ($searchResults['status'] === 'Fail') {
-                    throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $request->sn .' กรุณาติดต่อเบอร์ 02-123-4567 ต่อ 266');
+                    throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $request->sn .' กรุณาติดต่อเบอร์ 02-8995928 ต่อ 266');
                 }
                 $searchResults = $searchResults['assets'][0];
                 $searchResults['warranty_status'] = $warrantyexpire;
