@@ -61,3 +61,17 @@ textarea:focus,select:focus {
 #claim-remark{
     border : none !important;
 }
+
+
+#rotating-icon {
+    animation: rotate 5s linear infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

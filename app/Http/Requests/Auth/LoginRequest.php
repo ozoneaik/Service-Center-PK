@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -27,8 +28,16 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'user_code' => ['required', 'string'],
             'password' => ['required', 'string'],
+        ];
+    }
+
+    public function messages() : array
+    {
+        return [
+            'user_code.required' => 'กรุณากรอกรหัสผู้ใช้งาน',
+            'password.required' => 'กรุณากรอกรหัสผ่าน',
         ];
     }
 
@@ -41,14 +50,21 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        $user = User::where('user_code', $this->input('user_code'))->first();
 
+        if (!$user) {
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'user_code' => 'ไม่พบรหัสผู้ใช้รายนี้',
             ]);
         }
 
+        if (!Auth::attempt($this->only('user_code', 'password'), $this->boolean('remember'))) {
+            RateLimiter::hit($this->throttleKey());
+    
+            throw ValidationException::withMessages([
+                'password' => 'รหัสผ่านไม่ถูกต้อง',
+            ]);
+        }
         RateLimiter::clear($this->throttleKey());
     }
 
@@ -80,6 +96,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('user_code')).'|'.$this->ip());
     }
 }

@@ -77,7 +77,7 @@ class ManageBranchController extends Controller
             $status = 200;
             $message = 'บันทึกข้อมูลเสร็จสิ้น';
             $newEmp = User::query()->create([
-                'user_code' => 'SV-'.rand(1000000, 9999999).auth()->user()->user_code,
+                'user_code' => $request->input('user_code'),
                 'name' => $request->input('name'),
                 'email' => $request->input('email'),
                 'password' => Hash::make($request->input('password')),

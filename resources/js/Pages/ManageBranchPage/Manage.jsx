@@ -68,6 +68,7 @@ export default function Manage({ listEmployeeThatBranch, gp, user }) {
                             </Grid2>
                             <Grid2 size={12}>
                                 <Button
+                                    sx={{ height: '4rem',fontSize: '1.5rem' }}
                                     variant="contained" color="info"
                                     component={Link} fullWidth
                                     href={route('stockSp.list', { is_code_cust_id: user.is_code_cust_id })}
@@ -76,8 +77,6 @@ export default function Manage({ listEmployeeThatBranch, gp, user }) {
                                 </Button>
                             </Grid2>
                         </Grid2>
-                    </Grid2>
-                    <Grid2 size={12}>
                     </Grid2>
                 </Grid2>
             </Container>

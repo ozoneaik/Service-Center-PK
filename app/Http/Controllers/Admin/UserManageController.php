@@ -47,7 +47,7 @@ class UserManageController extends Controller
         ]);
         $data = $request;
         $user = User::query()->create([
-            'user_code' => 'A'.time().rand(1000,9999),
+            'user_code' => $data['user_code'],
             'name' => $data['name'],
             'is_code_cust_id' => $data['is_code_cust_id'],
             'role' => $data['role'],

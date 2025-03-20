@@ -13,9 +13,11 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 import { useState } from "react";
+import LoginIcon from '@mui/icons-material/Login';
 
 export default function UserCreate() {
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
+        user_code: "",
         name: "",
         email: "",
         role: "service",
@@ -172,9 +174,7 @@ export default function UserCreate() {
                         <Badge sx={{ fontSize: 28 }} />
                         สร้างผู้ใช้งานใหม่
                     </Typography>
-
                     <Divider sx={{ mb: 4 }} />
-
                     <form onSubmit={handleSubmit}>
                         <Stack spacing={3}>
                             {/* ส่วนข้อมูลผู้ใช้ */}
@@ -203,12 +203,14 @@ export default function UserCreate() {
                                                 label="ชื่อ-สกุล" name="name" value={data.name}
                                                 onChange={handleChange} error={!!errors.name}
                                                 helperText={errors.name}
-                                                InputProps={{
-                                                    startAdornment: (
-                                                        <InputAdornment position="start">
-                                                            <AccountCircle color="primary" />
-                                                        </InputAdornment>
-                                                    )
+                                                slotProps={{
+                                                    input: {
+                                                        startAdornment: (
+                                                            <InputAdornment position="start">
+                                                                <AccountCircle color="primary" />
+                                                            </InputAdornment>
+                                                        )
+                                                    }
                                                 }}
                                             />
                                         </Grid2>
@@ -218,15 +220,35 @@ export default function UserCreate() {
                                                 label="อีเมล" name="email" type="email" value={data.email}
                                                 onChange={handleChange} error={!!errors.email}
                                                 helperText={errors.email}
-                                                InputProps={{
-                                                    startAdornment: (
-                                                        <InputAdornment position="start">
-                                                            <AlternateEmail color="primary" />
-                                                        </InputAdornment>
-                                                    )
+                                                slotProps={{
+                                                    input: {
+                                                        startAdornment: (
+                                                            <InputAdornment position="start">
+                                                                <AlternateEmail color="primary" />
+                                                            </InputAdornment>
+                                                        )
+                                                    }
                                                 }}
                                             />
                                         </Grid2>
+                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                            <TextField
+                                                size="small" required fullWidth
+                                                label="ชื่อผู้ใช้ (สำหรับเข้าสู่ระบบ)" name="user_code" type="text" value={data.user_code}
+                                                onChange={handleChange} error={!!errors.user_code}
+                                                helperText={errors.user_code}
+                                                slotProps={{
+                                                    input: {
+                                                        startAdornment: (
+                                                            <InputAdornment position="start">
+                                                                <LoginIcon color="primary" />
+                                                            </InputAdornment>
+                                                        )
+                                                    }
+                                                }}
+                                            />
+                                        </Grid2>
+                                        
                                         <Grid2 size={{ xs: 12, md: 6 }}>
                                             <FormControl fullWidth size="small" error={!!errors.role}>
                                                 <InputLabel>บทบาท</InputLabel>
@@ -270,23 +292,24 @@ export default function UserCreate() {
                                                 value={data.password} onChange={handleChange} error={!!errors.password}
                                                 helperText={errors.password || (data.password && passwordStrength.message)}
                                                 color={data.password ? passwordStrength.color : undefined}
-                                                InputProps={{
-                                                    startAdornment: (
-                                                        <InputAdornment position="start">
-                                                            <Key color={data.password ? passwordStrength.color : "primary"} />
-                                                        </InputAdornment>
-                                                    ),
-                                                    endAdornment: (
-                                                        <InputAdornment position="end">
-                                                            <IconButton
-                                                                aria-label="toggle password visibility"
-                                                                onClick={() => setShowPassword(!showPassword)}
-                                                                edge="end"
-                                                            >
-                                                                {showPassword ? <VisibilityOff /> : <Visibility />}
-                                                            </IconButton>
-                                                        </InputAdornment>
-                                                    )
+                                                slotProps={{
+                                                    input: {
+                                                        startAdornment: (
+                                                            <InputAdornment position="start">
+                                                                <Key color={data.password ? passwordStrength.color : "primary"} />
+                                                            </InputAdornment>
+                                                        ),
+                                                        endAdornment: (
+                                                            <InputAdornment position="end">
+                                                                <IconButton
+                                                                    aria-label="toggle password visibility" edge="end"
+                                                                    onClick={() => setShowPassword(!showPassword)}
+                                                                >
+                                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                                </IconButton>
+                                                            </InputAdornment>
+                                                        )
+                                                    }
                                                 }}
                                             />
                                         </Grid2>
@@ -303,27 +326,29 @@ export default function UserCreate() {
                                                     (data.password !== data.password_confirmation && data.password_confirmation !== "" ?
                                                         "รหัสผ่านไม่ตรงกัน" : "")
                                                 }
-                                                InputProps={{
-                                                    startAdornment: (
-                                                        <InputAdornment position="start">
-                                                            <Key color={
-                                                                data.password_confirmation
-                                                                    ? (data.password === data.password_confirmation ? "success" : "error")
-                                                                    : "primary"
-                                                            } />
-                                                        </InputAdornment>
-                                                    ),
-                                                    endAdornment: (
-                                                        <InputAdornment position="end">
-                                                            <IconButton
-                                                                aria-label="toggle password visibility"
-                                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                                edge="end"
-                                                            >
-                                                                {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                                                            </IconButton>
-                                                        </InputAdornment>
-                                                    )
+                                                slotProps={{
+                                                    input: {
+                                                        startAdornment: (
+                                                            <InputAdornment position="start">
+                                                                <Key color={
+                                                                    data.password_confirmation
+                                                                        ? (data.password === data.password_confirmation ? "success" : "error")
+                                                                        : "primary"
+                                                                } />
+                                                            </InputAdornment>
+                                                        ),
+                                                        endAdornment: (
+                                                            <InputAdornment position="end">
+                                                                <IconButton
+                                                                    aria-label="toggle password visibility"
+                                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                                    edge="end"
+                                                                >
+                                                                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                                                </IconButton>
+                                                            </InputAdornment>
+                                                        )
+                                                    }
                                                 }}
                                             />
                                         </Grid2>
@@ -354,12 +379,14 @@ export default function UserCreate() {
                                                     value={data.is_code_cust_id} onChange={handleChange}
                                                     error={!!errors.is_code_cust_id}
                                                     helperText={errors.is_code_cust_id}
-                                                    InputProps={{
-                                                        startAdornment: (
-                                                            <InputAdornment position="start">
-                                                                <StoreIcon color="primary" />
-                                                            </InputAdornment>
-                                                        )
+                                                    slotProps={{
+                                                        input: {
+                                                            startAdornment: (
+                                                                <InputAdornment position="start">
+                                                                    <StoreIcon color="primary" />
+                                                                </InputAdornment>
+                                                            )
+                                                        }
                                                     }}
                                                 />
                                                 <Button
@@ -384,7 +411,7 @@ export default function UserCreate() {
                                                     label="ผู้ดูแลระบบในร้าน"
                                                 />
                                                 <Tooltip title="ผู้ใช้จะมีสิทธิ์เป็นแอดมินสำหรับร้านค้านี้เท่านั้น">
-                                                    <HelpOutline color="primary" fontSize="small" />
+                                                    <HelpOutline color="primary" fontSize="medium" />
                                                 </Tooltip>
                                             </Box>
                                         </Grid2>
@@ -452,16 +479,14 @@ export default function UserCreate() {
 
             {/* แจ้งเตือน */}
             <Snackbar
-                open={notification.open}
-                autoHideDuration={6000}
+                open={notification.open} autoHideDuration={6000}
                 onClose={handleCloseNotification}
                 anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
             >
                 <Alert
                     onClose={handleCloseNotification}
                     severity={notification.severity}
-                    sx={{ width: '100%' }}
-                    variant="filled"
+                    sx={{ width: '100%' }} variant="filled"
                 >
                     {notification.message}
                 </Alert>

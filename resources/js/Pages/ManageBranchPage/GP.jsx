@@ -2,7 +2,7 @@ import {Button, Card, CardContent, Stack, TextField, Typography} from "@mui/mate
 
 export default function GP({gpVal,setGpVal,onSubmit}){
     return (
-        <Card variant="outlined">
+        <Card variant="outlined" sx={{borderRadius: 2}}>
             <CardContent>
                 <Typography variant="h5" component="div">
                     จัดการ GP

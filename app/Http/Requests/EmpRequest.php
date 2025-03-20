@@ -24,6 +24,7 @@ class EmpRequest extends FormRequest
     {
         return [
             'name' => 'required',
+            'user_code' => ['required', 'unique:users,user_code'],
             'email' => ['required', 'unique:users,email'],
             'password' => ['required', 'confirmed'],
             'password_confirmation' => 'required',
@@ -34,6 +35,8 @@ class EmpRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'user_code.required' => 'กรุณากรอกรหัสผู้ใช้งาน',
+            'user_code.unique' => 'รหัสผู้ใช้งานนี้ถูกใช้งานแล้ว กรุณาใช้รหัสอื่น',
             'name.required' => 'กรุณากรอกชื่อ',
             'email.required' => 'กรุณากรอกอีเมล',
             'password.required' => 'กรุณากรอกรหัสผ่าน',

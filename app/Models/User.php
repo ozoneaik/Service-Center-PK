@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -26,6 +27,12 @@ class User extends Authenticatable
         'user_code',
     ];
 
+    public function username()
+    {
+        return 'user_code';
+    }
+
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -49,7 +56,8 @@ class User extends Authenticatable
         ];
     }
 
-    public function store_info () : HasOne {
-        return $this->hasOne(StoreInformation::class,'is_code_cust_id','is_code_cust_id');
+    public function store_info(): HasOne
+    {
+        return $this->hasOne(StoreInformation::class, 'is_code_cust_id', 'is_code_cust_id');
     }
 }
