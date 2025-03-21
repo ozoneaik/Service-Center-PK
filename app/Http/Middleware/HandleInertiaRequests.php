@@ -40,7 +40,6 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 // 'user' => $request->user(),
                 'user' => Auth::user() ? Auth::user()->load('store_info') : null,
-
             ],
         ];
     }
