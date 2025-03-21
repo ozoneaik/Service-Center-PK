@@ -20,6 +20,7 @@ const TableC = ({detail = [], warranty = false}) => {
             </TableHead>
             <TableBody>
                 {filteredData.map((item, index) => {
+                    const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
                     const spPath = import.meta.env.VITE_IMAGE_PATH + `${detail.pid}/` + item.spcode + '.jpg';
                     return (
                         <TableRow key={index} sx={
@@ -27,8 +28,9 @@ const TableC = ({detail = [], warranty = false}) => {
                                 : detail.sp_warranty.find(it => it.spcode === item.spcode) ?
                                     {backgroundColor: '#edf7ed'} : {backgroundColor: 'white'}
                         }>
-                            <TableCell><ImagePreview src={spPath}/></TableCell>
-                            <TableCell>{item.spcode}</TableCell>
+                            <TableCell><ImagePreview src={spPath2}/></TableCell>
+                            <TableCell>{item.spcode}
+                            </TableCell>
                             <TableCell>{item.spname}</TableCell>
                             <TableCell>{item.qty}</TableCell>
                             <TableCell>{item.sp_unit ?? 'อัน'}</TableCell>

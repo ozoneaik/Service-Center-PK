@@ -12,7 +12,8 @@ export default function DmPreview({detail}){
         try {
             const {data, status} = await axios.get(`/image-dm/${detail.pid}`)
             console.log(data, status)
-            setDmPart(data.pathfile_dm + data.namefile_dm);
+            console.log('รูป DM => ',data);
+            setDmPart(data.path_file_dm);
         } catch (error) {
             console.error(error)
         }

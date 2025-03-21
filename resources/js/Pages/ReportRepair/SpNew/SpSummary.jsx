@@ -342,13 +342,15 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                                 </TableHead>
                                 <TableBody>
                                     {selectWorking.map((item, index) => {
+                                        const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
                                         const image_sp_path = SPARE_PART_IMAGE_PATH + detail.pid + '/' + item.spcode + '.jpg';
                                         const isWarranty = item.warranty && detail.job.warranty === true;
                                         const rowStyle = item.warranty ? { backgroundColor: '#e8f5e9' } : {};
                                         return (
                                             <TableRow key={index} sx={rowStyle}>
                                                 <TableCell width={10}>
-                                                    <ImagePreview src={image_sp_path} />
+                                                    {/* <ImagePreview src={image_sp_path} /> */}
+                                                    <ImagePreview src={spPath2} />
                                                 </TableCell>
                                                 <TableCell>
                                                     {item.spcode}

@@ -46,7 +46,9 @@ export default function OrderList() {
         try {
             const { data, status } = await axios.get(`/image-dm/${searchSku.current.value}`);
             console.log(data, status);
-            setDmPreview(data.pathfile_dm + data.namefile_dm);
+            // setDmPreview(data.pathfile_dm + data.namefile_dm);
+            console.log('รูป DM => ',data);
+            setDmPreview(data.path_file_dm);
         } catch (error) {
             console.error(error);
             setDmPreview('');

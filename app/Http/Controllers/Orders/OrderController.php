@@ -43,7 +43,9 @@ class OrderController extends Controller
                         $result['sp'][$key]['skufg'] = $sku;
                         $result['sp'][$key]['pname'] = $data['assets'][0]['pname'];
                         $result['sp'][$key]['imagesku'] = $data['assets'][0]['imagesku'];
-                        $result['sp'][$key]['path_file'] = $imagePath . "$sku/" . $result['sp'][$key]['spcode'] . ".jpg";
+                        // const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
+                        // $result['sp'][$key]['path_file'] = $imagePath . "$sku/" . $result['sp'][$key]['spcode'] . ".jpg";
+                        $result['sp'][$key]['path_file'] = "https://images.pumpkin.tools/SKUS/SP/$sku/".$result['sp'][$key]['spcode'].".jpg";
                     }
                 } else throw new \Exception('ไม่พบรหัสสินค้านี้');
             } else throw new \Exception('มีปัญหากับ API');

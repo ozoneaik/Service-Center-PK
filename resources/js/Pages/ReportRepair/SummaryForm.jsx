@@ -56,11 +56,9 @@ const FileDetail = ({ menu, forService = false }) => {
 };
 
 
-const SpDetail = ({ sp, sp_warranty }) => {
+const SpDetail = ({ sp, sp_warranty, detail }) => {
     const highlight = { backgroundColor: '#e6ffe6' }
-
     return (
-
         <Table>
             <TableHead>
                 <TableRow>
@@ -74,17 +72,22 @@ const SpDetail = ({ sp, sp_warranty }) => {
                 </TableRow>
             </TableHead>
             <TableBody>
-                {sp.map((item, index) => (
-                    <TableRow key={index} sx={item.warranty ? highlight : {}}>
-                        <TableCell>image</TableCell>
-                        <TableCell>{item.spcode}</TableCell>
-                        <TableCell>{item.spname}</TableCell>
-                        <TableCell>{item.price_multiple_gp}</TableCell>
-                        <TableCell>{item.qty}</TableCell>
-                        <TableCell>{item.sp_unit ?? 'อัน'}</TableCell>
-                        <TableCell>{item.price_multiple_gp * item.qty}</TableCell>
-                    </TableRow>
-                ))}
+                {sp.map((item, index) => {
+                    const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
+                    return (
+                        <TableRow key={index} sx={item.warranty ? highlight : {}}>
+                            <TableCell>
+                                <img src={spPath2} width={50} alt="image not found" />
+                            </TableCell>
+                            <TableCell>{item.spcode}</TableCell>
+                            <TableCell>{item.spname}</TableCell>
+                            <TableCell>{item.price_multiple_gp}</TableCell>
+                            <TableCell>{item.qty}</TableCell>
+                            <TableCell>{item.sp_unit ?? 'อัน'}</TableCell>
+                            <TableCell>{item.price_multiple_gp * item.qty}</TableCell>
+                        </TableRow>
+                    )
+                })}
             </TableBody>
         </Table>
 
@@ -259,10 +262,10 @@ export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
 
                             <Grid2 size={12}>
                                 <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
-                                <Typography variant='h6' fontWeight='bold'>บันทึกอะไหล่</Typography>
-                                <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
-                                    <SpDetail sp={selected.sp} sp_warranty={selected.sp_warranty} />
-                                </Paper>
+                                    <Typography variant='h6' fontWeight='bold'>บันทึกอะไหล่</Typography>
+                                    <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
+                                        <SpDetail sp={selected.sp} detail={detail} sp_warranty={selected.sp_warranty} />
+                                    </Paper>
 
                                 </Paper>
                                 {/* <CardDetailForTable>

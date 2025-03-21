@@ -159,10 +159,13 @@ export default function SumOrder({
                                     <CardContent>
                                         <Stack direction="row" alignItems="center" spacing={2}
                                             sx={{ mb: 2, backgroundColor: '#0000000D', p: 1 }}>
-                                            <Avatar src={group.sku_image_path} variant="square"
-                                                sx={{ width: 48, height: 48 }} />
+                                            <Avatar
+                                                src={group.sku_image_path} variant="square"
+                                                sx={{ width: 48, height: 48 }}
+                                            />
                                             <Typography
-                                                variant="h6">กลุ่มสินค้า: {group.namesku} ( {groupKey} )</Typography>
+                                                variant="h6">กลุ่มสินค้า: {group.namesku} ( {groupKey} )
+                                            </Typography>
                                         </Stack>
                                         <Stack direction="column" spacing={1}>
                                             {group.items.map((item) => (
