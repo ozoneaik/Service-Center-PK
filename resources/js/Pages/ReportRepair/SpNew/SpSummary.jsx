@@ -1,5 +1,6 @@
 import {
     Alert, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid2, MenuItem,
+    Paper,
     Stack, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography,
 } from "@mui/material";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
@@ -276,18 +277,18 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                     ...updatedItems[index],
                     remark: r
                 };
-    
+
                 setSelectWorking(updatedItems);
-            
+
             }
-        
+
             setShowAlertRemark(false);
         }
         console.log(selectedRemark)
         return (
             <Dialog
-            fullWidth
-            maxWidth='lg'
+                fullWidth
+                maxWidth='lg'
                 open={showAlertRemark}
                 onClose={() => setShowAlertRemark(false)}
             >
@@ -296,7 +297,7 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                 </DialogTitle>
                 <DialogContent>
                     <Stack direction='column' spacing={2}>
-                        <textarea defaultValue={r} onChange={(e)=>setR(e.target.value)}/>
+                        <textarea defaultValue={r} onChange={(e) => setR(e.target.value)} />
                         <Stack direction='row-reverse'>
                             <Button onClick={handelOnSave}>บันทึก</Button>
                         </Stack>
@@ -327,102 +328,104 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                             <ShowDetail gp={globalGP} />
                         </Grid2>
                         <Grid2 size={12}>
-                            <Table stickyHeader>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell sx={TABLE_HEADER_STYLE} width={10}>รูปภาพ</TableCell>
-                                        <TableCell sx={TABLE_HEADER_STYLE}>รหัสอะไหล่</TableCell>
-                                        <TableCell sx={TABLE_HEADER_STYLE}>ชื่ออะไหล่</TableCell>
-                                        <TableCell sx={TABLE_HEADER_STYLE}>ราคาต่อหน่วย</TableCell>
-                                        <TableCell sx={TABLE_HEADER_STYLE}>ราคาที่ {'+'} GP แล้ว</TableCell>
-                                        <TableCell sx={TABLE_HEADER_STYLE} width={200}>จำนวน</TableCell>
-                                        <TableCell sx={TABLE_HEADER_STYLE}>หน่วย</TableCell>
-                                        <TableCell sx={TABLE_HEADER_STYLE}>ราคารวม</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {selectWorking.map((item, index) => {
-                                        const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
-                                        const image_sp_path = SPARE_PART_IMAGE_PATH + detail.pid + '/' + item.spcode + '.jpg';
-                                        const isWarranty = item.warranty && detail.job.warranty === true;
-                                        const rowStyle = item.warranty ? { backgroundColor: '#e8f5e9' } : {};
-                                        return (
-                                            <TableRow key={index} sx={rowStyle}>
-                                                <TableCell width={10}>
-                                                    {/* <ImagePreview src={image_sp_path} /> */}
-                                                    <ImagePreview src={spPath2} />
-                                                </TableCell>
-                                                <TableCell>
-                                                    {item.spcode}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {item.spcode === 'SV001' ? (
-                                                        <TextField onChange={(e) => handelChangeNameSv(e, item)} variant="standard" defaultValue={item.spname} />
-                                                    ) : <>{item.spname}</>}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {(parseFloat(item.price_per_unit) + (globalGP / 100) * item.price_per_unit).toFixed(2)}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Stack direction='column' spacing={2}>
+                            <Paper sx={{ overflow: 'auto' }}>
+                                <Table stickyHeader>
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell sx={TABLE_HEADER_STYLE} width={10}>รูปภาพ</TableCell>
+                                            <TableCell sx={TABLE_HEADER_STYLE}>รหัสอะไหล่</TableCell>
+                                            <TableCell sx={TABLE_HEADER_STYLE}>ชื่ออะไหล่</TableCell>
+                                            <TableCell sx={TABLE_HEADER_STYLE}>ราคาต่อหน่วย</TableCell>
+                                            <TableCell sx={TABLE_HEADER_STYLE}>ราคาที่ {'+'} GP แล้ว</TableCell>
+                                            <TableCell sx={TABLE_HEADER_STYLE} width={200}>จำนวน</TableCell>
+                                            <TableCell sx={TABLE_HEADER_STYLE}>หน่วย</TableCell>
+                                            <TableCell sx={TABLE_HEADER_STYLE}>ราคารวม</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {selectWorking.map((item, index) => {
+                                            const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
+                                            const image_sp_path = SPARE_PART_IMAGE_PATH + detail.pid + '/' + item.spcode + '.jpg';
+                                            const isWarranty = item.warranty && detail.job.warranty === true;
+                                            const rowStyle = item.warranty ? { backgroundColor: '#e8f5e9' } : {};
+                                            return (
+                                                <TableRow key={index} sx={rowStyle}>
+                                                    <TableCell width={10}>
+                                                        {/* <ImagePreview src={image_sp_path} /> */}
+                                                        <ImagePreview src={spPath2} />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {item.spcode}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {item.spcode === 'SV001' ? (
+                                                            <TextField onChange={(e) => handelChangeNameSv(e, item)} variant="standard" defaultValue={item.spname} />
+                                                        ) : <>{item.spname}</>}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {(parseFloat(item.price_per_unit) + (globalGP / 100) * item.price_per_unit).toFixed(2)}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Stack direction='column' spacing={2}>
+                                                            <TextField
+                                                                required
+                                                                disabled={isWarranty}
+                                                                size='small'
+                                                                type='number'
+                                                                onChange={(e) => handleChangePrice(e, item)}
+                                                                defaultValue={parseFloat(item.price_multiple_gp).toFixed(2)}
+                                                            />
+                                                            {item.remark && (
+                                                                <>
+                                                                    <Divider />
+                                                                    <Stack direction='column'>
+                                                                        {item.remark && (
+                                                                            <Typography variant="body2">
+                                                                                <BorderColorIcon
+                                                                                    onClick={() => {
+                                                                                        setSelectedRemark(item);
+                                                                                        setShowAlertRemark(true)
+                                                                                    }}
+                                                                                    fontSize="10px" sx={{ cursor: 'pointer' }}
+                                                                                />
+                                                                                &nbsp;
+                                                                                {<span>หมายเหตุ : {item.remark}</span>}
+                                                                            </Typography>
+                                                                        )}
+                                                                        <Typography variant="body2">
+                                                                            {item.remark && <span>เลือก : {item.claim_remark}</span>}
+                                                                        </Typography>
+                                                                    </Stack>
+                                                                </>
+                                                            )}
+
+                                                        </Stack>
+
+                                                    </TableCell>
+                                                    <TableCell>
                                                         <TextField
                                                             required
-                                                            disabled={isWarranty}
-                                                            size='small'
-                                                            type='number'
-                                                            onChange={(e) => handleChangePrice(e, item)}
-                                                            defaultValue={parseFloat(item.price_multiple_gp).toFixed(2)}
+                                                            inputProps={{ min: 1 }}
+                                                            disabled={item.spcode === 'SV001'}
+                                                            size="small"
+                                                            sx={{ minWidth: 100 }}
+                                                            type="number"
+                                                            defaultValue={item.qty}
+                                                            onInput={(e) => e.target.value === "0" && (e.target.value = "")}
+                                                            onBlur={(e) => {
+                                                                if (!e.target.value) e.target.value = 1;
+                                                            }}
+                                                            onChange={(e) => handleChangeQty(e, item)}
                                                         />
-                                                        {item.remark && (
-                                                            <>
-                                                                <Divider />
-                                                                <Stack direction='column'>
-                                                                    {item.remark && (
-                                                                        <Typography variant="body2">
-                                                                            <BorderColorIcon
-                                                                                onClick={() => {
-                                                                                    setSelectedRemark(item);
-                                                                                    setShowAlertRemark(true)
-                                                                                }}
-                                                                                fontSize="10px" sx={{ cursor: 'pointer' }}
-                                                                            />
-                                                                            &nbsp;
-                                                                            {<span>หมายเหตุ : {item.remark}</span>}
-                                                                        </Typography>
-                                                                    )}
-                                                                    <Typography variant="body2">
-                                                                        {item.remark && <span>เลือก : {item.claim_remark}</span>}
-                                                                    </Typography>
-                                                                </Stack>
-                                                            </>
-                                                        )}
-
-                                                    </Stack>
-
-                                                </TableCell>
-                                                <TableCell>
-                                                    <TextField
-                                                        required
-                                                        inputProps={{ min: 1 }}
-                                                        disabled={item.spcode === 'SV001'}
-                                                        size="small"
-                                                        sx={{ minWidth: 100 }}
-                                                        type="number"
-                                                        defaultValue={item.qty}
-                                                        onInput={(e) => e.target.value === "0" && (e.target.value = "")}
-                                                        onBlur={(e) => {
-                                                            if (!e.target.value) e.target.value = 1;
-                                                        }}
-                                                        onChange={(e) => handleChangeQty(e, item)}
-                                                    />
-                                                </TableCell>
-                                                <TableCell>{item.spunit ? item.spunit : item.sp_unit}</TableCell>
-                                                <TableCell>{calculateItemTotal(item)}</TableCell>
-                                            </TableRow>
-                                        )
-                                    })}
-                                </TableBody>
-                            </Table>
+                                                    </TableCell>
+                                                    <TableCell>{item.spunit ? item.spunit : item.sp_unit}</TableCell>
+                                                    <TableCell>{calculateItemTotal(item)}</TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </Paper>
                         </Grid2>
                         <Grid2 size={12}>
                             <Stack direction='row-reverse' spacing={2}>
@@ -439,8 +442,8 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                     <Button variant='contained' disabled={detail.job.status === 'success' || loading} onClick={handleSubmit} autoFocus>
                         {loading && (
                             <>
-                            <CircularProgress/>
-                            &nbsp;
+                                <CircularProgress />
+                                &nbsp;
                             </>
                         )}
                         บันทึก

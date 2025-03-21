@@ -1,12 +1,12 @@
-import {Alert, Button, Grid2, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography} from "@mui/material";
+import { Alert, Button, Grid2, Paper, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
 import PaletteIcon from "@mui/icons-material/Palette";
-import {ImagePreview} from "@/Components/ImagePreview.jsx";
+import { ImagePreview } from "@/Components/ImagePreview.jsx";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
 import Checkbox from "@mui/material/Checkbox";
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import SpSummary from "@/Pages/ReportRepair/SpNew/SpSummary.jsx";
 
-export default function SpAdd({detail, showAdd, setShowAdd,setDetail }) {
+export default function SpAdd({ detail, showAdd, setShowAdd, setDetail }) {
     const [selected, setSelected] = useState(detail.selected.sp);
     const [open, setOpen] = useState(false);
     const pid = detail.pid;
@@ -72,16 +72,16 @@ export default function SpAdd({detail, showAdd, setShowAdd,setDetail }) {
     }, []);
     return (
         <>
-            {open && <SpSummary {...{ open, setOpen, detail, selected, setSelected,setDetail,setShowAdd }} />}
+            {open && <SpSummary {...{ open, setOpen, detail, selected, setSelected, setDetail, setShowAdd }} />}
             <Grid2 container spacing={2}>
                 <Grid2 size={12}>
                     <Stack direction='row' spacing={2}>
-                        <Alert onClick={() => console.log(selected)} sx={{mb: 1}}
-                               icon={<PaletteIcon fontSize="inherit"/>} severity="success">
+                        <Alert onClick={() => console.log(selected)} sx={{ mb: 1 }}
+                            icon={<PaletteIcon fontSize="inherit" />} severity="success">
                             แถบสีเขียว คือ อะไหล่ที่อยู่ในรับประกัน
                         </Alert>
-                        <Alert onClick={() => console.log(spAll)} icon={<PaletteIcon fontSize="inherit"/>}
-                               severity="error">
+                        <Alert onClick={() => console.log(spAll)} icon={<PaletteIcon fontSize="inherit" />}
+                            severity="error">
                             แถบสีแดง คือ อะไหล่ที่ยังไม่ถูกตั้งราคา
                         </Alert>
                     </Stack>
@@ -92,94 +92,99 @@ export default function SpAdd({detail, showAdd, setShowAdd,setDetail }) {
                     </Typography>
                 </Grid2>
                 <Grid2 size={12}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>เลือก</TableCell>
-                                <TableCell>รูปภาพ</TableCell>
-                                <TableCell>รหัสอะไหล่</TableCell>
-                                <TableCell>ชื่ออะไหล่</TableCell>
-                                <TableCell>หน่วย</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {sv.map((item, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>
-                                        <Checkbox
-                                            checked={isSelected(item)}
-                                            onChange={(e) => handelSelect(e, item)}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <ImagePreview src={''}/>
-                                    </TableCell>
-                                    <TableCell>{item.spcode}</TableCell>
-                                    <TableCell>{item.spname}</TableCell>
-                                    <TableCell>{item.spunit}</TableCell>
+                    <Paper sx={{ overflow: 'auto' }}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>เลือก</TableCell>
+                                    <TableCell>รูปภาพ</TableCell>
+                                    <TableCell>รหัสอะไหล่</TableCell>
+                                    <TableCell>ชื่ออะไหล่</TableCell>
+                                    <TableCell>หน่วย</TableCell>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHead>
+                            <TableBody>
+                                {sv.map((item, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={isSelected(item)}
+                                                onChange={(e) => handelSelect(e, item)}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <ImagePreview src={''} />
+                                        </TableCell>
+                                        <TableCell>{item.spcode}</TableCell>
+                                        <TableCell>{item.spname}</TableCell>
+                                        <TableCell>{item.spunit}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </Paper>
+
                 </Grid2>
                 <Grid2 size={12}>
                     <Typography fontWeight='bold'>
                         อะไหล่
                     </Typography>
                 </Grid2>
-                <Grid2 size={12} sx={{maxHeight: 400, overflowY: 'scroll'}}>
-                    <Table stickyHeader>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>เลือก</TableCell>
-                                <TableCell>รูปภาพ</TableCell>
-                                <TableCell>รหัสอะไหล่</TableCell>
-                                <TableCell>ชื่ออะไหล่</TableCell>
-                                <TableCell>หน่วย</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {spAll.map((item, index) => {
-                                const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
-                                if(item.spcode !== 'SV001'){
-                                    return (
-                                        <TableRow key={index}
-                                                  sx={
-                                                      item.price_per_unit === '-' ? {backgroundColor: '#fdeded'}
-                                                          : detail.sp_warranty.find(it => it.spcode === item.spcode) ?
-                                                              {backgroundColor: '#edf7ed'} : {backgroundColor: 'white'}
-                                                  }
-                                        >
-                                            <TableCell>
-                                                <Checkbox
-                                                    checked={isSelected(item)}
-                                                    disabled={item.price_per_unit === '-'}
-                                                    onChange={(e) => handelSelect(e, item)}
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                {/* <ImagePreview src={spPath + '/' + item.spcode + '.jpg'}/> */}
-                                                <ImagePreview src={spPath2}/>
-                                            </TableCell>
-                                            <TableCell>{item.spcode}</TableCell>
-                                            <TableCell>{item.spname}</TableCell>
-                                            <TableCell>{item.spunit ? item.spunit : item.sp_unit}</TableCell>
-                                        </TableRow>
-                                    )
-                                }else{
-                                    return <React.Fragment key={index}></React.Fragment>
-                                }
-                                
-                            })}
-                        </TableBody>
-                    </Table>
+                <Grid2 size={12}>
+                    <Paper sx={{ overflow: 'auto',maxHeight : 400,overflowY : 'auto'}}>
+                        <Table stickyHeader>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>เลือก</TableCell>
+                                    <TableCell>รูปภาพ</TableCell>
+                                    <TableCell>รหัสอะไหล่</TableCell>
+                                    <TableCell>ชื่ออะไหล่</TableCell>
+                                    <TableCell>หน่วย</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {spAll.map((item, index) => {
+                                    const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
+                                    if (item.spcode !== 'SV001') {
+                                        return (
+                                            <TableRow key={index}
+                                                sx={
+                                                    item.price_per_unit === '-' ? { backgroundColor: '#fdeded' }
+                                                        : detail.sp_warranty.find(it => it.spcode === item.spcode) ?
+                                                            { backgroundColor: '#edf7ed' } : { backgroundColor: 'white' }
+                                                }
+                                            >
+                                                <TableCell>
+                                                    <Checkbox
+                                                        checked={isSelected(item)}
+                                                        disabled={item.price_per_unit === '-'}
+                                                        onChange={(e) => handelSelect(e, item)}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>
+                                                    {/* <ImagePreview src={spPath + '/' + item.spcode + '.jpg'}/> */}
+                                                    <ImagePreview src={spPath2} />
+                                                </TableCell>
+                                                <TableCell>{item.spcode}</TableCell>
+                                                <TableCell>{item.spname}</TableCell>
+                                                <TableCell>{item.spunit ? item.spunit : item.sp_unit}</TableCell>
+                                            </TableRow>
+                                        )
+                                    } else {
+                                        return <React.Fragment key={index}></React.Fragment>
+                                    }
+
+                                })}
+                            </TableBody>
+                        </Table>
+                    </Paper>
                 </Grid2>
                 <Grid2 size={12}>
                     <Stack direction='row-reverse' spacing={2}>
                         <Button
                             onClick={() => setOpen(true)}
                             variant='contained'
-                            startIcon={<ModeEditIcon/>}
+                            startIcon={<ModeEditIcon />}
                         >
                             สรุปรายการอะไหล่
                         </Button>
@@ -187,7 +192,7 @@ export default function SpAdd({detail, showAdd, setShowAdd,setDetail }) {
                             color='error'
                             onClick={() => setShowAdd(false)}
                             variant='outlined'
-                            startIcon={<ModeEditIcon/>}
+                            startIcon={<ModeEditIcon />}
                         >
                             ยกเลิก
                         </Button>

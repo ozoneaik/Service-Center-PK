@@ -28,12 +28,12 @@ class FileUploadController extends Controller
 
     public function store(UploadFileRequest $request): JsonResponse
     {
-        $serial_id = $request->input('serial_id');
-        $job_id = $request->input('job_id');
-        $list = $request->file('list');
-        $menu = $request->input('list');
+        $data = $request;
+        $serial_id = $data['serial_id'];
+        $job_id = $data['job_id'];
+        $list = $data['list'];
+        $menu = $data['list'];
         $keep = [];
-        //        dd($list,$menu);
         $count = 0;
         foreach ($menu as $mk => $m) {
             if (isset($m['list'])) {
@@ -45,20 +45,15 @@ class FileUploadController extends Controller
                 }
             }
         }
-
         $this->deleteFile($job_id, $keep);
-        //        dd($keep); // [4,5]
-
         if (isset($list) && count($list) > 0) {
             foreach ($list as $key => $file) {
                 foreach ($file['list'] as $key1 => $file1) {
                     if (isset($file1['image']) && $file1['image']->isValid()) {
                         // ตั้งชื่อไฟล์ใหม่ (สามารถเปลี่ยนแปลงได้)
                         $fileName = time() . rand(0, 9999) . '_' . $file1['image']->getClientOriginalName();
-
                         // บันทึกไฟล์ในโฟลเดอร์ public/uploads
                         $filePath = $file1['image']->storeAs('uploads', $fileName, 'public');
-
                         // แสดง path ของไฟล์ที่ถูกบันทึก
                         FileUpload::query()->create([
                             'job_id' => $job_id,

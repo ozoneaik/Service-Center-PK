@@ -1,4 +1,4 @@
-import { Button, Grid2, Stack, Typography } from "@mui/material";
+import { Button, Grid2, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 import { SummaryForm } from "./SummaryForm";
 import { UploadFile } from "./UploadFile";
@@ -23,6 +23,8 @@ export default function FormRepair({ detail, setDetail }) {
     const [showDetail, setShowDetail] = useState(1);
     const [headTitle, setHeadTitle] = useState('สรุปการทำงาน');
     const [approve, setApprove] = useState(false);
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const { setProductTarget } = useProductTarget()
 
 
@@ -57,7 +59,8 @@ export default function FormRepair({ detail, setDetail }) {
     }
 
     const ButtonStyle = ({ title, action, icon }) => (
-        <Grid2 size={{md : 12}} sx={{width : '100%'}}>
+        // <Grid2 size={{md : 12}} sx={{width : '100%'}}>
+        <Grid2 size={{lg: 12, md: 6, sm: 4, xs: 3}} sx={{width : '100%'}}>
             <Button
             sx={{ height: { lg: 80 },width : '100%' }} // width: { xs: 80, md: '100%' }
             onClick={() => handelChangeMenu({ action })}
@@ -82,7 +85,8 @@ export default function FormRepair({ detail, setDetail }) {
 
     return (
         <Grid2 container spacing={2}>
-            <Grid2 size={{ xs: 12, lg: 2 }}>
+            {/* <Grid2 size={{ xs: 12, lg: 2 }}> */}
+            <Grid2 size={{ xs : 12, lg: 2 }}>
                 {/* <Stack direction={{ xs: 'row', lg: 'column' }} spacing={2}> */}
                     <Grid2 container spacing={2}>
                         <ButtonStyle action={1} title={'สรุปการทำงาน'} icon={<ViewListIcon />} />

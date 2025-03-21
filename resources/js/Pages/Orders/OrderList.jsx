@@ -131,9 +131,9 @@ function OrderListContent(props) {
                                 </Card>
                             </Grid2>
                             <Grid2 size={{md: 9, sm: 12}}>
-                                <Paper variant='outlined' sx={{p: 3}}>
+                                <Paper variant='outlined' sx={{p: {sx : 0,lg : 3}}}>
                                     <Grid2 container spacing={2}>
-                                        <Grid2 container spacing={2} height={650} sx={{overflowY: 'scroll'}}>
+                                        <Grid2 container spacing={{sx : 0,lg : 2}} height={650} sx={{overflowY: 'scroll'}}>
                                             <RowView spList={spList}/>
                                         </Grid2>
                                     </Grid2>

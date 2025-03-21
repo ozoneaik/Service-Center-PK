@@ -1,4 +1,4 @@
-import {Button, Grid2, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography} from "@mui/material";
+import {Button, Grid2, Paper, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography} from "@mui/material";
 import {ImagePreview} from "@/Components/ImagePreview.jsx";
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 
@@ -8,7 +8,8 @@ const TableC = ({detail = [], warranty = false}) => {
             : (item.spcode !== 'SV001')
     );
     return (
-        <Table>
+        <Paper sx={{overflow: 'auto'}}>
+<Table>
             <TableHead>
                 <TableRow>
                     <TableCell>#</TableCell>
@@ -39,6 +40,8 @@ const TableC = ({detail = [], warranty = false}) => {
                 })}
             </TableBody>
         </Table>
+        </Paper>
+        
     )
 }
 

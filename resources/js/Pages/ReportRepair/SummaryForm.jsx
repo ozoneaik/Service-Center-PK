@@ -15,10 +15,9 @@ import FormGroup from '@mui/material/FormGroup';
 import { AlertDialog } from "@/Components/AlertDialog.js";
 import { ImagePreview } from "@/Components/ImagePreview.jsx";
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import { useProductTarget } from "@/Context/ProductContext.jsx";
 import { useState } from "react";
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import { Box, Paper } from "@mui/material";
+import { Paper, TableContainer } from "@mui/material";
 
 
 const BehaviorDetail = ({ detail }) => (
@@ -28,7 +27,6 @@ const BehaviorDetail = ({ detail }) => (
         ))}
     </Stack>
 )
-
 const FileDetail = ({ menu, forService = false }) => {
     const displayStartIndex = forService ? 3 : 0;
     const displayEndIndex = forService ? menu.length : 3;
@@ -54,60 +52,49 @@ const FileDetail = ({ menu, forService = false }) => {
         </Grid2>
     );
 };
-
-
 const SpDetail = ({ sp, sp_warranty, detail }) => {
     const highlight = { backgroundColor: '#e6ffe6' }
+    const listHeader = ['รูปภาพ', 'รหัสอะไหล่', 'ชื่ออะไหล่', 'ราคาต่อหน่วย', 'จำนวน', 'หน่วย', 'ราคารวม'];
     return (
-        <Table>
-            <TableHead>
-                <TableRow>
-                    <TableCell>รูปภาพ</TableCell>
-                    <TableCell>รหัสอะไหล่</TableCell>
-                    <TableCell>ชื่ออะไหล่</TableCell>
-                    <TableCell>ราคาต่อหน่วย</TableCell>
-                    <TableCell>จำนวน</TableCell>
-                    <TableCell>หน่วย</TableCell>
-                    <TableCell>ราคารวม</TableCell>
-                </TableRow>
-            </TableHead>
-            <TableBody>
-                {sp.map((item, index) => {
-                    const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
-                    return (
-                        <TableRow key={index} sx={item.warranty ? highlight : {}}>
-                            <TableCell>
-                                <img src={spPath2} width={50} alt="image not found" />
-                            </TableCell>
-                            <TableCell>{item.spcode}</TableCell>
-                            <TableCell>{item.spname}</TableCell>
-                            <TableCell>{item.price_multiple_gp}</TableCell>
-                            <TableCell>{item.qty}</TableCell>
-                            <TableCell>{item.sp_unit ?? 'อัน'}</TableCell>
-                            <TableCell>{item.price_multiple_gp * item.qty}</TableCell>
-                        </TableRow>
-                    )
-                })}
-            </TableBody>
-        </Table>
-
+        <TableContainer component={Paper} sx={{ maxWidth: '100%' }}>
+            <Table>
+                <TableHead>
+                    <TableRow>
+                        {listHeader.map((item, index) => (
+                            <TableCell key={index}>{item}</TableCell>
+                        ))}
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {sp.map((item, index) => {
+                        const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
+                        return (
+                            <TableRow key={index} sx={item.warranty ? highlight : {}}>
+                                <TableCell>
+                                    <img src={spPath2} width={50} alt="image not found" />
+                                </TableCell>
+                                <TableCell>{item.spcode}</TableCell>
+                                <TableCell>{item.spname}</TableCell>
+                                <TableCell>{item.price_multiple_gp}</TableCell>
+                                <TableCell>{item.qty}</TableCell>
+                                <TableCell>{item.sp_unit ?? 'อัน'}</TableCell>
+                                <TableCell>{item.price_multiple_gp * item.qty}</TableCell>
+                            </TableRow>
+                        )
+                    })}
+                </TableBody>
+            </Table>
+        </TableContainer>
     )
 }
 
-
 const CardDetail = ({ children }) => (
-    <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
-        {/* <Card variant="outlined" sx={{ width: '100%' }}>
-            <CardContent> */}
+    <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto', width: '100%' }}>
         {children}
-        {/* </CardContent>
-        </Card> */}
     </Paper>
 
 )
-
 const CardDetailForTable = ({ children }) => (
-
     <Card variant="outlined" sx={{ width: '100%' }}>
         <CardContent sx={{ overflowX: 'auto' }}> {/* เพิ่ม scroll แนวนอน */}
             {children}
@@ -118,7 +105,6 @@ const CardDetailForTable = ({ children }) => (
 export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
     const selected = detail.selected;
     const [loading, setLoading] = useState(false);
-    const { productTarget } = useProductTarget()
 
     async function endJob() {
         AlertDialog({
@@ -216,14 +202,11 @@ export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
         } finally {
             setLoading(false);
         }
-
-
     }
 
     return (
         <Grid2 container>
             <Grid2 size={12}>
-                <FormGroup>
                     <Stack direction='column' spacing={2}>
                         <Grid2 container spacing={2}>
                             <Grid2 size={12}>
@@ -237,8 +220,6 @@ export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
                                     </Stack>
                                 </CardDetail>
                             </Grid2>
-
-
                             <Grid2 size={12}>
                                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
                                     <CardDetail>
@@ -252,7 +233,6 @@ export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
                                     </CardDetail>
                                 </Stack>
                             </Grid2>
-
                             <Grid2 size={12}>
                                 <CardDetail>
                                     <Typography variant='h6' fontWeight='bold'>อาการ / สาเหตุ</Typography>
@@ -260,19 +240,28 @@ export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
                                 </CardDetail>
                             </Grid2>
 
-                            <Grid2 size={12}>
+                            {/* <Grid2 size={12}>
                                 <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
                                     <Typography variant='h6' fontWeight='bold'>บันทึกอะไหล่</Typography>
-                                    <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
-                                        <SpDetail sp={selected.sp} detail={detail} sp_warranty={selected.sp_warranty} />
-                                    </Paper>
-
+                                    <Grid2 container>
+                                        <Grid2 size={12} sx={{ overflowX: 'auto' }}>
+                                            <SpDetail sp={selected.sp} detail={detail} sp_warranty={selected.sp_warranty} />
+                                        </Grid2>
+                                    </Grid2>
                                 </Paper>
-                                {/* <CardDetailForTable>
+                            </Grid2> */}
+
+                            <Grid2 size={12}>
+                                <Paper variant='outlined' sx={{ p: 2 }}>
                                     <Typography variant='h6' fontWeight='bold'>บันทึกอะไหล่</Typography>
-                                    <SpDetail sp={selected.sp} sp_warranty={selected.sp_warranty} />
-                                </CardDetailForTable> */}
+                                    <Grid2 container>
+                                        <Grid2 size={12}>
+                                            <SpDetail sp={selected.sp} detail={detail} sp_warranty={selected.sp_warranty} />
+                                        </Grid2>
+                                    </Grid2>
+                                </Paper>
                             </Grid2>
+
 
                             <Grid2 size={12}>
                                 <CardDetail>
@@ -280,14 +269,12 @@ export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
                                     <Typography variant='body1' color='gray'>- {selected.customerInJob.remark}</Typography>
                                 </CardDetail>
                             </Grid2>
-
                             <Grid2 size={12}>
                                 <CardDetail>
                                     <Typography variant='h6' fontWeight='bold'>หมายเหตุสำหรับสื่อสารภายใน</Typography>
                                     <Typography variant='body1' color='gray'>- {selected.remark}</Typography>
                                 </CardDetail>
                             </Grid2>
-
                             <Grid2 size={12}>
                                 <CardDetail>
                                     <Typography variant='h6' fontWeight='bold'>เอกสาร</Typography>
@@ -324,8 +311,6 @@ export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
                             </Button>
                         </Stack>
                     </Stack>
-                </FormGroup>
-
             </Grid2>
         </Grid2>
     )

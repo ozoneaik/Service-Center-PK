@@ -121,9 +121,9 @@ export default function StoreList({ shops }) {
                         </Grid2>
 
                         <Grid2 size={12}>
-                            <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                            <Stack direction={{sm : 'row' , xs : 'column'}} justifyContent='space-between' alignItems='center'>
                                 <Typography variant='h5' fontWeight='bold'>จัดการศูนย์ซ่อม (สต็อกอะไหล่,GP)</Typography>
-                                <Stack direction='row' spacing={2} alignItems='center'>
+                                <Stack direction={{sm : 'row' , xs : 'column'}} spacing={2} alignItems='center'>
                                     <Typography variant="subtitle1">รายการทั้งหมด {shops.length} รายการ</Typography>
                                     <Button variant="contained" onClick={() => setAddStoreOpen(true)}>เพิ่มศูนย์ซ่อม</Button>
                                 </Stack>

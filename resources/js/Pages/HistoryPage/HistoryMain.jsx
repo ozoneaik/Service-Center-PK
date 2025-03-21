@@ -172,7 +172,7 @@ export default function HistoryMain({ jobs }) {
                             </Grid2>
                         </Grid2>
                         <Grid2 size={12}>
-                            <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                            <Stack direction={{sm : 'row' , xs : 'column'}} justifyContent='space-between' alignItems='center'>
                                 <Typography variant='h5' fontWeight='bold'>ประวัติซ่อม</Typography>
                                 <Typography variant="subtitle1">รายการทั้งหมด {jobs.length} รายการ</Typography>
                             </Stack>
