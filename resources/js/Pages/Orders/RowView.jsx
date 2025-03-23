@@ -1,23 +1,47 @@
 import {Button, Card, CardContent, Grid2, Stack, Typography} from "@mui/material";
 import {useCart} from "@/Pages/Orders/CartContext.jsx";
 import {Box, useMediaQuery, useTheme} from "@mui/material";
+import {AlertDialog} from "@/Components/AlertDialog.js";
+import {useState} from "react";
 
-export default function RowView({spList}) {
-    const {cartItems, addToCart} = useCart();
+export default function RowView({spList,setSpList}) {
+    const [loading, setLoading] = useState(false);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-    // ตรวจสอบว่าสินค้าอยู่ในตะกร้าหรือไม่
-    const isInCart = (spcode) => {
-        return cartItems.some(item => item.spcode === spcode);
-    };
+    const handleAddToCart = async (item) => {
+        try {
+            setLoading(true);
+            const {data, status} = await axios.post('/orders/carts/add-cart',{
+                ...item
+            });
+            if(status === 200) {
+                setSpList(spList.map(sp => {
+                    if(sp.spcode === item.spcode) {
+                        return {...sp, added: true}
+                    }
+                    return sp;
+                }));
+            }else{
+
+            }
+        }catch (error) {
+            AlertDialog({
+                title: 'เกิดข้อผิดพลาด',
+                text: error.response.data.message
+            });
+        }finally {
+            setLoading(false);
+        }
+
+    }
 
     return (
         <>
             {spList.map((item, index) => (
                 <Grid2 size={12} key={index}>
-                    <Card 
-                        variant="outlined" 
+                    <Card
+                        variant="outlined"
                         sx={{
                             display: 'flex',
                             flexDirection: isMobile ? 'column' : 'row',
@@ -47,16 +71,16 @@ export default function RowView({spList}) {
                             />
                         </Box>
                         <CardContent sx={{width: '100%'}}>
-                            <Stack 
-                                direction={isMobile ? 'column' : 'row'} 
+                            <Stack
+                                direction={isMobile ? 'column' : 'row'}
                                 justifyContent='space-between'
                                 alignItems={isMobile ? 'flex-start' : 'center'}
                                 spacing={isMobile ? 2 : 0}
                             >
                                 <Stack direction='column'>
-                                    <Typography 
-                                        fontWeight='bold' 
-                                        gutterBottom 
+                                    <Typography
+                                        fontWeight='bold'
+                                        gutterBottom
                                         variant={isMobile ? "body1" : "h5"}
                                         component="div"
                                     >
@@ -79,9 +103,9 @@ export default function RowView({spList}) {
                                     }
                                 </Stack>
                                 <Box sx={{ width: isMobile ? '100%' : 'auto' }}>
-                                    {isInCart(item.spcode) ? (
-                                        <Button 
-                                            disabled 
+                                    {item.added ? (
+                                        <Button
+                                            disabled
                                             color='inherit'
                                             fullWidth={isMobile}
                                         >
@@ -90,14 +114,14 @@ export default function RowView({spList}) {
                                     ) : (
                                         !isNaN(parseFloat(item.price_per_unit)) &&
                                         <Button
-                                            disabled={isNaN(parseFloat(item.price_per_unit))}
+                                            disabled={isNaN(parseFloat(item.price_per_unit)) || loading}
                                             variant='contained'
-                                            size="small" 
+                                            size="small"
                                             color='primary'
                                             fullWidth={isMobile}
-                                            onClick={() => addToCart(item)}
+                                            onClick={() => handleAddToCart(item)}
                                         >
-                                            + เพิ่มลงในตะกร้า
+                                            {loading ? 'กำลังเพิ่ม...' : 'เพิ่มลงในตะกร้า'}
                                         </Button>
                                     )}
                                 </Box>

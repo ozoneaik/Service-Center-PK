@@ -8,20 +8,21 @@ import SumOrder from "@/Pages/Orders/SumOrder.jsx";
 import {Link, router, usePage} from "@inertiajs/react";
 import {CartProvider, useCart} from "@/Pages/Orders/CartContext.jsx";
 
-export default function OrderList() {
+export default function OrderList({count_cart}) {
     const [dmPreview, setDmPreview] = useState('');
     const user = usePage().props.auth.user;
     const [spList, setSpList] = useState([]);
     const searchSku = useRef(null);
     const [open, setOpen] = useState(false);
-    const [address,setAddress] = useState(user.store_info.address);
+    const [address, setAddress] = useState(user.store_info.address);
     const [phone, setPhone] = useState(user.store_info.phone);
     const [loading, setLoading] = useState(false);
+    const [countCart,setCountCart] = useState(count_cart);
     const handleSearch = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
-            const { data, status } = await axios.get(`/orders/search/${searchSku.current.value}`);
+            const {data, status} = await axios.get(`/orders/search/${searchSku.current.value}`);
             if (status === 200) {
                 console.log(data, status);
                 setSpList(data.result.sp || []);
@@ -43,23 +44,18 @@ export default function OrderList() {
     };
 
     const fetchDm = async () => {
-        try {
-            const { data, status } = await axios.get(`/image-dm/${searchSku.current.value}`);
-            console.log(data, status);
-            // setDmPreview(data.pathfile_dm + data.namefile_dm);
-            console.log('รูป DM => ',data);
-            setDmPreview(data.path_file_dm);
-        } catch (error) {
-            console.error(error);
-            setDmPreview('');
-        }
+        const sku_path = import.meta.env.VITE_DIAGRAMS+`Diagrams-${searchSku.current.value}-DM01.jpg`;
+        setDmPreview(sku_path);
     };
 
     return (
         <CartProvider>
             <OrderListContent
+                setCountCart={setCountCart}
+                countCart={countCart}
                 dmPreview={dmPreview}
                 spList={spList}
+                setSpList={setSpList}
                 searchSku={searchSku}
                 handleSearch={handleSearch}
                 open={open}
@@ -77,15 +73,16 @@ export default function OrderList() {
 
 
 function OrderListContent(props) {
-    const {dmPreview, spList, setCardView, searchSku, handleSearch, open, setOpen,loading,setLoading} = props;
-    const {address,setAddress,phone,setPhone} = props;
-    const {cartItems,clearCart} = useCart();
+    const {dmPreview, spList,setSpList, setCardView, searchSku, handleSearch, open, setOpen, loading, setLoading} = props;
+    const {countCart, setCountCart} = props;
+    const {address, setAddress, phone, setPhone} = props;
+    const {cartItems, clearCart} = useCart();
 
     const handleBuyOrder = async (cartItems) => {
-        const {data,status} = await axios.post('/orders/store',{
-            spList : cartItems,
-            address : address,
-            phone : phone
+        const {data, status} = await axios.post('/orders/store', {
+            spList: cartItems,
+            address: address,
+            phone: phone
         })
         if (status === 200) {
             alert('คำสั่งซื้อได้รับการยืนยันแล้ว');
@@ -97,19 +94,21 @@ function OrderListContent(props) {
 
     return (
         <AuthenticatedLayout>
-            {open && <SumOrder phone={phone} setPhone={setPhone} address={address} setAddress={setAddress} open={open} setOpen={setOpen} onBuyOrder={(cartItems) => handleBuyOrder(cartItems)}/>}
+            {open && <SumOrder phone={phone} setPhone={setPhone} address={address} setAddress={setAddress} open={open}
+                               setOpen={setOpen} onBuyOrder={(cartItems) => handleBuyOrder(cartItems)}/>}
             <Container maxWidth='false' sx={{backgroundColor: 'white', p: 3}}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
                         <form onSubmit={handleSearch}>
-                            <Stack direction={{xs : 'column',sm : 'row'}} spacing={2}>
+                            <Stack direction={{xs: 'column', sm: 'row'}} spacing={2}>
                                 <TextField required inputRef={searchSku} fullWidth label='ค้นหารหัสสินค้า' type='text'/>
                                 <Button type='submit' variant='contained'>ค้นหา</Button>
-                                <Badge badgeContent={cartItems.length} color="error">
+                                <Badge badgeContent={countCart} color="error">
                                     <Button
-                                    fullWidth
-                                        onClick={() => setOpen(true)}
+                                        fullWidth
+                                        // onClick={() => setOpen(true)}
                                         startIcon={<AddShoppingCartIcon/>}
+                                        component={Link} href={route('orders.carts')}
                                         color='secondary' variant='contained'
                                     />
                                 </Badge>
@@ -131,10 +130,11 @@ function OrderListContent(props) {
                                 </Card>
                             </Grid2>
                             <Grid2 size={{md: 9, sm: 12}}>
-                                <Paper variant='outlined' sx={{p: {sx : 0,lg : 3}}}>
+                                <Paper variant='outlined' sx={{p: {sx: 0, lg: 3}}}>
                                     <Grid2 container spacing={2}>
-                                        <Grid2 container spacing={{sx : 0,lg : 2}} height={650} sx={{overflowY: 'scroll'}}>
-                                            <RowView spList={spList}/>
+                                        <Grid2 container spacing={{sx: 0, lg: 2}} height={650}
+                                               sx={{overflowY: 'scroll'}}>
+                                            <RowView spList={spList} setSpList={setSpList}/>
                                         </Grid2>
                                     </Grid2>
                                 </Paper>
