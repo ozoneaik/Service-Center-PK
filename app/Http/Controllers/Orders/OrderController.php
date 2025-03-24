@@ -75,54 +75,6 @@ class OrderController extends Controller
         ], $status);
     }
 
-    public function store(OrderRequest $request): JsonResponse
-    {
-        $spList = $request->input('spList');
-
-        try {
-            DB::beginTransaction();
-            $is_code_cust_id = auth()->user()->is_code_cust_id;
-            $user_code = auth()->user()->user_code;
-            $order_id = 'ORDER-' . time() . rand(1000, 9999);
-            $order = Order::query()->create([
-                'order_id' => $order_id,
-                'is_code_key' => $is_code_cust_id,
-                'user_key' => $user_code,
-                'buy_at' => Carbon::now(),
-                'address' => $request->input('address') . $request->input('phone'),
-            ]);
-            if (!$order) throw new \Exception('ไม่สามารถสร้าง order ได้');
-            $dataSp = [];
-            foreach ($spList as $key => $sp) {
-                $orderSp = OrderSpList::query()->create([
-                    'order_id' => $order_id,
-                    'sp_code' => $sp['spcode'],
-                    'sp_name' => $sp['spname'],
-                    'sku_code' => $sp['skufg'],
-                    'qty' => $sp['quantity'],
-                    'price_per_unit' => $sp['price_per_unit'],
-                    'sp_unit' => $sp['spunit'],
-                    'path_file' => $sp['path_file'],
-                ]);
-                $dataSp[$key] = $orderSp;
-            }
-            DB::commit();
-            $message = 'success';
-            $status = 200;
-        } catch (\Exception $e) {
-            DB::rollBack();
-            $message = $e->getMessage();
-            $status = 400;
-        }
-
-        return response()->json([
-            'spList' => $spList,
-            'message' => $message,
-            'order' => $order ?? [],
-            'dataSp' => $dataSp ?? [],
-        ], $status);
-    }
-
     public function history(): Response
     {
         $history = Order::query()
@@ -174,7 +126,8 @@ class OrderController extends Controller
         return Inertia::render('Orders/carts/CartList', ['groupSku' => $groupSku, 'totalSp' => $totalSp]);
     }
 
-    public function addCart(Request $request){
+    public function addCart(Request $request): JsonResponse
+    {
         try {
             $cart = Cart::query()->create([
                 'is_code_cust_id' => auth()->user()->is_code_cust_id,
@@ -238,13 +191,10 @@ class OrderController extends Controller
                     'message' => 'ไม่พบข้อมูลสินค้าในตะกร้า'
                 ], 400);
             }
-
             $groups = $request->groups;
-
-            // สร้าง Order ID ที่ไม่ซ้ำกัน
+            $address = $request->address;
+            $phone = $request->phone;
             $order_id = 'ORDER-' . time() . rand(1000, 9999);
-
-            // เริ่ม Transaction
             DB::beginTransaction();
 
             $order = Order::query()->create([
@@ -253,40 +203,28 @@ class OrderController extends Controller
                 'user_key' => auth()->user()->user_code,
                 'buy_at' => Carbon::now(),
                 'status' => 'pending',
+                'phone' => $phone,
                 'address' => $request->address ?? auth()->user()->store_info->address,
             ]);
-
-
             $totalOrderPrice = 0;
-
             foreach ($groups as $group) {
                 if (!isset($group['list']) || empty($group['list'])) {
-                    continue; // ข้ามกลุ่มที่ไม่มีสินค้า
+                    continue;
                 }
-
                 $spList = $group['list'];
                 foreach ($spList as $spItem) {
-                    // ตรวจสอบว่ามี ID และสามารถค้นหาในฐานข้อมูลได้
                     if (!isset($spItem['id'])) {
                         continue;
                     }
-
                     try {
                         $sp = Cart::query()->findOrFail($spItem['id']);
-
-                        // อัปเดตสถานะในตะกร้า
                         $sp->update(['is_active' => true]);
-
-                        // คำนวณราคารวมของสินค้า
                         $qty = $spItem['qty'] ?? 1;
                         $pricePerUnit = $spItem['price_per_unit'] ?? 0;
                         $itemTotalPrice = $qty * $pricePerUnit;
                         $totalOrderPrice += $itemTotalPrice;
-
-                        // ตรวจสอบและแก้ไขเส้นทางไฟล์
                         $skuCode = $group['sku_code'] ?? $sp['sku_code'];
                         $pathFile = env('VITE_IMAGE_SP') . $skuCode . "/" . $sp['sp_code'] . ".jpg";
-                        // บันทึกรายการสินค้าในออเดอร์
                         $orderSpList = OrderSpList::query()->create([
                             'order_id' => $order_id,
                             'sp_code' => $sp['sp_code'],
@@ -300,7 +238,6 @@ class OrderController extends Controller
 
 
                     } catch (\Exception $e) {
-                        // บันทึก log หากมีข้อผิดพลาดกับสินค้าบางรายการ แต่ยังดำเนินการต่อ
                         Log::error('Error processing item: ' . $e->getMessage(), [
                             'item_id' => $spItem['id'] ?? 'unknown',
                             'order_id' => $order_id
@@ -308,13 +245,8 @@ class OrderController extends Controller
                     }
                 }
             }
-
-            // อัปเดตราคารวมของออเดอร์
             $order->update(['total_price' => $totalOrderPrice]);
-
-            // ยืนยัน Transaction
             DB::commit();
-
             return response()->json([
                 'status' => 'success',
                 'message' => 'สร้างคำสั่งซื้อเรียบร้อยแล้ว',
@@ -327,14 +259,11 @@ class OrderController extends Controller
             ], 200);
 
         } catch (\Exception $e) {
-            // ยกเลิก Transaction หากเกิดข้อผิดพลาด
             DB::rollBack();
-
             Log::error('Order creation failed: ' . $e->getMessage(), [
                 'user_id' => auth()->id(),
                 'trace' => $e->getTraceAsString()
             ]);
-
             return response()->json([
                 'status' => 'error',
                 'message' => 'เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ กรุณาลองใหม่ภายหลัง',

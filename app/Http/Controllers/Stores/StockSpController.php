@@ -7,14 +7,17 @@ use App\Http\Requests\StockSpRequest;
 use App\Models\Bill;
 use App\Models\StockSparePart;
 use App\Models\StoreInformation;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class StockSpController extends Controller
 {
-    public function index()
+    public function index(): Response
     {
         $shops = StoreInformation::query()->with('gp')
             ->leftJoin('users', 'users.is_code_cust_id', '=', 'store_information.is_code_cust_id')
@@ -24,14 +27,18 @@ class StockSpController extends Controller
         return Inertia::render('Stores/Manage/StoreList', ['shops' => $shops]);
     }
 
-    public function StockSpList($is_code_cust_id)
+    public function StockSpList($is_code_cust_id): Response
     {
         $stocks = StockSparePart::query()->where('is_code_cust_id', $is_code_cust_id)->get();
         $store = StoreInformation::query()->where('is_code_cust_id', $is_code_cust_id)->first();
-        return Inertia::render('Stores/StockSpList', ['stocks' => $stocks, 'store' => $store, 'status' => session('status')]);
+        return Inertia::render('Stores/StockSp/StockSpList', [
+            'stocks' => $stocks,
+            'store' => $store,
+            'status' => session('status')
+        ]);
     }
 
-    public function storeOneSp(StockSpRequest $request)
+    public function storeOneSp(StockSpRequest $request): RedirectResponse
     {
         $data = $request;
         DB::beginTransaction();
@@ -52,7 +59,7 @@ class StockSpController extends Controller
                     'sp_code' => $data['sp_code'],
                     'sp_name' => $data['sp_name'],
                     'qty_sp' => $data['qty_sp'],
-                    'old_qty_sp' =>  $data['qty_sp'],
+                    'old_qty_sp' => $data['qty_sp'],
                     'is_code_cust_id' => $data['is_code_cust_id'],
                 ]);
                 $message = "บันทึกสต็อกอะไหล่ {$data['sp_name']} สำเร็จ";
@@ -69,7 +76,7 @@ class StockSpController extends Controller
         }
     }
 
-    public function searchSku($sp_code, $is_code_cust_id)
+    public function searchSku($sp_code, $is_code_cust_id): JsonResponse
     {
         $search = StockSparePart::query()
             ->where('sp_code', 'like', "%$sp_code%")
@@ -81,7 +88,7 @@ class StockSpController extends Controller
         ], $search ? 200 : 404);
     }
 
-    public function storeManySp(Request $request)
+    public function storeManySp(Request $request): RedirectResponse
     {
         try {
             DB::beginTransaction();
@@ -106,7 +113,7 @@ class StockSpController extends Controller
                         'sp_code' => $sp['sp_code'],
                         'sp_name' => $sp['sp_name'],
                         'qty_sp' => $sp['qty_sp'],
-                        'old_qty_sp' =>  $sp['qty_sp'],
+                        'old_qty_sp' => $sp['qty_sp'],
                         'is_code_cust_id' => $isCodeCustId,
                     ]);
                 }
@@ -115,7 +122,7 @@ class StockSpController extends Controller
             if ($checkBill) {
                 if ($checkBill->status === true) throw new \Exception('บิลนี้เคยถูกบันทึกแล้ว');
                 else $checkBill->update(['status' => true]);
-            } else Bill::create(['bill_no' => $request->barcode, 'is_code_cust_id' => $isCodeCustId]);
+            } else Bill::query()->create(['bill_no' => $request->barcode, 'is_code_cust_id' => $isCodeCustId]);
             DB::commit();
             return Redirect::route('stockSp.list', [
                 'is_code_cust_id' => $isCodeCustId

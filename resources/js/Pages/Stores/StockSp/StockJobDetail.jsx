@@ -1,0 +1,258 @@
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
+import {useState} from "react";
+import {
+    Box, TextField, Button, Typography, Grid2, Paper, Container,
+    List, ListItem, ListItemText, ListItemButton, Divider, IconButton, Alert, InputAdornment
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
+import PasswordIcon from '@mui/icons-material/Password';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import {useForm, usePage} from "@inertiajs/react";
+
+export default function StockJobDetail({stock_job_id, jobDetail}) {
+    const {flash} = usePage().props
+    const [alert, setAlert] = useState(false);
+    const [selectedIndex, setSelectedIndex] = useState(null);
+    const [isNewItem, setIsNewItem] = useState(false);
+    const {data, setData,processing, post,errors} = useForm({
+        sp_code: "", sp_name: "", sku_code: "", sku_name: "", sp_qty: 1,
+    });
+
+    const handleSelectItem = (index) => {
+        if (jobDetail && jobDetail[index]) {
+            setSelectedIndex(index);
+            setIsNewItem(false);
+            setData('sp_code', jobDetail[index].sp_code || "");
+            setData('sp_name', jobDetail[index].sp_name || "");
+            setData('sku_code', jobDetail[index].sku_code || "");
+            setData('sku_name', jobDetail[index].sku_name || "");
+            setData('sp_qty', jobDetail[index].sp_qty || "");
+        }
+    };
+
+    const handleNewItem = () => {
+        setSelectedIndex(null);
+        setIsNewItem(true);
+        setData('sp_code', "");
+        setData('sp_name', "");
+        setData('sku_code', "");
+        setData('sku_name', "");
+        setData('sp_qty', "");
+    };
+
+    const handleChange = (e) => {
+        const {name, value} = e.target;
+        setData(name, value);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        console.log("ข้อมูลที่ส่ง:", data);
+        post(route('stockJob.addSpInJob', {stock_job_id: stock_job_id}), {
+            onFinish: () => {
+                setAlert(true)
+            }
+        })
+        console.log(errors)
+    };
+
+    return (
+        <AuthenticatedLayout>
+            <Container maxWidth="false" sx={{mt: 3}}>
+                <Grid2 container spacing={2}>
+                    <Grid2 size={12}>
+                        <Typography variant="h5" fontWeight='bold'>
+                            <Paper variant='outlined' sx={{bgcolor: 'white', p: 1}}>
+                                รายละเอียดงานสต็อก #{stock_job_id}
+                            </Paper>
+                        </Typography>
+                    </Grid2>
+                    <Grid2 size={12}>
+                        {alert && flash.error && (
+                            <Alert onClose={() => setAlert(false)} severity='error'>
+                                {flash.error}
+                            </Alert>
+                        )}
+                        {alert && flash.success && (
+                            <Alert onClose={() => setAlert(false)} severity='success'>
+                                {flash.success}
+                            </Alert>
+                        )}
+                    </Grid2>
+
+
+                    <Grid2 size={{xs: 12, md: 4, lg: 7}}>
+                        <Paper variant='outlined' sx={{height: "100%", minHeight: 400}}>
+                            <Box sx={{px: 2, display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+                                <Typography variant="body1" fontWeight='bold'>รายการอะไหล่</Typography>
+                                <IconButton color="primary" onClick={handleNewItem} title="เพิ่มรายการใหม่">
+                                    <AddIcon/>
+                                </IconButton>
+                            </Box>
+                            <Divider/>
+
+                            {jobDetail.length > 0 ? (
+                                <List sx={{width: '100%', bgcolor: 'background.paper', p: 0}}>
+                                    {jobDetail.map((item, index) => (
+                                        <ListItem
+                                            key={index} disablePadding
+                                            secondaryAction={
+                                                <IconButton edge="end" onClick={() => handleSelectItem(index)}>
+                                                    <EditIcon fontSize="small"/>
+                                                </IconButton>
+                                            }
+                                        >
+                                            <ListItemButton
+                                                selected={selectedIndex === index}
+                                                onClick={() => handleSelectItem(index)}
+                                            >
+                                                <ListItemText
+                                                    primary={item.sp_name || "ไม่ระบุชื่อ"}
+                                                    secondary={`รหัส: ${item.sp_code || "-"} | จำนวน: ${item.sp_qty || "0"}`}
+                                                />
+                                            </ListItemButton>
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            ) : (
+                                <Box sx={{p: 3, textAlign: 'center'}}>
+                                    <Typography color="text.secondary">ไม่มีรายการอะไหล่</Typography>
+                                    <Button variant="text" startIcon={<AddIcon/>} onClick={handleNewItem} sx={{mt: 1}}>
+                                        เพิ่มรายการใหม่
+                                    </Button>
+                                </Box>
+                            )}
+                        </Paper>
+                    </Grid2>
+                    <Grid2 size={{xs: 12, md: 8, lg: 5}}>
+                        <Paper variant='outlined' sx={{p: 3}}>
+                            <Typography variant="h6" gutterBottom>
+                                {isNewItem ? "เพิ่มรายการใหม่" : (selectedIndex !== null ? "แก้ไขรายการ" : "เลือกรายการที่ต้องการแก้ไข หรือเพิ่มรายการใหม่")}
+                            </Typography>
+                            {(isNewItem || selectedIndex !== null) ? (
+                                <Box component="form" onSubmit={handleSubmit} sx={{mt: 3}}>
+                                    <Grid2 container spacing={3}>
+                                        <Grid2 size={{xs: 12, md: 6}}>
+                                            <TextField
+                                                autoFocus
+                                                required fullWidth id="sp_code" label="รหัสอะไหล่" name="sp_code"
+                                                size='small'
+                                                slotProps={{
+                                                    input: {
+                                                        startAdornment: (
+                                                            <InputAdornment position='start'>
+                                                                <PasswordIcon/>
+                                                            </InputAdornment>
+                                                        )
+                                                    }
+                                                }}
+                                                value={data.sp_code} onChange={handleChange} variant="outlined"
+                                            />
+                                        </Grid2>
+                                        <Grid2 size={{xs: 12, md: 6}}>
+                                            <TextField
+                                                size='small'
+                                                slotProps={{
+                                                    input: {
+                                                        startAdornment: (
+                                                            <InputAdornment position='start'>
+                                                                <DriveFileRenameOutlineIcon/>
+                                                            </InputAdornment>
+                                                        )
+                                                    }
+                                                }}
+                                                required fullWidth id="sp_name" label="ชื่ออะไหล่" name="sp_name"
+                                                value={data.sp_name} onChange={handleChange} variant="outlined"
+                                            />
+                                        </Grid2>
+                                        <Grid2 size={{xs: 12, md: 6}}>
+                                            <TextField
+                                                size='small'
+                                                slotProps={{
+                                                    input: {
+                                                        startAdornment: (
+                                                            <InputAdornment position='start'>
+                                                                <PasswordIcon/>
+                                                            </InputAdornment>
+                                                        )
+                                                    }
+                                                }}
+                                                fullWidth id="sku_code" label="รหัสสินค้า" name="sku_code"
+                                                placeholder='หากจำไม่ได้สามารถเว้นว่างได้'
+                                                value={data.sku_code} onChange={handleChange} variant="outlined"
+                                            />
+                                        </Grid2>
+                                        <Grid2 size={{xs: 12, md: 6}}>
+                                            <TextField
+                                                placeholder='หากจำไม่ได้สามารถเว้นว่างได้'
+                                                size='small'
+                                                slotProps={{
+                                                    input: {
+                                                        startAdornment: (
+                                                            <InputAdornment position='start'>
+                                                                <DriveFileRenameOutlineIcon/>
+                                                            </InputAdornment>
+                                                        )
+                                                    }
+                                                }}
+                                                fullWidth id="sku_name" label="ชื่อสินค้า" name="sku_name"
+                                                value={data.sku_name} onChange={handleChange} variant="outlined"
+                                            />
+                                        </Grid2>
+                                        <Grid2 size={{xs: 12, md: 6}}>
+                                            <TextField
+                                                size='small'
+                                                slotProps={{
+                                                    input: {
+                                                        startAdornment: (
+                                                            <InputAdornment position='start'>
+                                                                <AddCircleIcon/>
+                                                            </InputAdornment>
+                                                        )
+                                                    }
+                                                }}
+                                                required fullWidth id="sp_qty" label="จำนวนที่ต้องการ"
+                                                name="sp_qty" type="number" InputProps={{inputProps: {min: 1}}}
+                                                value={data.sp_qty} onChange={handleChange} variant="outlined"
+                                            />
+                                        </Grid2>
+                                    </Grid2>
+
+                                    <Box sx={{display: 'flex', justifyContent: 'flex-end', mt: 3}}>
+                                        <Button
+                                            disabled={processing}
+                                            type="submit" variant="contained" color="primary"
+                                            startIcon={<SaveIcon/>} sx={{mt: 1}}
+                                        >
+                                            {isNewItem ? "เพิ่มรายการ" : "บันทึกการแก้ไข"}
+                                        </Button>
+                                    </Box>
+                                </Box>
+                            ) : (
+                                <Box sx={{p: 3, textAlign: 'center', mt: 5}}>
+                                    <Typography color="text.secondary">
+                                        กรุณาเลือกรายการที่ต้องการแก้ไขจากรายการด้านซ้าย หรือเพิ่มรายการใหม่
+                                    </Typography>
+                                    <Button
+                                        variant="contained" startIcon={<AddIcon/>}
+                                        onClick={handleNewItem} sx={{mt: 2}}
+                                    >
+                                        เพิ่มรายการใหม่
+                                    </Button>
+                                </Box>
+                            )}
+                        </Paper>
+                    </Grid2>
+                    <Grid2 size={12}>
+                        <Button variant='contained'>
+                            ปิดจ็อบ
+                        </Button>
+                    </Grid2>
+                </Grid2>
+            </Container>
+        </AuthenticatedLayout>
+    );
+}

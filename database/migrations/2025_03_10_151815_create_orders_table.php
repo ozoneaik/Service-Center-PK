@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('status')->default('pending')->comment('สถานะคำสั่งซื้อ');
             $table->dateTime('buy_at')->comment('สั่งซื้อเมื่อ');
             $table->longText('address')->comment('ที่อยู่');
+            $table->string('phone')->nullable()->comment('เบอร์โทรศัพท์');
             $table->string('pay_by', 50)->default('บัญชีธนาคาร')->comment('ชำระเงินโดย');
             $table->dateTime('pay_at')->nullable()->comment('ชำระเงินเมื่อ');
             $table->dateTime('process_at')->nullable()->comment('รับคำสั่งซื้อเมื่อ');

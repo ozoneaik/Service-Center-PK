@@ -1,4 +1,4 @@
-import InputError from "@/Components/InputError";
+import InputError from "@/Components/InputError.jsx";
 import { useForm, usePage } from "@inertiajs/react";
 import { Alert, Button, CircularProgress, Dialog, DialogContent, Divider, Grid2, InputAdornment, Stack, TextField, Typography, useTheme } from "@mui/material";
 import axios from "axios";

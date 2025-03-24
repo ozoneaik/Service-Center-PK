@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/get-sp/{barcode}', function ($barcode) {
+Route::get('/get-sp-test/{barcode}', function ($barcode) {
     if ($barcode === '002222111100946') {
         return response()->json([
             'barcode' => $barcode,
@@ -41,4 +41,4 @@ Route::get('/get-sp/{barcode}', function ($barcode) {
             'barcode' => $barcode,
         ]);
     }
-})->name('getSp');
+})->name('getSpTest');

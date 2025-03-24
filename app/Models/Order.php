@@ -22,7 +22,8 @@ class Order extends Model
         'cancel_user_key',
         'address',
         'pay_at',
-        'pay_by'
+        'pay_by',
+        'phone'
     ];
 
     protected $appends = ['status_text'];
@@ -36,7 +37,7 @@ class Order extends Model
                 $status_text = 'กำลังดำเนินการจัดเตรียมสินค้า';
             } elseif ($this->status === 'success') {
                 $status_text = 'คำสั่งซื้อเสร็จสิ้น';
-            } elseif ($this->status === 'calceled') {
+            } elseif ($this->status === 'canceled') {
                 $status_text = 'คำสั่งซื้อถูกยกเลิก';
             } else {
                 $status_text = 'ไม่ทราบสถานะคำสั่งซื้อ';

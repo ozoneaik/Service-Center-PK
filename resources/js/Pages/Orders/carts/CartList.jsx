@@ -1,37 +1,23 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {Head, router} from "@inertiajs/react";
+import {Head, router, usePage} from "@inertiajs/react";
 import {
-    Avatar,
-    Box, Button, Card,
-    CardContent, Divider,
-    Grid2,
-    IconButton,
-    Stack,
-    Typography
+    Avatar, Box, Button, Card, CardContent, Divider, Grid2, IconButton, InputAdornment, Stack, TextField, Typography
 } from "@mui/material";
 import React, {useMemo, useState} from "react";
 import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
-
-const formatFloat = (price_per_unit, quantity, item) => {
-    const PricePerUnitForCal = parseFloat(price_per_unit) || 0;
-    const Qty = parseFloat(quantity);
-    const totalPriceSp = (PricePerUnitForCal * Qty).toFixed(2);
-    const showPricePerUnit = parseFloat(PricePerUnitForCal).toFixed(2);
-    return `${showPricePerUnit} × ${Qty} = ${totalPriceSp}`;
-};
-
+import RoomIcon from '@mui/icons-material/Room';
+import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
+import CheckIcon from '@mui/icons-material/Check';
 
 const ListSp = ({sps, sku_code, setGroups, groups}) => {
     const updateQuantity = async (id, condition = 'add') => {
         try {
-            const {data, status} = await axios.post(`/orders/carts/add-remove/${condition}`, {
-                id: id
-            });
+            const API_URL = `/orders/carts/add-remove/${condition}`;
+            const {data, status} = await axios.post(API_URL, {id: id});
             if (status === 200) {
-                // อัปเดต groups โดยตรงแทนที่จะอัปเดต spList ภายใน
                 const updatedGroups = groups.map(group => {
                     return {
                         ...group,
@@ -51,16 +37,16 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
         }
     };
 
-    const handleRemove = (id) => {
+    const handleRemove = (sp) => {
         AlertDialogQuestion({
-            title: 'ยืนยันการลบ',
-            text: 'คุณต้องการลบสินค้านี้ใช่หรือไม่?',
-            onPassed: async (confirm) => confirm && await onRemoveSp(id)
+            title: `ยืนยันการลบอะไหล่ ${sp.sp_code}`,
+            text: `คุณต้องการลบอะไหล่ ${sp.sp_code} ${sp.sp_name} ออกจากตะกร้า ใช่หรือไม่?`,
+            onPassed: async (confirm) => confirm && await onRemoveSp(sp.id)
         });
     }
 
     const onRemoveSp = async (id) => {
-        const {data, status} = await axios.delete(`/orders/carts/delete/${id}`);
+        const {status} = await axios.delete(`/orders/carts/delete/${id}`);
         if (status === 200) {
             const updatedGroups = groups.map(group => {
                 return {
@@ -69,7 +55,7 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
                 };
             });
             setGroups(updatedGroups);
-        }else{
+        } else {
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
                 text: 'ไม่สามารถลบสินค้านี้ได้'
@@ -85,7 +71,11 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
                     <React.Fragment key={index}>
                         <Stack direction='row' width='100%' justifyContent='space-between' alignItems='center'>
                             <Stack direction='row' spacing={2} alignItems='center'>
-                                <img src={sp_image} alt={''} width='100'/>
+                                <img src={sp_image} alt={'ไม่พบรูปภาพ'} width='100'
+                                     onError={(e) => {
+                                         e.target.src = import.meta.env.VITE_IMAGE_DEFAULT
+                                     }}
+                                />
                                 <Stack direction='column' spacing={1}>
                                     <Typography fontWeight='bold'>{sp.sp_code}</Typography>
                                     <Typography variant='body2'>{sp.sp_name}</Typography>
@@ -97,8 +87,7 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
                             </Stack>
                             <Stack direction="row" spacing={1} sx={{alignItems: 'center', mt: {xs: 1, sm: 0}}}>
                                 <IconButton
-                                    disabled={sp.qty <= 1}
-                                    color="primary" size="small"
+                                    disabled={sp.qty <= 1} size="small"
                                     onClick={() => updateQuantity(sp.id, 'remove')}
                                 >
                                     <RemoveIcon/>
@@ -107,16 +96,10 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
                                     {sp.qty}
                                 </Typography>
 
-                                <IconButton
-                                    color="primary" size="small"
-                                    onClick={() => updateQuantity(sp.id)}
-                                >
+                                <IconButton size="small" onClick={() => updateQuantity(sp.id)}>
                                     <AddIcon/>
                                 </IconButton>
-                                <IconButton
-                                    color="error" size="small"
-                                    onClick={() => handleRemove(sp.id)}
-                                >
+                                <IconButton color="error" size="small" onClick={() => handleRemove(sp)}>
                                     <DeleteIcon/>
                                 </IconButton>
                             </Stack>
@@ -131,7 +114,9 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
 
 export default function CartList({groupSku, totalSp}) {
     const [groups, setGroups] = useState(groupSku);
-    console.log(groups)
+    const user = usePage().props.auth.user;
+    const [address, setAddress] = useState(user.store_info.address);
+    const [phone, setPhone] = useState(user.store_info.phone);
     const totalPrice = useMemo(() => {
         return groups.reduce((total, group) => {
             return total + group.list.reduce((sum, sp) => {
@@ -144,9 +129,9 @@ export default function CartList({groupSku, totalSp}) {
 
     const handleConfirmOrder = () => {
         AlertDialogQuestion({
-            title : 'แน่ใจหรือไม่',
-            text : 'คุณต้องการยืนยันการสั่งซื้อสินค้าใช่หรือไม่?',
-            onPassed : async (confirm) => {
+            title: 'แน่ใจหรือไม่',
+            text: 'คุณต้องการยืนยันการสั่งซื้อสินค้าใช่หรือไม่?',
+            onPassed: async (confirm) => {
                 confirm && await onSubmit();
             }
         })
@@ -154,18 +139,20 @@ export default function CartList({groupSku, totalSp}) {
 
     const onSubmit = async () => {
         try {
-            const {data, status} = await axios.post('/orders/carts/store',{
-                groups : groups
+            const URL = '/orders/carts/store'
+            const {data, status} = await axios.post(URL, {
+                groups: groups,
+                address: address,
+                phone: phone
             });
             router.visit('/orders/success');
-        }catch (error){
+        } catch (error) {
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
                 text: 'ไม่สามารถยืนยันการสั่งซื้อได้'
             })
         }
     }
-
 
 
     return (
@@ -176,6 +163,30 @@ export default function CartList({groupSku, totalSp}) {
                     <Grid2 container spacing={2}>
                         <Grid2 size={12}>
                             <Typography variant='h6' fontWeight='bold'>ตะกร้าสินค้า</Typography>
+                        </Grid2>
+                        <Grid2 size={12}>
+                            <TextField id='claim-remark' multiline minRows={3} fullWidth slotProps={{
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment position='start'>
+                                            <RoomIcon/>
+                                        </InputAdornment>
+                                    )
+                                }
+                            }} size='small' label='ที่อยู่' value={address}
+                                       onChange={(e) => setAddress(e.target.value)}/>
+                        </Grid2>
+                        <Grid2 size={12}>
+                            <TextField fullWidth slotProps={{
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment position='start'>
+                                            <LocalPhoneIcon/>
+                                        </InputAdornment>
+                                    )
+                                }
+                            }} size='small' label='เบอร์โทรศัพท์' value={phone}
+                                       onChange={(e) => setPhone(e.target.value)}/>
                         </Grid2>
                         {groups.map((group, index) => {
                             return (
@@ -219,9 +230,8 @@ export default function CartList({groupSku, totalSp}) {
                             </Typography>
                         </Grid2>
                         <Grid2 size={{xs: 12, sm: 6}} sx={{textAlign: 'right'}}>
-                            <Button variant="contained" color="primary" size="large"
+                            <Button startIcon={<CheckIcon/>} variant="contained" color="success" size="large"
                                     onClick={handleConfirmOrder}>
-                            >
                                 ยืนยันการสั่งซื้อ
                             </Button>
                         </Grid2>
@@ -231,3 +241,11 @@ export default function CartList({groupSku, totalSp}) {
         </AuthenticatedLayout>
     )
 }
+
+const formatFloat = (price_per_unit, quantity, item) => {
+    const PricePerUnitForCal = parseFloat(price_per_unit) || 0;
+    const Qty = parseFloat(quantity);
+    const totalPriceSp = (PricePerUnitForCal * Qty).toFixed(2);
+    const showPricePerUnit = parseFloat(PricePerUnitForCal).toFixed(2);
+    return `${showPricePerUnit} × ${Qty} = ${totalPriceSp}`;
+};

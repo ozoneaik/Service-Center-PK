@@ -1,4 +1,4 @@
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import { Head, Link } from "@inertiajs/react";
 import { Container, Table, TableBody, TableCell, TableHead, TableRow, TextField, Grid2, InputAdornment, Button, Paper, Chip, Stack, Typography } from "@mui/material";
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
@@ -6,8 +6,8 @@ import StoreIcon from '@mui/icons-material/Store';
 import PasswordIcon from '@mui/icons-material/Password';
 import SearchIcon from '@mui/icons-material/Search';
 import { useState } from "react";
-import EditGP from "./EditGP";
-import AddStore from "./AddStore";
+import EditGP from "./EditGP.jsx";
+import AddStore from "./AddStore.jsx";
 
 const TableDetail = ({ shops }) => {
     console.log(shops);

@@ -1,16 +1,32 @@
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, usePage } from "@inertiajs/react";
-import { Container, Table, TableBody, TableCell, TableHead, TableRow, TextField, Grid2, InputAdornment, Button, Paper, Chip, Stack, Typography, useMediaQuery } from "@mui/material";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
+import {Head, Link, usePage} from "@inertiajs/react";
+import {
+    Container,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    TextField,
+    Grid2,
+    InputAdornment,
+    Button,
+    Paper,
+    Chip,
+    Stack,
+    Typography,
+    useMediaQuery
+} from "@mui/material";
 import StoreIcon from '@mui/icons-material/Store';
 import PasswordIcon from '@mui/icons-material/Password';
 import SearchIcon from '@mui/icons-material/Search';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
-import { useState } from "react";
-import AddSpWithBill from "./AddSpWithBill";
-import AddSpBasic from "./AddSpBasic";
+import {useState} from "react";
+import AddSpWithBill from "./AddSpWithBill.jsx";
+import AddSpBasic from "./AddSpBasic.jsx";
 
 
-const TableDetail = ({ stocks }) => {
+const TableDetail = ({stocks}) => {
     return (
         <Table>
             <TableHead>
@@ -24,12 +40,12 @@ const TableDetail = ({ stocks }) => {
                 {stocks.map((stock, index) => (
                     <TableRow key={index}>
                         <TableCell>
-                            <img src="" alt="no image" />
+                            <img src="" alt="no image"/>
                         </TableCell>
                         <TableCell>{stock.sku_code}</TableCell>
                         <TableCell>{stock.sku_name}</TableCell>
                         <TableCell>
-                            <img src="" alt="no image" />
+                            <img src="" alt="no image"/>
                         </TableCell>
                         <TableCell>{stock.sp_code}</TableCell>
                         <TableCell>{stock.sp_name}</TableCell>
@@ -46,21 +62,21 @@ const TableDetail = ({ stocks }) => {
     )
 }
 
-export default function StockSpList({ stocks, store }) {
+export default function StockSpList({stocks, store}) {
     const isMobile = useMediaQuery((theme) => theme.breakpoints.down("md"));
     const [openAddSpBill, setOpenAddSpBill] = useState(false);
     const [openAddSpBasic, setOpenAddSpBasic] = useState(false);
-    const { flash } = usePage().props
+    const {flash} = usePage().props
 
     return (
         <>
-            {openAddSpBasic && <AddSpBasic openAddSpBasic={openAddSpBasic} setOpenAddSpBasic={setOpenAddSpBasic} />}
-            {openAddSpBill && <AddSpWithBill openAddSpBill={openAddSpBill} setOpenAddSpBill={setOpenAddSpBill} />}
+            {openAddSpBasic && <AddSpBasic openAddSpBasic={openAddSpBasic} setOpenAddSpBasic={setOpenAddSpBasic}/>}
+            {openAddSpBill && <AddSpWithBill openAddSpBill={openAddSpBill} setOpenAddSpBill={setOpenAddSpBill}/>}
             <AuthenticatedLayout>
-                <Head title="จัดการสต็อกอะไหล่" />
-                <Container maxWidth='false' sx={{ backgroundColor: 'white', p: 3 }}>
+                <Head title="จัดการสต็อกอะไหล่"/>
+                <Container maxWidth='false' sx={{backgroundColor: 'white', p: 3}}>
                     <Grid2 container spacing={2}>
-                        <Grid2 size={{ md: 3, xs: 12 }}>
+                        <Grid2 size={{md: 3, xs: 12}}>
                             <TextField
                                 fullWidth size="small" label='รหัสอะไหล่'
                                 type="text" name="is_code_cust_id"
@@ -68,13 +84,13 @@ export default function StockSpList({ stocks, store }) {
                                 slotProps={{
                                     input: {
                                         startAdornment: <InputAdornment position="start">
-                                            <PasswordIcon />
+                                            <PasswordIcon/>
                                         </InputAdornment>
                                     }
                                 }}
                             />
                         </Grid2>
-                        <Grid2 size={{ md: 3, xs: 12 }}>
+                        <Grid2 size={{md: 3, xs: 12}}>
                             <TextField
                                 fullWidth size="small" label='ชื่ออะไหล่'
                                 type="text" name="stock_name"
@@ -82,13 +98,13 @@ export default function StockSpList({ stocks, store }) {
                                 slotProps={{
                                     input: {
                                         startAdornment: <InputAdornment position="start">
-                                            <StoreIcon />
+                                            <StoreIcon/>
                                         </InputAdornment>
                                     }
                                 }}
                             />
                         </Grid2>
-                        <Grid2 size={{ md: 3, xs: 12 }}>
+                        <Grid2 size={{md: 3, xs: 12}}>
                             <TextField
                                 fullWidth size="small" label='รหัสสินค้า'
                                 type="text" name="serial_id"
@@ -96,13 +112,13 @@ export default function StockSpList({ stocks, store }) {
                                 slotProps={{
                                     input: {
                                         startAdornment: <InputAdornment position="start">
-                                            <LocalPhoneIcon />
+                                            <LocalPhoneIcon/>
                                         </InputAdornment>
                                     }
                                 }}
                             />
                         </Grid2>
-                        <Grid2 size={{ md: 3, xs: 12 }}>
+                        <Grid2 size={{md: 3, xs: 12}}>
                             <TextField
                                 fullWidth size="small" label='ชื่อสินค้า'
                                 type="text" name="serial_id"
@@ -110,33 +126,44 @@ export default function StockSpList({ stocks, store }) {
                                 slotProps={{
                                     input: {
                                         startAdornment: <InputAdornment position="start">
-                                            <LocalPhoneIcon />
+                                            <LocalPhoneIcon/>
                                         </InputAdornment>
                                     }
                                 }}
                             />
                         </Grid2>
                         <Grid2 size={12}>
-                            <Button disabled fullWidth startIcon={<SearchIcon />} variant="contained">ค้นหา</Button>
+                            <Button disabled fullWidth startIcon={<SearchIcon/>} variant="contained">ค้นหา</Button>
                         </Grid2>
 
                         <Grid2 size={12}>
-                            <Stack direction={{ md: 'row', xs: 'column' }} justifyContent='space-between' alignItems='center'>
+                            <Stack direction={{md: 'row', xs: 'column'}} justifyContent='space-between'
+                                   alignItems='center'>
 
-                                <Typography variant='h5' fontWeight='bold'>จัดการสต็อกอะไหล่ ร้าน{store.shop_name}</Typography>
+                                <Typography variant='h5' fontWeight='bold'>จัดการสต็อกอะไหล่
+                                    ร้าน{store.shop_name}</Typography>
 
-                                <Stack direction={{ md: 'row', xs: 'column' }} spacing={2} alignItems='center'>
+                                <Stack direction={{md: 'row', xs: 'column'}} spacing={2} alignItems='center'>
                                     <Typography variant="subtitle1">รายการทั้งหมด {stocks.length} รายการ</Typography>
-                                    <Button fullWidth={isMobile} variant="contained" color="info" onClick={() => setOpenAddSpBill(true)}>เพิ่มอะไหล่จากการสแกนบิล</Button>
-                                    <Button fullWidth={isMobile} variant="contained" onClick={() => setOpenAddSpBasic(true)}>เพิ่มอะไหล่</Button>
-                                    <Button fullWidth={isMobile} variant="contained" color="warning" onClick={() => setOpenAddSpBasic(true)}>ปรับปรุงสต็อก</Button>
+                                    <Button fullWidth={isMobile} variant="contained" color="info"
+                                            onClick={() => setOpenAddSpBill(true)}>เพิ่มอะไหล่จากการสแกนบิล</Button>
+                                    <Button fullWidth={isMobile} variant="contained"
+                                            onClick={() => setOpenAddSpBasic(true)}>เพิ่มอะไหล่</Button>
+                                    <Button fullWidth={isMobile}
+                                            variant="contained"
+                                            color="warning"
+                                            component={Link}
+                                            href={route('stockJob.index')}
+                                    >
+                                        ปรับปรุงสต็อก
+                                    </Button>
                                 </Stack>
                             </Stack>
                         </Grid2>
 
                         <Grid2 size={12}>
-                            <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
-                                <TableDetail stocks={stocks} />
+                            <Paper variant='outlined' sx={{p: 2, overflowX: 'auto'}}>
+                                <TableDetail stocks={stocks}/>
                             </Paper>
                         </Grid2>
                     </Grid2>
