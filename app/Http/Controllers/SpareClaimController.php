@@ -80,13 +80,6 @@ class SpareClaimController extends Controller
         ]);
         try {
             foreach ($selected as $key => $claim) {
-                if (isset($claim['stock_local']['qty_sp']) && intval($claim['qty']) > $claim['stock_local']['qty_sp']) {
-                    $message = 'จำนวนอะไหล่ ' . $claim['sp_code'] . ' ในสต็อกไม่เพียงพอ กรุณาเพิ่มจำนวนอะไหล่ในหน้าจัดการบริการตัวเอง';
-                    throw new \Exception($message);
-                } elseif (!isset($claim['stock_local']['qty_sp'])) {
-                    $message = 'ไม่พบข้อมูลจำนวนอะไหล่ ' . $claim['sp_code'] . ' ในสต็อก กรุณาเพิ่มจำนวนอะไหล่ในหน้าจัดการบริการตัวเอง';
-                    throw new \Exception($message);
-                }
                 foreach ($claim['detail'] as $k => $value) {
                     $sp = SparePart::query()
                         ->where('job_id', $value['job_id'])
