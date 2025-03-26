@@ -5,6 +5,7 @@ export default function DocSendJobs({jobs}){
     return (
         <AuthenticatedLayout>
             <Head title={'ทำใบ'}/>
+            ทำใบ
         </AuthenticatedLayout>
     )
 }

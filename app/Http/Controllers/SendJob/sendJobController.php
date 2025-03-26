@@ -49,6 +49,6 @@ class sendJobController extends Controller
     }
 
     public function docJobList(){
-        return Inertia::render('SendJobs/DocJobList');
+        return Inertia::render('SendJobs/DocSendJobs');
     }
 }
