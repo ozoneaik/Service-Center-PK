@@ -17,7 +17,7 @@ export default function RowView({spList,setSpList}) {
             });
             if(status === 200) {
                 setSpList(spList.map(sp => {
-                    if(sp.spcode === item.spcode) {
+                    if((sp.spcode === item.spcode) &&( item.remark === 'มาจากการสั่งซื้อ')) {
                         return {...sp, added: true}
                     }
                     return sp;
@@ -85,6 +85,7 @@ export default function RowView({spList,setSpList}) {
                                         component="div"
                                     >
                                         {item.spcode}
+                                        {item.remark}
                                     </Typography>
                                     <Typography variant="body2" sx={{color: 'text.secondary'}}>
                                         {item.spname}

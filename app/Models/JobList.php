@@ -22,6 +22,10 @@ class JobList extends Model
         'auth_key',
         'is_code_key',
         'user_key',
-        'close_job_by'
+        'close_job_by',
+        'group_job',
+        'print_at',
+        'print_updated_at',
+        'counter_print'
     ];
 }

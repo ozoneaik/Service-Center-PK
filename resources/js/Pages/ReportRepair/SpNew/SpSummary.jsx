@@ -233,6 +233,8 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
         try {
             setLoading(true);
             const { data } = await axios.post('/spare-part/store', {
+                pid : detail.pid,
+                pname : detail.pname,
                 serial_id: detail.serial,
                 list: {
                     sp: selectWorking,

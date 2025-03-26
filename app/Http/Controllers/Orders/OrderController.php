@@ -59,6 +59,7 @@ class OrderController extends Controller
                         }else{
                             $result['sp'][$key]['added'] = false;
                         }
+                        $result['sp'][$key]['remark'] = 'มาจากการสั่งซื้อ';
                         $result['sp'][$key]['path_file'] = "https://images.pumpkin.tools/SKUS/SP/$sku/" . $result['sp'][$key]['spcode'] . ".jpg";
                     }
 

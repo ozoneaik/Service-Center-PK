@@ -32,9 +32,11 @@ class sendJobController extends Controller
         try {
             DB::beginTransaction();
             if(count($selectedJob) > 0){
+                $group_job = time().rand(1000,9999);
                 foreach ($selectedJob as $job){
                     $findJob = JobList::query()->where('job_id',$job['job_id'])->first();
                     $findJob->status = 'send';
+                    $findJob->group_job = $group_job;
                     $findJob->save();
                 }
             }else{
@@ -49,6 +51,9 @@ class sendJobController extends Controller
     }
 
     public function docJobList(){
-        return Inertia::render('SendJobs/DocSendJobs');
+        $groups = JobList::query()->where('status','send')->select('print_at','group_job','print_updated_at','counter_print')
+        ->groupBy('group_job','print_at','print_updated_at','counter_print')->get();
+        return Inertia::render('SendJobs/DocSendJobs',['groups' => $groups]);
     }
+
 }
