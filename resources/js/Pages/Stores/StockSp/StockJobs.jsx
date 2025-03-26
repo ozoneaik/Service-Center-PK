@@ -10,7 +10,6 @@ import {useState} from "react";
 
 
 export default function StockJobs({jobs}) {
-    const isDisabled = jobs.some(item => item.job_status === 'processing');
     const tableHeads = ['รหัส job', 'สร้างเมื่อ', 'จัดการ'];
     const {flash} = usePage().props
     const [alert, setAlert] = useState(false)
@@ -61,8 +60,8 @@ export default function StockJobs({jobs}) {
                     </Grid2>
                     <Grid2 size={12}>
                         <Stack direction='row-reverse'>
-                            <Button variant='contained' onClick={handleStoreJob} disabled={isDisabled}>
-                                {!isDisabled ? 'สร้าง jobs' : 'ไม่สามารถส้ราง job ได้เนื่องจากมีจ็อบที่ค้างอยู่'}
+                            <Button variant='contained' onClick={handleStoreJob}>
+                                สร้าง jobs
                             </Button>
                         </Stack>
                     </Grid2>

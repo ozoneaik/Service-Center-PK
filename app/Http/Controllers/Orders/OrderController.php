@@ -207,16 +207,20 @@ class OrderController extends Controller
                 'address' => $request->address ?? auth()->user()->store_info->address,
             ]);
             $totalOrderPrice = 0;
+            $items = [];
             foreach ($groups as $group) {
                 if (!isset($group['list']) || empty($group['list'])) {
                     continue;
                 }
                 $spList = $group['list'];
+                $totalSpCount = [];
                 foreach ($spList as $spItem) {
+                    $items[] = "{$spItem['sp_code']}*{$spItem['qty']}";
                     if (!isset($spItem['id'])) {
                         continue;
                     }
                     try {
+
                         $sp = Cart::query()->findOrFail($spItem['id']);
                         $sp->update(['is_active' => true]);
                         $qty = $spItem['qty'] ?? 1;
@@ -245,7 +249,31 @@ class OrderController extends Controller
                     }
                 }
             }
+//            dd($items);
             $order->update(['total_price' => $totalOrderPrice]);
+            $text = "ศูนย์ซ่อม : ".Auth::user()->store_info->shop_name."\nแจ้งเรื่อง : สั่งซื้ออะไหล่\nรายการ :\n\n" . implode("\n", $items);
+            $body = [
+                "receive_id" => "ou_9083bf66d2e3240e0313dc50ae7edba9",
+                "msg_type" => "text",
+                "content" => json_encode(["text" => $text], JSON_UNESCAPED_UNICODE)
+            ];
+            $response = Http::post('https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal', [
+                'app_id' => 'cli_a769d3ae8cf81009',
+                'app_secret' => '6QJRSc64IkesVHLTginCxdOlbaaSBe1C'
+            ]);
+            if ($response->successful()) {
+                $responseJson = $response->json();
+                $tenant_access_token = $responseJson['tenant_access_token'];
+
+                $responseSend = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $tenant_access_token,
+                ])->post('https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=open_id', $body);
+                if (!$responseSend->successful()) {
+                    throw new \Exception('ไม่สามารถส่งการแจ้งเตือนไปหา lark ได้');
+                }
+            } else {
+                throw new \Exception('ไม่สามารถส่งการแจ้งเตือนไปหา lark ได้');
+            }
             DB::commit();
             return response()->json([
                 'status' => 'success',

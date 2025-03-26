@@ -224,7 +224,7 @@ class SearchController extends Controller
     {
         $jobs = JobList::query()->where('serial_id', $serial_id)
             ->where('is_code_key', Auth::user()->is_code_cust_id)
-            ->where('status', 'success')
+            ->whereNot('status', 'pending')
             ->orderBy('id', 'desc')
             ->get();
         $histories = [];

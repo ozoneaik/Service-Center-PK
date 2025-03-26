@@ -25,7 +25,7 @@ export default function SellerForm({ className = '' }) {
     return (
         <section className={className}>
             <header>
-                <h2 className="text-lg font-medium text-gray-900">Sell ประจำร้าน</h2>
+                <h2 className="text-lg font-medium text-gray-900">พนักงานขาย ประจำร้าน (Sale)</h2>
                 <p className="mt-1 text-sm text-gray-600">คำอธิบาย</p>
             </header>
             <form onSubmit={updatePassword} className="mt-6 space-y-6">

@@ -37,7 +37,7 @@ const TableDetail = ({ shops }) => {
                             <TableCell>{shop.gp ? shop.gp.gp_val : 0}</TableCell>
                             <TableCell>{shop.count_user}</TableCell>
                             <TableCell>{shop.count_user}</TableCell>
-                            <TableCell>กำลังพัฒนา</TableCell>
+                            <TableCell>{shop.AT || 0}</TableCell>
                             <TableCell>
                                 <Stack direction='column' spacing={2}>
                                     {/* <Button

@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -73,6 +74,8 @@ class SpareClaimController extends Controller
         // dd($request->all());
         $claim_id = 'C-' . Carbon::now()->timestamp;
         $selected = $request->input('selected');
+        $items = [];
+//        "{\\"text\\":\\"ศูนย์ซ่อม : hello world\\\\nแจ้งเรื่อง : เคลม\\\\nรายการ :\\\\n\\\\nSP50122-01*1\\\\nSP50122-02*1\\\\nSP50122-03*1\\"}"}
         DB::beginTransaction();
         Claim::query()->create([
             'claim_id' => $claim_id,
@@ -80,6 +83,7 @@ class SpareClaimController extends Controller
         ]);
         try {
             foreach ($selected as $key => $claim) {
+                $items[] = "{$claim['sp_code']}*{$claim['qty']}";
                 foreach ($claim['detail'] as $k => $value) {
                     $sp = SparePart::query()
                         ->where('job_id', $value['job_id'])
@@ -97,6 +101,30 @@ class SpareClaimController extends Controller
                     ]);
                 }
             }
+            $text = "ศูนย์ซ่อม : hello world\nแจ้งเรื่อง : เคลม\nรายการ :\n\n" . implode("\n", $items);
+            $body = [
+                "receive_id" => "ou_9083bf66d2e3240e0313dc50ae7edba9",
+                "msg_type" => "text",
+                "content" => json_encode(["text" => $text], JSON_UNESCAPED_UNICODE)
+            ];
+            $response = Http::post('https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal', [
+                'app_id' => 'cli_a769d3ae8cf81009',
+                'app_secret' => '6QJRSc64IkesVHLTginCxdOlbaaSBe1C'
+            ]);
+            if ($response->successful()) {
+                $responseJson = $response->json();
+                $tenant_access_token = $responseJson['tenant_access_token'];
+
+                $responseSend = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $tenant_access_token,
+                ])->post('https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=open_id', $body);
+                if (!$responseSend->successful()) {
+                    throw new \Exception('ไม่สามารถส่งการแจ้งเตือนไปหา lark ได้');
+                }
+            } else {
+                throw new \Exception('ไม่สามารถส่งการแจ้งเตือนไปหา lark ได้');
+            }
+
             DB::commit();
             return response()->json([
                 'message' => 'สร้างเอกสารการเคลมสำเร็จ'

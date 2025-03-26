@@ -16,8 +16,8 @@ import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
 
 export const TableDetail = ({ jobs, handleShowDetail, url }) => {
-    const statusLabels = { pending: 'กำลังดำเนินการซ่อม', success: 'ปิดการซ่อมแล้ว', canceled: 'ยกเลิกการซ่อมแล้ว' };
-    const statusColors = { pending: 'secondary', success: 'success', canceled: 'error' };
+    const statusLabels = { pending: 'กำลังดำเนินการซ่อม', success: 'ปิดการซ่อมแล้ว', canceled: 'ยกเลิกการซ่อมแล้ว',send : 'ส่งไปยังศูนย์ซ่อม PK' };
+    const statusColors = { pending: 'secondary', success: 'success', canceled: 'error',send : 'info' };
     return (
         <Table>
             <TableHead>

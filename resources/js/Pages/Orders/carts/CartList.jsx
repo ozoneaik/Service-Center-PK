@@ -164,30 +164,30 @@ export default function CartList({groupSku, totalSp}) {
                         <Grid2 size={12}>
                             <Typography variant='h6' fontWeight='bold'>ตะกร้าสินค้า</Typography>
                         </Grid2>
-                        <Grid2 size={12}>
-                            <TextField id='claim-remark' multiline minRows={3} fullWidth slotProps={{
-                                input: {
-                                    startAdornment: (
-                                        <InputAdornment position='start'>
-                                            <RoomIcon/>
-                                        </InputAdornment>
-                                    )
-                                }
-                            }} size='small' label='ที่อยู่' value={address}
-                                       onChange={(e) => setAddress(e.target.value)}/>
-                        </Grid2>
-                        <Grid2 size={12}>
-                            <TextField fullWidth slotProps={{
-                                input: {
-                                    startAdornment: (
-                                        <InputAdornment position='start'>
-                                            <LocalPhoneIcon/>
-                                        </InputAdornment>
-                                    )
-                                }
-                            }} size='small' label='เบอร์โทรศัพท์' value={phone}
-                                       onChange={(e) => setPhone(e.target.value)}/>
-                        </Grid2>
+                        {/*<Grid2 size={12}>*/}
+                        {/*    <TextField id='claim-remark' multiline minRows={3} fullWidth slotProps={{*/}
+                        {/*        input: {*/}
+                        {/*            startAdornment: (*/}
+                        {/*                <InputAdornment position='start'>*/}
+                        {/*                    <RoomIcon/>*/}
+                        {/*                </InputAdornment>*/}
+                        {/*            )*/}
+                        {/*        }*/}
+                        {/*    }} size='small' label='ที่อยู่' value={address}*/}
+                        {/*               onChange={(e) => setAddress(e.target.value)}/>*/}
+                        {/*</Grid2>*/}
+                        {/*<Grid2 size={12}>*/}
+                        {/*    <TextField fullWidth slotProps={{*/}
+                        {/*        input: {*/}
+                        {/*            startAdornment: (*/}
+                        {/*                <InputAdornment position='start'>*/}
+                        {/*                    <LocalPhoneIcon/>*/}
+                        {/*                </InputAdornment>*/}
+                        {/*            )*/}
+                        {/*        }*/}
+                        {/*    }} size='small' label='เบอร์โทรศัพท์' value={phone}*/}
+                        {/*               onChange={(e) => setPhone(e.target.value)}/>*/}
+                        {/*</Grid2>*/}
                         {groups.map((group, index) => {
                             return (
                                 <Grid2 key={index} size={12}>

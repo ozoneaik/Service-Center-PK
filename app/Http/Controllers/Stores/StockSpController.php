@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Stores;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StockSpRequest;
 use App\Models\Bill;
+use App\Models\StockJobDetail;
 use App\Models\StockSparePart;
 use App\Models\StoreInformation;
 use Illuminate\Http\JsonResponse;
@@ -24,6 +25,14 @@ class StockSpController extends Controller
             ->select('store_information.*', DB::raw('COUNT(users.id) as count_user'))
             ->groupBy('store_information.id')
             ->get();
+        foreach ($shops as $shop) {
+            $shop['AT'] = StockJobDetail::query()
+                ->leftJoin('stock_jobs', 'stock_jobs.stock_job_id', '=', 'stock_job_details.stock_job_id')
+                ->where('stock_jobs.is_code_cust_id', '=', $shop['is_code_cust_id']) // เปลี่ยนจาก 'like' เป็น '='
+                ->where('stock_jobs.job_status', 'processing')
+                ->select(DB::raw('SUM(stock_job_details.sp_qty) as total_sp_qty'))
+                ->value('total_sp_qty'); // ดึงค่า SUM จริง ๆ
+        }
         return Inertia::render('Stores/Manage/StoreList', ['shops' => $shops]);
     }
 

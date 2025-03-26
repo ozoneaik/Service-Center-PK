@@ -59,10 +59,10 @@ class JobController extends Controller
                         ->whereIn('menu_id', [1, 2, 3])
                         ->pluck('menu_id')
                         ->toArray();
-                
+
                     // ตรวจสอบว่าเมนูที่ต้องมีครบทั้ง 1, 2, 3 ขาดเมนูอะไรไปบ้าง
                     $missingMenus = array_diff([1, 2, 3], $uploadedMenus);
-                
+
                     if (!empty($missingMenus)) {
                         $missingMenusText = implode(', ', $missingMenus);
                         if($missingMenusText === '1') $missingMenusText = "สภาพสินค้าก่อนซ่อม";
@@ -103,5 +103,32 @@ class JobController extends Controller
                 'job' => $job ?? [],
             ], $status);
         }
+    }
+
+
+    public function cancelJob($serial_id): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+            $job = JobList::query()->where('job_id', $serial_id)->first();
+            if ($job->status === 'canceled'){
+                throw new \Exception('จ็อบนี้เคยยกเลิกไปแล้ว');
+            }else{
+                $job->status = 'canceled';
+                $job->save();
+            }
+            DB::commit();
+            return response()->json([
+                'message' => 'ยกเลิกการซ่อมสำเร็จ',
+                'job' => $job ?? [],
+            ]);
+        }catch (\Exception $exception){
+            DB::rollBack();
+            return response()->json([
+                'job' => [],
+                'message' => $exception->getMessage(),
+            ],400);
+        }
+
     }
 }

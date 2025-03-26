@@ -12,26 +12,26 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import FormGroup from '@mui/material/FormGroup';
-import { AlertDialog } from "@/Components/AlertDialog.js";
-import { ImagePreview } from "@/Components/ImagePreview.jsx";
+import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
+import {ImagePreview} from "@/Components/ImagePreview.jsx";
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import { useState } from "react";
+import {useState} from "react";
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import { Paper, TableContainer } from "@mui/material";
+import {Paper, TableContainer} from "@mui/material";
 
 
-const BehaviorDetail = ({ detail }) => (
+const BehaviorDetail = ({detail}) => (
     <Stack flexWrap='wrap' direction='row'>
         {detail.map((item, index) => (
             <Typography variant='body1' color='gray' key={index}>{item.causename}&nbsp;/&nbsp;</Typography>
         ))}
     </Stack>
 )
-const FileDetail = ({ menu, forService = false }) => {
+const FileDetail = ({menu, forService = false}) => {
     const displayStartIndex = forService ? 3 : 0;
     const displayEndIndex = forService ? menu.length : 3;
     return (
-        <Grid2 container mt={2} spacing={2} sx={{ overflowX: 'auto' }}>
+        <Grid2 container mt={2} spacing={2} sx={{overflowX: 'auto'}}>
             {menu
                 .filter((_, index) => index >= displayStartIndex && index < displayEndIndex)
                 .map((item, index) => (
@@ -52,11 +52,11 @@ const FileDetail = ({ menu, forService = false }) => {
         </Grid2>
     );
 };
-const SpDetail = ({ sp, sp_warranty, detail }) => {
-    const highlight = { backgroundColor: '#e6ffe6' }
+const SpDetail = ({sp, sp_warranty, detail}) => {
+    const highlight = {backgroundColor: '#e6ffe6'}
     const listHeader = ['รูปภาพ', 'รหัสอะไหล่', 'ชื่ออะไหล่', 'ราคาต่อหน่วย', 'จำนวน', 'หน่วย', 'ราคารวม'];
     return (
-        <TableContainer component={Paper} sx={{ maxWidth: '100%' }}>
+        <TableContainer component={Paper} sx={{maxWidth: '100%'}}>
             <Table>
                 <TableHead>
                     <TableRow>
@@ -71,7 +71,10 @@ const SpDetail = ({ sp, sp_warranty, detail }) => {
                         return (
                             <TableRow key={index} sx={item.warranty ? highlight : {}}>
                                 <TableCell>
-                                    <img src={spPath2} width={50} alt="image not found" />
+                                    <img src={spPath2} width={50} alt="image not found"
+                                         onError={(e) => {
+                                             e.target.src = 'https://images.dcpumpkin.com/images/product/500/default.jpg'
+                                         }}/>
                                 </TableCell>
                                 <TableCell>{item.spcode}</TableCell>
                                 <TableCell>{item.spname}</TableCell>
@@ -88,21 +91,21 @@ const SpDetail = ({ sp, sp_warranty, detail }) => {
     )
 }
 
-const CardDetail = ({ children }) => (
-    <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto', width: '100%' }}>
+const CardDetail = ({children}) => (
+    <Paper variant='outlined' sx={{p: 2, overflowX: 'auto', width: '100%'}}>
         {children}
     </Paper>
 
 )
-const CardDetailForTable = ({ children }) => (
-    <Card variant="outlined" sx={{ width: '100%' }}>
-        <CardContent sx={{ overflowX: 'auto' }}> {/* เพิ่ม scroll แนวนอน */}
+const CardDetailForTable = ({children}) => (
+    <Card variant="outlined" sx={{width: '100%'}}>
+        <CardContent sx={{overflowX: 'auto'}}> {/* เพิ่ม scroll แนวนอน */}
             {children}
         </CardContent>
     </Card>
 )
 
-export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
+export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
     const selected = detail.selected;
     const [loading, setLoading] = useState(false);
 
@@ -116,7 +119,7 @@ export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
                     let message = '';
                     let Status = 400;
                     try {
-                        const { data, status } = await axios.post('jobs/update', {
+                        const {data, status} = await axios.post('jobs/update', {
                             job_id: detail.job.job_id
                         });
                         Status = status;
@@ -190,7 +193,7 @@ export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
             "emprepair": ""
         };
         try {
-            const { data, status } = await axios.post('/genQuPdf', {
+            const {data, status} = await axios.post('/genQuPdf', {
                 ...dataJson
             })
             window.open(data.pathUrl, '_blank');
@@ -204,43 +207,79 @@ export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
         }
     }
 
+
+    const cancelJob = () => {
+        AlertDialogQuestion({
+            text: 'กด ตกลง เพื่อยกเลิกการซ่อม',
+            onPassed: async (confirm) => {
+                confirm && await handleCancelJob()
+            }
+        })
+    }
+    const handleCancelJob = async () => {
+        try {
+            const {data, status} = await axios.put(`/jobs/cancel/${detail.job.job_id}`);
+            console.log(data, status);
+            AlertDialog({
+                icon: 'success',
+                title: 'สำเร็จ',
+                text: data.message,
+                onPassed: () => {
+                    setDetail(prevDetail => ({
+                        ...prevDetail,
+                        job: {
+                            ...prevDetail.job,
+                            status: 'canceled'
+                        }
+                    }));
+                }
+            });
+        } catch (error) {
+            AlertDialog({
+                title: 'เกิดข้อผิดพลาด',
+                text: error.response.data.message
+            });
+        }
+    }
+
     return (
         <Grid2 container>
             <Grid2 size={12}>
-                    <Stack direction='column' spacing={2}>
-                        <Grid2 container spacing={2}>
-                            <Grid2 size={12}>
-                                <CardDetail>
-                                    <Stack direction='row' spacing={2} alignItems='center'>
-                                        <Avatar sizes='lg' sx={{ backgroundColor: '#eb5b1f', width: 50, height: 50 }} />
-                                        <Stack direction='column'>
-                                            <Typography>ชื่อ : {selected.customerInJob.name}</Typography>
-                                            <Typography>เบอร์โทร : {selected.customerInJob.phone}</Typography>
-                                        </Stack>
+                <Stack direction='column' spacing={2}>
+                    <Grid2 container spacing={2}>
+                        <Grid2 size={12}>
+                            <CardDetail>
+                                <Stack direction='row' spacing={2} alignItems='center'>
+                                    <Avatar sizes='lg' sx={{backgroundColor: '#eb5b1f', width: 50, height: 50}}/>
+                                    <Stack direction='column'>
+                                        <Typography>ชื่อ : {selected.customerInJob.name}</Typography>
+                                        <Typography>เบอร์โทร : {selected.customerInJob.phone}</Typography>
                                     </Stack>
-                                </CardDetail>
-                            </Grid2>
-                            <Grid2 size={12}>
-                                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                                    <CardDetail>
-                                        <Typography variant='h6' fontWeight='bold'>รูปภาพ/วิดีโอสำหรับเคลมสินค้า</Typography>
-                                        <FileDetail menu={selected.fileUpload} />
-                                    </CardDetail>
-                                    <CardDetail>
-                                        <Typography variant='h6'
-                                            fontWeight='bold'>รูปภาพ/วิดีโอสำหรับร้านค้าใช้ภายใน</Typography>
-                                        <FileDetail menu={selected.fileUpload} forService={true} />
-                                    </CardDetail>
                                 </Stack>
-                            </Grid2>
-                            <Grid2 size={12}>
+                            </CardDetail>
+                        </Grid2>
+                        <Grid2 size={12}>
+                            <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>
                                 <CardDetail>
-                                    <Typography variant='h6' fontWeight='bold'>อาการ / สาเหตุ</Typography>
-                                    <BehaviorDetail detail={selected.behavior} />
+                                    <Typography variant='h6'
+                                                fontWeight='bold'>รูปภาพ/วิดีโอสำหรับเคลมสินค้า</Typography>
+                                    <FileDetail menu={selected.fileUpload}/>
                                 </CardDetail>
-                            </Grid2>
+                                <CardDetail>
+                                    <Typography variant='h6'
+                                                fontWeight='bold'>รูปภาพ/วิดีโอสำหรับร้านค้าใช้ภายใน</Typography>
+                                    <FileDetail menu={selected.fileUpload} forService={true}/>
+                                </CardDetail>
+                            </Stack>
+                        </Grid2>
+                        <Grid2 size={12}>
+                            <CardDetail>
+                                <Typography variant='h6' fontWeight='bold'>อาการ / สาเหตุ</Typography>
+                                <BehaviorDetail detail={selected.behavior}/>
+                            </CardDetail>
+                        </Grid2>
 
-                            {/* <Grid2 size={12}>
+                        {/* <Grid2 size={12}>
                                 <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
                                     <Typography variant='h6' fontWeight='bold'>บันทึกอะไหล่</Typography>
                                     <Grid2 container>
@@ -251,66 +290,73 @@ export const SummaryForm = ({ detail, setDetail, setShowDetail }) => {
                                 </Paper>
                             </Grid2> */}
 
-                            <Grid2 size={12}>
-                                <Paper variant='outlined' sx={{ p: 2 }}>
-                                    <Typography variant='h6' fontWeight='bold'>บันทึกอะไหล่</Typography>
-                                    <Grid2 container>
-                                        <Grid2 size={12}>
-                                            <SpDetail sp={selected.sp} detail={detail} sp_warranty={selected.sp_warranty} />
-                                        </Grid2>
+                        <Grid2 size={12}>
+                            <Paper variant='outlined' sx={{p: 2}}>
+                                <Typography variant='h6' fontWeight='bold'>บันทึกอะไหล่</Typography>
+                                <Grid2 container>
+                                    <Grid2 size={12}>
+                                        <SpDetail sp={selected.sp} detail={detail} sp_warranty={selected.sp_warranty}/>
                                     </Grid2>
-                                </Paper>
-                            </Grid2>
-
-
-                            <Grid2 size={12}>
-                                <CardDetail>
-                                    <Typography variant='h6' fontWeight='bold'>หมายเหตุสำหรับลูกค้า</Typography>
-                                    <Typography variant='body1' color='gray'>- {selected.customerInJob.remark}</Typography>
-                                </CardDetail>
-                            </Grid2>
-                            <Grid2 size={12}>
-                                <CardDetail>
-                                    <Typography variant='h6' fontWeight='bold'>หมายเหตุสำหรับสื่อสารภายใน</Typography>
-                                    <Typography variant='body1' color='gray'>- {selected.remark}</Typography>
-                                </CardDetail>
-                            </Grid2>
-                            <Grid2 size={12}>
-                                <CardDetail>
-                                    <Typography variant='h6' fontWeight='bold'>เอกสาร</Typography>
-                                    <Stack direction='row' spacing={2}>
-                                        <a href={route('genReCieveSpPdf', { job_id: detail.job.job_id })} target='_blank'>
-                                            <Button variant='contained' startIcon={<ReceiptLongIcon />}>
-                                                รับสินค้า
-                                            </Button>
-                                        </a>
-                                        {detail.selected.sp.length > 0 && (
-                                            <Button onClick={exportQu} startIcon={<PictureAsPdfIcon />}
-                                                variant='contained' disabled={loading}>
-                                                {loading ? <CircularProgress size={18} /> : 'ออกใบเสนอราคา'}
-                                            </Button>
-                                        )}
-                                    </Stack>
-                                </CardDetail>
-                            </Grid2>
+                                </Grid2>
+                            </Paper>
                         </Grid2>
-                        <Stack direction='row' spacing={2} justifyContent='end'>
-                            <Button
-                                disabled={detail.job.status !== 'pending'}
-                                variant='contained' color='error'
-                                onClick={() => console.log(selected)}
-                            >
-                                ยกเลิกงานซ่อม
-                            </Button>
-                            <Button
-                                variant='contained' color='success'
-                                disabled={detail.job.status !== 'pending'}
-                                onClick={() => endJob()}
-                            >
-                                ปิดงานซ่อม
-                            </Button>
-                        </Stack>
+
+
+                        <Grid2 size={12}>
+                            <CardDetail>
+                                <Typography variant='h6' fontWeight='bold'>หมายเหตุสำหรับลูกค้า</Typography>
+                                <Typography variant='body1' color='gray'>- {selected.customerInJob.remark}</Typography>
+                            </CardDetail>
+                        </Grid2>
+                        <Grid2 size={12}>
+                            <CardDetail>
+                                <Typography variant='h6' fontWeight='bold'>หมายเหตุสำหรับสื่อสารภายใน</Typography>
+                                <Typography variant='body1' color='gray'>- {selected.remark}</Typography>
+                            </CardDetail>
+                        </Grid2>
+                        <Grid2 size={12}>
+                            <CardDetail>
+                                <Typography variant='h6' fontWeight='bold'>เอกสาร</Typography>
+                                <Stack direction='row' spacing={2}>
+                                    <a href={route('genReCieveSpPdf', {job_id: detail.job.job_id})} target='_blank'>
+                                        <Button variant='contained' startIcon={<ReceiptLongIcon/>}>
+                                            รับสินค้า
+                                        </Button>
+                                    </a>
+                                    {detail.selected.sp.length > 0 && (
+                                        <Button onClick={exportQu} startIcon={<PictureAsPdfIcon/>}
+                                                variant='contained' disabled={loading}>
+                                            {loading ? <CircularProgress size={18}/> : 'ออกใบเสนอราคา'}
+                                        </Button>
+                                    )}
+                                </Stack>
+                            </CardDetail>
+                        </Grid2>
+                    </Grid2>
+                    <Stack direction='row' spacing={2} justifyContent='end'>
+                        <Button
+                            disabled={detail.job.status !== 'pending'}
+                            variant='contained' color='error'
+                            onClick={() => cancelJob()}
+                        >
+                            ยกเลิกงานซ่อม
+                        </Button>
+                        {/*<Button*/}
+                        {/*    disabled={detail.job.status !== 'pending'}*/}
+                        {/*    variant='contained' color='info'*/}
+                        {/*    onClick={() => alert('developing')}*/}
+                        {/*>*/}
+                        {/*    ส่งซ่อมให้กับศูนย์ Pumpkin*/}
+                        {/*</Button>*/}
+                        <Button
+                            variant='contained' color='success'
+                            disabled={detail.job.status !== 'pending'}
+                            onClick={() => endJob()}
+                        >
+                            ปิดงานซ่อม
+                        </Button>
                     </Stack>
+                </Stack>
             </Grid2>
         </Grid2>
     )

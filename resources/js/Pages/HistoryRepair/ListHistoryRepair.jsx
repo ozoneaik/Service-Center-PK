@@ -36,8 +36,9 @@ export default function ListHistoryRepair({detail}) {
                                     </Stack>
                                     <Stack direction={{xs: 'column', md: 'row'}} spacing={1} mb={2}>
                                         <Typography fontWeight='bold' color='#f05f29'>สถานะ</Typography>
-                                        <Chip color={item.status === 'success' ? 'success' : 'secondary'} size='small'
-                                              label={item.status === 'success' ? 'ปิดงานซ่อมแล้ว' : 'กำลังดำเนินการซ่อม'}/>
+                                        {/*<Chip color={item.status === 'success' ? 'success' : 'secondary'} size='small'*/}
+                                        {/*      label={item.status === 'success' ? 'ปิดงานซ่อมแล้ว' : 'กำลังดำเนินการซ่อม'}/>*/}
+                                        <Chip size='small' label={item.status}/>
                                     </Stack>
                                     <ListBehavior behavior={item.behavior}/>
                                     <Divider/>

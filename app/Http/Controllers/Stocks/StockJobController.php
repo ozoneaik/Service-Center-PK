@@ -58,9 +58,8 @@ class StockJobController extends Controller
         $validated = $request->validate([
             'sp_code' => 'required|string|max:50',
             'sp_name' => 'required|string|max:255',
-            'sku_code' => 'required|string|max:50',
-            'sku_name' => 'required|string|max:255',
             'sp_qty' => 'required|integer|min:1',
+
         ]);
 
         try {
@@ -75,8 +74,8 @@ class StockJobController extends Controller
                     'user_code_key' => Auth::user()->user_code,
                     'sp_code' => $validated['sp_code'],
                     'sp_name' => $validated['sp_name'],
-                    'sku_code' => $validated['sku_code'],
-                    'sku_name' => $validated['sku_name'],
+//                    'sku_code' => $request['sku_code'] ?? 'ไม่ได้ระบุรหัสสินค้า',
+//                    'sku_name' => $request['sku_name'] ?? 'ไม่ได้ระบุชื่อสินค้า',
                     'sp_qty' => $validated['sp_qty'],
                     'updated_at' => now(),
                 ]);
@@ -89,8 +88,8 @@ class StockJobController extends Controller
                     'user_code_key' => Auth::user()->user_code,
                     'sp_code' => $validated['sp_code'],
                     'sp_name' => $validated['sp_name'],
-                    'sku_code' => $validated['sku_code'],
-                    'sku_name' => $validated['sku_name'],
+                    'sku_code' => $request['sku_code'] ?? 'ไม่ได้ระบุรหัสสินค้า',
+                    'sku_name' => $request['sku_name'] ?? 'ไม่ได้ระบุชื่อสินค้า',
                     'sp_qty' => $validated['sp_qty'],
                 ]);
                 $message = 'เพิ่มข้อมูลอะไหล่เรียบร้อยแล้ว';

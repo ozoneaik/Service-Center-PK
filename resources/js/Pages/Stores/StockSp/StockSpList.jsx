@@ -25,13 +25,14 @@ import {useState} from "react";
 import AddSpWithBill from "./AddSpWithBill.jsx";
 import AddSpBasic from "./AddSpBasic.jsx";
 
+const tableHeaders = [  'รูปภาพอะไหล่', 'รหัสอะไหล่', 'ชื่ออะไหล่', 'จำนวน','สต็อกยกมา','แจ้งซ่อม','แจ้งปรับปรุง','สต็อกคงเหลือ' ,'จัดการ'];
 
 const TableDetail = ({stocks}) => {
     return (
         <Table>
             <TableHead>
                 <TableRow sx={TABLE_HEADER_STYLE}>
-                    {['รูปภาพสินค้า', 'รหัสสินค้า', 'ชื่อสินค้า', 'รูปภาพอะไหล่', 'รหัสอะไหล่', 'ชื่ออะไหล่', 'จำนวน', 'จัดการ'].map((head, index) => (
+                    {tableHeaders.map((head, index) => (
                         <TableCell key={index}>{head}</TableCell>
                     ))}
                 </TableRow>
@@ -42,13 +43,12 @@ const TableDetail = ({stocks}) => {
                         <TableCell>
                             <img src="" alt="no image"/>
                         </TableCell>
-                        <TableCell>{stock.sku_code}</TableCell>
-                        <TableCell>{stock.sku_name}</TableCell>
-                        <TableCell>
-                            <img src="" alt="no image"/>
-                        </TableCell>
                         <TableCell>{stock.sp_code}</TableCell>
                         <TableCell>{stock.sp_name}</TableCell>
+                        <TableCell>{stock.qty_sp}</TableCell>
+                        <TableCell>{stock.qty_sp}</TableCell>
+                        <TableCell>{stock.qty_sp}</TableCell>
+                        <TableCell>{stock.qty_sp}</TableCell>
                         <TableCell>{stock.qty_sp}</TableCell>
                         <TableCell>
                             <Button size="small" variant="contained">

@@ -6,6 +6,7 @@ use App\Http\Controllers\CustomerInJobController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\RemarkController;
+use App\Http\Controllers\SendJob\sendJobController;
 use App\Http\Controllers\SparePartController;
 use App\Http\Controllers\SymptomController;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('jobs')->group(function(){
     Route::get('/check/{serial_id}', [JobController::class, 'check'])->name('jobs.check');
     Route::post('/update', [JobController::class, 'update'])->name('jobs.update');
+    Route::put('/cancel/{serial_id}',[JobController::class,'cancelJob'])->name('jobs.cancel');
 });
 // บันทึกข้อมูลลูกค้า
 Route::prefix('customer-in-job')->group(function () {
@@ -43,4 +45,10 @@ Route::prefix('symptom')->group(function () {
 Route::prefix('remark')->group(function () {
     Route::get('/show/{serial_id}', [RemarkController::class, 'show'])->name('remark.show');
     Route::post('/storeOrUpdate', [RemarkController::class, 'storeOrUpdate'])->name('remark.store');
+});
+
+Route::prefix('send-job')->group(function () {
+   Route::get('/list',[sendJobController::class, 'sendJobList'])->name('sendJobs.list');
+   Route::post('/update',[sendJobController::class, 'updateJobSelect'])->name('sendJobs.update');
+   Route::get('/doc',[sendJobController::class,'docJobList'])->name('sendJobs.docJobList');
 });
