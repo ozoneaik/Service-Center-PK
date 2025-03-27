@@ -1,5 +1,7 @@
 import { Head } from '@inertiajs/react';
-import { Page, Text, View, Document, StyleSheet, PDFViewer, Font } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, PDFViewer, Font, Image } from '@react-pdf/renderer';
+import bwipjs from 'bwip-js';
+import {useEffect, useState} from "react";
 
 Font.register({
     family: 'Sarabun',
@@ -13,133 +15,140 @@ Font.register({
 
 const styles = StyleSheet.create({
     page: {
-        padding: 20,
+        padding: 5,  // เพิ่มการเว้นขอบมากขึ้น
         fontSize: 12,
-        fontFamily: 'Sarabun'
+        fontFamily: 'Sarabun',
+        backgroundColor: '#F5F5F5'  // สีพื้นหลังนุ่มตา
     },
     container: {
-        overflow: 'auto',
-        border: '1px solid black',
-        padding: 0,
-        height: '100%',
-        borderRadius: 3,
+        border: '1px solid #A0A0A0',
+        padding: 10,
+        borderRadius: 10,  // เพิ่มความโค้งของมุม
+        backgroundColor: 'white',
+        boxShadow: '2 2 5 rgba(0,0,0,0.1)'  // เงาอ่อนๆ
     },
     header: {
         textAlign: 'center',
-        fontSize: 22,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        borderBottom: '2px solid black',
-        paddingBottom: 8,
-        fontFamily: 'SarabunBold'
+        fontSize: 26,
+        fontFamily: 'SarabunBold',
+        marginBottom: 15,
+        color: '#2C3E50',  // สีน้ำเงินเข้ม
+        borderBottom: '2px solid #3498DB',  // เส้นขีดใต้สวยๆ
+        paddingBottom: 5
     },
     row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 20,
-        paddingRight: 8,
-        paddingLeft: 8
+        marginBottom: 15
     },
     leftColumn: {
-        width: '65%'
+        width: '65%',
+        paddingRight: 10  // เพิ่มช่องว่างระหว่างคอลัมน์
     },
     rightColumn: {
         width: '35%',
         alignItems: 'flex-end',
-        paddingRight: 10,
+        paddingLeft: 10
     },
     label: {
         fontSize: 14,
-        marginRight: 5,
-        fontFamily: 'SarabunBold'
+        fontFamily: 'SarabunBold',
+        color: '#34495E'  // สีเทาน้ำเงิน
     },
     value: {
-        maxWidth: 300,
-        fontSize: 10,
+        fontSize: 14,
         fontFamily: 'Sarabun',
-        paddingLeft: 5,
-        paddingBottom: 2,
-        paddingTop: 2,
-        // สำคัญ: ทำให้ข้อความขึ้นบรรทัดใหม่เมื่อล้น
-        flexWrap: 'wrap',
+        color: '#2C3E50'  // สีน้ำเงินเข้ม
     },
     fieldRow: {
         flexDirection: 'row',
-        marginBottom: 18,
-        alignItems: 'flex-start'  // เปลี่ยนจาก center เป็น flex-start เพื่อให้อยู่ชิดบนเมื่อมีหลายบรรทัด
+        marginBottom: 8,
+        alignItems: 'center'  // จัดกึ่งกลาง
     },
     line: {
-        borderBottom: '1px solid black',
+        borderBottom: '1px solid #BDC3C7',
         flexGrow: 1,
-        marginLeft: 5,
-        minHeight: 20, // เพิ่มความสูงขั้นต่ำเพื่อรองรับข้อความหลายบรรทัด
+        marginLeft: 10,
+        paddingBottom: 3
     },
     jobNumber: {
-        fontWeight: 'bold',
-        fontSize: 18,
+        fontSize: 22,
         fontFamily: 'SarabunBold',
-        // borderBottom: '1px solid black',
-        paddingBottom: 1,
+        textAlign: 'right',
+        color: '#E74C3C'  // สีแดงสดใส
     },
     date: {
-        marginTop: 3,
-        fontSize: 10,
-        fontFamily: 'Sarabun',
+        fontSize: 12,
+        marginTop: 5,
+        textAlign: 'right',
+        color: '#7F8C8D'  // สีเทาอ่อน
     },
     footer: {
-        position: 'absolute',
-        bottom: 10,
-        left: 0,
-        right: 0,
         textAlign: 'center',
         fontSize: 10,
-        borderTop: '1px solid black',
-        paddingTop: 5,
+        color: '#95A5A6',
+        borderTop: '1px solid #BDC3C7',
+        paddingTop: 10,
+        marginTop: 15
+    },
+    barcodeImage: {
+        width: 200,
+        height: 70,
+        marginTop: 15,
+        alignSelf: 'flex-end',
     }
 });
 
+const generateBarcode = async (value) => {
+    try {
+        const canvas = document.createElement('canvas');
+        bwipjs.toCanvas(canvas, { bcid: 'code128', text: value, scale: 3 });
+        return canvas.toDataURL('image/png');
+    } catch (err) {
+        console.error('Barcode generation error:', err);
+        return null;
+    }
+};
+
 const DetailText = ({ label, value }) => (
     <View style={styles.fieldRow}>
-        <Text style={styles.label}>
-            {label} :
-        </Text>
+        <Text style={styles.label}>{label}:</Text>
         <View style={styles.line}>
-            <Text style={styles.value}>
-                {value}
-            </Text>
+            <Text style={styles.value}>{value}</Text>
         </View>
     </View>
 );
 
-const GenPDF = ({ job, behaviors }) => (
+const GenPDF = ({ job, behaviors, barcode,qrCode }) => (
     <Document>
-        <Page size="A5" orientation="landscape" style={styles.page}>
+        <Page size="A5" orientation='landscape' style={styles.page}>
             <View style={styles.container}>
                 <Text style={styles.header}>ศูนย์บริการ</Text>
                 <View style={styles.row}>
                     <View style={styles.leftColumn}>
-                        <DetailText label={'ชื่อร้าน'} value={job.shop_name} />
-                        <DetailText label={'ที่อยู่'} value={job.address} />
-                        <DetailText label={'เบอร์โทรศัพท์'} value={job.phone} />
-                        <DetailText label={'ซีเรียลนัมเบอร์'} value={job.serial_id} />
-                        <DetailText label={'ส่งซ่อม'} value={job.p_name} />
-                        <DetailText label={'อาการ'} value={behaviors} />
-                        <DetailText label={'ผู้รับ'} value={job.username} />
+                        <DetailText label="ชื่อร้าน" value={job.shop_name} />
+                        <DetailText label="ที่อยู่" value={job.address} />
+                        <DetailText label="เบอร์โทรศัพท์" value={job.phone} />
+                        <DetailText label="ซีเรียลนัมเบอร์" value={job.serial_id} />
+                        <DetailText label="ส่งซ่อม" value={job.p_name} />
+                        <DetailText label="อาการ" value={behaviors} />
+                        <DetailText label="ผู้รับ" value={job.username} />
                     </View>
                     <View style={styles.rightColumn}>
-                        <Text style={styles.jobNumber}>
-                            {job.job_id}
-                        </Text>
+                        <Text style={styles.jobNumber} >{job.job_id}</Text>
                         <Text style={styles.date}>
                             วันที่ {new Date(job.created_at).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}
                         </Text>
+                        {barcode && <Image src={barcode} style={styles.barcodeImage} />}
+                        <Image src={qrCode} style={styles.barcodeImage}/>
                     </View>
                 </View>
+ฺศ๊/ถจๅ/-จจ-/
+                BLU2501230032
+                3901156426
 
                 <View style={styles.footer}>
-                    <Text>
-                        เอกสารนี้เป็นหลักฐานการรับสินค้าเพื่อส่งซ่อม กรุณาเก็บไว้เพื่อยืนยันตัวตน
-                    </Text>
+                    <Text>เอกสารนี้เป็นหลักฐานการรับสินค้าเพื่อส่งซ่อม กรุณาเก็บไว้เพื่อยืนยันตัวตน</Text>
                 </View>
             </View>
         </Page>
@@ -147,13 +156,36 @@ const GenPDF = ({ job, behaviors }) => (
 );
 
 export default function ReceiveSpPdf({ job, behaviors }) {
+    const [barcode, setBarcode] = useState(null);
+    const [imageBase64, setImageBase64] = useState(null);
+
+    const fetchImageAsBase64 = async (url) => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        } catch (error) {
+            console.error('Error fetching image:', error);
+            return null;
+        }
+    };
+
+    useEffect(() => {
+        generateBarcode(job.job_id).then(setBarcode);
+        fetchImageAsBase64('https://qr-official.line.me/sid/L/155cjomg.png').then(setImageBase64);
+    }, [job.job_id]);
+
     return (
         <>
-        <Head title='ใบรับสินค้า'/>
-        <PDFViewer style={{ width: '100vw', height: '100vh' }}>
-            <GenPDF job={job} behaviors={behaviors} />
-        </PDFViewer>
+            <Head title="ใบรับสินค้า" />
+            <PDFViewer style={{ width: '100vw', height: '100vh' }}>
+                <GenPDF job={job} behaviors={behaviors} barcode={barcode} qrCode={imageBase64} />
+            </PDFViewer>
         </>
-        
     );
 }
