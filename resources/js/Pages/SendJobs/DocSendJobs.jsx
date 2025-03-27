@@ -71,7 +71,8 @@ export default function DocSendJobs({groups}) {
                                                                     component="a" // ใช้ <a> แทน <Link>
                                                                     target="_blank"
                                                                     rel="noopener noreferrer" // ป้องกัน security issue
-                                                                    href={route('sendJobs.printJobList', { job_group: group.group_job })}
+                                                                    // href={route('sendJobs.printJobList', { job_group: group.group_job })}
+                                                                href={`/send-job/print/${group.group_job}`}
                                                             >
                                                                 พิมพ์ (จำนวนการพิมพ์ {group.counter_print} ครั้ง)
                                                             </Button>
