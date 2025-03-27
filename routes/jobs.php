@@ -51,4 +51,8 @@ Route::prefix('send-job')->group(function () {
    Route::get('/list',[sendJobController::class, 'sendJobList'])->name('sendJobs.list');
    Route::post('/update',[sendJobController::class, 'updateJobSelect'])->name('sendJobs.update');
    Route::get('/doc',[sendJobController::class,'docJobList'])->name('sendJobs.docJobList');
+
+
+   Route::get('/group-detail/{job_group}',[sendJobController::class,'groupDetail'])->name('sendJobs.groupDetail');
+   Route::get('/print/{job_group}',[sendJobController::class,'printJobList'])->name('sendJobs.printJobList');
 });

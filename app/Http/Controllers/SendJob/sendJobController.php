@@ -4,6 +4,8 @@ namespace App\Http\Controllers\SendJob;
 
 use App\Http\Controllers\Controller;
 use App\Models\JobList;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,41 +21,78 @@ class sendJobController extends Controller
     public function sendJobList(): Response
     {
         $jobs = JobList::query()
-            ->where('is_code_key',Auth::user()->is_code_cust_id)
-            ->where('status','pending')
-            ->orderBy('id','desc')
+            ->where('is_code_key', Auth::user()->is_code_cust_id)
+            ->where('status', 'pending')
+            ->orderBy('id', 'desc')
             ->get();
 
-        return Inertia::render('SendJobs/SenJobList',['jobs'=>$jobs]);
+        return Inertia::render('SendJobs/SenJobList', ['jobs' => $jobs]);
     }
 
-    public function updateJobSelect(Request $request){
+    public function updateJobSelect(Request $request): \Illuminate\Http\RedirectResponse
+    {
         $selectedJob = $request->selectedJobs;
         try {
             DB::beginTransaction();
-            if(count($selectedJob) > 0){
-                $group_job = time().rand(1000,9999);
-                foreach ($selectedJob as $job){
-                    $findJob = JobList::query()->where('job_id',$job['job_id'])->first();
+            if (count($selectedJob) > 0) {
+                $group_job = time() . rand(1000, 9999);
+                foreach ($selectedJob as $job) {
+                    $findJob = JobList::query()->where('job_id', $job['job_id'])->first();
                     $findJob->status = 'send';
                     $findJob->group_job = $group_job;
                     $findJob->save();
                 }
-            }else{
+            } else {
                 throw new \Exception('ไม่มีจ็อบที่ต้องการส่ง');
             }
             DB::commit();
-            return Redirect::route('sendJobs.list')->with('success','ส่งไปยัง PK สำเร็จ');
-        }catch (\Exception $exception){
+            return Redirect::route('sendJobs.list')->with('success', 'ส่งไปยัง PK สำเร็จ');
+        } catch (\Exception $exception) {
             DB::rollBack();
-            return Redirect::route('sendJobs.list')->with('error',$exception->getMessage());
+            return Redirect::route('sendJobs.list')->with('error', $exception->getMessage());
         }
     }
 
-    public function docJobList(){
-        $groups = JobList::query()->where('status','send')->select('print_at','group_job','print_updated_at','counter_print')
-        ->groupBy('group_job','print_at','print_updated_at','counter_print')->get();
-        return Inertia::render('SendJobs/DocSendJobs',['groups' => $groups]);
+    public function docJobList()
+    {
+        $groups = JobList::query()->where('status', 'send')->select('print_at', 'group_job', 'print_updated_at', 'counter_print')
+            ->groupBy('group_job', 'print_at', 'print_updated_at', 'counter_print')->get();
+        return Inertia::render('SendJobs/DocSendJobs', ['groups' => $groups]);
+    }
+
+    public function groupDetail($job_group): JsonResponse
+    {
+        try {
+            $job_group = JobList::query()->where('group_job', $job_group)->get();
+            return response()->json([
+                'message' => 'success',
+                'group' => $job_group
+            ]);
+        } catch (\Exception $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+                'group' => []
+            ], 400);
+        }
+    }
+
+    public function printJobList($job_group) : Response
+    {
+        $job_groups = JobList::query()->where('group_job', $job_group)->get();
+        if ($job_groups->isEmpty()) {
+            $job_groups = [];
+        } else {
+            $now = Carbon::now();
+            foreach ($job_groups as $job) {
+                $job['counter_print'] = $job['counter_print'] + 1;
+                if (!isset($job['print_at'])){
+                    $job['print_at'] = $now;
+                }
+                $job['print_updated_at'] = $now;
+                $job->save();
+            }
+        }
+        return Inertia::render('SendJobs/PrintSendJob', ['group' => $job_groups,'job_group' => $job_group]);
     }
 
 }

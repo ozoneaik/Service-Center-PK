@@ -138,7 +138,7 @@ export default function SenJobList({jobs}) {
                                 onClick={handleCloseJobs}
                                 disabled={data.selectedJobs.length === 0 || processing}
                             >
-                                ปิดงานซ่อม ({data.selectedJobs.length})
+                                ส่งไปยัง PK ({data.selectedJobs.length})
                             </Button>
                         </Stack>
                     </Grid2>
