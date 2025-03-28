@@ -75,15 +75,20 @@ export default function Dashboard() {
         if (status === 200) {
             await fetchData(sn, false);
         } else if (status === 400) {
+            const showConfirmButton = !(message === 'serial_id กำลังถูกซ่อมจากศูนย์บริการอื่น' || message === 'serial_id กำลังส่งซ่อมไปยัง ศูนย์ซ่อม Pumpkin');
             AlertDialogQuestionForSearch({
                 title: message,
-                cancelButtonText: message === 'ไม่พบประวัติการซ่อมจากระบบ' ? 'ปิด' : 'ดูแค่ประวัติการซ่อม',
+                cancelButtonText: message === 'ไม่พบประวัติการซ่อมจากระบบ' || message === 'serial_id กำลังถูกซ่อมจากศูนย์บริการอื่น' ? 'ปิด' : message === 'serial_id กำลังส่งซ่อมไปยัง ศูนย์ซ่อม Pumpkin' ? 'ปิด' : 'ดูแค่ประวัติการซ่อม',
                 text: 'เลือกเมนูดังต่อไปนี้',
+                showConfirmButton,
+                message,
                 onPassed: async (confirm) => {
                     if (confirm) {
                         await fetchData(sn, true);
                     } else {
                         if (message === 'ไม่พบประวัติการซ่อมจากระบบ') return;
+                        if (message === 'serial_id กำลังถูกซ่อมจากศูนย์บริการอื่น') return;
+                        if (message === 'serial_id กำลังส่งซ่อมไปยัง ศูนย์ซ่อม Pumpkin') return;
                         await fetchData(sn, false)
                     }
                 }
@@ -106,12 +111,9 @@ export default function Dashboard() {
                 {title}
             </Stack>
         </Button>
-        // </Link>
     )
 
     const ButtonList = () => {
-        const theme = useTheme();
-        const pumpkinColor = theme.palette.pumpkinColor;
         return (
             <Stack direction={{xs: 'column', sm: 'row'}} spacing={2} justifyContent='start' alignItems='center'>
                 <ButtonLink menu={1} icon={<EditIcon/>} title={'แจ้งซ่อม'} data={detail}
@@ -192,12 +194,6 @@ export default function Dashboard() {
                                                     referrerPolicy="strict-origin-when-cross-origin"
                                                     allowFullScreen>
                                             </iframe>
-                                            {/*<video width="100%" height="315" style={{minWidth : 0}} controls>*/}
-                                            {/*    <source*/}
-                                            {/*        src="https://images.pumpkin.tools/VIDEO/50270.mp4"*/}
-                                            {/*        type="video/mp4"*/}
-                                            {/*    />*/}
-                                            {/*</video>*/}
                                         </Stack>
                                     )
                                 }

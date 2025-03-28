@@ -57,13 +57,14 @@ export function AlertDialogQuestion({title='แน่ใจหรือไม่
     })
 }
 
-export function AlertDialogQuestionForSearch({title='แน่ใจหรือไม่',text,cancelButtonText = 'ดูแค่ประวัติการซ่อม', onPassed=()=>{}}) {
+export function AlertDialogQuestionForSearch({showConfirmButton = true,title='แน่ใจหรือไม่',text,cancelButtonText = 'ดูแค่ประวัติการซ่อม', onPassed=()=>{}}) {
     Swal.fire({
         icon: 'question',
         title,
         text,
         showCancelButton : true,
         cancelButtonText,
+        showConfirmButton : showConfirmButton,
         confirmButtonText : 'สร้าง job ใหม่',
         allowOutsideClick : false,
     }).then((result) => {

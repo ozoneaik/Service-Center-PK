@@ -78,48 +78,53 @@ export default function AlreadyClaim({spareParts}) {
     return (
         <>
             {open && <DialogDetail sparePartsDetail={detail} open={open} setOpen={setOpen} data={[1, 2, 3, 4]}/>}
-            <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>
-                            <Checkbox onChange={selectAll} checked={selected.every(item => item.checked)}/>
-                        </TableCell>
-                        <TableCell>รหัสอะไหล่</TableCell>
-                        <TableCell>ชื่ออะไหล่</TableCell>
-                        <TableCell>สต็อกศูนย์ซ่อม</TableCell>
-                        <TableCell>สต็อกพัมคิน</TableCell>
-                        <TableCell>จำนวน</TableCell>
-                        <TableCell>หน่วย</TableCell>
-                        <TableCell>รายละเอียด</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {selected.map((item, index) => (
-                        <TableRow key={index} sx={{backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'transparent'}}>
+            <Paper variant='outlined' sx={{p: 2, overflowX: 'auto'}}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
                             <TableCell>
-                                <Checkbox
-                                    checked={item.checked}
-                                    onChange={() => handleCheckboxChange(index)}
-                                />
+                                <Checkbox onChange={selectAll} checked={selected.every(item => item.checked)}/>
                             </TableCell>
-                            <TableCell>{item.sp_code}</TableCell>
-                            <TableCell>{item.sp_name}</TableCell>
-                            <TableCell>{item.stock_local?.qty_sp ?? 0}</TableCell>
-                            <TableCell>0</TableCell>
-                            <TableCell>{item.qty}</TableCell>
-                            <TableCell>{item.sp_unit}</TableCell>
-                            <TableCell>
-                                <Button onClick={()=>showModal(item)}>
-                                    <PreviewIcon/>
-                                </Button>
-                            </TableCell>
+                            <TableCell>รหัสอะไหล่</TableCell>
+                            <TableCell>ชื่ออะไหล่</TableCell>
+                            <TableCell>สต็อกศูนย์ซ่อม</TableCell>
+                            <TableCell>สต็อกพัมคิน</TableCell>
+                            <TableCell>จำนวน</TableCell>
+                            <TableCell>หน่วย</TableCell>
+                            <TableCell>รายละเอียด</TableCell>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHead>
+                    <TableBody>
+                        {selected.map((item, index) => {
+
+                            return (
+                                <TableRow key={index}
+                                          sx={{backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'transparent'}}>
+                                    <TableCell>
+                                        <Checkbox
+                                            checked={item.checked}
+                                            onChange={() => handleCheckboxChange(index)}
+                                        />
+                                    </TableCell>
+                                    <TableCell>{item.sp_code}</TableCell>
+                                    <TableCell>{item.sp_name}</TableCell>
+                                    <TableCell>{item.stock_local?.qty_sp ?? 0}</TableCell>
+                                    <TableCell>0</TableCell>
+                                    <TableCell>{item.qty}</TableCell>
+                                    <TableCell>{item.sp_unit}</TableCell>
+                                    <TableCell>
+                                        <Button onClick={() => showModal(item)}>
+                                            <PreviewIcon/>
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        
+                        })}
+                    </TableBody>
+                </Table>
             </Paper>
-            
+
 
             <form onSubmit={onSubmit}>
                 <Stack direction='row-reverse' spacing={2} m={2}>

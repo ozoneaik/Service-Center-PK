@@ -5,15 +5,15 @@ import {
 } from "@mui/material";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import BorderColorIcon from '@mui/icons-material/BorderColor';
-import { useState, useEffect } from "react";
-import { ImagePreview } from "@/Components/ImagePreview.jsx";
+import {useState, useEffect} from "react";
+import {ImagePreview} from "@/Components/ImagePreview.jsx";
 import Select from "@mui/material/Select";
 import axios from "axios";
-import { AlertDialog } from "@/Components/AlertDialog.js";
+import {AlertDialog} from "@/Components/AlertDialog.js";
 
-const ShowDetail = ({ gp }) => (
-    <Stack direction={{ md: 'column', lg: 'row' }} spacing={2} alignItems='center'>
-        <Alert sx={{ width: { lg: '100%', xs: '100%' } }} severity="success" icon={<BookmarkIcon />}>
+const ShowDetail = ({gp}) => (
+    <Stack direction={{md: 'column', lg: 'row'}} spacing={2} alignItems='center'>
+        <Alert sx={{width: {lg: '100%', xs: '100%'}}} severity="success" icon={<BookmarkIcon/>}>
             สีเขียว {'=>'} อะไหล่อยู่ในประกัน
         </Alert>
         {/* <Alert sx={{width: {lg: '20%', xs: '100%'}}} severity="info" icon={<BookmarkAddIcon/>}>
@@ -22,7 +22,7 @@ const ShowDetail = ({ gp }) => (
     </Stack>
 )
 
-export default function SpSummary({ open, setOpen, detail, selected, setSelected, setDetail, setShowAdd }) {
+export default function SpSummary({open, setOpen, detail, selected, setSelected, setDetail, setShowAdd}) {
     const globalGP = detail.selected.globalGP;
     const [loading, setLoading] = useState(false);
     const [targetZero, setTargetZero] = useState();
@@ -185,7 +185,7 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                     เนื่องจากคุณได้กรอกราคาอะไหล่เป็น 0 กรุณากรอกรายละเอียด
                 </DialogTitle>
                 <DialogContent>
-                    <Stack spacing={2} sx={{ mt: 2 }}>
+                    <Stack spacing={2} sx={{mt: 2}}>
                         <Stack direction="row" spacing={2} alignItems="center">
                             <Typography>ระบุ :</Typography>
                             <Select
@@ -195,8 +195,10 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                                 variant='standard'
                             >
                                 <MenuItem value="ไม่เคลม">ไม่เคลม</MenuItem>
-                                <MenuItem value="เคลมสินค้านี้ซีเรียลนี้หมดประกันตามเงื่อนไขไปแล้ว">เคลมสินค้านี้ซีเรียลนี้หมดประกันตามเงื่อนไขไปแล้ว</MenuItem>
-                                <MenuItem value="เคลมอะไหล่นอกประกันที่เกิดจากความเสียหายต่อเนื่อง">เคลมอะไหล่นอกประกันที่เกิดจากความเสียหายต่อเนื่อง</MenuItem>
+                                <MenuItem
+                                    value="เคลมสินค้านี้ซีเรียลนี้หมดประกันตามเงื่อนไขไปแล้ว">เคลมสินค้านี้ซีเรียลนี้หมดประกันตามเงื่อนไขไปแล้ว</MenuItem>
+                                <MenuItem
+                                    value="เคลมอะไหล่นอกประกันที่เกิดจากความเสียหายต่อเนื่อง">เคลมอะไหล่นอกประกันที่เกิดจากความเสียหายต่อเนื่อง</MenuItem>
                             </Select>
                         </Stack>
 
@@ -232,9 +234,9 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
     const handleSubmit = async () => {
         try {
             setLoading(true);
-            const { data } = await axios.post('/spare-part/store', {
-                pid : detail.pid,
-                pname : detail.pname,
+            const {data} = await axios.post('/spare-part/store', {
+                pid: detail.pid,
+                pname: detail.pname,
                 serial_id: detail.serial,
                 list: {
                     sp: selectWorking,
@@ -299,7 +301,7 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                 </DialogTitle>
                 <DialogContent>
                     <Stack direction='column' spacing={2}>
-                        <textarea defaultValue={r} onChange={(e) => setR(e.target.value)} />
+                        <textarea defaultValue={r} onChange={(e) => setR(e.target.value)}/>
                         <Stack direction='row-reverse'>
                             <Button onClick={handelOnSave}>บันทึก</Button>
                         </Stack>
@@ -311,8 +313,8 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
 
     return (
         <>
-            {showAlertZero && <DialogSpZero />}
-            {showAlertRemark && <DialogOnChangeRemark />}
+            {showAlertZero && <DialogSpZero/>}
+            {showAlertRemark && <DialogOnChangeRemark/>}
             <Dialog
                 fullWidth
                 maxWidth='xl'
@@ -327,10 +329,10 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                 <DialogContent>
                     <Grid2 container spacing={2}>
                         <Grid2 size={12}>
-                            <ShowDetail gp={globalGP} />
+                            <ShowDetail gp={globalGP}/>
                         </Grid2>
                         <Grid2 size={12}>
-                            <Paper sx={{ overflow: 'auto' }}>
+                            <Paper sx={{overflow: 'auto'}}>
                                 <Table stickyHeader>
                                     <TableHead>
                                         <TableRow>
@@ -349,19 +351,20 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                                             const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
                                             const image_sp_path = SPARE_PART_IMAGE_PATH + detail.pid + '/' + item.spcode + '.jpg';
                                             const isWarranty = item.warranty && detail.job.warranty === true;
-                                            const rowStyle = item.warranty ? { backgroundColor: '#e8f5e9' } : {};
+                                            const rowStyle = item.warranty ? {backgroundColor: '#e8f5e9'} : {};
                                             return (
                                                 <TableRow key={index} sx={rowStyle}>
                                                     <TableCell width={10}>
                                                         {/* <ImagePreview src={image_sp_path} /> */}
-                                                        <ImagePreview src={spPath2} />
+                                                        <ImagePreview src={spPath2}/>
                                                     </TableCell>
                                                     <TableCell>
                                                         {item.spcode}
                                                     </TableCell>
                                                     <TableCell>
                                                         {item.spcode === 'SV001' ? (
-                                                            <TextField onChange={(e) => handelChangeNameSv(e, item)} variant="standard" defaultValue={item.spname} />
+                                                            <TextField onChange={(e) => handelChangeNameSv(e, item)}
+                                                                       variant="standard" defaultValue={item.spname}/>
                                                         ) : <>{item.spname}</>}
                                                     </TableCell>
                                                     <TableCell>
@@ -379,7 +382,7 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                                                             />
                                                             {item.remark && (
                                                                 <>
-                                                                    <Divider />
+                                                                    <Divider/>
                                                                     <Stack direction='column'>
                                                                         {item.remark && (
                                                                             <Typography variant="body2">
@@ -388,18 +391,23 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                                                                                         setSelectedRemark(item);
                                                                                         setShowAlertRemark(true)
                                                                                     }}
-                                                                                    fontSize="10px" sx={{ cursor: 'pointer' }}
+                                                                                    fontSize="10px"
+                                                                                    sx={{cursor: 'pointer'}}
                                                                                 />
                                                                                 &nbsp;
                                                                                 {<span>หมายเหตุ : {item.remark}</span>}
                                                                             </Typography>
                                                                         )}
-                                                                        <Typography variant="body2">
-                                                                            {item.remark && <span>เลือก : {item.claim_remark}</span>}
-                                                                        </Typography>
+
                                                                     </Stack>
                                                                 </>
                                                             )}
+                                                            {item.claim_remark && (
+                                                                <Typography variant="body2">
+                                                                    <span>เลือก : {item.claim_remark}</span>
+                                                                </Typography>
+                                                            )}
+
 
                                                         </Stack>
 
@@ -407,10 +415,10 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                                                     <TableCell>
                                                         <TextField
                                                             required
-                                                            inputProps={{ min: 1 }}
+                                                            inputProps={{min: 1}}
                                                             disabled={item.spcode === 'SV001'}
                                                             size="small"
-                                                            sx={{ minWidth: 100 }}
+                                                            sx={{minWidth: 100}}
                                                             type="number"
                                                             defaultValue={item.qty}
                                                             onInput={(e) => e.target.value === "0" && (e.target.value = "")}
@@ -441,10 +449,11 @@ export default function SpSummary({ open, setOpen, detail, selected, setSelected
                 <DialogActions>
                     {/*<Button variant='contained' color='warning' onClick={() => console.log(selectWorking)}>log show</Button>*/}
                     <Button variant='contained' color='error' onClick={handleClose}>ยกเลิก</Button>
-                    <Button variant='contained' disabled={detail.job.status === 'success' || loading} onClick={handleSubmit} autoFocus>
+                    <Button variant='contained' disabled={detail.job.status === 'success' || loading}
+                            onClick={handleSubmit} autoFocus>
                         {loading && (
                             <>
-                                <CircularProgress />
+                                <CircularProgress/>
                                 &nbsp;
                             </>
                         )}

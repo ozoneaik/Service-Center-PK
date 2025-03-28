@@ -179,7 +179,7 @@ export default function PrintSendJob({ group, job_group }) {
     );
 
     return (
-        <PDFViewer style={{ width: '100vw', height: '100vh' }}>
+        <PDFViewer style={{ width: '100vw', height: '100vh'}}>
             <GenPDF />
         </PDFViewer>
     );

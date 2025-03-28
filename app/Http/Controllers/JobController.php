@@ -9,6 +9,7 @@ use App\Models\FileUpload;
 use App\Models\JobList;
 use App\Models\SparePart;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class JobController extends Controller
@@ -25,7 +26,17 @@ class JobController extends Controller
                 if ($check->status === 'pending') {
                     $message = 'พบ job กำลังดำเนินการ';
                     return response()->json(['message' => $message,]);
-                } else {
+                }elseif ($check->status === 'send') {
+                    if ($check->is_code_key !== Auth::user()->is_code_cust_id){
+                        $message = 'serial_id กำลังถูกซ่อมจากศูนย์บริการอื่น';
+                        return response()->json(['message' => $message],400);
+                    }else{
+                        $message = 'serial_id กำลังส่งซ่อมไปยัง ศูนย์ซ่อม Pumpkin';
+                        return response()->json(['message' => $message],400);
+                    }
+
+                }
+                else {
                     $message = 'serial_id นี้เคยมีการซ่อมไปแล้ว';
                     return response()->json(['message' => $message,], 400);
                 }
@@ -65,7 +76,7 @@ class JobController extends Controller
 
                     if (!empty($missingMenus)) {
                         $missingMenusText = implode(', ', $missingMenus);
-                        if($missingMenusText === '1') $missingMenusText = "สภาพสินค้าก่อนซ่อม";
+                        if ($missingMenusText === '1') $missingMenusText = "สภาพสินค้าก่อนซ่อม";
                         elseif ($missingMenusText === '2') $missingMenusText = "สภาพสินค้าก่อนซ่อม";
                         elseif ($missingMenusText === '3') $missingMenusText = "ภาพอะไหล่ที่เสียส่งเคลม";
                         else $missingMenusText = "ไม่สามารถระบุได้";
@@ -111,9 +122,9 @@ class JobController extends Controller
         try {
             DB::beginTransaction();
             $job = JobList::query()->where('job_id', $serial_id)->first();
-            if ($job->status === 'canceled'){
+            if ($job->status === 'canceled') {
                 throw new \Exception('จ็อบนี้เคยยกเลิกไปแล้ว');
-            }else{
+            } else {
                 $job->status = 'canceled';
                 $job->save();
             }
@@ -122,12 +133,12 @@ class JobController extends Controller
                 'message' => 'ยกเลิกการซ่อมสำเร็จ',
                 'job' => $job ?? [],
             ]);
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             DB::rollBack();
             return response()->json([
                 'job' => [],
                 'message' => $exception->getMessage(),
-            ],400);
+            ], 400);
         }
 
     }

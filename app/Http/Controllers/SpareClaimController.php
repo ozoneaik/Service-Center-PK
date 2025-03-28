@@ -36,7 +36,8 @@ class SpareClaimController extends Controller
             ->leftJoin('job_lists', 'job_lists.job_id', '=', 'spare_parts.job_id')
             ->where(function ($query) {
                 $query->where('spare_parts.sp_warranty', true)
-                    ->orWhere('spare_parts.approve', 'yes');
+                    ->orWhere('spare_parts.approve', 'yes')
+                    ->where('spare_parts.claim_remark','not like', 'ไม่เคลม');
             })
             ->where('spare_parts.status', 'like', 'pending')
             ->where('job_lists.status', 'like', 'success')

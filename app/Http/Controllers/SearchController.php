@@ -157,6 +157,7 @@ class SearchController extends Controller
             ->where('serial_id', $data['serial'])
             ->orderBy('id', 'desc')
             ->first();
+
         if ($createJob){
 //        if (!$job || $job->status === 'success') {
             $job = JobList::query()->create([

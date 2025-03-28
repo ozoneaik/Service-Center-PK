@@ -42,14 +42,14 @@ const styles = StyleSheet.create({
     },
     leftColumn: {
         // backgroundColor : 'red',
-        width: '65%',
+        width: '60%',
         flexWrap: 'wrap',
         // paddingRight: 10
     },
     rightColumn: {
-        width: '35%',
+        width: '30%',
         alignItems: 'flex-end',
-        // paddingLeft: 10
+        paddingLeft: 10
     },
     label: {
         fontSize: 14,
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     },
     barcodeImage: {
         width: '100%',
-        height: 40,
+        height: 30,
         marginTop: 10,
         alignSelf: 'flex-end',
     },

@@ -48,6 +48,7 @@ export default function SenJobList({jobs}) {
         post(route('sendJobs.update'), {
             onFinish : () => {
                 setShowAlert(true)
+                setData('selectedJobs',[]);
             }
         });
     }
