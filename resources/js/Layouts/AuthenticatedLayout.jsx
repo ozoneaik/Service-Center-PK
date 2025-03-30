@@ -83,9 +83,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                         <Dropdown.Link href={route('profile.edit')}>
                                             ข้อมูลส่วนตัว
                                         </Dropdown.Link>
-                                        <Dropdown.Link href={route('Manage.index')}>
+                                        {/* <Dropdown.Link href={route('Manage.index')}>
                                             จัดการบริการของตัวเอง
-                                        </Dropdown.Link>
+                                        </Dropdown.Link> */}
                                         <Dropdown.Link href={route('logout')} method="post" as="button">
                                             ออกจากระบบ
                                         </Dropdown.Link>
@@ -174,11 +174,11 @@ export default function AuthenticatedLayout({ header, children }) {
 
                         <div className="mt-3 space-y-1">
                             <ResponsiveNavLink href={route('profile.edit')}>ข้อมูลส่วนตัว</ResponsiveNavLink>
-                            {user.role === 'service' && user.admin_that_branch === true && (
+                            {/* {user.role === 'service' && user.admin_that_branch === true && (
                                 <ResponsiveNavLink href={route('profile.edit')}>
                                     จัดการบริการของตัวเอง
                                 </ResponsiveNavLink>
-                            )}
+                            )} */}
                             {user.role === 'admin' && (
                                 <>
                                     <ResponsiveNavLink href={route('admin.show')}>ผู้ดูแลระบบ</ResponsiveNavLink>

@@ -12,6 +12,7 @@ use App\Http\Controllers\HistoryRepairController;
 use App\Http\Controllers\ManageBranchController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\Stores\UserController;
 use App\Http\Controllers\WarrantyProductController;
 use App\Models\User;
 use Illuminate\Foundation\Application;
@@ -100,6 +101,16 @@ Route::middleware('auth')->group(function () {
         Route::post('emp/store', [ManageBranchController::class, 'storeEmp'])->name('Manage.emp.store');
     });
 
+    // สำหรับผู้จัดการร้าน
+    Route::prefix('store')->group(function(){
+        Route::prefix('user')->group(function(){
+            Route::get('/index', [UserController::class, 'index'])->name('storeUsers.index');
+            Route::put('/update',[UserController::class,'update'])->name('storeUsers.update');
+            Route::get('/create',[UserController::class,'create'])->name('storeUsers.create');
+            Route::post('/store',[UserController::class,'store'])->name('storeUsers.store');
+            Route::delete('/delete/{user_code}',[UserController::class,'delete'])->name('storeUsers.delete');
+        });
+    });
 });
 
 Route::get('/Unauthorized', function () {

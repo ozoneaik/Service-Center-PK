@@ -85,7 +85,6 @@ export default function RowView({spList,setSpList}) {
                                         component="div"
                                     >
                                         {item.spcode}
-                                        {item.remark}
                                     </Typography>
                                     <Typography variant="body2" sx={{color: 'text.secondary'}}>
                                         {item.spname}

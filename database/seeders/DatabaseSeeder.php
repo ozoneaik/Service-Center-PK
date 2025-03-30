@@ -5,8 +5,6 @@ namespace Database\Seeders;
 use App\Models\MenuFileUpload;
 use App\Models\StoreInformation;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -18,7 +16,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::query()->create([
-            'user_code' => 'A' . rand(1000000, 9999999),
+            'user_code' => 'admin',
             'email' => 'admin@local',
             'password' => Hash::make('1111'),
             'name' => 'ภูวเดช พาณิชยโสภา',
@@ -28,7 +26,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::query()->create([
-            'user_code' => 'A' . rand(1000000, 9999999),
+            'user_code' => 'manee_admin01',
             'email' => 'manee_admin01@service',
             'password' => Hash::make('1111'),
             'name' => 'มานีการช่าง',
@@ -38,7 +36,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::query()->create([
-            'user_code' => 'SV' . rand(1000000, 9999999),
+            'user_code' => 'manee_user01',
             'email' => 'manee_user01@service',
             'password' => Hash::make('1111'),
             'name' => 'John Doe',
@@ -69,20 +67,12 @@ class DatabaseSeeder extends Seeder
             'sub_district' => 'แขวงแสมดำ',
         ]);
 
-        MenuFileUpload::query()->create([
-            'menu_name' => 'สภาพสินค้าก่อนซ่อม'
-        ]);
-        MenuFileUpload::query()->create([
-            'menu_name' => 'สภาพสินค้าหลังซ่อม'
-        ]);
-        MenuFileUpload::query()->create([
-            'menu_name' => 'ภาพอะไหล่ที่เสียส่งเคลม'
-        ]);
-        MenuFileUpload::query()->create([
-            'menu_name' => 'ภาพอะไหล่ที่เปลี่ยน'
-        ]);
-        MenuFileUpload::query()->create([
-            'menu_name' => 'ภาพอะไหล่เสี่ยอื่นๆ'
-        ]);
+        $menu_file_uplaods = ['สภาพสินค้าก่อนซ่อม','สภาพสินค้าหลังซ่อม','ภาพอะไหล่ที่เสียส่งเคลม','ภาพอะไหล่ที่เปลี่ยน','ภาพอะไหล่เสี่ยอื่นๆ'];
+
+        foreach ($menu_file_uplaods as $key => $menu_file_upload) {
+            MenuFileUpload::query()->create([
+                'menu_name' => $menu_file_upload
+            ]);    
+        }
     }
 }
