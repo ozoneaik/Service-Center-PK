@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\EmpRequest;
 use App\Models\StoreInformation;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
@@ -14,7 +16,7 @@ use Inertia\Response;
 
 class UserManageController extends Controller
 {
-    public function list()
+    public function list(): Response
     {
         $list = [];
         $groups = StoreInformation::query()->select('is_code_cust_id', 'shop_name')->groupBy('is_code_cust_id', 'shop_name')->get();
@@ -31,13 +33,14 @@ class UserManageController extends Controller
         return Inertia::render('Admin/Users/UserCreate');
     }
 
-    public function edit($user_code)
+    public function edit($user_code): Response
     {
         $user = User::query()->where('user_code', $user_code)->with('store_info')->first();
         return Inertia::render('Admin/Users/UserEdit', ['user' => $user]);
     }
 
-    public function store(EmpRequest $request){
+    public function store(EmpRequest $request): RedirectResponse
+    {
         $request->validate([
             'is_code_cust_id' => ['required'],
             'admin_that_branch' => ['required']
@@ -67,7 +70,7 @@ class UserManageController extends Controller
         }
     }
 
-    public function update(Request $request)
+    public function update(Request $request): RedirectResponse
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -75,7 +78,7 @@ class UserManageController extends Controller
             'role' => 'required|string',
             'admin_that_branch' => 'boolean',
         ]);
-        $user = User::findOrFail($request->id);
+        $user = User::query()->findOrFail($request->id);
         $user->name = $request->name;
         $user->email = $request->email;
         $user->role = $request->role;
@@ -85,9 +88,9 @@ class UserManageController extends Controller
             ->with('success', 'อัพเดทข้อมูลผู้ใช้เรียบร้อยแล้ว');
     }
 
-    public function delete($user_code)
+    public function delete($user_code): JsonResponse
     {
-        $user = User::where('user_code', $user_code)->first();
+        $user = User::query()->where('user_code', $user_code)->first();
         if (!$user) {
             return response()->json([
                 'message' => 'ไม่พบผู้ใช้รายนี้',

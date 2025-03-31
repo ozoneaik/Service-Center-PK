@@ -7,6 +7,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import HistoryIcon from '@mui/icons-material/History';
 import StoreIcon from '@mui/icons-material/Store';
+import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
 export default function AdminMainPage() {
     const menuItems = [
         {
@@ -44,6 +45,12 @@ export default function AdminMainPage() {
             icon : <StoreIcon/>,
             path : route('stockSp.shopList'),
             color : 'pink'
+        },
+        {
+            text : "จัดการเซลล์",
+            icon : <RecordVoiceOverIcon/>,
+            path : route('Sales.index'),
+            color : '#ffdf33'
         }
     ];
 

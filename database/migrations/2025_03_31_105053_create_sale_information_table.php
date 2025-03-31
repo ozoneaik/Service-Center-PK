@@ -1,0 +1,31 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('sale_information', function (Blueprint $table) {
+            $table->id();
+            $table->string('is_code_cust_id')->comment('รหัสร้านค้า');
+            $table->string('sale_code')->unique()->comment('รหัสเซลล์');
+            $table->string('lark_token')->unique()->nullable()->comment('โทเค็น lark_token');
+            $table->string('name')->comment('ชื่อ');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('sale_information');
+    }
+};

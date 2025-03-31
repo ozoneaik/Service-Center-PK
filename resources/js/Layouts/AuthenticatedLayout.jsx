@@ -1,9 +1,9 @@
 import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import {Link, usePage} from '@inertiajs/react';
+import {useState} from 'react';
 import icon from '../assets/images/logo.png'
-import {Avatar, Typography } from "@mui/material";
+import {Avatar, Typography} from "@mui/material";
 import watermark from '../assets/images/coverMini.jpg'
 import HeaderImage from '../assets/images/cover.png'
 import NavBar from "@/Layouts/NavBar.jsx";
@@ -31,7 +31,7 @@ const WatermarkStyle = {
 }
 
 
-export default function AuthenticatedLayout({ header, children }) {
+export default function AuthenticatedLayout({header, children}) {
     const user = usePage().props.auth.user;
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     return (
@@ -44,11 +44,11 @@ export default function AuthenticatedLayout({ header, children }) {
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center gap-2 text-white font-bold">
-                                <Avatar src={icon || ''} />
-                                <Typography sx={{ display: { sm: 'none', xl: 'block' } }}>SERVICE CENTER PK</Typography>
+                                <Avatar src={icon || ''}/>
+                                <Typography sx={{display: {sm: 'none', xl: 'block'}}}>SERVICE CENTER PK</Typography>
                             </div>
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavBar user={user} />
+                                <NavBar user={user}/>
                             </div>
                         </div>
 
@@ -96,39 +96,18 @@ export default function AuthenticatedLayout({ header, children }) {
 
                         <div className="-me-2 flex items-center sm:hidden">
                             <button
-                                onClick={() =>
-                                    setShowingNavigationDropdown(
-                                        (previousState) => !previousState,
-                                    )
-                                }
+                                onClick={() => setShowingNavigationDropdown((previousState) => !previousState,)}
                                 className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
                             >
-                                <svg
-                                    className="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
+                                <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                                     <path
-                                        className={
-                                            !showingNavigationDropdown
-                                                ? 'inline-flex'
-                                                : 'hidden'
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
+                                        className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
+                                        strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                                         d="M4 6h16M4 12h16M4 18h16"
                                     />
                                     <path
-                                        className={
-                                            showingNavigationDropdown
-                                                ? 'inline-flex'
-                                                : 'hidden'
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
+                                        className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
+                                        strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                                         d="M6 18L18 6M6 6l12 12"
                                     />
                                 </svg>
@@ -138,7 +117,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 </div>
 
                 <div
-                    style={{ backgroundColor: '#404040', color: '#fff' }}
+                    style={{backgroundColor: '#404040', color: '#fff'}}
                     className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}
                 >
                     <div className="space-y-1 pb-3 pt-2">
@@ -148,45 +127,48 @@ export default function AuthenticatedLayout({ header, children }) {
                         <ResponsiveNavLink href={route('history.index')} active={route().current('history.index')}>
                             ประวัติซ่อม
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink component={Link} href={route('sendJobs.list')}>
+                            ส่งซ่อมพิมคินฯ
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink component={Link} href={route('sendJobs.docJobList')}>
+                            ออกเอกสารส่งกลับ
+                        </ResponsiveNavLink>
                         <ResponsiveNavLink href={route('warranty.index')} active={route().current('warranty.index')}>
                             ลงทะเบียนรับประกัน
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            href={route('spareClaim.index')}
-                            active={route().current('spareClaim.index')}
-                        >
+                        <ResponsiveNavLink href={route('spareClaim.index')}
+                                           active={route().current('spareClaim.index')}>
                             แจ้งเคลมอะไหล่
                         </ResponsiveNavLink>
                         <ResponsiveNavLink href={route('orders.list')} active={route().current('orders.list')}>
                             สั่งซื้ออะไหล่
                         </ResponsiveNavLink>
-                    </div>
-
-                    <div className="border-t border-gray-200 pb-1 pt-4">
-                        <div className="px-4">
-                            <div className="text-base font-medium text-gray-800">
-                                {user.name}
-                            </div>
-                            <div className="text-sm font-medium text-gray-500">
-                                {user.email}
-                            </div>
-                        </div>
-
-                        <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>ข้อมูลส่วนตัว</ResponsiveNavLink>
-                            {/* {user.role === 'service' && user.admin_that_branch === true && (
-                                <ResponsiveNavLink href={route('profile.edit')}>
-                                    จัดการบริการของตัวเอง
+                        <ResponsiveNavLink href={route('profile.edit')}>ข้อมูลส่วนตัว</ResponsiveNavLink>
+                        {user.admin_that_branch && (
+                            <>
+                                <ResponsiveNavLink
+                                    href={route('stockSp.list', {is_code_cust_id: user.is_code_cust_id})}>
+                                    จัดการสต็อกอะไหล่
                                 </ResponsiveNavLink>
-                            )} */}
-                            {user.role === 'admin' && (
-                                <>
-                                    <ResponsiveNavLink href={route('admin.show')}>ผู้ดูแลระบบ</ResponsiveNavLink>
-                                    <ResponsiveNavLink href={route('approvalSp.index')}>
-                                        อนุมัติอะไหล่
-                                    </ResponsiveNavLink>
-                                </>
-                            )}
+                                <ResponsiveNavLink href={route('storeUsers.index')}>
+                                    ข้อมูลผู้ใช้
+                                </ResponsiveNavLink>
+                            </>
+                        )}
+                        {user.role === 'admin' && (
+                            <ResponsiveNavLink href={route('admin.show')}>ผู้ดูแลระบบ</ResponsiveNavLink>
+                        )}
+                    </div>
+                    <div className="border-t border-gray-200 pb-1 pt-4">
+                        <div className="mt-3 space-y-1">
+                            <div className="px-4">
+                                <div className="text-base font-medium text-gray-800">
+                                    {user.name}
+                                </div>
+                                <div className="text-sm font-medium text-gray-500">
+                                    {user.email}
+                                </div>
+                            </div>
                             <ResponsiveNavLink method="post" href={route('logout')} as="button">
                                 ออกจากระบบ
                             </ResponsiveNavLink>
@@ -202,7 +184,6 @@ export default function AuthenticatedLayout({ header, children }) {
                     </div>
                 </header>
             )}
-
             <main className="pt-16">
                 {children}
             </main>

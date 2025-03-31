@@ -46,7 +46,7 @@ export default function NavBar({ user }) {
                     aria-expanded={openMenu1 ? 'true' : undefined}
                     onClick={handleClick1}
                 >
-                    ส่งซ่อมไปยัง PK
+                    ส่งซ่อมไปยังพิมคินฯ
                 </Button>
                 <Menu
                     id="menu-1"
@@ -57,8 +57,8 @@ export default function NavBar({ user }) {
                         'aria-labelledby': 'menu-button-1',
                     }}
                 >
-                    <MenuItem component={Link} href={route('sendJobs.list')} onClick={handleClose1}>ส่งซ่อมไปยัง PK</MenuItem>
-                    <MenuItem component={Link} href={route('sendJobs.docJobList')} onClick={handleClose1}>ทำใบ</MenuItem>
+                    <MenuItem component={Link} href={route('sendJobs.list')} onClick={handleClose1}>ส่งซ่อมพิมคินฯ</MenuItem>
+                    <MenuItem component={Link} href={route('sendJobs.docJobList')} onClick={handleClose1}>ออกเอกสารส่งกลับ</MenuItem>
                 </Menu>
             </div>
             <NavLink

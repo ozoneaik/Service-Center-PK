@@ -70,6 +70,7 @@ Route::middleware('auth')->group(function () {
             Route::get('history-job',[HistorySpController::class,'index'])->name('admin.history-job');
         });
     });
+    require __DIR__.'/admin.php';
 
     // ลงทะเบียนรับประกัน
     Route::prefix('warranty')->group(function () {
@@ -87,7 +88,7 @@ Route::middleware('auth')->group(function () {
 
     // จัดการ stock
     require __DIR__. '/stockSp.php';
-    
+
 
     Route::prefix('history')->group(function () {
         Route::get('/index', [HistoryRepairController::class, 'index'])->name('history.index');

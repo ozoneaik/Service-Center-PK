@@ -61,7 +61,11 @@ export default function SenJobList({jobs}) {
             <Paper sx={{bgcolor: 'white', p: 3}}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
-                        <Typography variant='h6'>ส่งซ่อมไปยัง PK</Typography>
+                        <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                            <Typography variant='h6'>ส่งซ่อมพิมคินฯ</Typography>
+                            <Typography variant='body1'>รายการทั้งหมด {jobs.length} รายการ</Typography>
+                        </Stack>
+
                     </Grid2>
                     {showAlert && flash.success && (
                         <Grid2 size={12}>
