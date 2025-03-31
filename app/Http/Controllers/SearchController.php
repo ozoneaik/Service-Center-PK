@@ -245,3 +245,5 @@ class SearchController extends Controller
     }
 
 }
+
+// 9999-รหัสร้านค้า4หลักแรก+yymmdd+สุ่ม4ตัวเลข

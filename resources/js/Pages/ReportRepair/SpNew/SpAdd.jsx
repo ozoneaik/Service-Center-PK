@@ -144,7 +144,8 @@ export default function SpAdd({ detail, showAdd, setShowAdd, setDetail }) {
                             </TableHead>
                             <TableBody>
                                 {spAll.map((item, index) => {
-                                    const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
+                                    // const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
+                                    const spPath2 = `https://images.pumpkin.tools/SKUS/SP/new/${item.spcode}.jpg`;
                                     if (item.spcode !== 'SV001') {
                                         return (
                                             <TableRow key={index}

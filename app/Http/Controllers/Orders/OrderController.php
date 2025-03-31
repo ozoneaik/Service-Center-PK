@@ -26,7 +26,7 @@ class OrderController extends Controller
         $countCart = Cart::query()->where('is_code_cust_id', Auth::user()->is_code_cust_id)
             ->where('is_active', false)
             ->count();
-        return Inertia::render('Orders/OrderList',['count_cart' => $countCart ?? 0,]);
+        return Inertia::render('Orders/OrderList', ['count_cart' => $countCart ?? 0,]);
     }
 
     public function search($sku): JsonResponse
@@ -56,7 +56,7 @@ class OrderController extends Controller
                             ->first();
                         if ($Carts) {
                             $result['sp'][$key]['added'] = true;
-                        }else{
+                        } else {
                             $result['sp'][$key]['added'] = false;
                         }
                         $result['sp'][$key]['remark'] = 'มาจากการสั่งซื้อ';
@@ -252,7 +252,7 @@ class OrderController extends Controller
             }
 //            dd($items);
             $order->update(['total_price' => $totalOrderPrice]);
-            $text = "ศูนย์ซ่อม : ".Auth::user()->store_info->shop_name."\nแจ้งเรื่อง : สั่งซื้ออะไหล่\nรายการ :\n\n" . implode("\n", $items);
+            $text = "ศูนย์ซ่อม : " . Auth::user()->store_info->shop_name . "\nแจ้งเรื่อง : สั่งซื้ออะไหล่\nรายการ :\n\n" . implode("\n", $items);
             $body = [
                 "receive_id" => "ou_9083bf66d2e3240e0313dc50ae7edba9",
                 "msg_type" => "text",
@@ -264,6 +264,9 @@ class OrderController extends Controller
             ]);
             if ($response->successful()) {
                 $responseJson = $response->json();
+                if ($responseJson['code'] === 10014) {
+                    throw new \Exception('รหัสของแอปส่งการแจ้งเตือนไปยัง lark ไม่ถูกต้อง');
+                }
                 $tenant_access_token = $responseJson['tenant_access_token'];
 
                 $responseSend = Http::withHeaders([
@@ -295,7 +298,8 @@ class OrderController extends Controller
             ]);
             return response()->json([
                 'status' => 'error',
-                'message' => 'เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ กรุณาลองใหม่ภายหลัง',
+//                'message' => 'เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ กรุณาลองใหม่ภายหลัง',
+                'message' => $e->getMessage(),
                 'error' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }

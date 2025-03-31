@@ -21,7 +21,8 @@ const TableC = ({detail = [], warranty = false}) => {
             </TableHead>
             <TableBody>
                 {filteredData.map((item, index) => {
-                    const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
+                    // const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
+                    const spPath2 = `https://images.pumpkin.tools/SKUS/SP/new/${item.spcode}.jpg`;
                     const spPath = import.meta.env.VITE_IMAGE_PATH + `${detail.pid}/` + item.spcode + '.jpg';
                     return (
                         <TableRow key={index} sx={
@@ -41,7 +42,7 @@ const TableC = ({detail = [], warranty = false}) => {
             </TableBody>
         </Table>
         </Paper>
-        
+
     )
 }
 

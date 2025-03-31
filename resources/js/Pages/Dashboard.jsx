@@ -5,7 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ProductDetail from '@/Components/ProductDetail';
 import {useState} from 'react';
 import Progress from "@/Components/Progress.jsx";
-import {AlertDialog, AlertDialogQuestionForSearch} from "@/Components/AlertDialog.js";
+import {AlertDialog, AlertDialogQuestionForSearch, AlertWithFormDialog} from "@/Components/AlertDialog.js";
 import EditIcon from '@mui/icons-material/Edit';
 import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
 import FormRepair from "@/Pages/ReportRepair/FormRepair.jsx";
@@ -20,9 +20,11 @@ export default function Dashboard() {
     const [processing, setProcessing] = useState(false);
     const [sn, setSn] = useState();
     const [showContent, setShowContent] = useState();
+
     const fetchData = async (ser, createJob) => {
         setProcessing(true);
         try {
+
             const {data} = await axios.post('/search', {
                 sn: ser,
                 views: 'single',
@@ -63,12 +65,29 @@ export default function Dashboard() {
                 status: error.response.status ?? 500
             }
         }
-
-
     }
+
+    const fetchDataBySku = () => {
+        AlertWithFormDialog({
+            icon: 'question',
+            title: 'คุณได้กรอกซีเรียลเลข 9999',
+            text: 'โปรดระบุรหัสสินค้าที่ต้องการแจ้งซ่อม',
+            res: (confirm, value) => {
+                if (confirm){
+                    alert('กำลังพัฒนา')
+                }
+                console.log(confirm, value);
+            }
+        });
+    };
+
 
     const searchDetail = async (e) => {
         e.preventDefault();
+        if (sn === '9999'){
+            fetchDataBySku()
+            return ;
+        }
         setProcessing(true)
         const {message, status} = await checkSn();
         console.log(message, status);

@@ -31,6 +31,7 @@ export function AlertWithFormDialog({title, text, icon = 'error', res}) {
         icon,
         text,
         title,
+        showCancelButton : true,
         ...options,
         input: "text",
         inputAttributes: {

@@ -46,8 +46,8 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
     }
 
     const onRemoveSp = async (id) => {
-        const {status} = await axios.delete(`/orders/carts/delete/${id}`);
-        if (status === 200) {
+        try {
+            const {status} = await axios.delete(`/orders/carts/delete/${id}`);
             const updatedGroups = groups.map(group => {
                 return {
                     ...group,
@@ -55,12 +55,13 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
                 };
             });
             setGroups(updatedGroups);
-        } else {
+        }catch (error){
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
-                text: 'ไม่สามารถลบสินค้านี้ได้'
+                text: error.response.data.message
             })
         }
+
     }
 
     return (
@@ -149,7 +150,7 @@ export default function CartList({groupSku, totalSp}) {
         } catch (error) {
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
-                text: 'ไม่สามารถยืนยันการสั่งซื้อได้'
+                text: error.response.data.message
             })
         }
     }
