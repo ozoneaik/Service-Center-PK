@@ -47,12 +47,12 @@ export default function AuthenticatedLayout({header, children}) {
                                 <Avatar src={icon || ''}/>
                                 <Typography sx={{display: {sm: 'none', xl: 'block'}}}>SERVICE CENTER PK</Typography>
                             </div>
-                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                            <div className="hidden space-x-8 md:-my-px md:ms-10 md:flex">
                                 <NavBar user={user}/>
                             </div>
                         </div>
 
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center">
+                        <div className="hidden md:ms-6 md:flex md:items-center">
                             <div className="relative ms-3">
                                 <Dropdown>
                                     <Dropdown.Trigger>
@@ -94,7 +94,7 @@ export default function AuthenticatedLayout({header, children}) {
                             </div>
                         </div>
 
-                        <div className="-me-2 flex items-center sm:hidden">
+                        <div className="-me-2 flex items-center md:hidden">
                             <button
                                 onClick={() => setShowingNavigationDropdown((previousState) => !previousState,)}
                                 className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
@@ -118,7 +118,7 @@ export default function AuthenticatedLayout({header, children}) {
 
                 <div
                     style={{backgroundColor: '#404040', color: '#fff'}}
-                    className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}
+                    className={(showingNavigationDropdown ? 'block' : 'hidden') + ' md:hidden'}
                 >
                     <div className="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
