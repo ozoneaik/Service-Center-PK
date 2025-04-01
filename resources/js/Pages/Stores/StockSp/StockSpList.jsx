@@ -25,7 +25,7 @@ import {useState} from "react";
 import AddSpWithBill from "./AddSpWithBill.jsx";
 import AddSpBasic from "./AddSpBasic.jsx";
 
-const tableHeaders = [  'รูปภาพอะไหล่', 'รหัสอะไหล่', 'ชื่ออะไหล่', 'จำนวน','สต็อกยกมา','แจ้งซ่อม','แจ้งปรับปรุง','สต็อกคงเหลือ' ,'จัดการ'];
+const tableHeaders = [  'รูปภาพอะไหล่', 'รหัสอะไหล่', 'ชื่ออะไหล่', 'จำนวน','สต็อกยกมา','แจ้งซ่อม','แจ้งปรับปรุง','สต็อกคงเหลือ'];
 
 const TableDetail = ({stocks}) => {
     return (
@@ -41,7 +41,9 @@ const TableDetail = ({stocks}) => {
                 {stocks.map((stock, index) => (
                     <TableRow key={index}>
                         <TableCell>
-                            <img width={80} src={`https://images.pumpkin.tools/SKUS/SP/new/${stock.sp_code}.jpg`} alt="no image"/>
+                            <img
+                                width={80} src={`https://images.pumpkin.tools/SKUS/SP/new/${stock.sp_code}.jpg`} alt="no image"
+                            />
                         </TableCell>
                         <TableCell>{stock.sp_code}</TableCell>
                         <TableCell>{stock.sp_name}</TableCell>
@@ -50,11 +52,6 @@ const TableDetail = ({stocks}) => {
                         <TableCell>{stock.qty_sp}</TableCell>
                         <TableCell>{stock.qty_sp}</TableCell>
                         <TableCell>{stock.qty_sp}</TableCell>
-                        <TableCell>
-                            <Button size="small" variant="contained">
-                                เพิ่ม / ลด จำนวนอะไหล่
-                            </Button>
-                        </TableCell>
                     </TableRow>
                 ))}
             </TableBody>
