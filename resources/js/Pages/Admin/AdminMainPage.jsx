@@ -8,6 +8,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import HistoryIcon from '@mui/icons-material/History';
 import StoreIcon from '@mui/icons-material/Store';
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
+import StarsIcon from '@mui/icons-material/Stars';
 export default function AdminMainPage() {
     const menuItems = [
         {
@@ -51,6 +52,12 @@ export default function AdminMainPage() {
             icon : <RecordVoiceOverIcon/>,
             path : route('Sales.index'),
             color : '#ffdf33'
+        },
+        {
+            text : "จัดการคะแนน",
+            icon : <StarsIcon/>,
+            path : route('ScoreMaster.index'),
+            color : '#000000'
         }
     ];
 

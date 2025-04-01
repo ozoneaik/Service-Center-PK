@@ -41,7 +41,7 @@ const TableDetail = ({stocks}) => {
                 {stocks.map((stock, index) => (
                     <TableRow key={index}>
                         <TableCell>
-                            <img src="" alt="no image"/>
+                            <img width={80} src={`https://images.pumpkin.tools/SKUS/SP/new/${stock.sp_code}.jpg`} alt="no image"/>
                         </TableCell>
                         <TableCell>{stock.sp_code}</TableCell>
                         <TableCell>{stock.sp_name}</TableCell>
