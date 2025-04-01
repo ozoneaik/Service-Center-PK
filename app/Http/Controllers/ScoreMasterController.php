@@ -102,7 +102,8 @@ class ScoreMasterController extends Controller
 
     public function createSku(): Response
     {
-        return Inertia::render('Admin/Scores/Master/ScoreSkuCreate');
+        $groups = ScoreMaster::query()->get();
+        return Inertia::render('Admin/Scores/ScoreSkuCreate', ['groups' => $groups]);
     }
 
     public function storeSku(ScoreSkuRequest $request): RedirectResponse

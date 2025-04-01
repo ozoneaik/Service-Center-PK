@@ -50,7 +50,7 @@ export function AlertWithFormDialogTextArea({title, text, icon = 'error', res}) 
     let value;
     Swal.fire({
         icon,
-        text,
+        html : text,
         title,
         showCancelButton : true,
         ...options,
@@ -71,7 +71,7 @@ export function AlertDialogQuestion({title='แน่ใจหรือไม่
     Swal.fire({
         icon: 'question',
         title,
-        text,
+        html : text,
         showCancelButton,
         ...options
     }).then((result) => {

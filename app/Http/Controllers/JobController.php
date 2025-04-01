@@ -127,6 +127,13 @@ class JobController extends Controller
                             'sp_unit' => $item['sp_unit'],
                             'remark' => 'มาจากแจ้งซ่อม เนื่องจาก stock เป็น 0',
                         ]);
+                    }else{
+                        $StockSp = StockSparePart::query()
+                            ->where('sp_code', $item['sp_code'])
+                            ->where('is_code_cust_id',Auth::user()->is_code_cust_id)
+                            ->first();
+                        $StockSp->qty_sp = $StockSp->qty_sp - $item['qty'];
+                        $StockSp->save();
                     }
                 } else {
                     if ($item['sp_code'] !== 'SV001') {

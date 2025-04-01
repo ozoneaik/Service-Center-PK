@@ -18,8 +18,8 @@ export const Customer = ({detail, setDetail}) => {
         let message = '';
         AlertDialog({
             icon: 'question',
-            title: 'ยินยันการบันทึกข้อมูล',
-            text: 'กดตกลงเพื่อบันทึกหรืออัพเดทช้อมูล',
+            title: 'ยืนยันการบันทึกข้อมูล',
+            text: 'กดตกลงเพื่อบันทึกหรืออัพเดทข้อมูล',
             onPassed: async (confirm) => {
 
                 if (confirm) {

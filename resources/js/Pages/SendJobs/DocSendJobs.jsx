@@ -18,9 +18,13 @@ export default function DocSendJobs({groups}) {
         <Table>
             <TableHead>
                 <TableRow sx={TABLE_HEADER_STYLE}>
-                    {['ลำดับ', 'เลข job', 'วันที่สร้าง', 'ปริ้นครั้งแรก', 'ปริ้นครั้งล่าสุด', 'จัดการ'].map((item, index) => (
-                        <TableCell key={index}>{item}</TableCell>
-                    ))}
+                    <TableCell>ลำดับ</TableCell>
+                    <TableCell>เลขที่ JOB (PK)</TableCell>
+                    <TableCell>วันที่สร้าง JOB</TableCell>
+                    <TableCell>พิมพ์ครั้งแรก</TableCell>
+                    <TableCell>พิมพ์ครั้งล่าสุด</TableCell>
+                    <TableCell>จำนวนครั้งที่พิมพ์</TableCell>
+                    <TableCell>จัดการ</TableCell>
                 </TableRow>
             </TableHead>
             <TableBody>
@@ -46,6 +50,9 @@ export default function DocSendJobs({groups}) {
                             <DateFormatTh date={group.print_updated_at}/>
                         </TableCell>
                         <TableCell>
+                            {group.counter_print}
+                        </TableCell>
+                        <TableCell>
                             <Stack direction='row' spacing={2}>
                                 <Button
                                     size='small' variant='contained'
@@ -65,7 +72,7 @@ export default function DocSendJobs({groups}) {
                                     rel="noopener noreferrer"
                                     href={`/send-job/print/${group.group_job}`}
                                 >
-                                    พิมพ์ (จำนวนการพิมพ์ {group.counter_print} ครั้ง)
+                                    พิมพ์
                                 </Button>
                             </Stack>
                         </TableCell>

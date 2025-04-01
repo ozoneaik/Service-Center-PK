@@ -35,7 +35,7 @@ class SymptomController extends Controller
             }
             DB::commit();
             $status = 200;
-            $message = 'Symptom added successfully';
+            $message = 'บันทึกข้อมูลสำเร็จ';
         }catch (\Exception $exception){
             DB::rollBack();
             $message = $exception->getMessage();

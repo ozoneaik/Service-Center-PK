@@ -122,12 +122,18 @@ export default function FormWarranty() {
                             <FormLabel>วันที่ซื้อ</FormLabel>
                             <form onSubmit={handelSave}>
                                 <Stack direction='row' spacing={2}>
-                                    <Datepicker
-                                        language="th-TH"
-                                        onChange={(date) => setInputDate(date.toLocaleString())}
+                                    <TextField
+                                        type='date'
+                                        onChange={(e) => setInputDate(e.target.value)}
                                     />
+                                    {/*<Datepicker*/}
+                                    {/*    language="th-TH"*/}
+                                    {/*    onChange={(date) => setInputDate(date.toLocaleString())}*/}
+                                    {/*/>*/}
 
-                                    <Button type='submit' variant='contained'>บันทึก</Button>
+                                    <Button
+                                        disabled={!inputDate}
+                                        type='submit' variant='contained'>บันทึก</Button>
                                 </Stack>
                             </form>
                         </Grid2>

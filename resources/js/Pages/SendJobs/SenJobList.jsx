@@ -7,7 +7,7 @@ import {
 import Checkbox from "@mui/material/Checkbox";
 import {useState} from "react";
 
-const tableHeads = ['รหัสจ็อบ', 'ข้อมูลเบื้องต้น', 'สร้างเมื่อ'];
+const tableHeads = ['เลขที่ JOB', 'ข้อมูลเบื้องต้น', 'สร้างเมื่อ'];
 
 export default function SenJobList({jobs}) {
     const { data, setData, post, processing, errors } = useForm({

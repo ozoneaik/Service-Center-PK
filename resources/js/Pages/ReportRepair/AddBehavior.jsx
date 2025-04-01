@@ -45,7 +45,7 @@ export const AddBehavior = ({detail,setDetail}) => {
         AlertDialog({
             icon: 'question',
             title: 'ยืนยันการบันทึกข้อมูล',
-            text: 'กดตกลงเพื่อบันทึกหรืออัพเดทช้อมูล',
+            text: 'กดตกลงเพื่อบันทึกหรืออัพเดทข้อมูล',
             onPassed: async (confirm) => {
                 if (confirm) {
                     try {

@@ -45,7 +45,7 @@ class BehaviorController extends Controller
             }, $list);
             DB::commit();
             return response()->json([
-                'message' => 'success',
+                'message' => 'บันทึกข้อมูลสำเร็จ',
                 'new_data' => $data,
                 'request' => $request->input('list'),
             ]);

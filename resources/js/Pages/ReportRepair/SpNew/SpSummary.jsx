@@ -133,7 +133,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
     };
 
     const DialogSpZero = () => {
-        const [claim, setClaim] = useState(false);
+        const [claim, setClaim] = useState(null);
         const [claimRemark, setClaimRemark] = useState('');
         const [remark, setRemark] = useState('');
 
@@ -157,10 +157,23 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
 
         const handleOnClose = (e, reason) => {
             console.log(e, reason)
+            console.log(selected,selectWorking)
+
 
             if (reason === "backdropClick" || reason === "escapeKeyDown") {
                 return;
             }
+            const index = selectWorking.findIndex(i => i.spcode === targetZero.spcode);
+            if (index !== -1) {
+                const updatedItems = [...selectWorking];
+                updatedItems[index] = {
+                    ...updatedItems[index],
+                    price_multiple_gp : selected[0].price_multiple_gp
+                };
+                setSelectWorking(updatedItems);
+                console.log(updatedItems)
+            }
+
             setShowAlertZero(false)
         }
 
@@ -187,7 +200,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                 <DialogContent>
                     <Stack spacing={2} sx={{mt: 2}}>
                         <Stack direction="row" spacing={2} alignItems="center">
-                            <Typography>ระบุ :</Typography>
+                            <Typography sx={{minWidth : 40}}>ระบุ :</Typography>
                             <Select
                                 fullWidth
                                 value={claimRemark}
@@ -217,11 +230,11 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                     </Stack>
                 </DialogContent>
                 <DialogActions>
-                    {/* <Button onClick={buttonHandleOnClose} color="error">ยกเลิก</Button> */}
+                     <Button variant='contained' onClick={()=>handleOnClose()} color="error">ยกเลิก</Button>
                     <Button
                         onClick={handleSaveZero}
                         variant="contained"
-                        disabled={claim && !remark}
+                        disabled={claim === null || (claim === true && !remark)}
                     >
                         บันทึก
                     </Button>
@@ -291,7 +304,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
         console.log(selectedRemark)
         return (
             <Dialog
-                fullWidth
+                fullWidth='false'
                 maxWidth='lg'
                 open={showAlertRemark}
                 onClose={() => setShowAlertRemark(false)}
@@ -353,8 +366,8 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                                             const isWarranty = item.warranty && detail.job.warranty === true;
                                             const rowStyle = item.warranty ? {backgroundColor: '#e8f5e9'} : {};
                                             return (
-                                                <TableRow key={index} sx={rowStyle}>
-                                                    <TableCell width={10}>
+                                                <TableRow key={index} sx={{...rowStyle}}>
+                                                    <TableCell width={10} >
                                                         {/* <ImagePreview src={image_sp_path} /> */}
                                                         <ImagePreview src={spPath2}/>
                                                     </TableCell>

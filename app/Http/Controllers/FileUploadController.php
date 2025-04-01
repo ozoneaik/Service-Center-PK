@@ -168,7 +168,7 @@ class FileUploadController extends Controller
 
             $new_data = $this->FileSelected($job_id);
             return response()->json([
-                'message' => 'success',
+                'message' => 'บันทึกข้อมูลสำเร็จ',
                 'data' => $new_data
             ]);
         } catch (\Exception $exception) {
