@@ -34,8 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
 
-    // Search from API outsource
-    Route::post('/search', [SearchController::class, 'detail'])->name('search');
+
 
     // จัดการ Jobs
     require __DIR__ . '/jobs.php';

@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {Head} from '@inertiajs/react';
-import {Button, Container, Grid2, Stack, TextField, useTheme} from '@mui/material';
+import {Button, Container, Grid2, Stack, TextField} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ProductDetail from '@/Components/ProductDetail';
 import {useState} from 'react';
@@ -50,9 +50,9 @@ export default function Dashboard() {
         }
     }
 
-    const checkSn = async () => {
+    const checkSn = async (SN=sn) => {
         try {
-            const {data, status} = await axios.get(`/jobs/check/${sn}`);
+            const {data, status} = await axios.get(`/jobs/check/${SN}`);
             console.log(data, status)
             return {
                 message: data.message,
@@ -67,28 +67,74 @@ export default function Dashboard() {
         }
     }
 
-    const fetchDataBySku = () => {
-        AlertWithFormDialog({
+    const fetchDataBySku = async () => {
+        await AlertWithFormDialog({
             icon: 'question',
             title: 'คุณได้กรอกซีเรียลเลข 9999',
             text: 'โปรดระบุรหัสสินค้าที่ต้องการแจ้งซ่อม',
-            res: (confirm, value) => {
-                if (confirm){
-                    alert('กำลังพัฒนา')
-                }
-                console.log(confirm, value);
+            res: async (confirm, value) => {
+                confirm && await searchDetailSku(value)
             }
         });
     };
 
+    const searchDetailSku = async (sku) => {
+        try {
+            const {data, status} = await axios.post(route('search.sku'),{sku});
+            console.log(data,status);
+            setSn(data.serial_id);
+            const response = await checkSn(data.serial_id);
+            if (response.status === 200) {
+                await fetchData(data.serial_id, false);
+            } else if (response.status === 400) {
+                const showConfirmButton = !(response.message === 'serial_id กำลังถูกซ่อมจากศูนย์บริการอื่น' || response.message === 'serial_id กำลังส่งซ่อมไปยัง ศูนย์ซ่อม Pumpkin');
+                AlertDialogQuestionForSearch({
+                    title: response.message,
+                    cancelButtonText: response.message === 'ไม่พบประวัติการซ่อมจากระบบ' || response.message === 'serial_id กำลังถูกซ่อมจากศูนย์บริการอื่น' ? 'ปิด' : response.message === 'serial_id กำลังส่งซ่อมไปยัง ศูนย์ซ่อม Pumpkin' ? 'ปิด' : 'ดูแค่ประวัติการซ่อม',
+                    text: 'เลือกเมนูดังต่อไปนี้',
+                    showConfirmButton,
+                    message : response.message,
+                    onPassed: async (confirm) => {
+                        if (confirm) {
+                            const result = str.slice(0, 4);
+                            console.log(result);
+                            if (result === '9999'){
+                            }else{
+                                await fetchData(sn, true);
+                            }
+                        } else {
+                            if (response.message === 'ไม่พบประวัติการซ่อมจากระบบ') return;
+                            if (response.message === 'serial_id กำลังถูกซ่อมจากศูนย์บริการอื่น') return;
+                            if (response.message === 'serial_id กำลังส่งซ่อมไปยัง ศูนย์ซ่อม Pumpkin') return;
+                            await fetchData(sn, false)
+                        }
+                    }
+                })
+            } else {
+                AlertDialog({
+                    title: 'เกิดข้อผิดพลาด',
+                    text: message,
+                })
+            }
+            setProcessing(false);
+        }catch (error) {
+            console.log(error.response.data,error.response.status);
+        }
+    }
+
 
     const searchDetail = async (e) => {
         e.preventDefault();
-        if (sn === '9999'){
-            fetchDataBySku()
-            return ;
-        }
         setProcessing(true)
+        console.log('sn === 9999',sn)
+        if (sn === '9999'){
+            await fetchDataBySku()
+        }else{
+            await searchDetailAfter();
+        }
+    }
+
+    const searchDetailAfter = async () => {
         const {message, status} = await checkSn();
         console.log(message, status);
         if (status === 200) {
@@ -119,7 +165,6 @@ export default function Dashboard() {
             })
         }
         setProcessing(false);
-
     }
 
     const ButtonLink = ({icon, title, color, menu}) => (

@@ -24,6 +24,10 @@ class SearchController extends Controller
     public function detail(SearchRequest $request): JsonResponse
     {
         try {
+            $result = substr($request->sn, 0, 4);
+            if ($result === '9999'){
+                return $this->searchSku($request->sn);
+            }
             $response = Http::post(env('API_DETAIL'), [
                 'sn' => $request->sn,
                 'views' => $request->views,
@@ -160,9 +164,10 @@ class SearchController extends Controller
 
         if ($createJob){
 //        if (!$job || $job->status === 'success') {
+            $is_code_4_digit = substr(Auth::user()->is_code_cust_id, 0, 4);
             $job = JobList::query()->create([
                 'serial_id' => $data['serial'],
-                'job_id' => "JOB-" . Carbon::now()->timestamp,
+                'job_id' => "JOB-" . Carbon::now()->timestamp . 'C' . $is_code_4_digit,
                 'pid' => $data['pid'],
                 'p_name' => $data['pname'],
                 'p_base_unit' => $data['pbaseunit'],
@@ -243,7 +248,59 @@ class SearchController extends Controller
         }
         return $histories;
     }
+    // ค้นหา job โดย sku
+    private function searchSku ($serial_id){
+        try {
+            $job = JobList::query()->where('serial_id', $serial_id)->first();
+            $job = $job->toArray();
+            $response = Http::post(env('VITE_API_ORDER'), [
+                'pid' => $job['pid'],
+                'views' => 'single',
+            ]);
+            if ($response->successful()) {
+                $responseJson = $response->json();
+                if ($responseJson['status'] == 'SUCCESS') {
+                    $job_id = $job['job_id'];
+                    $jobTemp = $job;
+                    $job = $responseJson['assets'][0];
+                    $job['job'] = $jobTemp;
+                    $job['serial'] = $serial_id;
+                    $job['job_id'] = $job_id;
+                }else{
+                    throw new \Exception("ไม่เจอข้อมูลรหัสสินค้านี้");
+                }
+            }else{
+                throw new \Exception('เกิดปัญหากับ API');
+            }
+            $job['history'] = [];
+            $job['selected']['behavior'] = $this->BehaviorSelected($job['job_id']);
+            $job['selected']['symptom'] = $this->SymptomSelected($job['job_id']);
+            $job['selected']['remark'] = $this->RemarkSelected($job['job_id']);
+            $job['selected']['fileUpload'] = $this->FileSelected($job['job_id']);
+            $findGP = Gp::query()->where('is_code_cust_id', Auth::user()->is_code_cust_id)->first();
+            $job['selected']['globalGP'] = $findGP ? $findGP->gp_val : 0;
+            $job['selected']['customerInJob'] = $this->CustomerInJob($serial_id, $job['job_id']) ?? [];
+            $sp = $this->SpSelected($job['job_id']);
+            $job['selected']['sp_warranty'] = $sp['sp_warranty'];
+            $job['selected']['sp'] = $sp['sp'];
+            return response()->json([
+                'status' => 'SUCCESS',
+                'searchResults' => $job,
+                'auth_user' => Auth::user(),
+                'message' => 'success',
+                'time' => Carbon::now()
+            ]);
+        }catch (\Exception $e){
+            return response()->json([
+                'status' => 'Fail',
+                'searchResults' => [],
+                'auth_user' => Auth::user(),
+                'message' => $e->getMessage(),
+                'time' => Carbon::now()
+            ], 400);
+        }
 
+    }
 }
 
-// 9999-รหัสร้านค้า4หลักแรก+yymmdd+สุ่ม4ตัวเลข
+

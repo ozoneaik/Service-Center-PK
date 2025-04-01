@@ -1,21 +1,34 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import { Head, Link, router, useForm, usePage } from "@inertiajs/react";
-import { Alert, Box, Button, Chip, Grid2, Paper, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
-import React, { useState } from "react";
+import {Head, Link, router, useForm, usePage} from "@inertiajs/react";
+import {
+    Alert,
+    Box,
+    Button,
+    Chip,
+    Grid2,
+    Paper,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    Typography
+} from "@mui/material";
+import React, {useState} from "react";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import { AlertDialogQuestion } from "@/Components/AlertDialog";
+import {AlertDialogQuestion} from "@/Components/AlertDialog";
 import ModalEditUser from "./ModalEditUser";
 
-export default function UserList({ users }) {
+export default function UserList({users}) {
     const auth = usePage().props.auth.user;
-    const { flash } = usePage().props;
+    const {flash} = usePage().props;
     const [progress, setProgress] = useState(false);
     const [showAlert, setShowAlert] = useState(false);
     const [open, setOpen] = useState(false);
     const [userSelected, setUserSelected] = useState();
-
 
 
     const handleDelete = (user_code, name) => {
@@ -30,7 +43,7 @@ export default function UserList({ users }) {
 
     const deleteUser = (user_code, name) => {
         setProgress(true);
-        router.delete(route('storeUsers.delete', { user_code: user_code }), {
+        router.delete(route('storeUsers.delete', {user_code: user_code}), {
             onFinish: () => {
                 setShowAlert(true);
                 setProgress(false);
@@ -41,21 +54,21 @@ export default function UserList({ users }) {
         <>
             {open && <ModalEditUser open={open} setOpen={setOpen} user={userSelected} onSave={(text) => {
                 setShowAlert(true);
-            }} />}
+            }}/>}
             <AuthenticatedLayout>
-                <Head title={'จัดการผู้ใช้'} />
-                <Paper elevation={3} sx={{ p: 3 }}>
+                <Head title={'จัดการผู้ใช้'}/>
+                <Paper elevation={3} sx={{p: 3}}>
                     <Grid2 container spacing={2}>
                         <Grid2 size={12}>
                             <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                                <Typography variant="h5" sx={{ mb: 2 }}>รายการผู้ใช้งาน</Typography>
+                                <Typography variant="h5" sx={{mb: 2}}>รายการผู้ใช้งาน</Typography>
                                 <Button
-                                 variant="contained" startIcon={<PersonAddIcon />}
-                                 component={Link}
-                                 href={route('storeUsers.create')}
-                                 >
+                                    variant="contained" startIcon={<PersonAddIcon/>}
+                                    component={Link}
+                                    href={route('storeUsers.create')}
+                                >
                                     เพิ่มผู้ใช้
-                                    </Button>
+                                </Button>
                             </Stack>
                         </Grid2>
                         {showAlert && flash.success && (
@@ -64,10 +77,10 @@ export default function UserList({ users }) {
                             </Grid2>
                         )}
                         <Grid2 size={12}>
-                            <Box sx={{ overflowX: 'auto' }}>
+                            <Box sx={{overflowX: 'auto'}}>
                                 <Table>
                                     <TableHead>
-                                        <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                                        <TableRow sx={{backgroundColor: '#f5f5f5'}}>
                                             <TableCell>รหัสผู้ใช้</TableCell>
                                             <TableCell>ชื่อผู้ใช้</TableCell>
                                             <TableCell>อีเมล</TableCell>
@@ -95,7 +108,7 @@ export default function UserList({ users }) {
                                                             <Button
                                                                 disabled={progress}
                                                                 variant='contained' color="info"
-                                                                size="small" startIcon={<EditIcon />}
+                                                                size="small" startIcon={<EditIcon/>}
                                                                 onClick={() => {
                                                                     setUserSelected(user);
                                                                     setOpen(true);
@@ -106,7 +119,7 @@ export default function UserList({ users }) {
                                                             <Button
                                                                 disabled={progress || user.user_code === auth.user_code}
                                                                 variant="contained" color="error"
-                                                                size="small" startIcon={<DeleteIcon />}
+                                                                size="small" startIcon={<DeleteIcon/>}
                                                                 onClick={() => handleDelete(user.user_code, user.name)}
                                                             >
                                                                 ลบ

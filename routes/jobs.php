@@ -6,10 +6,16 @@ use App\Http\Controllers\CustomerInJobController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\RemarkController;
+use App\Http\Controllers\SearchBySkuController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SendJob\sendJobController;
 use App\Http\Controllers\SparePartController;
 use App\Http\Controllers\SymptomController;
 use Illuminate\Support\Facades\Route;
+
+// Search from API outsource
+Route::post('/search', [SearchController::class, 'detail'])->name('search');
+Route::post('/search/sku',[SearchBySkuController::class,'detailSku'])->name('search.sku');
 
 Route::prefix('jobs')->group(function(){
     Route::get('/check/{serial_id}', [JobController::class, 'check'])->name('jobs.check');
