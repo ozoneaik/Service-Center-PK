@@ -57,49 +57,49 @@ class SparePartController extends Controller
                     'remark' => $item['remark'] ?? null,
                 ]);
             }, $list['sp']);
-            foreach ($list['sp'] as $item) {
-                $checkStock = StockSparePart::query()->where('sp_code', $item['spcode'])->first();
-                if ($checkStock) {
-                    if ($checkStock->qty_sp <= 0) {
-                        Cart::query()
-                            ->where('sku_code', $pid)
-                            ->where('remark','มาจากแจ้งซ่อม เนื่องจาก stock เป็น 0')
-                            ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
-                            ->where('sp_code', $item['spcode'])->delete();
-                        Cart::query()->create([
-                            'is_code_cust_id' => Auth::user()->is_code_cust_id,
-                            'user_code_key' => Auth::user()->user_code,
-                            'sku_code' => $pid,
-                            'sku_name' => $pname,
-                            'sp_code' => $item['spcode'],
-                            'sp_name' => $item['spname'],
-                            'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
-                            'qty' => 1,
-                            'sp_unit' => $item['spunit'],
-                            'remark' => 'มาจากแจ้งซ่อม เนื่องจาก stock เป็น 0',
-                        ]);
-                    }
-                } else {
-                    if ($item['spcode'] !== 'SV001') {
-                        Cart::query()
-                            ->where('sku_code', $pid)
-                            ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
-                            ->where('sp_code', $item['spcode'])->delete();
-                        Cart::query()->create([
-                            'is_code_cust_id' => Auth::user()->is_code_cust_id,
-                            'user_code_key' => Auth::user()->user_code,
-                            'sku_code' => $pid,
-                            'sku_name' => $pname,
-                            'sp_code' => $item['spcode'],
-                            'sp_name' => $item['spname'],
-                            'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
-                            'qty' => 1,
-                            'sp_unit' => $item['spunit'] ?? 'อัน',
-                            'remark' => 'มาจากแจ้งซ่อม เนื่องจาก stock เป็น 0',
-                        ]);
-                    }
-                }
-            }
+//            foreach ($list['sp'] as $item) {
+//                $checkStock = StockSparePart::query()->where('sp_code', $item['spcode'])->first();
+//                if ($checkStock) {
+//                    if ($checkStock->qty_sp <= 0) {
+//                        Cart::query()
+//                            ->where('sku_code', $pid)
+//                            ->where('remark','มาจากแจ้งซ่อม เนื่องจาก stock เป็น 0')
+//                            ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+//                            ->where('sp_code', $item['spcode'])->delete();
+//                        Cart::query()->create([
+//                            'is_code_cust_id' => Auth::user()->is_code_cust_id,
+//                            'user_code_key' => Auth::user()->user_code,
+//                            'sku_code' => $pid,
+//                            'sku_name' => $pname,
+//                            'sp_code' => $item['spcode'],
+//                            'sp_name' => $item['spname'],
+//                            'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
+//                            'qty' => 1,
+//                            'sp_unit' => $item['spunit'],
+//                            'remark' => 'มาจากแจ้งซ่อม เนื่องจาก stock เป็น 0',
+//                        ]);
+//                    }
+//                } else {
+//                    if ($item['spcode'] !== 'SV001') {
+//                        Cart::query()
+//                            ->where('sku_code', $pid)
+//                            ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+//                            ->where('sp_code', $item['spcode'])->delete();
+//                        Cart::query()->create([
+//                            'is_code_cust_id' => Auth::user()->is_code_cust_id,
+//                            'user_code_key' => Auth::user()->user_code,
+//                            'sku_code' => $pid,
+//                            'sku_name' => $pname,
+//                            'sp_code' => $item['spcode'],
+//                            'sp_name' => $item['spname'],
+//                            'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
+//                            'qty' => 1,
+//                            'sp_unit' => $item['spunit'] ?? 'อัน',
+//                            'remark' => 'มาจากแจ้งซ่อม เนื่องจาก stock เป็น 0',
+//                        ]);
+//                    }
+//                }
+//            }
             DB::commit();
             return response()->json([
                 'message' => 'บันทึกรายการอะไหล่สำเร็จ',

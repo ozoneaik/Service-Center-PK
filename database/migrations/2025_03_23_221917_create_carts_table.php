@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('is_code_cust_id')->comment('รหัสร้านค้า');
             $table->string('user_code_key')->comment('รหัสผู้ใช้');
-            $table->string('sku_code')->comment('รหัสสินค้า');
-            $table->string('sku_name')->comment('ชื่อสินค้า');
+            $table->string('sku_code')->nullable()->comment('รหัสสินค้า');
+            $table->string('sku_name')->nullable()->comment('ชื่อสินค้า');
             $table->string('sp_code')->comment('รหัสสินค้า');
-            $table->string('sp_name')->comment('ชื่อสินค้า');
+            $table->string('sp_name')->nullable()->comment('ชื่อสินค้า');
             $table->string('remark')->nullable()->default('มาจากการสั่งซื้อ')->comment('หมายเหตุ');
             $table->float('price_per_unit')->comment('ราคาต่อหน่วย');
             $table->string('sp_unit')->default('ชิ้น')->comment('หน่วย');

@@ -144,7 +144,7 @@ const GenPDF = ({ job, behaviors, barcode, qrCode }) => (
                         <DetailText label="เบอร์โทรศัพท์" value={job.phone} />
                         <DetailText label="ซีเรียลนัมเบอร์" value={job.serial_id} />
                         <DetailText label="ส่งซ่อม" value={job.p_name} />
-                        <DetailText label="อาการ" value={behaviors} />
+                        <DetailText label="อาการ" value={job.symptom} />
                         <DetailText label="ผู้รับ" value={job.username} />
                     </View>
                     <View style={styles.rightColumn}>

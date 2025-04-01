@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Behavior;
 use App\Models\JobList;
+use App\Models\Symptom;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
@@ -70,6 +71,8 @@ class genQuPdfController extends Controller
             ->select('job_lists.*', 'users.name as username', 'users.user_code', 'store.shop_name', 'store.address', 'store.phone')
             ->first();
         $behaviors = Behavior::query()->where('job_id', $job_id)->get();
+        $symptom = Symptom::query()->where('job_id', $job_id)->first();
+        $job['symptom'] = $symptom->symptom;
         $behaviorToString = '';
         foreach ($behaviors as $key => $behavior) {
             if ($key === 0) {

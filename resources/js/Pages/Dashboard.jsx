@@ -85,7 +85,12 @@ export default function Dashboard() {
             setSn(data.serial_id);
             const response = await checkSn(data.serial_id);
             if (response.status === 200) {
-                await fetchData(data.serial_id, false);
+                if (data.message === 'ไม่พบประวัติการซ่อมจากระบบ'){
+                    alert(data.message)
+                    await fetchData(data.serial_id, true);
+                }else{
+                    await fetchData(data.serial_id, false);
+                }
             } else if (response.status === 400) {
                 const showConfirmButton = !(response.message === 'serial_id กำลังถูกซ่อมจากศูนย์บริการอื่น' || response.message === 'serial_id กำลังส่งซ่อมไปยัง ศูนย์ซ่อม Pumpkin');
                 AlertDialogQuestionForSearch({
@@ -138,7 +143,12 @@ export default function Dashboard() {
         const {message, status} = await checkSn();
         console.log(message, status);
         if (status === 200) {
-            await fetchData(sn, false);
+            if (message === 'ไม่พบประวัติการซ่อมจากระบบ'){
+                await fetchData(sn, true);
+            }else{
+                await fetchData(sn, false);
+            }
+            // await fetchData(sn, false);
         } else if (status === 400) {
             const showConfirmButton = !(message === 'serial_id กำลังถูกซ่อมจากศูนย์บริการอื่น' || message === 'serial_id กำลังส่งซ่อมไปยัง ศูนย์ซ่อม Pumpkin');
             AlertDialogQuestionForSearch({
@@ -261,8 +271,6 @@ export default function Dashboard() {
                                         </Stack>
                                     )
                                 }
-
-
                             </>
                         ) : <Progress/>}
                     </Stack>

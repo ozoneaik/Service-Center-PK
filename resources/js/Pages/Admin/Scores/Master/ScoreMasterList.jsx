@@ -29,8 +29,6 @@ export default function ScoreMasterList({scoreMasters}) {
             }
         });
     }
-
-
     return (
         <AuthenticatedLayout>
             <Head title='จัดการ master คะแนน'/>
@@ -39,8 +37,14 @@ export default function ScoreMasterList({scoreMasters}) {
                     <Grid2 size={12}>
                         <Stack direction='row' justifyContent='space-between'>
                             <Typography variant='h6'>จัดการ master คะแนน</Typography>
-                            <Button variant='contained' component={Link}
-                                    href={route('ScoreMaster.create')}>สร้าง</Button>
+                            <Stack direction='row' spacing={2}>
+                                <Button variant='contained' component={Link} href={route('ScoreSku.index')}>
+                                    รายการคะแนนแต่ละสินค้า
+                                </Button>
+                                <Button variant='contained' component={Link} href={route('ScoreMaster.create')}>
+                                    สร้าง
+                                </Button>
+                            </Stack>
                         </Stack>
                     </Grid2>
                     {showAlert && flash.success && (

@@ -36,17 +36,20 @@ export default function UserStore() {
 
     // ตรวจสอบความซับซ้อนของรหัสผ่าน
     const checkPasswordStrength = (password) => {
-        if (!password) return '';
-        let strength = 0;
-        const messages = [];
-        if (password.length >= 8) strength += 1;
-        else messages.push("รหัสผ่านควรมีความยาวอย่างน้อย 8 ตัวอักษร");
-        if (/[0-9]/.test(password)) strength += 1;
-        else messages.push("ควรมีตัวเลขอย่างน้อย 1 ตัว");
-        if (strength < 3) return {color: 'error', message: messages[0] || 'รหัสผ่านไม่ปลอดภัย'};
-        if (strength < 4) return {color: 'warning', message: 'รหัสผ่านปลอดภัยปานกลาง'};
-        return {color: 'success', message: 'รหัสผ่านปลอดภัย'};
+        if (!password) return { color: 'danger', message: 'กรุณากรอกรหัสผ่าน' };
+        let messages = [];
+        if (password.length < 8) {
+            messages.push("รหัสผ่านควรมีความยาวอย่างน้อย 8 ตัวอักษร");
+        }
+        if (!/[0-9]/.test(password)) {
+            messages.push("ควรมีตัวเลขอย่างน้อย 1 ตัว");
+        }
+        if (messages.length > 0) {
+            return { color: 'warning', message: messages.join(' ') };
+        }
+        return { color: 'success', message: 'รหัสผ่านปลอดภัย' };
     };
+
     const passwordStrength = checkPasswordStrength(data.password);
 
     const handleSubmit = (e) => {

@@ -11,8 +11,11 @@ import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
-import FormGroup from '@mui/material/FormGroup';
-import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
+import {
+    AlertDialog,
+    AlertDialogQuestion,
+    AlertWithFormDialogTextArea
+} from "@/Components/AlertDialog.js";
 import {ImagePreview} from "@/Components/ImagePreview.jsx";
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import {useState} from "react";
@@ -242,6 +245,40 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
         }
     }
 
+    const checkReceiveSku = () => {
+        if (detail.selected.symptom !== null) {
+            window.open(route('genReCieveSpPdf', { job_id: detail.job.job_id }), '_blank');
+            return;
+        }
+        AlertWithFormDialogTextArea({
+            icon : 'question',
+            text : 'กรุณากรอกอาการเบื้องต้น',
+            res : async (confirm, value) => {
+                if (confirm && value){
+                    try {
+                        const {data, status} = await axios.post('/symptom/store', {
+                            job_id: detail.job.job_id,
+                            serial_id: detail.serial,
+                            symptom: value,
+                        });
+                        setDetail(prevDetail => ({
+                            ...prevDetail,
+                            selected: {
+                                ...prevDetail.selected,
+                                symptom : value,
+                            }
+                        }));
+                        window.open(route('genReCieveSpPdf', { job_id: detail.job.job_id }), '_blank');
+                    }catch (error){
+                        AlertDialog({
+                            text : error.response.data?.message
+                        })
+                    }
+                }
+            }
+        })
+    }
+
     return (
         <Grid2 container>
             <Grid2 size={12}>
@@ -318,11 +355,14 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
                             <CardDetail>
                                 <Typography variant='h6' fontWeight='bold'>เอกสาร</Typography>
                                 <Stack direction='row' spacing={2}>
-                                    <a href={route('genReCieveSpPdf', {job_id: detail.job.job_id})} target='_blank'>
-                                        <Button variant='contained' startIcon={<ReceiptLongIcon/>}>
-                                            รับสินค้า
-                                        </Button>
-                                    </a>
+                                    <Button onClick={()=>checkReceiveSku()} variant='contained' startIcon={<ReceiptLongIcon/>}>
+                                        รับสินค้า
+                                    </Button>
+                                    {/*<a href={route('genReCieveSpPdf', {job_id: detail.job.job_id})} target='_blank'>*/}
+                                    {/*    <Button variant='contained' startIcon={<ReceiptLongIcon/>}>*/}
+                                    {/*        รับสินค้า*/}
+                                    {/*    </Button>*/}
+                                    {/*</a>*/}
                                     {detail.selected.sp.length > 0 && (
                                         <Button onClick={exportQu} startIcon={<PictureAsPdfIcon/>}
                                                 variant='contained' disabled={loading}>
@@ -341,13 +381,6 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
                         >
                             ยกเลิกงานซ่อม
                         </Button>
-                        {/*<Button*/}
-                        {/*    disabled={detail.job.status !== 'pending'}*/}
-                        {/*    variant='contained' color='info'*/}
-                        {/*    onClick={() => alert('developing')}*/}
-                        {/*>*/}
-                        {/*    ส่งซ่อมให้กับศูนย์ Pumpkin*/}
-                        {/*</Button>*/}
                         <Button
                             variant='contained' color='success'
                             disabled={detail.job.status !== 'pending'}

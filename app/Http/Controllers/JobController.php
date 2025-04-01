@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\JobRequest;
 use App\Models\Behavior;
+use App\Models\Cart;
 use App\Models\CustomerInJob;
 use App\Models\FileUpload;
 use App\Models\JobList;
 use App\Models\SparePart;
+use App\Models\StockSparePart;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -42,7 +44,7 @@ class JobController extends Controller
                 }
             } else {
                 $message = 'ไม่พบประวัติการซ่อมจากระบบ';
-                return response()->json(['message' => $message,], 400);
+                return response()->json(['message' => $message,], 200);
             }
         } catch (\Exception $exception) {
             return response()->json([
@@ -99,6 +101,55 @@ class JobController extends Controller
             } elseif (count($findCustomerInJob) <= 0) {
                 throw new \Exception('จำเป็นต้องกรอกข้อมูลลูกค้า');
             }
+
+            $spareParts = SparePart::query()->where('job_id', $job_id)->get();
+            foreach ($spareParts as $item) {
+                $checkStock = StockSparePart::query()
+                    ->where('is_code_cust_id',Auth::user()->is_code_cust_id)
+                    ->where('sp_code', $item['sp_code'])
+                    ->first();
+                if ($checkStock) {
+                    if ($checkStock->qty_sp <= 0) {
+                        Cart::query()
+                            ->where('sku_code', $job['pid'])
+                            ->where('remark','มาจากแจ้งซ่อม เนื่องจาก stock เป็น 0')
+                            ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                            ->where('sp_code', $item['sp_code'])->delete();
+                        Cart::query()->create([
+                            'is_code_cust_id' => Auth::user()->is_code_cust_id,
+                            'user_code_key' => Auth::user()->user_code,
+                            'sku_code' => $job['pid'],
+                            'sku_name' => $job['p_name'],
+                            'sp_code' => $item['sp_code'],
+                            'sp_name' => $item['sp_name'],
+                            'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
+                            'qty' => 1,
+                            'sp_unit' => $item['sp_unit'],
+                            'remark' => 'มาจากแจ้งซ่อม เนื่องจาก stock เป็น 0',
+                        ]);
+                    }
+                } else {
+                    if ($item['sp_code'] !== 'SV001') {
+                        Cart::query()
+                            ->where('sku_code', $job['pid'])
+                            ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                            ->where('sp_code', $item['sp_code'])->delete();
+                        Cart::query()->create([
+                            'is_code_cust_id' => Auth::user()->is_code_cust_id,
+                            'user_code_key' => Auth::user()->user_code,
+                            'sku_code' => $job['pid'],
+                            'sku_name' => $job['p_name'],
+                            'sp_code' => $item['sp_code'],
+                            'sp_name' => $item['sp_name'],
+                            'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
+                            'qty' => 1,
+                            'sp_unit' => $item['spunit'] ?? 'อัน',
+                            'remark' => 'มาจากแจ้งซ่อม เนื่องจาก stock เป็น 0',
+                        ]);
+                    }
+                }
+            }
+
 
             $job = JobList::query()->where('job_id', $job_id)->update(['status' => 'success']);
             $message = 'ปิดงานซ่อมสำเร็จ';

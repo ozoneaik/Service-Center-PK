@@ -46,6 +46,27 @@ export function AlertWithFormDialog({title, text, icon = 'error', res}) {
     });
 }
 
+export function AlertWithFormDialogTextArea({title, text, icon = 'error', res}) {
+    let value;
+    Swal.fire({
+        icon,
+        text,
+        title,
+        showCancelButton : true,
+        ...options,
+        input: "textarea",
+        inputAttributes: {
+            autocapitalize: "off"
+        },
+        showLoaderOnConfirm: true,
+        preConfirm: async (v) => {
+            value = v;
+        },
+    }).then((result) => {
+        res(result.isConfirmed, value)
+    });
+}
+
 export function AlertDialogQuestion({title='แน่ใจหรือไม่',text, onPassed, showCancelButton = true}) {
     Swal.fire({
         icon: 'question',
