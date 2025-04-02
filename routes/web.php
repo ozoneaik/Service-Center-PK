@@ -144,3 +144,6 @@ Route::get('/test',function(){
 
 require __DIR__ . '/fakeForTest.php';
 
+Route::get('/test-page',function(){
+   return Inertia::render('Test/TestPage');
+});

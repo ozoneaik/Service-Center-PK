@@ -68,8 +68,12 @@ class genQuPdfController extends Controller
         $job = JobList::query()->where('job_id', $job_id)
             ->leftJoin('users', 'users.user_code', '=', 'job_lists.user_key')
             ->leftJoin('store_information as store', 'store.is_code_cust_id', '=', 'users.is_code_cust_id')
-            ->select('job_lists.*', 'users.name as username', 'users.user_code', 'store.shop_name', 'store.address', 'store.phone')
+            ->select(
+                'job_lists.*', 'users.name as username', 'users.user_code', 'store.*',
+            )
             ->first();
+//        dd($job['address']);
+        $job['address'] = htmlspecialchars_decode($job['address']);
         $behaviors = Behavior::query()->where('job_id', $job_id)->get();
         $symptom = Symptom::query()->where('job_id', $job_id)->first();
         $job['symptom'] = $symptom->symptom;

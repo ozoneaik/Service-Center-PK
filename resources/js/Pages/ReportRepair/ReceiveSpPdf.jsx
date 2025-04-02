@@ -5,25 +5,32 @@ import {useEffect, useState} from "react";
 
 Font.register({
     family: 'Kanit',
-    src: '/fonts/Kanit-Regular.ttf',
+    src: '/fonts/THSarabunNew.ttf',
 });
 
 Font.register({
     family: 'KanitBold',
-    src: '/fonts/Kanit-Bold.ttf',
+    src: '/fonts/THSarabunNew_Bold.ttf',
+
+});
+
+Font.register({
+    family: 'HeaderBold',
+    src: '/fonts/Prompt-Bold.ttf',
 });
 
 const styles = StyleSheet.create({
     page: {
         paddingHorizontal: 0,
         paddingVertical: 0,
-        fontSize: 12,
-        fontFamily: 'KanitBold',
+        fontSize: 16,
+        fontFamily: 'Kanit',
         backgroundColor: '#FFFFFF'
     },
     container: {
         border: '2px solid #FF6600',
         padding: 10,
+        paddingTop : 5,
         borderRadius: 10,
         height: '100%',
         position: 'relative',
@@ -34,17 +41,23 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 15,
         borderBottom: '2px solid #FF6600',
-        paddingBottom: 10
+        paddingBottom: 0
     },
     headerLeft: {
         textAlign: 'left',
-        fontSize: 24,
-        fontFamily: 'KanitBold',
+        fontSize: 20,
+        fontFamily: 'HeaderBold',
+        fontWeight : 'bold',
         color: '#FF6600',
     },
     headerRight: {
         alignItems: 'flex-end',
-        justifyContent: 'center'
+    },
+    barCodeGroup  :{
+        margin : 0,
+        display : 'flex',
+        justifyContent : 'center',
+        alignItems : 'center',
     },
     row: {
         flexDirection: 'row',
@@ -65,7 +78,7 @@ const styles = StyleSheet.create({
         marginBottom: 5,
     },
     label: {
-        fontSize: 14,
+        fontSize: 18,
         fontFamily: 'KanitBold',
         color: '#333333',
         width: 75,
@@ -82,7 +95,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         marginBottom: 8,
         alignItems: 'flex-start',
-        width: '60%',
+        width: '80%',
         flexWrap: 'wrap',  // เพิ่มเพื่อให้ข้อความยาวขึ้นบรรทัดใหม่
     },
     line: {
@@ -100,17 +113,17 @@ const styles = StyleSheet.create({
         marginBottom: 5,
     },
     value: {
-        fontSize: 14,
+        fontSize: 18,
         fontFamily: 'Kanit',
         color: '#000000',
         flexGrow: 1,
         wordBreak: 'break-word',  // เปลี่ยนจาก wordWrap เป็น wordBreak
         whiteSpace: 'pre-wrap',   // เพิ่มเพื่อให้ขึ้นบรรทัดใหม่ตามการป้อนข้อมูล
         lineHeight: 1.3,          // เพิ่มระยะห่างระหว่างบรรทัด
-        width: '100%',            // กำหนดความกว้างให้ใช้พื้นที่เต็มที่
+        width: '90%',            // กำหนดความกว้างให้ใช้พื้นที่เต็มที่
     },
     date: {
-        fontSize: 10,
+        fontSize: 14,
         textAlign: 'right',
         color: '#666666',
         position: 'absolute',
@@ -121,13 +134,13 @@ const styles = StyleSheet.create({
     footer: {
         textAlign: 'center',
         fontFamily: 'Kanit',
-        fontSize: 10,
+        fontSize: 12,
         color: '#666666',
         borderTop: '1px solid #FF6600',
         paddingTop: 5,
         paddingBottom: 0,
         position: 'absolute',
-        bottom: 10,
+        bottom: 5,
         left: 20,
         right: 20,
     },
@@ -144,7 +157,7 @@ const styles = StyleSheet.create({
     qrLabel: {
         color: '#4b4b4b',
         width: '40%',
-        fontSize: 8,
+        fontSize: 12,
         textAlign: 'center',
         marginBottom: 5,
         fontFamily: 'KanitBold',
@@ -224,8 +237,14 @@ const GenPDF = ({job, behaviors, barcode, qrCode}) => (
                         </Text>
                     </View>
                     <View style={styles.headerRight}>
-                        {barcode && <Image src={barcode} style={styles.barcodeImage}/>}
-                        <Text style={styles.jobNumber}>{job.job_id}</Text>
+                        <View style={styles.barCodeGroup}>
+                            <View>
+                                {barcode && <Image src={barcode} style={styles.barcodeImage}/>}
+                            </View>
+                            <View>
+                                <Text style={styles.jobNumber}>{job.job_id}</Text>
+                            </View>
+                        </View>
                     </View>
                 </View>
 
