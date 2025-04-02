@@ -2,7 +2,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {useState} from "react";
 import {
     Box, TextField, Button, Typography, Grid2, Paper, Container,
-    List, ListItem, ListItemText, ListItemButton, Divider, IconButton, Alert, InputAdornment
+    List, ListItem, ListItemText, ListItemButton, Divider, IconButton, Alert, InputAdornment, Stack
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -10,14 +10,15 @@ import SaveIcon from "@mui/icons-material/Save";
 import PasswordIcon from '@mui/icons-material/Password';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import {useForm, usePage} from "@inertiajs/react";
+import {router, useForm, usePage} from "@inertiajs/react";
+import {AlertDialogQuestion} from "@/Components/AlertDialog.js";
 
-export default function StockJobDetail({stock_job_id, jobDetail}) {
+export default function StockJobDetail({stock_job_id, jobDetail,stockJob}) {
     const {flash} = usePage().props
     const [alert, setAlert] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(null);
     const [isNewItem, setIsNewItem] = useState(false);
-    const {data, setData,processing, post,errors} = useForm({
+    const {data, setData, processing, post, errors} = useForm({
         sp_code: "", sp_name: "", sku_code: "", sku_name: "", sp_qty: 1,
     });
 
@@ -32,6 +33,22 @@ export default function StockJobDetail({stock_job_id, jobDetail}) {
             setData('sp_qty', jobDetail[index].sp_qty || "");
         }
     };
+
+    const handleDeleteItem = (item) => {
+        AlertDialogQuestion({
+            text: `กดตกลงเพื่อลบรหัสอะไหล่ ${item.sp_code}`,
+            onPassed: (confirm) => {
+                confirm && router.delete(route('stockJob.deleteSp', {
+                    stock_job_id: stock_job_id,
+                    sp_code: item.sp_code
+                }), {
+                    onFinish: () => {
+                        setAlert(true);
+                    }
+                })
+            }
+        })
+    }
 
     const handleNewItem = () => {
         setSelectedIndex(null);
@@ -59,6 +76,17 @@ export default function StockJobDetail({stock_job_id, jobDetail}) {
         console.log(errors)
     };
 
+    const handleEndJob = () => {
+        router.post(route('stockJob.endSpInJob', {
+            stock_job_id: stock_job_id,
+        }), {},{
+            onFinish: (e) => {
+                console.log(e)
+                setAlert(true);
+            }
+        })
+    }
+
     return (
         <AuthenticatedLayout>
             <Container maxWidth="false" sx={{mt: 3}}>
@@ -66,7 +94,7 @@ export default function StockJobDetail({stock_job_id, jobDetail}) {
                     <Grid2 size={12}>
                         <Typography variant="h5" fontWeight='bold'>
                             <Paper variant='outlined' sx={{bgcolor: 'white', p: 1}}>
-                                รายละเอียดงานสต็อก #{stock_job_id}
+                                รายละเอียดงานสต็อก #{stock_job_id} {jobDetail.job_staus}
                             </Paper>
                         </Typography>
                     </Grid2>
@@ -88,7 +116,7 @@ export default function StockJobDetail({stock_job_id, jobDetail}) {
                         <Paper variant='outlined' sx={{height: "100%", minHeight: 400}}>
                             <Box sx={{px: 2, display: "flex", justifyContent: "space-between", alignItems: "center"}}>
                                 <Typography variant="body1" fontWeight='bold'>รายการอะไหล่</Typography>
-                                <IconButton color="primary" onClick={handleNewItem} title="เพิ่มรายการใหม่">
+                                <IconButton disabled={stockJob.job_status === 'success'} color="primary" onClick={handleNewItem} title="เพิ่มรายการใหม่">
                                     <AddIcon/>
                                 </IconButton>
                             </Box>
@@ -100,9 +128,14 @@ export default function StockJobDetail({stock_job_id, jobDetail}) {
                                         <ListItem
                                             key={index} disablePadding
                                             secondaryAction={
-                                                <IconButton edge="end" onClick={() => handleSelectItem(index)}>
-                                                    <EditIcon fontSize="small"/>
-                                                </IconButton>
+                                                <Stack direction='row' spacing={2}>
+                                                    <IconButton disabled={stockJob.job_status === 'success'} edge="end" onClick={() => handleSelectItem(index)}>
+                                                        <EditIcon fontSize="small"/>
+                                                    </IconButton>
+                                                    <IconButton disabled={stockJob.job_status === 'success'} edge="end" onClick={() => handleDeleteItem(item)}>
+                                                        ลบ
+                                                    </IconButton>
+                                                </Stack>
                                             }
                                         >
                                             <ListItemButton
@@ -168,40 +201,40 @@ export default function StockJobDetail({stock_job_id, jobDetail}) {
                                                 value={data.sp_name} onChange={handleChange} variant="outlined"
                                             />
                                         </Grid2>
-                                        <Grid2 size={{xs: 12, md: 6}}>
-                                            <TextField
-                                                size='small'
-                                                slotProps={{
-                                                    input: {
-                                                        startAdornment: (
-                                                            <InputAdornment position='start'>
-                                                                <PasswordIcon/>
-                                                            </InputAdornment>
-                                                        )
-                                                    }
-                                                }}
-                                                fullWidth id="sku_code" label="รหัสสินค้า" name="sku_code"
-                                                placeholder='หากจำไม่ได้สามารถเว้นว่างได้'
-                                                value={data.sku_code} onChange={handleChange} variant="outlined"
-                                            />
-                                        </Grid2>
-                                        <Grid2 size={{xs: 12, md: 6}}>
-                                            <TextField
-                                                placeholder='หากจำไม่ได้สามารถเว้นว่างได้'
-                                                size='small'
-                                                slotProps={{
-                                                    input: {
-                                                        startAdornment: (
-                                                            <InputAdornment position='start'>
-                                                                <DriveFileRenameOutlineIcon/>
-                                                            </InputAdornment>
-                                                        )
-                                                    }
-                                                }}
-                                                fullWidth id="sku_name" label="ชื่อสินค้า" name="sku_name"
-                                                value={data.sku_name} onChange={handleChange} variant="outlined"
-                                            />
-                                        </Grid2>
+                                        {/*<Grid2 size={{xs: 12, md: 6}}>*/}
+                                        {/*    <TextField*/}
+                                        {/*        size='small'*/}
+                                        {/*        slotProps={{*/}
+                                        {/*            input: {*/}
+                                        {/*                startAdornment: (*/}
+                                        {/*                    <InputAdornment position='start'>*/}
+                                        {/*                        <PasswordIcon/>*/}
+                                        {/*                    </InputAdornment>*/}
+                                        {/*                )*/}
+                                        {/*            }*/}
+                                        {/*        }}*/}
+                                        {/*        fullWidth id="sku_code" label="รหัสสินค้า" name="sku_code"*/}
+                                        {/*        placeholder='หากจำไม่ได้สามารถเว้นว่างได้'*/}
+                                        {/*        value={data.sku_code} onChange={handleChange} variant="outlined"*/}
+                                        {/*    />*/}
+                                        {/*</Grid2>*/}
+                                        {/*<Grid2 size={{xs: 12, md: 6}}>*/}
+                                        {/*    <TextField*/}
+                                        {/*        placeholder='หากจำไม่ได้สามารถเว้นว่างได้'*/}
+                                        {/*        size='small'*/}
+                                        {/*        slotProps={{*/}
+                                        {/*            input: {*/}
+                                        {/*                startAdornment: (*/}
+                                        {/*                    <InputAdornment position='start'>*/}
+                                        {/*                        <DriveFileRenameOutlineIcon/>*/}
+                                        {/*                    </InputAdornment>*/}
+                                        {/*                )*/}
+                                        {/*            }*/}
+                                        {/*        }}*/}
+                                        {/*        fullWidth id="sku_name" label="ชื่อสินค้า" name="sku_name"*/}
+                                        {/*        value={data.sku_name} onChange={handleChange} variant="outlined"*/}
+                                        {/*    />*/}
+                                        {/*</Grid2>*/}
                                         <Grid2 size={{xs: 12, md: 6}}>
                                             <TextField
                                                 size='small'
@@ -223,7 +256,7 @@ export default function StockJobDetail({stock_job_id, jobDetail}) {
 
                                     <Box sx={{display: 'flex', justifyContent: 'flex-end', mt: 3}}>
                                         <Button
-                                            disabled={processing}
+                                            disabled={processing || stockJob.job_status === 'success'}
                                             type="submit" variant="contained" color="primary"
                                             startIcon={<SaveIcon/>} sx={{mt: 1}}
                                         >
@@ -237,6 +270,7 @@ export default function StockJobDetail({stock_job_id, jobDetail}) {
                                         กรุณาเลือกรายการที่ต้องการแก้ไขจากรายการด้านซ้าย หรือเพิ่มรายการใหม่
                                     </Typography>
                                     <Button
+                                        disabled={stockJob.job_status === 'success'}
                                         variant="contained" startIcon={<AddIcon/>}
                                         onClick={handleNewItem} sx={{mt: 2}}
                                     >
@@ -247,8 +281,10 @@ export default function StockJobDetail({stock_job_id, jobDetail}) {
                         </Paper>
                     </Grid2>
                     <Grid2 size={12}>
-                        <Button variant='contained'>
-                            ปิดจ็อบ
+                        <Button
+                            disabled={!jobDetail.length > 0 || stockJob.job_status === 'success'} variant='contained'
+                            onClick={()=>handleEndJob()}>
+                            ปิดจ็อบ{stockJob.job_status === 'success' && 'แล้ว'}
                         </Button>
                     </Grid2>
                 </Grid2>

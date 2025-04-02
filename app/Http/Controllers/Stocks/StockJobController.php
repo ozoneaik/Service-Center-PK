@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StockJobRequest;
 use App\Models\StockJob;
 use App\Models\StockJobDetail;
+use App\Models\StockSparePart;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
@@ -29,9 +30,11 @@ class StockJobController extends Controller
     public function addSp($stock_job_id): Response
     {
         $jobDetail = StockJobDetail::query()->where('stock_job_id', $stock_job_id)->orderBy('id', 'desc')->get();
+        $stockJob = StockJob::query()->where('stock_job_id',$stock_job_id)->first();
         return Inertia::render('Stores/StockSp/StockJobDetail', [
             'jobDetail' => $jobDetail,
-            'stock_job_id' => $stock_job_id
+            'stock_job_id' => $stock_job_id,
+            'stockJob' => $stockJob,
         ]);
     }
 
@@ -53,12 +56,14 @@ class StockJobController extends Controller
         }
     }
 
+//    ------------------------------------ sp in job -------------------------------------------------------
+
     public function addSpInJob(Request $request, $stock_job_id): RedirectResponse
     {
         $validated = $request->validate([
             'sp_code' => 'required|string|max:50',
             'sp_name' => 'required|string|max:255',
-            'sp_qty' => 'required|integer|min:1',
+            'sp_qty' => 'required|integer|min:0',
 
         ]);
 
@@ -74,8 +79,6 @@ class StockJobController extends Controller
                     'user_code_key' => Auth::user()->user_code,
                     'sp_code' => $validated['sp_code'],
                     'sp_name' => $validated['sp_name'],
-//                    'sku_code' => $request['sku_code'] ?? 'ไม่ได้ระบุรหัสสินค้า',
-//                    'sku_name' => $request['sku_name'] ?? 'ไม่ได้ระบุชื่อสินค้า',
                     'sp_qty' => $validated['sp_qty'],
                     'updated_at' => now(),
                 ]);
@@ -105,13 +108,73 @@ class StockJobController extends Controller
         }
     }
 
+    public function deleteSp($stock_job_id, $sp_code): RedirectResponse
+    {
+        try {
+            $StockJobSp = StockJobDetail::query()->where('stock_job_id', $stock_job_id)->where('sp_code', $sp_code)->first();
+            DB::beginTransaction();
+            $StockJobSp->delete();
+            DB::commit();
+            return Redirect::route('stockJob.addSp', [$stock_job_id])->with('success', "ลบข้อมูล $sp_code สำเร็จ");
+        } catch (ModelNotFoundException $e) {
+            DB::rollBack();
+            return Redirect::route('stockJob.addSp', [$stock_job_id])->with('error', 'ไม่พบข้อมูลที่ต้องการลบ');
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            return Redirect::route('stockJob.addSp', [$stock_job_id])->with('error', $exception->getMessage());
+        }
+
+    }
+
+    public function endSpInJob(Request $request, $stock_job_id)
+    {
+        try {
+            $spInJob = StockJobDetail::query()->where('stock_job_id', $stock_job_id)->get();
+            foreach ($spInJob as $sp) {
+                $findSp = StockSparePart::query()
+                    ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                    ->where('sp_code', $sp->sp_code)
+                    ->first();
+                if ($findSp) {
+                    $findSp->old_qty_sp = $findSp->qty_sp;
+                    $findSp->qty_sp = $findSp->qty_sp + $sp->sp_qty;
+                    $findSp->update();
+                } else {
+                    $newSp = StockSparePart::query()->create([
+                        'sp_code' => $sp->sp_code,
+                        'sku_code' => 'ไม่พบรหัสสินค้า',
+                        'sku_name' => 'ไม่พบชื่อสินค้า',
+                        'sp_name' => $sp->sp_name,
+                        'qty_sp' => $sp->sp_qty,
+                        'old_qty_sp' => $sp->sp_qty,
+                        'is_code_cust_id' => Auth::user()->is_code_cust_id,
+                    ]);
+                }
+            }
+            $updateStockJob = StockJob::query()->where('stock_job_id', $stock_job_id)->update([
+                'job_status' => 'success'
+            ]);
+            DB::commit();
+            return Redirect::route('stockJob.addSp', [$stock_job_id])->with('success', 'สำเร็จ');
+        } catch (ModelNotFoundException $e) {
+//            dd($e,'ModelNotFoundException');
+            return Redirect::route('stockJob.addSp', [$stock_job_id])->with('error', 'ไม่พบข้อมูล');
+        } catch (\Exception $e) {
+//            dd($e,'Exception');
+            return Redirect::route('stockJob.addSp', [$stock_job_id])->with('error', $e->getMessage());
+
+        }
+    }
+
+    //    ------------------------------------ sp in job -------------------------------------------------------
+
     public function delete($stock_job_id): RedirectResponse
     {
         try {
             DB::beginTransaction();
             $store = StockJob::query()->where('stock_job_id', $stock_job_id)->first();
             $store->delete();
-            $spStockJob = StockJobDetail::query()->where('stock_job_id', $stock_job_id)->delete();
+            StockJobDetail::query()->where('stock_job_id', $stock_job_id)->delete();
             DB::commit();
             return Redirect::route('stockJob.index')->with('success', 'ลบ job สำเร็จ');
         } catch (\Exception $e) {

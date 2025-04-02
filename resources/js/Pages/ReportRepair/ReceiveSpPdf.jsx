@@ -253,7 +253,7 @@ const GenPDF = ({job, behaviors, barcode, qrCode}) => (
                     <DetailText label="ที่อยู่" value={job.address}/>
                     <DetailText label="เบอร์ติดต่อ" value={job.phone}/>
                     <DetailText label="ซีเรียล" value={job.serial_id}/>
-                    <DetailText label="ส่งซ่อม" value={job.p_name}/>
+                    <DetailText label="ส่งซ่อม" value={job.pid + ' | '+ job.p_name}/>
                     <DetailTextHalf label="อาการ" value={job.symptom}/>
                     <DetailTextHalf label="ผู้รับ" value={job.username}/>
 

@@ -119,27 +119,27 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
                             <Grid2 size={12}>
                                 <Typography variant="h6" fontWeight='bold'>เพิ่มอะไหล่</Typography>
                             </Grid2>
-                            <Grid2 size={12}>
-                                <Typography variant='body2' sx={{ color: pumpkinColor.main }}>ข้อมูลสินค้า</Typography>
-                            </Grid2>
-                            <Grid2 size={{ md: 6, xs: 12 }}>
-                                <TextField
-                                    value={data.sku_code}
-                                    onChange={(e) => setData('sku_code', e.target.value)}
-                                    size="small"
-                                    fullWidth label='รหัสสินค้า'
-                                    placeholder="ตัวอย่าง 50277"
-                                />
-                            </Grid2>
-                            <Grid2 size={{ md: 6, xs: 12 }}>
-                                <TextField
-                                    value={data.sku_name}
-                                    onChange={(e) => setData('sku_name', e.target.value)}
-                                    size="small"
-                                    fullWidth label='ชื่อสินค้า'
-                                    placeholder="ตัวอย่าง เครื่องเจียรมือ"
-                                />
-                            </Grid2>
+                            {/*<Grid2 size={12}>*/}
+                            {/*    <Typography variant='body2' sx={{ color: pumpkinColor.main }}>ข้อมูลสินค้า</Typography>*/}
+                            {/*</Grid2>*/}
+                            {/*<Grid2 size={{ md: 6, xs: 12 }}>*/}
+                            {/*    <TextField*/}
+                            {/*        value={data.sku_code}*/}
+                            {/*        onChange={(e) => setData('sku_code', e.target.value)}*/}
+                            {/*        size="small"*/}
+                            {/*        fullWidth label='รหัสสินค้า'*/}
+                            {/*        placeholder="ตัวอย่าง 50277"*/}
+                            {/*    />*/}
+                            {/*</Grid2>*/}
+                            {/*<Grid2 size={{ md: 6, xs: 12 }}>*/}
+                            {/*    <TextField*/}
+                            {/*        value={data.sku_name}*/}
+                            {/*        onChange={(e) => setData('sku_name', e.target.value)}*/}
+                            {/*        size="small"*/}
+                            {/*        fullWidth label='ชื่อสินค้า'*/}
+                            {/*        placeholder="ตัวอย่าง เครื่องเจียรมือ"*/}
+                            {/*    />*/}
+                            {/*</Grid2>*/}
                             <Grid2 size={12}>
                                 <Typography variant='body2' sx={{ color: pumpkinColor.main }}>ข้อมูลอะไหล่</Typography>
                             </Grid2>

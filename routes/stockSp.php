@@ -19,6 +19,8 @@ Route::prefix('/stock-job')->group(function(){
     Route::get('/index', [StockJobController::class,'index'])->name('stockJob.index');
     Route::post('/store', [StockJobController::class,'store'])->name('stockJob.store');
     Route::get('/add-sp/{stock_job_id}', [StockJobController::class,'addSp'])->name('stockJob.addSp');
+    Route::delete('/delete-sp/{stock_job_id}/{sp_code}', [StockJobController::class,'deleteSp'])->name('stockJob.deleteSp');
+    Route::post('/end-job/{stock_job_id}',[StockJobController::class,'endSpInJob'])->name('stockJob.endSpInJob');
     Route::post('/store-sp/{stock_job_id}', [StockJobController::class,'addSpInJob'])->name('stockJob.addSpInJob');
     Route::delete('/delete/{stock_job_id}',[StockJobController::class,'delete'])->name('stockJob.delete');
 });
