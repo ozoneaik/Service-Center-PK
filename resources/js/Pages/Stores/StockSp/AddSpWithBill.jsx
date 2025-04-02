@@ -161,7 +161,7 @@ export default function AddSpWithBill({openAddSpBill, setOpenAddSpBill}) {
                             <Table stickyHeader>
                                 <TableHead>
                                     <TableRow>
-                                        {['รหัสอะไหล่', 'ชื่ออะไหล่', 'จำนวน'].map((item, index) => (
+                                        {['รหัสอะไหล่', 'ชื่ออะไหล่','จำนวนอะไหล่ที่รับเข้ามา', 'จำนวน'].map((item, index) => (
                                             <TableCell sx={TABLE_HEADER_STYLE} key={index}>{item}</TableCell>
                                         ))}
                                     </TableRow>
@@ -178,6 +178,7 @@ export default function AddSpWithBill({openAddSpBill, setOpenAddSpBill}) {
                                                         <TableRow key={index}>
                                                             <TableCell>{item.sp_code}</TableCell>
                                                             <TableCell>{item.sp_name}</TableCell>
+                                                            <TableCell>{item.default_qty_sp}</TableCell>
                                                             <TableCell>
                                                                 <TextField
                                                                     onChange={(e) => handleChangeQty(e, index)}

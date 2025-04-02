@@ -133,10 +133,14 @@ class StockJobController extends Controller
             if ($response->successful()) {
                 if ($responseJson['status'] === 'success') {
                     $assets = $responseJson['assets'];
+                    $listSp = $assets['listSp'];
+                    foreach ($listSp as &$sp) {
+                        $sp['default_qty_sp'] = $sp['qty_sp'] ?? 0;
+                    }
                     return response()->json([
                         'message' => $responseJson['message'],
                         'barcode' => $barcode,
-                        'listSp' => $assets['listSp'],
+                        'listSp' => $listSp,
                     ]);
                 } else throw new \Exception('ไม่พบหมายเลขบิลนี้ หรือ หมายเลขบิลไม่ตรงกับข้อมูลร้าน');
             } else throw new \Exception('มีปัญหาเกี่ยวกับบิลนี้ กรุณาลองอีกครั้ง');
