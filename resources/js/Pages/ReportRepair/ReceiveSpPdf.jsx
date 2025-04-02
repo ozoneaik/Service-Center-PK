@@ -10,30 +10,40 @@ Font.register({
 Font.register({
     family: 'SarabunBold',
     src: 'https://cdn.jsdelivr.net/npm/@fontsource/sarabun@4.5.0/files/sarabun-all-700-normal.woff',
+    // src: 'https://cdn.jsdelivr.net/npm/@fontsource/sarabun@4.5.0/files/sarabun-all-700-normal.woff',
 });
 
 const styles = StyleSheet.create({
     page: {
-        paddingHorizontal: 10,
-        paddingVertical: 10,
+        paddingHorizontal: 0,
+        paddingVertical: 0,
         fontSize: 12,
         fontFamily: 'Sarabun',
         backgroundColor: '#FFFFFF'
     },
     container: {
         border: '2px solid #FF6600',
-        padding: 20,
+        padding: 10,
         borderRadius: 10,
         height: '100%',  // Full height of the page
     },
-    header: {
-        textAlign: 'center',
-        fontSize: 24,
-        fontFamily: 'SarabunBold',
+    headerContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         marginBottom: 15,
-        color: '#FF6600',
         borderBottom: '2px solid #FF6600',
         paddingBottom: 10
+    },
+    headerLeft: {
+        textAlign: 'left',
+        fontSize: 24,
+        fontFamily: 'SarabunBold',
+        color: '#FF6600',
+    },
+    headerRight: {
+        alignItems: 'flex-end',
+        justifyContent: 'center'
     },
     row: {
         flexDirection: 'row',
@@ -41,33 +51,34 @@ const styles = StyleSheet.create({
         flexGrow: 1
     },
     leftColumn: {
-        // backgroundColor : 'red',
-        width: '60%',
+        width: '100%',
         flexWrap: 'wrap',
-        // paddingRight: 10
     },
-    rightColumn: {
-        width: '30%',
+    rightQRArea: {
+        width: '40%',
         alignItems: 'flex-end',
-        paddingLeft: 10
+        justifyContent: 'flex-end',
+        position: 'absolute',
+        right: 0,
+        bottom: 60, // ปรับตำแหน่งให้อยู่เหนือวันที่
     },
     label: {
         fontSize: 14,
         fontFamily: 'SarabunBold',
         color: '#333333',
-        marginRight: 5
-    },
-    value: {
-        fontSize: 14,
-        fontFamily: 'Sarabun',
-        color: '#000000',
-        flexGrow: 1,
-        wordWrap: 'break-word'
+        width: 75, // ตั้งความกว้างให้เท่ากันทุกหัวข้อ
     },
     fieldRow: {
         flexDirection: 'row',
         marginBottom: 8,
-        alignItems: 'flex-start'
+        alignItems: 'flex-start',
+        width: '100%'
+    },
+    fieldRowHalf: {
+        flexDirection: 'row',
+        marginBottom: 8,
+        alignItems: 'flex-start',
+        width: '60%'
     },
     line: {
         borderBottom: '1px solid #FF6600',
@@ -76,42 +87,68 @@ const styles = StyleSheet.create({
         paddingBottom: 2
     },
     jobNumber: {
-        fontSize: 20,
+        fontSize: 16,
         fontFamily: 'SarabunBold',
         textAlign: 'right',
-        color: '#FF6600'
+        color: '#FF6600',
+        marginBottom: 5,
+    },
+    value: {
+        fontSize: 14,
+        fontFamily: 'Sarabun',
+        color: '#000000',
+        flexGrow: 1,
+        wordWrap: 'break-word'
     },
     date: {
         fontSize: 10,
-        marginTop: 5,
         textAlign: 'right',
-        color: '#666666'
+        color: '#666666',
+        position: 'absolute',
+        bottom: 40,
+        right: 20,
     },
     footer: {
         textAlign: 'center',
         fontSize: 10,
         color: '#666666',
         borderTop: '1px solid #FF6600',
-        paddingTop: 10,
-        // marginTop: 15
+        paddingTop: 5,
+        paddingBottom: 0,
+        position: 'absolute',
+        bottom: 10,
+        left: 20,
+        right: 20,
     },
     barcodeImage: {
-        width: '100%',
+        width: 180,
         height: 30,
-        marginTop: 10,
-        alignSelf: 'flex-end',
+        marginTop: 5,
     },
     qrCodeImage: {
-        width: 120,
-        height: 120,
-        marginTop: 10,
-        alignSelf: 'flex-end',
-    },image : {
         width: 100,
-        height: 100
-
+        height: 100,
+        marginTop: 10,
+        marginBottom: 5,
+    },
+    qrLabel: {
+        fontSize: 12,
+        textAlign: 'center',
+        marginBottom: 5,
+        fontFamily: 'SarabunBold',
+    },
+    contentContainer: {
+        flexDirection: 'column',
+        height: '80%',
+        position: 'relative', // เพิ่มเพื่อให้สามารถกำหนดตำแหน่ง QR Code ได้
+    },
+    bottomRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 10,
     }
 });
+
 const generateBarcode = async (value) => {
     try {
         const canvas = document.createElement('canvas');
@@ -132,31 +169,48 @@ const DetailText = ({ label, value }) => (
     </View>
 );
 
+const DetailTextHalf = ({ label, value }) => (
+    <View style={styles.fieldRowHalf}>
+        <Text style={styles.label}>{label}:</Text>
+        <View style={styles.line}>
+            <Text style={styles.value}>{value}</Text>
+        </View>
+    </View>
+);
+
 const GenPDF = ({ job, behaviors, barcode, qrCode }) => (
     <Document>
         <Page size="A5" orientation='landscape' style={styles.page}>
             <View style={styles.container}>
-                <Text style={styles.header}>ศูนย์บริการ</Text>
-                <View style={styles.row}>
-                    <View style={styles.leftColumn}>
-                        <DetailText label="ชื่อร้าน" value={job.shop_name} />
-                        <DetailText label="ที่อยู่" value={job.address} />
-                        <DetailText label="เบอร์โทรศัพท์" value={job.phone} />
-                        <DetailText label="ซีเรียลนัมเบอร์" value={job.serial_id} />
-                        <DetailText label="ส่งซ่อม" value={job.p_name} />
-                        <DetailText label="อาการ" value={job.symptom} />
-                        <DetailText label="ผู้รับ" value={job.username} />
-                    </View>
-                    <View style={styles.rightColumn}>
-                        <Text style={styles.jobNumber}>{job.job_id}</Text>
-
+                <View style={styles.headerContainer}>
+                    <Text style={styles.headerLeft}>
+                        ศูนย์บริการ
+                    </Text>
+                    <View style={styles.headerRight}>
                         {barcode && <Image src={barcode} style={styles.barcodeImage} />}
-                        <Text style={styles.date}>
-                            วันที่ {new Date(job.created_at).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}
-                        </Text>
-                        {/*{qrCode && <Image src={qrCode} style={styles.qrCodeImage} />}*/}
+                        <Text style={styles.jobNumber}>{job.job_id}</Text>
                     </View>
                 </View>
+
+                <View style={styles.contentContainer}>
+                    <DetailText label="ชื่อร้าน" value={job.shop_name} />
+                    <DetailText label="ที่อยู่" value={job.address} />
+                    <DetailText label="เบอร์ติดต่อ" value={job.phone} />
+                    <DetailText label="ซีเรียล" value={job.serial_id} />
+                    <DetailText label="ส่งซ่อม" value={job.p_name} />
+                    <DetailTextHalf label="อาการ" value={job.symptom} />
+                    <DetailTextHalf label="ผู้รับ" value={job.username} />
+
+                    <View style={styles.rightQRArea}>
+                        <Text style={styles.qrLabel}>LINE Official</Text>
+                        {qrCode && <Image src={qrCode} style={styles.qrCodeImage} />}
+                    </View>
+                </View>
+
+                <Text style={styles.date}>
+                    วันที่ {new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}
+                </Text>
+
                 <View style={styles.footer}>
                     <Text>เอกสารนี้เป็นหลักฐานการรับสินค้าเพื่อส่งซ่อม กรุณาเก็บไว้เพื่อยืนยันตัวตน</Text>
                 </View>
@@ -192,15 +246,25 @@ export default function ReceiveSpPdf({ job, behaviors }) {
     };
 
     useEffect(() => {
+        // สร้าง barcode
         generateBarcode(job.job_id).then(setBarcode);
-        // fetchImageAsBase64('https://qr-official.line.me/sid/L/155cjomg.png').then(setImageBase64);
+
+        // ดึง QR Code
+        fetchImageAsBase64('https://qr-official.line.me/sid/L/155cjomg.png')
+            .then(result => {
+                console.log("QR Code fetched:", result ? "success" : "failed");
+                setImageBase64(result);
+            })
+            .catch(err => {
+                console.error("Error setting QR code:", err);
+            });
     }, [job.job_id]);
 
     return (
         <>
             <Head title="ใบรับสินค้า" />
             <PDFViewer style={{ width: '95vw', height: '95vh' }}>
-                <GenPDF job={job} behaviors={behaviors} barcode={barcode} />
+                <GenPDF job={job} behaviors={behaviors} barcode={barcode} qrCode={imageBase64} />
             </PDFViewer>
         </>
     );
