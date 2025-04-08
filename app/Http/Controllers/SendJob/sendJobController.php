@@ -61,7 +61,7 @@ class sendJobController extends Controller
         $groups = JobList::query()->where('status', 'send')
             ->select('print_at', 'group_job', 'print_updated_at', 'counter_print','created_at')
             ->groupBy('group_job', 'print_at', 'print_updated_at', 'counter_print','created_at')
-            ->groupBy('created_at','desc')
+            ->orderBy('created_at','desc')
             ->get();
         return Inertia::render('SendJobs/DocSendJobs', ['groups' => $groups]);
     }

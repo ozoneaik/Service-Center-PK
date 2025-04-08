@@ -2,7 +2,7 @@ import {Box, Typography, Button, useTheme} from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import {Link} from "@inertiajs/react";
 
-export default function OrderSuccess() {
+export default function OrderSuccess({message}) {
     const theme = useTheme();
     return (
         <Box
@@ -19,7 +19,7 @@ export default function OrderSuccess() {
                 สั่งซื้อสำเร็จ!
             </Typography>
             <Typography variant="body1" sx={{ mt: 1, color: "gray" }}>
-                ขอบคุณสำหรับการสั่งซื้ออะไหล่ของทาง Pumpkin
+                {message || 'ขอบคุณสำหรับการสั่งซื้ออะไหล่ของทาง Pumpkin'}
             </Typography>
 
             <Box mt={3}>

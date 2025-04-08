@@ -15,7 +15,9 @@ class StoreInformation extends Model
         'address_sub',
         'province',
         'district',
-        'sub_district'
+        'sub_district',
+        'sale_lark_id',
+        'sale_name',
     ];
 
     public function gp () : HasOne {

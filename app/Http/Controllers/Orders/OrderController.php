@@ -7,6 +7,7 @@ use App\Http\Requests\OrderRequest;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderSpList;
+use App\Models\StoreInformation;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -98,9 +99,9 @@ class OrderController extends Controller
         return Inertia::render('Orders/OrderHistoryDetail', ['order' => $order, 'listSp' => $listSp, 'customer' => $customer]);
     }
 
-    public function orderSuccess(): Response
+    public function orderSuccess($message): Response
     {
-        return Inertia::render('Orders/OrderSuccess');
+        return Inertia::render('Orders/OrderSuccess', ['message' => $message]);
     }
 
 
@@ -250,17 +251,21 @@ class OrderController extends Controller
                     }
                 }
             }
-//            dd($items);
+            // ดึงรหัส sale id เพื่อส่งไปยัง lark ของเซลล์นั้นๆ
+            $receive_id = StoreInformation::query()
+                ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                ->select('sale_lark_id')
+                ->first();
             $order->update(['total_price' => $totalOrderPrice]);
             $text = "ศูนย์ซ่อม : " . Auth::user()->store_info->shop_name . "\nแจ้งเรื่อง : สั่งซื้ออะไหล่\nรายการ :\n\n" . implode("\n", $items);
             $body = [
-                "receive_id" => "ou_9083bf66d2e3240e0313dc50ae7edba9",
+                "receive_id" => $receive_id?->sale_lark_id ?? 'unknown',
                 "msg_type" => "text",
                 "content" => json_encode(["text" => $text], JSON_UNESCAPED_UNICODE)
             ];
             $response = Http::post('https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal', [
-                'app_id' => 'cli_a769d3ae8cf81009',
-                'app_secret' => '6QJRSc64IkesVHLTginCxdOlbaaSBe1C'
+                'app_id' => env('VITE_LARK_APP_ID'),
+                'app_secret' => env('VITE_LARK_APP_SECRET')
             ]);
             if ($response->successful()) {
                 $responseJson = $response->json();
@@ -273,15 +278,19 @@ class OrderController extends Controller
                     'Authorization' => 'Bearer ' . $tenant_access_token,
                 ])->post('https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=open_id', $body);
                 if (!$responseSend->successful()) {
-                    throw new \Exception('ไม่สามารถส่งการแจ้งเตือนไปหา lark ได้');
+                    $message = 'สร้างคำสั่งซื้อเรียบร้อยแล้ว แต่ ไม่สามารถส่งการแจ้งเตือนไปหาตัวแทนจำหน่ายได้ [สร้าง body ไม่สำเร็จ]';
+                    $order->update(['status_send_order' => false]);
+//                    throw new \Exception('ไม่สามารถส่งการแจ้งเตือนไปหา lark ได้ send failed');
                 }
             } else {
-                throw new \Exception('ไม่สามารถส่งการแจ้งเตือนไปหา lark ได้');
+                $message = 'สร้างคำสั่งซื้อเรียบร้อยแล้ว แต่ ไม่สามารถส่งการแจ้งเตือนไปหาตัวแทนจำหน่ายได้ [สร้าง token lark ไม่สำเร็จ]';
+                $order->update(['status_send_order' => false]);
+//                throw new \Exception('ไม่สามารถส่งการแจ้งเตือนไปหา lark ได้ crate Token failed');
             }
             DB::commit();
             return response()->json([
                 'status' => 'success',
-                'message' => 'สร้างคำสั่งซื้อเรียบร้อยแล้ว',
+                'message' => $message ?? 'สร้างคำสั่งซื้อเรียบร้อยแล้ว',
                 'order' => [
                     'order_id' => $order_id,
                     'total_price' => $totalOrderPrice,

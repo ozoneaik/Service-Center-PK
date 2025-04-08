@@ -30,7 +30,9 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave }) {
         district: "",
         subdistrict: "",
         zipcode: "",
-        full_address : ''
+        full_address : '',
+        sale_lark_id : '',
+        sale_name : ''
     });
 
     const [provinces, setProvinces] = useState([]);
@@ -276,7 +278,7 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave }) {
                                     value={selected.province_id}
                                     onChange={handleProvinceChange}
                                     label="จังหวัด" disabled={loading}
-                                >
+                                    variant='outlined'>
                                     <MenuItem value="">
                                         <em>กรุณาเลือกจังหวัด</em>
                                     </MenuItem>
@@ -298,7 +300,7 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave }) {
                                     value={selected.amphure_id}
                                     onChange={handleAmphureChange}
                                     label="อำเภอ/เขต"
-                                >
+                                    variant='outlined'>
                                     <MenuItem value="">
                                         <em>กรุณาเลือกอำเภอ/เขต</em>
                                     </MenuItem>
@@ -318,7 +320,7 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave }) {
                                 <Select
                                     labelId="subdistrict-label" value={selected.tambon_id}
                                     onChange={handleTambonChange} label="ตำบล/แขวง"
-                                >
+                                 variant='outlined'>
                                     <MenuItem value="">
                                         <em>กรุณาเลือกตำบล/แขวง</em>
                                     </MenuItem>
@@ -342,6 +344,35 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave }) {
                                 InputProps={{
                                     readOnly: !!data.zipcode,
                                 }}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                            />
+                        </Grid2>
+                        <Grid2 size={12}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 'medium' }}>
+                                เซลล์ประจำร้าน
+                            </Typography>
+                        </Grid2>
+                        <Grid2 size={12}>
+                            <TextField
+                                label='รหัสเซลล์ (token ของ lark)' value={data.sale_lark_id} fullWidth
+                                onChange={(e) => setData('sale_lark_id', e.target.value)}
+                                type='text' size="small" required
+                                error={!!errors.sale_lark_id}
+                                helperText={errors.sale_lark_id}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                            />
+                        </Grid2>
+                        <Grid2 size={12}>
+                            <TextField
+                                label='ชื่อเซลล์' value={data.sale_name} fullWidth
+                                onChange={(e) => setData('sale_name', e.target.value)}
+                                type='text' size="small" required
+                                error={!!errors.sale_name}
+                                helperText={errors.sale_name}
                                 InputLabelProps={{
                                     shrink: true,
                                 }}

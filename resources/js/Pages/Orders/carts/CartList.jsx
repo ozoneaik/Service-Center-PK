@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {Head, router, usePage} from "@inertiajs/react";
+import {Head, router, useForm, usePage} from "@inertiajs/react";
 import {
     Avatar, Box, Button, Card, CardContent, Divider, Grid2, IconButton, InputAdornment, Stack, TextField, Typography
 } from "@mui/material";
@@ -55,7 +55,7 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
                 };
             });
             setGroups(updatedGroups);
-        }catch (error){
+        } catch (error) {
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
                 text: error.response.data.message
@@ -118,6 +118,7 @@ export default function CartList({groupSku, totalSp}) {
     const user = usePage().props.auth.user;
     const [address, setAddress] = useState(user.store_info.address);
     const [phone, setPhone] = useState(user.store_info.phone);
+    const [processing, setProcessing] = useState(false);
     const totalPrice = useMemo(() => {
         return groups.reduce((total, group) => {
             return total + group.list.reduce((sum, sp) => {
@@ -140,18 +141,22 @@ export default function CartList({groupSku, totalSp}) {
 
     const onSubmit = async () => {
         try {
+            setProcessing(true);
             const URL = '/orders/carts/store'
             const {data, status} = await axios.post(URL, {
                 groups: groups,
                 address: address,
                 phone: phone
             });
-            router.visit('/orders/success');
+            console.log(data, status);
+            router.visit(route('orders.success', {message: data.message}));
         } catch (error) {
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
                 text: error.response.data.message
             })
+        } finally {
+            setProcessing(false);
         }
     }
 
@@ -231,8 +236,11 @@ export default function CartList({groupSku, totalSp}) {
                             </Typography>
                         </Grid2>
                         <Grid2 size={{xs: 12, sm: 6}} sx={{textAlign: 'right'}}>
-                            <Button startIcon={<CheckIcon/>} variant="contained" color="success" size="large"
-                                    onClick={handleConfirmOrder}>
+                            <Button
+                                loading={processing}
+                                loadingPosition='start'
+                                startIcon={<CheckIcon/>} variant="contained" color="success" size="large"
+                                onClick={handleConfirmOrder}>
                                 ยืนยันการสั่งซื้อ
                             </Button>
                         </Grid2>

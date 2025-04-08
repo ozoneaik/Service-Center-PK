@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('process_user_key')->nullable()->comment('คนรับคำสั่งซื้อ');
             $table->dateTime('success_at')->nullable()->comment('สั่งซื้อสำเร็จเมื่อ');
             $table->string('cancel_user_key')->nullable()->comment('คนยกเลิกคำสั่งซื้อ');
+            $table->boolean('status_send_order')->default(true)->comment('สถานะส่งการแจ้งเตือน');
             $table->timestamps();
         });
     }

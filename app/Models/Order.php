@@ -23,7 +23,8 @@ class Order extends Model
         'address',
         'pay_at',
         'pay_by',
-        'phone'
+        'phone',
+        'status_send_order'
     ];
 
     protected $appends = ['status_text'];
