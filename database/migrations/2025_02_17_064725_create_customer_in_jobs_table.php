@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('phone')->comment('เบอร์โทรศัพท์');
             $table->string('address')->nullable()->comment('ที่อยู่');
             $table->string('remark')->nullable()->comment('หมายเหตุ');
-            $table->boolean('subRemark1')->default(false)->comment('เสนอราคาก่อนซ่อม');
-            $table->boolean('subRemark2')->default(false)->comment('ซ่อมเสร็จส่งกลับทางไปรษณีย์');
+            $table->boolean('subremark1')->default(false)->comment('เสนอราคาก่อนซ่อม');
+            $table->boolean('subremark2')->default(false)->comment('ซ่อมเสร็จส่งกลับทางไปรษณีย์');
             $table->timestamps();
         });
     }
