@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\JobFromServiceController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\ScoreMasterController;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,11 @@ Route::middleware('adminPermission')->group(function () {
             Route::get('/store',[ScoreMasterController::class,'storeSku'])->name('ScoreSku.store');
             Route::put('/update/{id}',[ScoreMasterController::class,'updateSku'])->name('ScoreSku.update');
             Route::delete('/delete/{id}',[ScoreMasterController::class,'deleteSku'])->name('ScoreSku.delete');
+        });
+        Route::prefix('job-form-service')->group(function () {
+           Route::get('/list',[JobFromServiceController::class,'index'])->name('JobFormService.index');
+           Route::get('/detail/{job_id}',[JobFromServiceController::class,'detail'])->name('JobFormService.detail');
+           Route::put('/update/{job_id}',[JobFromServiceController::class,'update'])->name('JobFormService.update');
         });
     });
 });

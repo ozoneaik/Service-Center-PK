@@ -25,6 +25,7 @@ class HistoryRepairController extends Controller
             ->whereMonth('job_lists.created_at', now()->month)
             ->whereYear('job_lists.created_at', now()->year)
             ->select('job_lists.*', 'customer_in_jobs.name', 'customer_in_jobs.phone');
+
         // ค้นหาตาม serial_id
         if ($request->filled('serial_id')) {
             $query->where('job_lists.serial_id', 'like', "%{$request->serial_id}%");
@@ -50,8 +51,7 @@ class HistoryRepairController extends Controller
             $query->where('job_lists.status', $request->status);
         }
 
-        $jobs = $query->orderBy('job_lists.id', 'desc')->get();
-        
+        $jobs = $query->orderBy('job_lists.created_at', 'desc')->get();
         return Inertia::render('HistoryPage/HistoryMain', ['jobs' => $jobs]);
     }
 

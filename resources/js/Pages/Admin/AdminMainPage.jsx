@@ -9,6 +9,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import StoreIcon from '@mui/icons-material/Store';
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
 import StarsIcon from '@mui/icons-material/Stars';
+import HandymanIcon from '@mui/icons-material/Handyman';
 export default function AdminMainPage() {
     const menuItems = [
         {
@@ -58,7 +59,13 @@ export default function AdminMainPage() {
             icon : <StarsIcon/>,
             path : route('ScoreMaster.index'),
             color : '#000000'
-        }
+        },
+        {
+            text : "รายการสินค้าที่ส่งซ่อมมายัง pumpkin",
+            icon : <HandymanIcon/>,
+            path : route('JobFormService.index'),
+            color : '#a200ff'
+        },
     ];
 
 
