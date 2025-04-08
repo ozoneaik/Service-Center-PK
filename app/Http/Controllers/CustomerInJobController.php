@@ -18,6 +18,8 @@ class CustomerInJobController extends Controller
         $phone = $request->get('phone');
         $address = $request->get('address');
         $remark = $request->get('remark');
+        $subremark1 = $request->get('subremark1') ?? false;
+        $subremark2 = $request->get('subremark2') ?? false;
         try {
             DB::beginTransaction();
             $find = CustomerInJob::query()->where('job_id', $job_id)->first();
@@ -27,7 +29,10 @@ class CustomerInJobController extends Controller
                     'phone' => $phone,
                     'address' => $address,
                     'remark' => $remark,
+                    'subremark1' => $subremark1,
+                    'subremark2' => $subremark2,
                 ]);
+                $data = CustomerInJob::query()->where('job_id', $job_id)->first();
             } else {
                 $data = CustomerInJob::query()->create([
                     'job_id' => $job_id,
@@ -36,6 +41,8 @@ class CustomerInJobController extends Controller
                     'phone' => $phone,
                     'address' => $address,
                     'remark' => $remark,
+                    'subremark1' => $subremark1,
+                    'subremark2' => $subremark2,
                 ]);
             }
             $message = 'บันทึกข้อมูลสำเร็จ';

@@ -21,6 +21,8 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import {useState} from "react";
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import {Paper, TableContainer} from "@mui/material";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
 
 
 const BehaviorDetail = ({detail}) => (
@@ -342,6 +344,15 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
                         <Grid2 size={12}>
                             <CardDetail>
                                 <Typography variant='h6' fontWeight='bold'>หมายเหตุสำหรับลูกค้า</Typography>
+                                <FormControlLabel
+                                    control={<Checkbox disabled defaultChecked={selected.customerInJob.subremark1}/>}
+                                    label="เสนอราคาก่อนซ่อม"
+                                />
+                                <br/>
+                                <FormControlLabel
+                                    control={<Checkbox disabled defaultChecked={selected.customerInJob.subremark2}/>}
+                                    label="ซ่อมเสร็จส่งกลับทางไปรษณีย์"
+                                />
                                 <Typography variant='body1' color='gray'>- {selected.customerInJob.remark}</Typography>
                             </CardDetail>
                         </Grid2>

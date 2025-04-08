@@ -1,16 +1,15 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {Head, router, useForm, usePage} from "@inertiajs/react";
+import {Head, Link, router, usePage} from "@inertiajs/react";
 import {
-    Avatar, Box, Button, Card, CardContent, Divider, Grid2, IconButton, InputAdornment, Stack, TextField, Typography
+    Avatar, Box, Button, Card, CardContent, Divider, Grid2, IconButton, Stack, Typography
 } from "@mui/material";
 import React, {useMemo, useState} from "react";
 import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
-import RoomIcon from '@mui/icons-material/Room';
-import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import CheckIcon from '@mui/icons-material/Check';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const ListSp = ({sps, sku_code, setGroups, groups}) => {
     const updateQuantity = async (id, condition = 'add') => {
@@ -168,7 +167,16 @@ export default function CartList({groupSku, totalSp}) {
                 <Box sx={{flexGrow: 1, overflow: 'auto', mb: 2}}>
                     <Grid2 container spacing={2}>
                         <Grid2 size={12}>
-                            <Typography variant='h6' fontWeight='bold'>ตะกร้าสินค้า</Typography>
+                            <Stack direction='row' spacing={2} justifyContent='space-between'>
+                                <Button
+                                    startIcon={<ArrowBackIcon/>}
+                                    size='small' variant='contained'
+                                    component={Link} href={route('orders.list')}
+                                >
+                                    กลับไปยังหน้าสั่งซื้ออะไหล่
+                                </Button>
+                                <Typography variant='h6' fontWeight='bold'>ตะกร้าสินค้า</Typography>
+                            </Stack>
                         </Grid2>
                         {/*<Grid2 size={12}>*/}
                         {/*    <TextField id='claim-remark' multiline minRows={3} fullWidth slotProps={{*/}

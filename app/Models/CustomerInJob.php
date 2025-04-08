@@ -15,5 +15,7 @@ class CustomerInJob extends Model
         'phone' ,
         'address',
         'remark',
+        'subremark1',
+        'subremark2',
     ];
 }
