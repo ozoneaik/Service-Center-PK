@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\logStamp;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,6 +32,7 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
         $request->session()->regenerate();
+        logStamp::query()->create(['description' => "มีการพยายามเข้าสู่ระบบ user_code =>  $request->user_code"]);
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
@@ -39,9 +41,11 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user_code = Auth::user()->user_code;
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        logStamp::query()->create(['description' => "$user_code ได้ออกจากระบบแล้ว"]);
         return redirect('/');
     }
 }

@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Behavior;
 use App\Models\JobList;
+use App\Models\logStamp;
 use App\Models\Symptom;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 
@@ -65,6 +67,7 @@ class genQuPdfController extends Controller
 
     public function genReCieveSpPdf($job_id)
     {
+        logStamp::query()->create(['description' => Auth::user()->user_code . " ได้ดูใบรับสินค้า $job_id"]);
         $job = JobList::query()->where('job_id', $job_id)
             ->leftJoin('users', 'users.user_code', '=', 'job_lists.user_key')
             ->leftJoin('store_information as store', 'store.is_code_cust_id', '=', 'users.is_code_cust_id')

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ClaimRequest;
 use App\Models\Claim;
 use App\Models\ClaimDetail;
+use App\Models\logStamp;
 use App\Models\SparePart;
 use App\Models\StockSparePart;
 use Carbon\Carbon;
@@ -74,6 +75,7 @@ class SpareClaimController extends Controller
     {
         // dd($request->all());
         $claim_id = 'C-' . Carbon::now()->timestamp;
+        logStamp::query()->create(['description' => Auth::user()->user_code . " พยายามสร้างเอกสารเคลม $claim_id"]);
         $selected = $request->input('selected');
         $items = [];
 //        "{\\"text\\":\\"ศูนย์ซ่อม : hello world\\\\nแจ้งเรื่อง : เคลม\\\\nรายการ :\\\\n\\\\nSP50122-01*1\\\\nSP50122-02*1\\\\nSP50122-03*1\\"}"}
@@ -109,8 +111,8 @@ class SpareClaimController extends Controller
                 "content" => json_encode(["text" => $text], JSON_UNESCAPED_UNICODE)
             ];
             $response = Http::post('https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal', [
-                'app_id' => 'cli_a769d3ae8cf81009',
-                'app_secret' => '6QJRSc64IkesVHLTginCxdOlbaaSBe1C'
+                'app_id' => env('VITE_LARK_APP_ID'),
+                'app_secret' => env('VITE_LARK_APP_SECRET')
             ]);
             if ($response->successful()) {
                 $responseJson = $response->json();
@@ -127,6 +129,7 @@ class SpareClaimController extends Controller
             }
 
             DB::commit();
+            logStamp::query()->create(['description' => Auth::user()->user_code . " สร้างเอกสารเคลม $claim_id สำเร็จ"]);
             return response()->json([
                 'message' => 'สร้างเอกสารการเคลมสำเร็จ'
             ]);

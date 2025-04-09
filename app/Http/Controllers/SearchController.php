@@ -8,10 +8,12 @@ use App\Models\CustomerInJob;
 use App\Models\FileUpload;
 use App\Models\Gp;
 use App\Models\JobList;
+use App\Models\logStamp;
 use App\Models\MenuFileUpload;
 use App\Models\Remark;
 use App\Models\SparePart;
 use App\Models\Symptom;
+use App\Models\WarrantyProduct;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Client\RequestException;
@@ -24,32 +26,46 @@ class SearchController extends Controller
     public function detail(SearchRequest $request): JsonResponse
     {
         try {
+            logStamp::query()->create(['description' => Auth::user()->user_code . " ค้นหา sn $request->sn"]);
             $result = substr($request->sn, 0, 4);
-            if ($result === '9999'){
+            if ($result === '9999') {
                 return $this->searchSku($request->sn);
             }
             $response = Http::post(env('API_DETAIL'), [
                 'sn' => $request->sn,
                 'views' => $request->views,
             ]);
-            if(!$response->successful()) throw new \Exception('ขาดการติดต่อกับ API');
+            if (!$response->successful()) throw new \Exception('ขาดการติดต่อกับ API');
             $createJob = $request->input('createJob');
             if ($response->status() === 200) {
                 $searchResults = $response->json();
                 $warrantyexpire = $searchResults['warrantyexpire'];
                 $status = $searchResults['status'];
                 if ($searchResults['status'] === 'Fail') {
-                    throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $request->sn .' กรุณาติดต่อเบอร์ 02-8995928 ต่อ 266');
+                    throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $request->sn . ' กรุณาติดต่อเบอร์ 02-8995928 ต่อ 266');
                 }
                 $searchResults = $searchResults['assets'][0];
-                $searchResults['warranty_status'] = $warrantyexpire;
-                $searchResults['job'] = $this->storeJob($searchResults,$createJob);
+
+
+                // ตรวจในฐานข้อมูลก่อนว่า มีใน warrantyProduct มั้ย
+                $findWarranty = WarrantyProduct::query()->where('serial_id', $request->sn)->first();
+                if ($findWarranty) {
+                    $dateWarranty = Carbon::parse($findWarranty->date_warranty);
+                    $expireDate = Carbon::parse($findWarranty->expire_date);
+                    $now = Carbon::now();
+                    if ($now->greaterThanOrEqualTo($dateWarranty) && $now->lessThanOrEqualTo($expireDate)) {
+                        $searchResults['warranty_status'] = true;
+                    } else $searchResults['warranty_status'] = false;
+                } else $searchResults['warranty_status'] = $warrantyexpire;
+
+
+                $searchResults['job'] = $this->storeJob($searchResults, $createJob);
                 if ($searchResults['job']['is_code_key'] !== Auth::user()->is_code_cust_id) {
                     throw new \Exception('สินค้าซีเรียลนี้ถูกสร้าง job โดยศูนย์บริการอื่นแล้ว และยังดำเนินการอยู่ หากสงสัย ติดต่อผู้ดูแลระบบ');
                 }
                 $job_id = $searchResults['job']['job_id'];
                 $hisSystem = $this->historyInSystem($request->sn, $searchResults);
-                $searchResults['history'] = array_merge($hisSystem,$searchResults['history']);
+                $searchResults['history'] = array_merge($hisSystem, $searchResults['history']);
                 $searchResults['selected']['behavior'] = $this->BehaviorSelected($job_id);
                 $searchResults['selected']['symptom'] = $this->SymptomSelected($job_id);
                 $searchResults['selected']['remark'] = $this->RemarkSelected($job_id);
@@ -70,7 +86,7 @@ class SearchController extends Controller
                 'message' => 'success',
                 'time' => Carbon::now()
             ]);
-        }catch (RequestException $e) {
+        } catch (RequestException $e) {
             // กรณี API ไม่ตอบสนอง หรือเชื่อมต่อไม่ได้
             return response()->json([
                 'status' => 'error',
@@ -155,14 +171,14 @@ class SearchController extends Controller
         ];
     }
 
-    private function storeJob($data,$createJob)
+    private function storeJob($data, $createJob)
     {
         $job = JobList::query()
             ->where('serial_id', $data['serial'])
             ->orderBy('id', 'desc')
             ->first();
 
-        if ($createJob){
+        if ($createJob) {
 //        if (!$job || $job->status === 'success') {
             $is_code_4_digit = substr(Auth::user()->is_code_cust_id, 0, 4);
             $job = JobList::query()->create([
@@ -248,8 +264,10 @@ class SearchController extends Controller
         }
         return $histories;
     }
+
     // ค้นหา job โดย sku
-    private function searchSku ($serial_id){
+    private function searchSku($serial_id)
+    {
         try {
             $job = JobList::query()->where('serial_id', $serial_id)->first();
             $job = $job->toArray();
@@ -266,10 +284,10 @@ class SearchController extends Controller
                     $job['job'] = $jobTemp;
                     $job['serial'] = $serial_id;
                     $job['job_id'] = $job_id;
-                }else{
+                } else {
                     throw new \Exception("ไม่เจอข้อมูลรหัสสินค้านี้");
                 }
-            }else{
+            } else {
                 throw new \Exception('เกิดปัญหากับ API');
             }
             $job['history'] = [];
@@ -290,7 +308,7 @@ class SearchController extends Controller
                 'message' => 'success',
                 'time' => Carbon::now()
             ]);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 'Fail',
                 'searchResults' => [],

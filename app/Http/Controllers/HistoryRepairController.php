@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Behavior;
 use App\Models\CustomerInJob;
 use App\Models\JobList;
+use App\Models\logStamp;
 use App\Models\Remark;
 use App\Models\SparePart;
 use Illuminate\Http\JsonResponse;
@@ -18,6 +19,7 @@ class HistoryRepairController extends Controller
 {
     public function index(Request $request): Response
     {
+        logStamp::query()->create(['description' => Auth::user()->user_code . " ดูเมนู ประวัติงานซ่อม"]);
 
         $query = JobList::query()
             ->leftJoin('customer_in_jobs', 'customer_in_jobs.job_id', '=', 'job_lists.job_id')

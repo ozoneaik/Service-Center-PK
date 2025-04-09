@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SparePathRequest;
 use App\Models\Cart;
+use App\Models\logStamp;
 use App\Models\SparePart;
 use App\Models\StockSparePart;
 use Illuminate\Http\JsonResponse;
@@ -31,12 +32,13 @@ class SparePartController extends Controller
     public function store(SparePathRequest $request): JsonResponse
     {
         try {
-            DB::beginTransaction();
             $serial_id = $request->input('serial_id');
             $job_id = $request->input('job_id');
             $list = $request->input('list');
             $pid = $request->input('pid');
             $pname = $request->input('pname');
+            logStamp::query()->create(['description' => Auth::user()->user_code . " พยายามบันทึกอะไหล่ $job_id"]);
+            DB::beginTransaction();
             $this->delete($job_id);
             $data['sp'] = array_map(function ($item) use ($serial_id, $job_id) {
                 return SparePart::query()->create([
@@ -100,6 +102,7 @@ class SparePartController extends Controller
 //                    }
 //                }
 //            }
+            logStamp::query()->create(['description' => Auth::user()->user_code . " บันทึกอะไหล่สำเร็จ $job_id"]);
             DB::commit();
             return response()->json([
                 'message' => 'บันทึกรายการอะไหล่สำเร็จ',

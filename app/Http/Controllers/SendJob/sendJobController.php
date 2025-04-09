@@ -4,6 +4,7 @@ namespace App\Http\Controllers\SendJob;
 
 use App\Http\Controllers\Controller;
 use App\Models\JobList;
+use App\Models\logStamp;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,6 +21,7 @@ class sendJobController extends Controller
      */
     public function sendJobList(): Response
     {
+        logStamp::query()->create(['description' => Auth::user()->user_code . " ดูเมนู ส่งซ่อมพิมคินฯ"]);
         $jobs = JobList::query()
             ->where('is_code_key', Auth::user()->is_code_cust_id)
             ->where('status', 'pending')
@@ -33,10 +35,10 @@ class sendJobController extends Controller
     {
         $selectedJob = $request->selectedJobs;
         try {
+            $group_job = time() . rand(1000, 9999);
+            $created_at = Carbon::now();
             DB::beginTransaction();
             if (count($selectedJob) > 0) {
-                $group_job = time() . rand(1000, 9999);
-                $created_at = Carbon::now();
                 foreach ($selectedJob as $job) {
                     $findJob = JobList::query()->where('job_id', $job['job_id'])->first();
                     $findJob->status = 'send';
@@ -49,6 +51,7 @@ class sendJobController extends Controller
                 throw new \Exception('ไม่มีจ็อบที่ต้องการส่ง');
             }
             DB::commit();
+            logStamp::query()->create(['description' => Auth::user()->user_code . " กดส่งส่งซ่อมพิมคินฯ สำเร็จ $group_job"]);
             return Redirect::route('sendJobs.list')->with('success', 'ส่งไปยัง PK สำเร็จ');
         } catch (\Exception $exception) {
             DB::rollBack();
@@ -58,6 +61,7 @@ class sendJobController extends Controller
 
     public function docJobList(): Response
     {
+        logStamp::query()->create(['description' => Auth::user()->user_code . " ดูเมนู ออกเอกสารส่งกลับ"]);
         $groups = JobList::query()->where('status', 'send')
             ->select('print_at', 'group_job', 'print_updated_at', 'counter_print','created_at')
             ->groupBy('group_job', 'print_at', 'print_updated_at', 'counter_print','created_at')
@@ -84,6 +88,7 @@ class sendJobController extends Controller
 
     public function printJobList($job_group) : Response
     {
+        logStamp::query()->create(['description' => Auth::user()->user_code . " พิมพ์เอกสาร ออกเอกสารส่งกลับ $job_group"]);
         $job_groups = JobList::query()->where('group_job', $job_group)->get();
         if ($job_groups->isEmpty()) {
             $job_groups = [];

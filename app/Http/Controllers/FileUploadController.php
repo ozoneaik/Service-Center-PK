@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UploadFileRequest;
 use App\Models\FileUpload;
+use App\Models\logStamp;
 use App\Models\MenuFileUpload;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class FileUploadController extends Controller
@@ -110,6 +112,7 @@ class FileUploadController extends Controller
             $data = $request->validated();
             $serial_id = $data['serial_id'] ?? null;
             $job_id = $data['job_id'] ?? null;
+            logStamp::query()->create(['description' => Auth::user()->user_code . " พยายามบันทึกรูปภาพ $job_id"]);
 
             // ตรวจสอบว่ามี key 'list' หรือไม่
             $list = $data['list'] ?? [];
@@ -167,6 +170,7 @@ class FileUploadController extends Controller
             }
 
             $new_data = $this->FileSelected($job_id);
+            logStamp::query()->create(['description' => Auth::user()->user_code . " บันทึกรูปภาพสำเร็จ $job_id"]);
             return response()->json([
                 'message' => 'บันทึกข้อมูลสำเร็จ',
                 'data' => $new_data

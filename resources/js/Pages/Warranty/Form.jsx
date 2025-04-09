@@ -12,19 +12,37 @@ import {
     Typography
 } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
-import {useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {AlertDialog, AlertForWarranty} from "@/Components/AlertDialog.js";
 import ProductDetail from "@/Components/ProductDetail.jsx";
 import axios from "axios";
 import {Datepicker} from "flowbite-react";
+import {DateFormatTh} from "@/Components/DateFormat.jsx";
 
 export default function FormWarranty() {
 
     const search = useRef(null);
     const [inputDate, setInputDate] = useState('');
     const [warrantyAt, setWarrantyAt] = useState();
+    const [expireDate, setExpireDate] = useState();
     const [loading, setLoading] = useState(false);
     const [detail, setDetail] = useState();
+
+    const [maxDate, setMaxDate] = useState('');
+    const [minDate, setMinDate] = useState('');
+    useEffect(() => {
+        // สร้างวันที่ปัจจุบัน (max date)
+        const today = new Date();
+        const formattedToday = today.toISOString().split('T')[0];
+
+        // สร้างวันที่ย้อนหลัง 14 วัน (min date)
+        const fourteenDaysAgo = new Date();
+        fourteenDaysAgo.setDate(today.getDate() - 14);
+        const formattedFourteenDaysAgo = fourteenDaysAgo.toISOString().split('T')[0];
+
+        setMaxDate(formattedToday);
+        setMinDate(formattedFourteenDaysAgo);
+    }, []);
 
 
     const fetchData = async (sn) => {
@@ -35,6 +53,7 @@ export default function FormWarranty() {
                 console.log(data)
                 setDetail(data.searchResults.assets[0])
                 setWarrantyAt(data.warrantyAt)
+                setExpireDate(data.expire_date);
             } else {
                 throw 'error'
             }
@@ -44,8 +63,6 @@ export default function FormWarranty() {
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
                 text: err.response.data.message,
-                onPassed: () => {
-                }
             })
         } finally {
             setLoading(false)
@@ -61,14 +78,13 @@ export default function FormWarranty() {
     const handelSave = (e) => {
         e.preventDefault();
         AlertForWarranty({
-            text : 'กด บันทึก หรือ บันทึก/แจ้งซ่อม เพื่อบันทึกข้อมูลรับประกัน',
-            onPassed : async (confirm, confirmAndRedirect) => {
+            text: 'กด บันทึก หรือ บันทึก/แจ้งซ่อม เพื่อบันทึกข้อมูลรับประกัน',
+            onPassed: async (confirm, confirmAndRedirect) => {
                 if (confirm || confirmAndRedirect) {
                     await handelSubmit(e);
                 }
             }
         })
-
     }
 
 
@@ -79,7 +95,8 @@ export default function FormWarranty() {
                 serial_id: detail.serial,
                 pid: detail.pid,
                 p_name: detail.pname,
-                date_warranty: inputDate
+                date_warranty: inputDate,
+                warrantyperiod : parseInt(detail.warrantyperiod)
             })
             console.log(data, status);
             AlertDialog({
@@ -89,13 +106,13 @@ export default function FormWarranty() {
             setWarrantyAt(inputDate)
         } catch (error) {
             AlertDialog({
+                title: 'เกิดข้อผิดพลาด',
                 text: error.response.data.message,
                 onPassed: async () => {
                 }
             })
         }
     }
-
 
 
     return (
@@ -117,31 +134,47 @@ export default function FormWarranty() {
                     <Grid2 size={12}>
                         {!loading ? (detail && <ProductDetail {...detail} warranty={false}/>) : <CircularProgress/>}
                     </Grid2>
-                    {detail && !warrantyAt ? (
-                        <Grid2 size={12}>
-                            <FormLabel>วันที่ซื้อ</FormLabel>
-                            <form onSubmit={handelSave}>
-                                <Stack direction='row' spacing={2}>
-                                    <TextField
-                                        type='date'
-                                        onChange={(e) => setInputDate(e.target.value)}
-                                    />
-                                    {/*<Datepicker*/}
-                                    {/*    language="th-TH"*/}
-                                    {/*    onChange={(date) => setInputDate(date.toLocaleString())}*/}
-                                    {/*/>*/}
 
-                                    <Button
-                                        disabled={!inputDate}
-                                        type='submit' variant='contained'>บันทึก</Button>
-                                </Stack>
-                            </form>
-                        </Grid2>
+
+                    {detail && !warrantyAt ? (
+                        <>
+                            <Grid2 size={12}>
+                                <Typography>
+                                    คุณได้กรอกเป็น => {new Date(inputDate).toLocaleDateString('th')}
+                                </Typography>
+                            </Grid2>
+                            <Grid2 size={12}>
+                                <FormLabel>วันที่ซื้อ</FormLabel>
+                                <form onSubmit={handelSave}>
+                                    <Stack direction='row' spacing={2}>
+                                        <TextField
+                                            inputProps={{
+                                                min: minDate,
+                                                max: maxDate
+                                            }}
+                                            InputLabelProps={{
+                                                shrink: true
+                                            }}
+                                            type='date'
+                                            onChange={(e) => setInputDate(e.target.value)}
+                                            onKeyDown={(e) => e.preventDefault()} // ป้องกันการป้อนข้อมูลด้วยคีย์บอร์ด
+                                        />
+                                        <Button
+                                            disabled={!inputDate}
+                                            type='submit' variant='contained'>บันทึก</Button>
+                                    </Stack>
+                                </form>
+                            </Grid2>
+                        </>
                     ) : (warrantyAt ? (
                             <Alert security='success' sx={{width: '100%'}}>
                                 <Stack direction='row' spacing={1}>
                                     <Typography>หมายเลขซีเรียลนี้เคยลงทะเบียนรับประกันไปแล้ว คือ</Typography>
-                                    <Typography fontWeight='bold'>{warrantyAt}</Typography>
+                                    <Typography fontWeight='bold'>
+                                        {new Date(warrantyAt).toLocaleDateString('th')}
+                                        &nbsp;สิ้นสุดประกันถึง&nbsp;
+                                        {new Date(expireDate).toLocaleDateString('th')}
+                                    </Typography>
                                 </Stack>
                             </Alert>
                         ) : <></>
@@ -151,4 +184,3 @@ export default function FormWarranty() {
         </AuthenticatedLayout>
     )
 }
-

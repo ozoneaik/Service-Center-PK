@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\BehaviorRequest;
 use App\Models\Behavior;
+use App\Models\logStamp;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class BehaviorController extends Controller
@@ -27,10 +29,11 @@ class BehaviorController extends Controller
     public function store(BehaviorRequest $request) : JsonResponse
     {
         try {
-            DB::beginTransaction();
+            $job_id = $request->input('job_id');
             $serial_id = $request->input('serial_id');
             $list = $request->input('list');
-            $job_id = $request->input('job_id');
+            logStamp::query()->create(['description' => Auth::user()->user_code . " พยายามบันทึกอาการ/สาเหตุ $job_id"]);
+            DB::beginTransaction();
             $this->delete($job_id);
             $data = array_map(function ($item) use ($serial_id,$job_id) {
                 return Behavior::query()->create([
@@ -44,6 +47,7 @@ class BehaviorController extends Controller
                 ]);
             }, $list);
             DB::commit();
+            logStamp::query()->create(['description' => Auth::user()->user_code . " บันทึกอาการ/สาเหตุสำเร็จ $job_id"]);
             return response()->json([
                 'message' => 'บันทึกข้อมูลสำเร็จ',
                 'new_data' => $data,

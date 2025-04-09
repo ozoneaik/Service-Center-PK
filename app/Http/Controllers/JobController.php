@@ -8,6 +8,7 @@ use App\Models\Cart;
 use App\Models\CustomerInJob;
 use App\Models\FileUpload;
 use App\Models\JobList;
+use App\Models\logStamp;
 use App\Models\SparePart;
 use App\Models\StockSparePart;
 use Illuminate\Http\JsonResponse;
@@ -56,6 +57,7 @@ class JobController extends Controller
 
     public function update(JobRequest $request): JsonResponse
     {
+        logStamp::query()->create(['description'=>Auth::user()->user_code." พยายามปิดงานซ่อม"]);
         $job_id = $request->input('job_id');
         try {
             DB::beginTransaction();
@@ -161,6 +163,7 @@ class JobController extends Controller
             $job = JobList::query()->where('job_id', $job_id)->update(['status' => 'success']);
             $message = 'ปิดงานซ่อมสำเร็จ';
             $status = 200;
+            logStamp::query()->create(['description'=>Auth::user()->user_code." ปิดงานซ่อมสำเร็จ"]);
             DB::commit();
         } catch (\Exception $e) {
             $status = 400;
@@ -178,6 +181,7 @@ class JobController extends Controller
     public function cancelJob($serial_id): JsonResponse
     {
         try {
+            logStamp::query()->create(['description'=>Auth::user()->user_code." พยายามยกเลิกงานซ่อม"]);
             DB::beginTransaction();
             $job = JobList::query()->where('job_id', $serial_id)->first();
             if ($job->status === 'canceled') {
@@ -186,6 +190,7 @@ class JobController extends Controller
                 $job->status = 'canceled';
                 $job->save();
             }
+            logStamp::query()->create(['description'=>Auth::user()->user_code." ยกเลิกงานซ่อมสำเร็จ"]);
             DB::commit();
             return response()->json([
                 'message' => 'ยกเลิกการซ่อมสำเร็จ',

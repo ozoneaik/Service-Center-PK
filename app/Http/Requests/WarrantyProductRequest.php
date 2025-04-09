@@ -28,18 +28,23 @@ class WarrantyProductRequest extends FormRequest
             'pid' => 'required',
             'p_name' => 'required',
             'date_warranty' => 'required',
+            'warrantyperiod' => ['required','numeric'],
         ];
     }
 
-    public function messages(): array{
+    public function messages(): array
+    {
         return [
-            'serial_id.required' => 'serial id is required',
-            'serial_id.unique' => 'เคยบันทึกข้อมูลนี้ไว้แล้ว กดตกลงเพื่อ อัพเดทข้อมูล',
-            'pid.required' => 'Pid is required',
-            'p_name.required' => 'Pid is required',
-            'date_warranty.required' => 'date warranty is required',
+            'serial_id.required' => 'กรุณากรอก Serial ID',
+            'serial_id.unique' => 'ข้อมูล Serial ID นี้ถูกบันทึกไว้แล้ว หากต้องการอัปเดต กรุณากดตกลง',
+            'pid.required' => 'กรุณากรอกรหัสสินค้า (PID)',
+            'p_name.required' => 'กรุณากรอกชื่อสินค้า',
+            'date_warranty.required' => 'กรุณากรอกวันที่ลงทะเบียนรับประกัน',
+            'warrantyperiod.required' => 'ไม่พบข้อมูลระยะเวลารับประกัน',
+            'warrantyperiod.numeric' => 'ระยะเวลารับประกันต้องเป็นตัวเลขเท่านั้น',
         ];
     }
+
 
 
 }

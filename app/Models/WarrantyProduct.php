@@ -12,6 +12,8 @@ class WarrantyProduct extends Model
         'p_name',
         'date_warranty',
         'user_id',
-        'user_is_code_id'
+        'user_is_code_id',
+        'expire_date',
+        'warranty_period'
     ];
 }
