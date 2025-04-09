@@ -118,7 +118,7 @@ export default function LogList({Logs}) {
     // สร้างสีสถานะแบบสุ่มสำหรับ Log
     const getRandomStatus = (id) => {
         const statuses = [
-            { label: 'INFO', color: '#3498db' },
+            {label: 'INFO', color: '#3498db'},
             // { label: 'DEBUG', color: '#2ecc71' },
             // { label: 'WARNING', color: '#f39c12' },
             // { label: 'ERROR', color: '#e74c3c' },
@@ -142,7 +142,7 @@ export default function LogList({Logs}) {
             <Box sx={{
                 width: '100%',
                 minHeight: '100vh',
-                padding: { xs: 2, md: 4 },
+                padding: {xs: 2, md: 4},
                 display: 'flex',
                 flexDirection: 'column'
             }}>
@@ -155,11 +155,11 @@ export default function LogList({Logs}) {
                     position: 'relative'
                 }}>
                     <Box sx={{
-                        p: { xs: 2, md: 4 },
+                        p: {xs: 2, md: 4},
                         display: 'flex',
-                        flexDirection: { xs: 'column', md: 'row' },
+                        flexDirection: {xs: 'column', md: 'row'},
                         justifyContent: 'space-between',
-                        alignItems: { xs: 'flex-start', md: 'center' }
+                        alignItems: {xs: 'flex-start', md: 'center'}
                     }}>
                         <Stack direction="row" spacing={2} alignItems="center">
                             <Avatar sx={{
@@ -168,29 +168,31 @@ export default function LogList({Logs}) {
                                 height: 56,
                                 boxShadow: '0 4px 20px rgba(241, 89, 34, 0.5)'
                             }}>
-                                <AnalyticsIcon fontSize="large" />
+                                <AnalyticsIcon fontSize="large"/>
                             </Avatar>
                             <Box>
-                                <Typography variant="h4" fontWeight="bold" color="white" gutterBottom component="div" sx={{ mb: 0.5 }}>
+                                <Typography variant="h4" fontWeight="bold" color="white" gutterBottom component="div"
+                                            sx={{mb: 0.5}}>
                                     รายการ Log
                                 </Typography>
-                                <Typography variant="body2" fontWeight="medium" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                                    ข้อมูลทั้งหมด: <span style={{ color: 'white', fontWeight: 'bold' }}>{totalItems}</span> รายการ
+                                <Typography variant="body2" fontWeight="medium" sx={{color: 'rgba(255,255,255,0.7)'}}>
+                                    ข้อมูลทั้งหมด: <span
+                                    style={{color: 'white', fontWeight: 'bold'}}>{totalItems}</span> รายการ
                                 </Typography>
                             </Box>
                         </Stack>
 
                         <Stack
-                            direction={{ xs: 'column', sm: 'row' }}
+                            direction={{xs: 'column', sm: 'row'}}
                             spacing={2}
-                            mt={{ xs: 2, md: 0 }}
-                            alignItems={{ xs: 'flex-start', sm: 'center' }}
+                            mt={{xs: 2, md: 0}}
+                            alignItems={{xs: 'flex-start', sm: 'center'}}
                         >
                             <Button
                                 variant="contained"
                                 color="error"
-                                startIcon={<NotificationsIcon />}
-                                sx={{ bgcolor: '#e74c3c', borderRadius: 2 }}
+                                startIcon={<NotificationsIcon/>}
+                                sx={{bgcolor: '#e74c3c', borderRadius: 2}}
                             >
                                 แจ้งเตือน
                             </Button>
@@ -199,7 +201,7 @@ export default function LogList({Logs}) {
                                 <Button
                                     variant="contained"
                                     onClick={() => setAutoRefresh(!autoRefresh)}
-                                    startIcon={<AutorenewIcon />}
+                                    startIcon={<AutorenewIcon/>}
                                     sx={{
                                         bgcolor: autoRefresh ? '#27ae60' : '#7f8c8d',
                                         color: 'white',
@@ -226,7 +228,7 @@ export default function LogList({Logs}) {
                                         }}
                                         disabled={loading}
                                     >
-                                        <RefreshIcon sx={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+                                        <RefreshIcon sx={{animation: loading ? 'spin 1s linear infinite' : 'none'}}/>
                                     </IconButton>
                                 </span>
                             </Tooltip>
@@ -236,22 +238,22 @@ export default function LogList({Logs}) {
                     <Box sx={{
                         borderTop: '1px solid rgba(255,255,255,0.1)',
                         p: 1.5,
-                        px: { xs: 2, md: 4 },
+                        px: {xs: 2, md: 4},
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         flexWrap: 'wrap',
                         gap: 1
                     }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <MoreTimeIcon sx={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', mr: 0.5 }} />
-                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                        <Box sx={{display: 'flex', alignItems: 'center'}}>
+                            <MoreTimeIcon sx={{fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', mr: 0.5}}/>
+                            <Typography variant="caption" sx={{color: 'rgba(255,255,255,0.7)'}}>
                                 อัพเดทล่าสุด: {getTimeSinceLastRefresh()}
                             </Typography>
                         </Box>
 
                         <Box>
-                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                            <Typography variant="caption" sx={{color: 'rgba(255,255,255,0.5)'}}>
                                 รีเฟรชทุก {refreshInterval / 1000} วินาที
                             </Typography>
                         </Box>
@@ -259,10 +261,10 @@ export default function LogList({Logs}) {
                 </Card>
 
                 {/* Content Grid */}
-                <Grid container spacing={3} sx={{ mb: 3 }}>
+                <Grid container spacing={3} sx={{mb: 3}}>
                     {/* ช่องค้นหา */}
                     <Grid item xs={12} md={8}>
-                        <Card elevation={2} sx={{ borderRadius: 3, p: 2, height: '100%' }}>
+                        <Card elevation={2} sx={{borderRadius: 3, p: 2, height: '100%'}}>
                             <form onSubmit={handleSearch}>
                                 <TextField
                                     label="ค้นหารายละเอียด Log"
@@ -274,7 +276,7 @@ export default function LogList({Logs}) {
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start">
-                                                <SearchIcon />
+                                                <SearchIcon/>
                                             </InputAdornment>
                                         ),
                                         endAdornment: (
@@ -295,7 +297,7 @@ export default function LogList({Logs}) {
                                             </InputAdornment>
                                         ),
                                     }}
-                                    sx={{ borderRadius: 2 }}
+                                    sx={{borderRadius: 2}}
                                 />
                             </form>
                         </Card>
@@ -309,29 +311,29 @@ export default function LogList({Logs}) {
                             height: '100%',
                             background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%)'
                         }}>
-                            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{mb: 1}}>
                                 <Typography variant="subtitle1" fontWeight="bold">สถิติการบันทึก</Typography>
-                                <Badge color="error" badgeContent={4} sx={{ '.MuiBadge-badge': { fontSize: '0.7rem' } }}>
+                                <Badge color="error" badgeContent={4} sx={{'.MuiBadge-badge': {fontSize: '0.7rem'}}}>
                                     <IconButton size="small">
-                                        <FilterListIcon fontSize="small" />
+                                        <FilterListIcon fontSize="small"/>
                                     </IconButton>
                                 </Badge>
                             </Stack>
-                            <Divider sx={{ mb: 2 }} />
+                            <Divider sx={{mb: 2}}/>
                             <Stack direction="row" justifyContent="space-around" spacing={1}>
-                                <Box sx={{ textAlign: 'center' }}>
+                                <Box sx={{textAlign: 'center'}}>
                                     <Typography variant="body2" color="text.secondary">วันนี้</Typography>
                                     <Typography variant="h6" fontWeight="bold" color={pumpkinColor}>
                                         {Math.floor(totalItems * 0.3)}
                                     </Typography>
                                 </Box>
-                                <Box sx={{ textAlign: 'center' }}>
+                                <Box sx={{textAlign: 'center'}}>
                                     <Typography variant="body2" color="text.secondary">สัปดาห์นี้</Typography>
                                     <Typography variant="h6" fontWeight="bold" color={pumpkinColor}>
                                         {Math.floor(totalItems * 0.7)}
                                     </Typography>
                                 </Box>
-                                <Box sx={{ textAlign: 'center' }}>
+                                <Box sx={{textAlign: 'center'}}>
                                     <Typography variant="body2" color="text.secondary">ทั้งหมด</Typography>
                                     <Typography variant="h6" fontWeight="bold" color={pumpkinColor}>
                                         {totalItems}
@@ -367,68 +369,18 @@ export default function LogList({Logs}) {
                             background: `linear-gradient(90deg, transparent, ${pumpkinColor}, transparent)`,
                             backgroundSize: '200% 100%',
                             animation: 'shimmer 1.5s infinite linear'
-                        }} />
+                        }}/>
                     )}
 
-                    <TableContainer sx={{ flexGrow: 1 }}>
-                        <Table stickyHeader sx={{ minWidth: 650 }} aria-label="log table">
+                    <TableContainer sx={{flexGrow: 1}}>
+                        <Table stickyHeader sx={{minWidth: 650}} aria-label="log table">
                             <TableHead>
                                 <TableRow>
-                                    <TableCell
-                                        sx={{
-                                            background: 'linear-gradient(135deg, #20202f 0%, #273c75 100%)',
-                                            color: 'white',
-                                            fontWeight: 'bold'
-                                        }}
-                                        align="center"
-                                        width="8%"
-                                    >
-                                        ID
-                                    </TableCell>
-                                    <TableCell
-                                        sx={{
-                                            background: 'linear-gradient(135deg, #20202f 0%, #273c75 100%)',
-                                            color: 'white',
-                                            fontWeight: 'bold'
-                                        }}
-                                        align="left"
-                                        width="50%"
-                                    >
-                                        รายละเอียด
-                                    </TableCell>
-                                    <TableCell
-                                        sx={{
-                                            background: 'linear-gradient(135deg, #20202f 0%, #273c75 100%)',
-                                            color: 'white',
-                                            fontWeight: 'bold'
-                                        }}
-                                        align="center"
-                                        width="18%"
-                                    >
-                                        วันที่สร้าง
-                                    </TableCell>
-                                    <TableCell
-                                        sx={{
-                                            background: 'linear-gradient(135deg, #20202f 0%, #273c75 100%)',
-                                            color: 'white',
-                                            fontWeight: 'bold'
-                                        }}
-                                        align="center"
-                                        width="18%"
-                                    >
-                                        วันที่อัปเดต
-                                    </TableCell>
-                                    <TableCell
-                                        sx={{
-                                            background: 'linear-gradient(135deg, #20202f 0%, #273c75 100%)',
-                                            color: 'white',
-                                            fontWeight: 'bold'
-                                        }}
-                                        align="center"
-                                        width="6%"
-                                    >
-                                        จัดการ
-                                    </TableCell>
+                                    <TableCell sx={headerStyle} align="center" width="8%">ID</TableCell>
+                                    <TableCell sx={headerStyle} align="left" width="50%">รายละเอียด</TableCell>
+                                    <TableCell sx={headerStyle} align="center" width="18%">วันที่สร้าง</TableCell>
+                                    <TableCell sx={headerStyle} align="center" width="18%">วันที่อัปเดต</TableCell>
+                                    <TableCell sx={headerStyle} align="center" width="6%">จัดการ</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -438,8 +390,8 @@ export default function LogList({Logs}) {
                                         <TableRow
                                             key={log.id}
                                             sx={{
-                                                '&:nth-of-type(odd)': { bgcolor: 'rgba(0, 0, 0, 0.02)' },
-                                                '&:last-child td, &:last-child th': { border: 0 },
+                                                '&:nth-of-type(odd)': {bgcolor: 'rgba(0, 0, 0, 0.02)'},
+                                                '&:last-child td, &:last-child th': {border: 0},
                                                 '&:hover': {
                                                     backgroundColor: 'rgba(241, 89, 34, 0.05)',
                                                     boxShadow: 'inset 0 0 0 1px rgba(241, 89, 34, 0.1)'
@@ -447,7 +399,7 @@ export default function LogList({Logs}) {
                                                 transition: 'all 0.15s ease-in-out'
                                             }}
                                         >
-                                            <TableCell align="center" sx={{ fontWeight: 'medium' }}>
+                                            <TableCell align="center" sx={{fontWeight: 'medium'}}>
                                                 <Chip
                                                     size="small"
                                                     label={log.id}
@@ -459,7 +411,7 @@ export default function LogList({Logs}) {
                                                 />
                                             </TableCell>
                                             <TableCell align="left">
-                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                <Box sx={{display: 'flex', alignItems: 'center'}}>
                                                     <Chip
                                                         size="small"
                                                         label={status.label}
@@ -472,19 +424,20 @@ export default function LogList({Logs}) {
                                                             textAlign: 'center'
                                                         }}
                                                     />
-                                                    <Typography variant="body2" sx={{
-                                                        fontFamily: 'monospace',
-                                                        fontWeight: 500,
-                                                        fontSize: '0.9rem'
-                                                    }}>
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            fontFamily: 'monospace', fontWeight: 500, fontSize: '0.9rem'
+                                                        }}
+                                                    >
                                                         {log.description}
                                                     </Typography>
                                                 </Box>
                                             </TableCell>
-                                            <TableCell align="center" sx={{ fontFamily: 'monospace' }}>
+                                            <TableCell align="center" sx={{fontFamily: 'monospace'}}>
                                                 <DateFormatTh date={log.created_at}/>
                                             </TableCell>
-                                            <TableCell align="center" sx={{ fontFamily: 'monospace' }}>
+                                            <TableCell align="center" sx={{fontFamily: 'monospace'}}>
                                                 <DateFormatTh date={log.updated_at}/>
                                             </TableCell>
                                             <TableCell align="center">
@@ -493,9 +446,7 @@ export default function LogList({Logs}) {
                                                         size="small"
                                                         sx={{
                                                             color: '#3498db',
-                                                            '&:hover': {
-                                                                bgcolor: 'rgba(52, 152, 219, 0.1)'
-                                                            }
+                                                            '&:hover': {bgcolor: 'rgba(52, 152, 219, 0.1)'}
                                                         }}
                                                     >
                                                         <InfoIcon fontSize="small"/>
@@ -506,9 +457,7 @@ export default function LogList({Logs}) {
                                                         size="small"
                                                         sx={{
                                                             color: '#e74c3c',
-                                                            '&:hover': {
-                                                                bgcolor: 'rgba(231, 76, 60, 0.1)'
-                                                            }
+                                                            '&:hover': {bgcolor: 'rgba(231, 76, 60, 0.1)'}
                                                         }}
                                                     >
                                                         <DeleteIcon fontSize="small"/>
@@ -520,8 +469,8 @@ export default function LogList({Logs}) {
                                 })}
                                 {Logs.data.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={5} align="center" sx={{ py: 5 }}>
-                                            <Box sx={{ textAlign: 'center' }}>
+                                        <TableCell colSpan={5} align="center" sx={{py: 5}}>
+                                            <Box sx={{textAlign: 'center'}}>
                                                 <Typography variant="h6" color="text.secondary" gutterBottom>
                                                     ไม่พบข้อมูล
                                                 </Typography>
@@ -538,12 +487,8 @@ export default function LogList({Logs}) {
 
                     {/* Server-side Pagination */}
                     <Box sx={{
-                        padding: 2,
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        borderTop: '1px solid rgba(224, 224, 224, 1)',
-                        bgcolor: 'rgba(245, 247, 250, 0.6)'
+                        padding: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        borderTop: '1px solid rgba(224, 224, 224, 1)', bgcolor: 'rgba(245, 247, 250, 0.6)'
                     }}>
                         <Stack direction='row' alignItems='center'>
                             <Typography variant="body2" color="text.secondary" sx={{mr: 2}}>
@@ -551,11 +496,9 @@ export default function LogList({Logs}) {
                             </Typography>
                             <FormControl size="small" sx={{minWidth: 80}}>
                                 <Select
-                                    variant='outlined'
-                                    value={rowsPerPage}
+                                    variant='outlined' value={rowsPerPage}
                                     onChange={handleRowsPerPageChange}
-                                    displayEmpty
-                                    sx={{ borderRadius: 2 }}
+                                    displayEmpty sx={{borderRadius: 2}}
                                 >
                                     <MenuItem value={10}>10</MenuItem>
                                     <MenuItem value={25}>25</MenuItem>
@@ -573,22 +516,14 @@ export default function LogList({Logs}) {
                                 color="primary"
                                 shape="rounded"
                                 sx={{
-                                    '.MuiPaginationItem-root': {
-                                        fontWeight: 'medium'
-                                    },
-                                    '.Mui-selected': {
-                                        bgcolor: pumpkinColor + ' !important',
-                                        color: 'white'
-                                    }
+                                    '.MuiPaginationItem-root': {fontWeight: 'medium'},
+                                    '.Mui-selected': {bgcolor: pumpkinColor + ' !important', color: 'white'}
                                 }}
                             />
                         </Stack>
 
                         <Box sx={{
-                            px: 2,
-                            py: 0.75,
-                            borderRadius: 2,
-                            bgcolor: '#f0f2f5',
+                            px: 2, py: 0.75, borderRadius: 2, bgcolor: '#f0f2f5',
                             border: '1px solid rgba(0,0,0,0.08)'
                         }}>
                             <Typography variant="body2" fontWeight="medium" color="text.secondary">
@@ -599,7 +534,7 @@ export default function LogList({Logs}) {
                 </Card>
 
                 {/* Footer */}
-                <Box sx={{ textAlign: 'center', mt: 'auto', py: 2 }}>
+                <Box sx={{textAlign: 'center', mt: 'auto', py: 2}}>
                     <Typography variant="caption" color="text.secondary">
                         © {new Date().getFullYear()} Log Management System
                     </Typography>
@@ -609,15 +544,30 @@ export default function LogList({Logs}) {
             {/* CSS for animations */}
             <style jsx global>{`
                 @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
+                    0% {
+                        transform: rotate(0deg);
+                    }
+                    100% {
+                        transform: rotate(360deg);
+                    }
                 }
 
                 @keyframes shimmer {
-                    0% { background-position: -200% 0; }
-                    100% { background-position: 200% 0; }
+                    0% {
+                        background-position: -200% 0;
+                    }
+                    100% {
+                        background-position: 200% 0;
+                    }
                 }
             `}</style>
         </Box>
     );
+}
+
+
+const headerStyle = {
+    background: 'linear-gradient(135deg, #20202f 0%, #273c75 100%)',
+    color: 'white',
+    fontWeight: 'bold'
 }

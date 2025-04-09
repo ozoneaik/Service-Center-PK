@@ -6,6 +6,7 @@ import {
 } from "@mui/material";
 import Checkbox from "@mui/material/Checkbox";
 import {useState} from "react";
+import {DateFormatTh} from "@/Components/DateFormat.jsx";
 
 const tableHeads = ['เลขที่ JOB', 'ข้อมูลเบื้องต้น', 'สร้างเมื่อ'];
 
@@ -62,7 +63,7 @@ export default function SenJobList({jobs}) {
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
                         <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                            <Typography variant='h6'>ส่งซ่อมพิมคินฯ</Typography>
+                            <Typography variant='h6' fontWeight='bold'>ส่งซ่อมพิมคินฯ</Typography>
                             <Typography variant='body1'>รายการทั้งหมด {jobs.length} รายการ</Typography>
                         </Stack>
 
@@ -127,7 +128,9 @@ export default function SenJobList({jobs}) {
                                                     <br/>
                                                     ชื่อสินค้า : {job.p_name}
                                                 </TableCell>
-                                                <TableCell>{new Date(job.created_at).toLocaleString()}</TableCell>
+                                                <TableCell>
+                                                    <DateFormatTh date={job.created_at}/>
+                                                </TableCell>
                                             </TableRow>
                                         )
                                     })}

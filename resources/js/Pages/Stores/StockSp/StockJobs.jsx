@@ -7,6 +7,7 @@ import {
 import PasswordIcon from "@mui/icons-material/Password";
 import {AlertDialogQuestion} from "@/Components/AlertDialog.js";
 import {useState} from "react";
+import {DateFormatTh} from "@/Components/DateFormat.jsx";
 
 
 export default function StockJobs({jobs}) {
@@ -90,7 +91,9 @@ export default function StockJobs({jobs}) {
                                         jobs.map((job, index) => (
                                             <TableRow key={index}>
                                                 <TableCell>{job.stock_job_id}</TableCell>
-                                                <TableCell>{job.created_at}</TableCell>
+                                                <TableCell>
+                                                    <DateFormatTh date={job.created_at}/>
+                                                </TableCell>
                                                 <TableCell>
                                                     <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>
                                                         <Button
