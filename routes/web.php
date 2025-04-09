@@ -9,6 +9,7 @@ use App\Http\Controllers\ApprovalSpController;
 use App\Http\Controllers\DmImageController;
 use App\Http\Controllers\genQuPdfController;
 use App\Http\Controllers\HistoryRepairController;
+use App\Http\Controllers\LogController;
 use App\Http\Controllers\ManageBranchController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
@@ -29,6 +30,9 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+
+    Route::get('/logs/list',[LogController::class,'index'])->name('logs.list');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -145,3 +149,5 @@ require __DIR__ . '/fakeForTest.php';
 Route::get('/test-page',function(){
    return Inertia::render('Test/TestPage');
 });
+
+

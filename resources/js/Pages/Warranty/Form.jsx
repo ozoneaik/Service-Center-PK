@@ -1,23 +1,14 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {Head} from "@inertiajs/react";
 import {
-    Alert,
-    Button,
-    CircularProgress,
-    Container,
-    FormLabel,
-    Grid2, Input,
-    Stack,
-    TextField,
-    Typography
+    Alert, Button, CircularProgress, Container, FormLabel,
+    Grid2, Stack, TextField, Typography
 } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import {useEffect, useRef, useState} from "react";
 import {AlertDialog, AlertForWarranty} from "@/Components/AlertDialog.js";
 import ProductDetail from "@/Components/ProductDetail.jsx";
 import axios from "axios";
-import {Datepicker} from "flowbite-react";
-import {DateFormatTh} from "@/Components/DateFormat.jsx";
 
 export default function FormWarranty() {
 
@@ -140,7 +131,7 @@ export default function FormWarranty() {
                         <>
                             <Grid2 size={12}>
                                 <Typography>
-                                    คุณได้กรอกเป็น => {new Date(inputDate).toLocaleDateString('th')}
+                                    คุณได้กรอกเป็น {'=>'} {new Date(inputDate).toLocaleDateString('th')}
                                 </Typography>
                             </Grid2>
                             <Grid2 size={12}>
