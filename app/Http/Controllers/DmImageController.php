@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ImageDiagram;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,9 +21,15 @@ class DmImageController extends Controller
         // }
         // return response()->json($data);
 
-        $data =  DB::connection('diagram')->table('diagrams')
-            ->where('sku_code', 'like', $pid)
-            ->first();
+//        $data =  DB::connection('diagram')->table('diagrams')
+//            ->where('sku_code', 'like', $pid)
+//            ->first();
+
+        $data = ImageDiagram::query()
+            ->where('sku_code', $pid)
+            ->where('dm_type', 'DM01')
+            ->orderBy('layer')
+            ->get();
 
         if (!$data) {
             return response()->json(['message' => 'ไม่พบข้อมูล'], 404);

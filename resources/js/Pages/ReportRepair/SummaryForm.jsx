@@ -23,6 +23,7 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import {Paper, TableContainer} from "@mui/material";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import {usePage} from "@inertiajs/react";
 
 
 const BehaviorDetail = ({detail}) => (
@@ -112,6 +113,7 @@ const CardDetailForTable = ({children}) => (
 
 export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
     const selected = detail.selected;
+    const user = usePage().props.auth.user;
     const [loading, setLoading] = useState(false);
 
     async function endJob() {
@@ -170,7 +172,7 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
                 qty: item.qty,
                 unit: item.sp_unit ?? 'อัน',
                 price: item.price_multiple_gp,
-                prod_discount: 0
+                prod_discount: 20
             });
         });
         console.log(detail.selected)
@@ -186,11 +188,11 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
             "fgcode": detail.job.skusp,
             "fgname": detail.job.skuspname,
             "custcode": detail.job.user_id,
-            "custname": "custname",
+            "custname": "custnamedfsdfsdfs",
             "docdate": "",
             "custtel": detail.selected.customerInJob.phone,
-            "empcode": "empcode",
-            "empname": "empname",
+            "empcode": user.user_code,
+            "empname": user.name,
             "remark": detail.selected.remark,
             "cause_remark": "",
             "docmt": "",

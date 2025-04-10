@@ -1,5 +1,6 @@
 import {useEffect, useState} from "react";
 import {ImagePreview} from "@/Components/ImagePreview.jsx";
+import React from "react";
 
 export default function DmPreview({detail}){
     const [dmPart,setDmPart] = useState();
@@ -13,12 +14,20 @@ export default function DmPreview({detail}){
             const {data, status} = await axios.get(`/image-dm/${detail.pid}`)
             console.log(data, status)
             console.log('รูป DM => ',data);
-            setDmPart(data.path_file_dm);
+            setDmPart(data);
         } catch (error) {
             console.error(error)
         }
     }
     return (
-        <ImagePreview src={dmPart ? dmPart : ''} alt='ไม่มีรูป' width='100%'/>
+        <>
+            {dmPart && dmPart.map((item,index) => {
+                return (
+                    <React.Fragment key={index}>
+                        <ImagePreview src={item.path_file} alt='ไม่มีรูป' width='100%'/>
+                    </React.Fragment>
+                )
+            })}
+        </>
     )
 }
