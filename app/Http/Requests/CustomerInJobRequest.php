@@ -27,7 +27,6 @@ class CustomerInJobRequest extends FormRequest
             'serial_id' => 'required',
             'name' => 'required',
             'phone' => 'required',
-            'address' => 'required',
             'remark' => 'required',
         ];
     }
@@ -39,7 +38,6 @@ class CustomerInJobRequest extends FormRequest
             'serial_id.required' => 'serial_id is required',
             'name.required' => 'name is required',
             'phone.required' => 'phone is required',
-            'address.required' => 'address is required',
             'remark.required' => 'remark is required',
         ];
     }

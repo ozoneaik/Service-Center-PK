@@ -1,6 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import InputAdornment from '@mui/material/InputAdornment';
-import { Head, usePage } from "@inertiajs/react";
+import {Head, Link, usePage,router} from "@inertiajs/react";
 import SearchIcon from '@mui/icons-material/Search';
 import {
     Button, Chip, Container, Grid2, MenuItem, Paper, Select,
@@ -10,7 +10,6 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { ListDetailModal } from "@/Pages/HistoryPage/ListDetailModal.jsx";
-import { router } from "@inertiajs/react";
 import PersonIcon from '@mui/icons-material/Person';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
@@ -35,7 +34,11 @@ export const TableDetail = ({ jobs, handleShowDetail, url }) => {
                     <TableRow key={index}>
                         <TableCell><img src={job.image_sku} width={50} alt="no image" /></TableCell>
                         <TableCell>{job.serial_id}</TableCell>
-                        <TableCell>{job.job_id}</TableCell>
+                        <TableCell>
+                            <Link href={route('dashboard')}>
+                                {job.job_id}
+                            </Link>
+                        </TableCell>
                         {url.startsWith("/admin/history-job") && (
                             <TableCell>
                                 <b>รหัสร้านค้า :</b> <span style={{ color: '#f15922' }}>{job.is_code_key}</span>
@@ -154,6 +157,7 @@ export default function HistoryMain({ jobs }) {
                                 </Grid2>
                                 <Grid2 size={{ md: 4, xs: 12 }}>
                                     <Select
+                                        variant='outlined'
                                         fullWidth value={filters.status || 'select'}
                                         onChange={handleFilterChange}
                                         sx={{ minWidth: 300 }}

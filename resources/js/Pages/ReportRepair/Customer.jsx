@@ -1,8 +1,17 @@
-import {Button, CircularProgress, FormLabel, Stack, TextField, Typography} from "@mui/material";
+import {Button, CircularProgress, FormLabel, Grid2, Stack, TextField} from "@mui/material";
 import {AlertDialog} from "@/Components/AlertDialog.js";
 import {useRef, useState} from "react";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import {styled} from "@mui/material/styles";
+import SaveIcon from '@mui/icons-material/Save';
+import SearchIcon from '@mui/icons-material/Search';
+
+
+const FormGrid = styled(Grid2)(() => ({
+    display: 'flex',
+    flexDirection: 'column'
+}));
 
 export const Customer = ({detail, setDetail}) => {
     const tel = useRef(null);
@@ -15,9 +24,8 @@ export const Customer = ({detail, setDetail}) => {
         subremark1: detail.selected.customerInJob.subremark1 ?? false,
         subremark2: detail.selected.customerInJob.subremark2 ?? false,
     });
-    console.log(detail)
+    const remark = 'หมายเหตุสำหรับลูกค้าในการสื่อสาร เช่น ลูกค้าให้ส่งใบเสนอราคาก่อนซ่อม,ลูกค้าต้องการให้จัดส่งสินค้าตามที่อยู่การจัดส่ง';
     const onSubmit = (e) => {
-        console.log(customer)
         e.preventDefault();
         let Status = 400;
         let message = '';
@@ -26,7 +34,6 @@ export const Customer = ({detail, setDetail}) => {
             title: 'ยืนยันการบันทึกข้อมูล',
             text: 'กดตกลงเพื่อบันทึกหรืออัพเดทข้อมูล',
             onPassed: async (confirm) => {
-
                 if (confirm) {
                     setLoading(true);
                     try {
@@ -39,12 +46,6 @@ export const Customer = ({detail, setDetail}) => {
                         Status = status;
                         message = data.message;
                         setCustomer({
-                        //     phone: data.phone,
-                        //     name: data.name,
-                        //     address: data.address,
-                        //     remark: data.remark,
-                        //     subremark1: data.subRemark1,
-                        //     subremark2: data.subRemark2
                             ...data.data
                         });
                         setDetail(prevDetail => ({
@@ -62,9 +63,7 @@ export const Customer = ({detail, setDetail}) => {
                         AlertDialog({
                             icon: Status === 200 ? 'success' : 'error',
                             title: Status === 200 ? 'สำเร็จ' : 'เกิดข้อผิดพลาด',
-                            text: message,
-                            onPassed: () => {
-                            }
+                            text: message
                         })
                         setLoading(false)
                     }
@@ -99,91 +98,112 @@ export const Customer = ({detail, setDetail}) => {
             AlertDialog({
                 icon: Status === 200 ? 'success' : 'error',
                 title: Status === 200 ? 'สำเร็จ' : 'เกิดข้อผิดพลาด',
-                text: message,
-                onPassed: () => {
-                }
+                text: message
             })
             setLoading(false)
         }
     }
     return (
         <form onSubmit={onSubmit}>
-            <Stack direction='column' spacing={2}>
-                <Typography>เบอร์โทรศัพท์</Typography>
-                <Stack direction='row' spacing={2}>
-
+            <Grid2 container spacing={2}>
+                <FormGrid size={12}>
+                    <FormLabel htmlFor={'phone'} required>เบอร์โทรศัพท์</FormLabel>
+                    <Stack direction='row' spacing={2}>
+                        <TextField
+                            required name={'phone'}
+                            value={customer.phone} onChange={(e) => {
+                            setCustomer(prevState => ({...prevState, phone: e.target.value}))
+                        }}
+                            inputRef={tel} fullWidth placeholder='เบอร์โทรศัพท์' type='number' size='small'
+                        />
+                        <Button
+                            disabled={loading} size='small' variant='contained'
+                            onClick={() => searchCustomer()}
+                            startIcon={<SearchIcon/>}
+                        >
+                            {loading ? <CircularProgress/> : 'ค้นหา'}
+                        </Button>
+                    </Stack>
+                </FormGrid>
+                <FormGrid size={12}>
+                    <FormLabel htmlFor={'name'} required>ชื่อ-นามสกุล</FormLabel>
                     <TextField
-                        required
-                        value={customer.phone} onChange={(e) => {
-                        setCustomer(prevState => ({...prevState, phone: e.target.value}))
-                    }}
-                        inputRef={tel} fullWidth placeholder='เบอร์โทรศัพท์' type='number' size='small'
+                        required name={'name'}
+                        value={customer.name}
+                        onChange={(e) => {
+                            setCustomer(prevState => ({...prevState, name: e.target.value}));
+                        }}
+                        placeholder="ชื่อ-นามสกุล"
+                        size="small"
                     />
-                    <Button disabled={loading} size='small' variant='contained' onClick={() => searchCustomer()}>
-                        {loading ? <CircularProgress/> : 'ค้นหา'}
-                    </Button>
-                </Stack>
-                <Typography>ชื่อ-นามสกุล</Typography>
-                <TextField
-                    required
-                    value={customer.name}
-                    onChange={(e) => {
-                        setCustomer(prevState => ({...prevState, name: e.target.value}));
-                    }}
-                    placeholder="ชื่อ-นามสกุล"
-                    size="small"
-                />
+                </FormGrid>
 
-                <Typography>ที่อยู่</Typography>
-                <textarea
-                    required
-                    value={customer.address}
-                    onChange={(e) => {
-                        setCustomer(prevState => ({...prevState, address: e.target.value}));
-                    }}
-                    placeholder="ที่อยู่"
-                />
+                <FormGrid size={12}>
+                    <FormLabel htmlFor={'address'}>ที่อยู่</FormLabel>
+                    <TextField
+                        multiline
+                        id={'claim-remark'}
+                        name={'address'}
+                        value={customer.address}
+                        onChange={(e) => {
+                            setCustomer(prevState => ({...prevState, address: e.target.value}));
+                        }}
+                        placeholder="ที่อยู่"
+                    />
+                </FormGrid>
 
-                <Stack direction='row' spacing={1} alignItems='center'>
-                    <Typography>หมายเหตุสำหรับลูกค้า</Typography>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                defaultChecked={customer.subremark1}
-                                onChange={(e) => setCustomer(prevState => ({
-                                    ...prevState,
-                                    subremark1: e.target.checked
-                                }))}
-                            />
-                        }
-                        label="เสนอราคาก่อนซ่อม"
+                <FormGrid size={12}>
+                    <FormLabel htmlFor={'remark'} required>หมายเหตุสำหรับลูกค้า</FormLabel>
+                    <Stack direction={{xs: 'column', md: 'row'}}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    defaultChecked={customer.subremark1}
+                                    onChange={(e) => setCustomer(prevState => ({
+                                        ...prevState,
+                                        subremark1: e.target.checked
+                                    }))}
+                                />
+                            }
+                            label="เสนอราคาก่อนซ่อม"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    defaultChecked={customer.subremark2}
+                                    onChange={(e) => setCustomer(prevState => ({
+                                        ...prevState,
+                                        subremark2: e.target.checked
+                                    }))}
+                                />
+                            }
+                            label="ซ่อมเสร็จส่งกลับทางไปรษณีย์"
+                        />
+                    </Stack>
+                    <TextField
+                        multiline
+                        id={'claim-remark'}
+                        name={'remark'}
+                        value={customer.remark}
+                        onChange={(e) => {
+                            setCustomer(prevState => ({...prevState, remark: e.target.value}));
+                        }}
+                        placeholder={remark}
                     />
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                defaultChecked={customer.subremark2}
-                                onChange={(e) => setCustomer(prevState => ({
-                                    ...prevState,
-                                    subremark2: e.target.checked
-                                }))}
-                            />
-                        }
-                        label="ซ่อมเสร็จส่งกลับทางไปรษณีย์"
-                    />
-                </Stack>
-                <textarea
-                    required
-                    value={customer.remark}
-                    onChange={(e) => {
-                        setCustomer(prevState => ({...prevState, remark: e.target.value}))
-                    }}
-                    placeholder="หมายเหตุสำหรับลูกค้าในการสื่อสาร เช่น ลูกค้าให้ส่งใบเสนอราคาก่อนซ่อม,ลูกค้าต้องการให้จัดส่งสินค้าตามที่อยู่การจัดส่ง"
-                />
-                <Stack direction='row-reverse' spacing={2}>
-                    <Button variant='contained' type='submit' disabled={detail.job.status !== 'pending'}>บันทึก</Button>
-                    {/*<Button variant='outlined'>ยกเลิก</Button>*/}
-                </Stack>
-            </Stack>
+                </FormGrid>
+                <Grid2 size={12}>
+                    <Stack direction='row-reverse'>
+                        <Button
+                            variant='contained' type='submit'
+                            disabled={detail.job.status !== 'pending'}
+                            startIcon={<SaveIcon/>}
+                        >
+                            บันทึก
+                        </Button>
+                    </Stack>
+                </Grid2>
+            </Grid2>
+
         </form>
     )
 }

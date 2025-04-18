@@ -19,7 +19,7 @@ class CustomerInJobController extends Controller
         $serial_id = $request->get('serial_id');
         $name = $request->get('name');
         $phone = $request->get('phone');
-        $address = $request->get('address');
+        $address = $request->get('address') ?? null;
         $remark = $request->get('remark');
         $subremark1 = $request->get('subremark1') ?? false;
         $subremark2 = $request->get('subremark2') ?? false;
