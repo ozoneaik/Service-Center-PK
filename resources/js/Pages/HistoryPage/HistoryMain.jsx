@@ -33,11 +33,13 @@ export const TableDetail = ({ jobs, handleShowDetail, url }) => {
                 {jobs.map((job, index) => (
                     <TableRow key={index}>
                         <TableCell><img src={job.image_sku} width={50} alt="no image" /></TableCell>
-                        <TableCell>{job.serial_id}</TableCell>
                         <TableCell>
-                            <Link href={route('dashboard')}>
-                                {job.job_id}
+                            <Link href={route('dashboard',{SN : job.serial_id,JOB_ID : job.job_id})}>
+                                {job.serial_id}
                             </Link>
+                        </TableCell>
+                        <TableCell>
+                                {job.job_id}
                         </TableCell>
                         {url.startsWith("/admin/history-job") && (
                             <TableCell>

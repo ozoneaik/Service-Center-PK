@@ -18,11 +18,31 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class SearchController extends Controller
 {
+
+    public function index(Request $request): Response
+    {
+        $check = true;
+        if ($request->SN && $request->JOB_ID) {
+            $search = JobList::query()
+                ->where('serial_id', $request->SN)
+                ->where('job_id', $request->JOB_ID)->first();
+            if ($search) {
+                if ($search->status !== 'pending') {
+                    $check = false;
+                }
+            } else return Inertia::render('Dashboard');
+            return Inertia::render('Dashboard', ['SN' => $request->SN, 'check' => $check]);
+        } else return Inertia::render('Dashboard');
+    }
+
     public function detail(SearchRequest $request): JsonResponse
     {
         try {

@@ -3,7 +3,7 @@ import {Head} from '@inertiajs/react';
 import {Button, Container, Grid2, Stack, TextField} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ProductDetail from '@/Components/ProductDetail';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import Progress from "@/Components/Progress.jsx";
 import {AlertDialog, AlertDialogQuestionForSearch, AlertWithFormDialog} from "@/Components/AlertDialog.js";
 import EditIcon from '@mui/icons-material/Edit';
@@ -14,7 +14,10 @@ import ListHistoryRepair from "@/Pages/HistoryRepair/ListHistoryRepair.jsx";
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 
-export default function Dashboard() {
+export default function Dashboard({SN}) {
+    useEffect(() => {
+        SN && fetchData(SN, false);
+    }, [])
     const [check, setCheck] = useState('before');
     const [detail, setDetail] = useState();
     const [processing, setProcessing] = useState(false);
@@ -50,7 +53,7 @@ export default function Dashboard() {
         }
     }
 
-    const checkSn = async (SN=sn) => {
+    const checkSn = async (SN = sn) => {
         try {
             const {data, status} = await axios.get(`/jobs/check/${SN}`);
             console.log(data, status)
@@ -80,15 +83,15 @@ export default function Dashboard() {
 
     const searchDetailSku = async (sku) => {
         try {
-            const {data, status} = await axios.post(route('search.sku'),{sku});
-            console.log(data,status);
+            const {data, status} = await axios.post(route('search.sku'), {sku});
+            console.log(data, status);
             setSn(data.serial_id);
             const response = await checkSn(data.serial_id);
             if (response.status === 200) {
-                if (data.message === 'ไม่พบประวัติการซ่อมจากระบบ'){
+                if (data.message === 'ไม่พบประวัติการซ่อมจากระบบ') {
                     alert(data.message)
                     await fetchData(data.serial_id, true);
-                }else{
+                } else {
                     await fetchData(data.serial_id, false);
                 }
             } else if (response.status === 400) {
@@ -98,13 +101,13 @@ export default function Dashboard() {
                     cancelButtonText: response.message === 'ไม่พบประวัติการซ่อมจากระบบ' || response.message === 'serial_id กำลังถูกซ่อมจากศูนย์บริการอื่น' ? 'ปิด' : response.message === 'serial_id กำลังส่งซ่อมไปยัง ศูนย์ซ่อม Pumpkin' ? 'ปิด' : 'ดูแค่ประวัติการซ่อม',
                     text: 'เลือกเมนูดังต่อไปนี้',
                     showConfirmButton,
-                    message : response.message,
+                    message: response.message,
                     onPassed: async (confirm) => {
                         if (confirm) {
                             const result = str.slice(0, 4);
                             console.log(result);
-                            if (result === '9999'){
-                            }else{
+                            if (result === '9999') {
+                            } else {
                                 await fetchData(sn, true);
                             }
                         } else {
@@ -122,8 +125,8 @@ export default function Dashboard() {
                 })
             }
             setProcessing(false);
-        }catch (error) {
-            console.log(error.response.data,error.response.status);
+        } catch (error) {
+            console.log(error.response.data, error.response.status);
         }
     }
 
@@ -131,10 +134,10 @@ export default function Dashboard() {
     const searchDetail = async (e) => {
         e.preventDefault();
         setProcessing(true)
-        console.log('sn === 9999',sn)
-        if (sn === '9999'){
+        console.log('sn === 9999', sn)
+        if (sn === '9999') {
             await fetchDataBySku()
-        }else{
+        } else {
             await searchDetailAfter();
         }
     }
@@ -143,9 +146,9 @@ export default function Dashboard() {
         const {message, status} = await checkSn();
         console.log(message, status);
         if (status === 200) {
-            if (message === 'ไม่พบประวัติการซ่อมจากระบบ'){
+            if (message === 'ไม่พบประวัติการซ่อมจากระบบ') {
                 await fetchData(sn, true);
-            }else{
+            } else {
                 await fetchData(sn, false);
             }
             // await fetchData(sn, false);
