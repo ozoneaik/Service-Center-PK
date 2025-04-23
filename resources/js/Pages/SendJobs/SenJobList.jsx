@@ -1,24 +1,36 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {Head, useForm, usePage} from "@inertiajs/react";
+import {Head, router, useForm, usePage} from "@inertiajs/react";
 import {
     Button, Card, Grid2, Paper, Stack, Typography,
-    Table, TableBody, TableCell, TableHead, TableRow, Alert,
+    Table, TableBody, TableCell, TableHead, TableRow, Alert, TextField, Divider,
 } from "@mui/material";
 import Checkbox from "@mui/material/Checkbox";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {DateFormatTh} from "@/Components/DateFormat.jsx";
+import {Search} from '@mui/icons-material';
 
 const tableHeads = ['เลขที่ JOB', 'ข้อมูลเบื้องต้น', 'สร้างเมื่อ'];
 
 export default function SenJobList({jobs}) {
-    const { data, setData, post, processing, errors } = useForm({
+    const {data, setData, post, processing, errors} = useForm({
         selectedJobs: []
     });
     const [showAlert, setShowAlert] = useState(false);
+    const [searchSku, setSearchSku] = useState('');
+    const [searchSn, setSearchSn] = useState('');
     const {flash} = usePage().props;
+
+    useEffect(() => {
+        const savedSelectedJob = localStorage.getItem('selectedJobs');
+        if (savedSelectedJob){
+            const parsedJobs = JSON.parse(savedSelectedJob);
+            setData('selectedJobs',parsedJobs)
+            localStorage.removeItem('selectedJobs')
+        }
+    }, []);
+
     const handleSelectJob = (job, index, e) => {
         const checked = e.target.checked;
-
         if (checked) {
             // เพิ่ม job ที่เลือก
             setData(prevData => {
@@ -47,14 +59,20 @@ export default function SenJobList({jobs}) {
 
         // ส่งข้อมูลไปยัง route ปิดงาน
         post(route('sendJobs.update'), {
-            onFinish : () => {
+            onFinish: () => {
                 setShowAlert(true)
-                setData('selectedJobs',[]);
+                setData('selectedJobs', []);
             }
         });
     }
 
     const isSelected = (jobId) => data.selectedJobs.some(job => job.job_id === jobId);
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        localStorage.setItem('selectedJobs',JSON.stringify(data.selectedJobs));
+        router.get(route('sendJobs.list', {searchSku, searchSn}))
+    }
 
     return (
         <AuthenticatedLayout>
@@ -66,16 +84,32 @@ export default function SenJobList({jobs}) {
                             <Typography variant='h6' fontWeight='bold'>ส่งซ่อมพิมคินฯ</Typography>
                             <Typography variant='body1'>รายการทั้งหมด {jobs.length} รายการ</Typography>
                         </Stack>
-
+                        <form onSubmit={handleSearch}>
+                            <Stack direction='row' alignItems='center' spacing={2} mt={2}>
+                                <TextField
+                                    sx={{minWidth: 500}} onChange={(e) => setSearchSku(e.target.value)}
+                                    label='ค้นหารหัสสินค้า' size='small'
+                                />
+                                <TextField
+                                    sx={{minWidth: 500}} onChange={(e) => setSearchSn(e.target.value)}
+                                    label='ค้นหาหมายเลขซีเรียล' size='small'
+                                />
+                                <Button startIcon={<Search/>} type='submit' variant='contained'>
+                                    ค้นหา
+                                </Button>
+                            </Stack>
+                        </form>
                     </Grid2>
                     {showAlert && flash.success && (
                         <Grid2 size={12}>
-                            <Alert onClose={()=>setShowAlert(false)} variant='filled' severity='success'>{flash.success}</Alert>
+                            <Alert onClose={() => setShowAlert(false)} variant='filled'
+                                   severity='success'>{flash.success}</Alert>
                         </Grid2>
                     )}
                     {showAlert && flash.error && (
                         <Grid2 size={12}>
-                            <Alert onClose={()=>setShowAlert(false)} variant='filled' severity='error'>{flash.error}</Alert>
+                            <Alert onClose={() => setShowAlert(false)} variant='filled'
+                                   severity='error'>{flash.error}</Alert>
                         </Grid2>
                     )}
                     <Grid2 size={12}>

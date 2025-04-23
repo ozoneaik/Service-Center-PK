@@ -17,7 +17,7 @@ export function AlertDialog({
     Swal.fire({
         icon,
         title,
-        text,
+        html : text,
         showCancelButton,
         ...options
     }).then((result) => {

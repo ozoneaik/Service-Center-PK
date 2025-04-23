@@ -20,7 +20,7 @@ class CustomerInJobController extends Controller
         $name = $request->get('name');
         $phone = $request->get('phone');
         $address = $request->get('address') ?? null;
-        $remark = $request->get('remark');
+        $remark = $request->get('remark') ?? null;
         $subremark1 = $request->get('subremark1') ?? false;
         $subremark2 = $request->get('subremark2') ?? false;
         try {

@@ -62,3 +62,10 @@ Route::prefix('send-job')->group(function () {
    Route::get('/group-detail/{job_group}',[sendJobController::class,'groupDetail'])->name('sendJobs.groupDetail');
    Route::get('/print/{job_group}',[sendJobController::class,'printJobList'])->name('sendJobs.printJobList');
 });
+
+
+Route::prefix('repair')->group(function(){
+   Route::get('/',[\App\Http\Controllers\NewRepair\SearchController::class,'index'])->name('repair.index');
+   Route::post('/search',[\App\Http\Controllers\NewRepair\SearchController::class,'search'])->name('repair.search');
+   Route::post('/found/{serial_id}',[\App\Http\Controllers\NewRepair\JobController::class,'found'])->name('repair.found');
+});

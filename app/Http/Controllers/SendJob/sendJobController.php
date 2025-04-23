@@ -16,18 +16,19 @@ use Inertia\Response;
 
 class sendJobController extends Controller
 {
-    /**
-     * @return Response
-     */
-    public function sendJobList(): Response
+    public function sendJobList(Request $request): Response
     {
         logStamp::query()->create(['description' => Auth::user()->user_code . " ดูเมนู ส่งซ่อมพิมคินฯ"]);
-        $jobs = JobList::query()
-            ->where('is_code_key', Auth::user()->is_code_cust_id)
-            ->where('status', 'pending')
-            ->orderBy('id', 'desc')
-            ->get();
-
+        $query = JobList::query();
+        if (isset($request->searchSku) && isset($request->searchSn)) {
+            $query->where('pid', 'like', "%{$request->searchSku}%")->where('serial_id', 'like', "%{$request->searchSn}%");
+        } elseif (isset($request->searchSku)) {
+            $query->where('pid', 'like', "%{$request->searchSku}%");
+        } elseif (isset($request->searchSn)) {
+            $query->where('serial_id', 'like', "%{$request->searchSn}%");
+        }
+        $jobs = $query->where('is_code_key', Auth::user()->is_code_cust_id)
+            ->where('status', 'pending')->orderBy('id', 'desc')->get();
         return Inertia::render('SendJobs/SenJobList', ['jobs' => $jobs]);
     }
 
@@ -63,9 +64,9 @@ class sendJobController extends Controller
     {
         logStamp::query()->create(['description' => Auth::user()->user_code . " ดูเมนู ออกเอกสารส่งกลับ"]);
         $groups = JobList::query()->where('status', 'send')
-            ->select('print_at', 'group_job', 'print_updated_at', 'counter_print','created_at')
-            ->groupBy('group_job', 'print_at', 'print_updated_at', 'counter_print','created_at')
-            ->orderBy('created_at','desc')
+            ->select('print_at', 'group_job', 'print_updated_at', 'counter_print', 'created_at')
+            ->groupBy('group_job', 'print_at', 'print_updated_at', 'counter_print', 'created_at')
+            ->orderBy('created_at', 'desc')
             ->get();
         return Inertia::render('SendJobs/DocSendJobs', ['groups' => $groups]);
     }
@@ -86,7 +87,7 @@ class sendJobController extends Controller
         }
     }
 
-    public function printJobList($job_group) : Response
+    public function printJobList($job_group): Response
     {
         logStamp::query()->create(['description' => Auth::user()->user_code . " พิมพ์เอกสาร ออกเอกสารส่งกลับ $job_group"]);
         $job_groups = JobList::query()->where('group_job', $job_group)->get();
@@ -96,14 +97,14 @@ class sendJobController extends Controller
             $now = Carbon::now();
             foreach ($job_groups as $job) {
                 $job['counter_print'] = $job['counter_print'] + 1;
-                if (!isset($job['print_at'])){
+                if (!isset($job['print_at'])) {
                     $job['print_at'] = $now;
                 }
                 $job['print_updated_at'] = $now;
                 $job->save();
             }
         }
-        return Inertia::render('SendJobs/PrintSendJob', ['group' => $job_groups,'job_group' => $job_group]);
+        return Inertia::render('SendJobs/PrintSendJob', ['group' => $job_groups, 'job_group' => $job_group]);
     }
 
 }

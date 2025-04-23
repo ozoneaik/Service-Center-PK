@@ -27,18 +27,16 @@ class CustomerInJobRequest extends FormRequest
             'serial_id' => 'required',
             'name' => 'required',
             'phone' => 'required',
-            'remark' => 'required',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'job_id.required' => 'job_id is required',
-            'serial_id.required' => 'serial_id is required',
-            'name.required' => 'name is required',
-            'phone.required' => 'phone is required',
-            'remark.required' => 'remark is required',
+            'job_id.required' => 'ไม่พบหมายเลขจ็อบ',
+            'serial_id.required' => 'ไม่พบหมายเลข S/N',
+            'name.required' => 'จำเป็นต้องกรอกชื่อลูกค้า',
+            'phone.required' => 'จำเป็นต้องกรอกเบอร์โทรศัพท์',
         ];
     }
 }

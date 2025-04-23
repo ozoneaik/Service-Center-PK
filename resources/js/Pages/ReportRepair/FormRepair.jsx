@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import { SummaryForm } from "./SummaryForm";
 import { UploadFile } from "./UploadFile";
 import { AddBehavior } from "./AddBehavior";
-import { AddSp } from "./Sp/AddSp.jsx";
-import { AddMore } from "./AddMore";
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -12,7 +10,6 @@ import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import BuildIcon from '@mui/icons-material/Build';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { Customer } from "@/Pages/ReportRepair/Customer.jsx";
 import { useProductTarget } from "@/Context/ProductContext.jsx";
 import { WarningApprove } from "@/Pages/ReportRepair/WarningApprove.jsx";
@@ -72,7 +69,7 @@ export default function FormRepair({ detail, setDetail }) {
             </Stack>
         </Button>
         </Grid2>
-        
+
     )
 
     const HeadTitle = ({ title }) => (

@@ -1,7 +1,7 @@
 import {Box, Typography} from "@mui/material";
 
 export const PathDetail = ({name, Sn}) => (
-    <div style={{marginTop: '1.5rem'}}>
+    <div style={{marginTop: '1.5rem',marginBottom : '1rem'}}>
         <Typography color='primary' fontWeight='bold'>
             Home {'>'} {name} {'>'} {Sn}
         </Typography>

@@ -11,6 +11,7 @@ export default function ProductDetail({
                                           warrantycondition = '',
                                           warrantynote = '',
                                           warrantyperiod = '',
+    status_job
                                       }) {
     const Detail = ({value, title, Color = '#f55721'}) => (
         <Typography fontWeight='bold' variant="subtitle1" sx={{color: 'black'}}>
@@ -45,6 +46,8 @@ export default function ProductDetail({
                                     Color={warranty_status ? 'green' : 'red'}/>
                         </>
                     )}
+                    {status_job && <Detail title={'สถานะการซ่อม'} value={warrantynote}/>}
+
                 </Stack>
 
             </Grid2>

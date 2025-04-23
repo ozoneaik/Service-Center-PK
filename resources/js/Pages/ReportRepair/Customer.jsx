@@ -153,7 +153,7 @@ export const Customer = ({detail, setDetail}) => {
                 </FormGrid>
 
                 <FormGrid size={12}>
-                    <FormLabel htmlFor={'remark'} required>หมายเหตุสำหรับลูกค้า</FormLabel>
+                    <FormLabel htmlFor={'remark'}>หมายเหตุสำหรับลูกค้า</FormLabel>
                     <Stack direction={{xs: 'column', md: 'row'}}>
                         <FormControlLabel
                             control={
