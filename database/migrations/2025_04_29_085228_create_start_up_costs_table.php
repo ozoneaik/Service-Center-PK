@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('start_up_costs', function (Blueprint $table) {
             $table->id();
-            $table->string('iamge')->nullable()->comment('url รูปภาพ');
+            $table->string('image')->nullable()->comment('url รูปภาพ');
             $table->string('barcode')->nullable()->comment('บาร์โค้ด');
             $table->string('sku_id',10)->comment('รหัสสินค้า');
             $table->string('sku_name')->comment('ชื่อสินค้า');
