@@ -136,11 +136,12 @@ export default function Login({ status }) {
                     </FormControl>
 
                     <Button
+                        loading={processing}
                         type="submit" fullWidth disabled={processing} startIcon={<LoginIcon />}
                         variant="contained" size="large"
                         sx={{ py: 1.2, bgcolor: 'pumpkinColor.main' }}
                     >
-                        {processing ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
+                        เข้าสู่ระบบ
                     </Button>
                 </Stack>
             </form>
