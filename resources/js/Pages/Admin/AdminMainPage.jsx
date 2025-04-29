@@ -10,6 +10,7 @@ import StoreIcon from '@mui/icons-material/Store';
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
 import StarsIcon from '@mui/icons-material/Stars';
 import HandymanIcon from '@mui/icons-material/Handyman';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 export default function AdminMainPage() {
     const menuItems = [
         {
@@ -65,6 +66,12 @@ export default function AdminMainPage() {
             icon : <HandymanIcon/>,
             path : route('JobFormService.index'),
             color : '#a200ff'
+        },
+        {
+            text : "รายการค่าเปิดเครื่อง",
+            icon : <AttachMoneyIcon/>,
+            path : route('startUpCost.index'),
+            color : '#fe5c8f'
         },
     ];
 
