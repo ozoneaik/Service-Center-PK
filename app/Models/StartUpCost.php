@@ -9,7 +9,7 @@ class StartUpCost extends Model
     protected $fillable = [
         'image',
         'barcode',
-        'sku_id',
+        'sku_code',
         'sku_name',
         'unit',
         'amount',

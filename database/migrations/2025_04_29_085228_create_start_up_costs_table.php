@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('image')->nullable()->comment('url รูปภาพ');
             $table->string('barcode')->nullable()->comment('บาร์โค้ด');
-            $table->string('sku_id',10)->comment('รหัสสินค้า');
+            $table->string('sku_code',10)->comment('รหัสสินค้า');
             $table->string('sku_name')->comment('ชื่อสินค้า');
             $table->string('unit',10)->nullable()->comment('หน่วยนับ');
             $table->integer('amount')->nullable()->comment('จำนวน');
