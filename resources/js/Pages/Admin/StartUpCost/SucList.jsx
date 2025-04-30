@@ -90,7 +90,7 @@ export default function SucList({ StartUpCosts }) {
                                                 <TableCell>{item.id}</TableCell>
                                                 <TableCell>
                                                     <img
-                                                        onError={(e) => e.target.src = imageNotFound}
+                                                        onError={(e) => e.target.src = imageNotFound} loading="lazy"
                                                         src={item.image} alt={item.sku_code} width={100}
                                                     />
                                                 </TableCell>
