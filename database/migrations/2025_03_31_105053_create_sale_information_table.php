@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('sale_information', function (Blueprint $table) {
             $table->id();
-            $table->string('is_code_cust_id')->comment('รหัสร้านค้า');
             $table->string('sale_code')->unique()->comment('รหัสเซลล์');
             $table->string('lark_token')->unique()->nullable()->comment('โทเค็น lark_token');
             $table->string('name')->comment('ชื่อ');

@@ -15,13 +15,20 @@ use Inertia\Response;
 
 class SaleController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $sales = SaleInformation::query()->orderBy('id', 'desc')->get();
+        $query = SaleInformation::query();
+        if (isset($request->sale_name) && $request->sale_name){
+            $query->where('name','like','%'.$request->sale_name.'%');
+        }
+        if (isset($request->sale_code)  && $request->sale_code){
+            $query->where('sale_code','like','%'.$request->sale_code.'%');
+        }
+        $sales = $query->orderBy('id', 'desc')->paginate(2);
         return Inertia::render('Admin/Sales/SaleList', ['sales' => $sales]);
     }
 
-    public function create()
+    public function create(): Response
     {
         return Inertia::render('Admin/Sales/AddSale');
     }
@@ -31,7 +38,11 @@ class SaleController extends Controller
         try {
             DB::beginTransaction();
             $data = $request->all();
-            SaleInformation::query()->create($data);
+            SaleInformation::query()->create([
+                'sale_code' => $data['sale_code'],
+                'lark_token' => $data['lark_token'],
+                'name' => $data['name'],
+            ]);
             DB::commit();
             session()->flash('success', 'สร้าง sale สำเร็จ');
             return Redirect::route('Sales.index');
@@ -42,20 +53,22 @@ class SaleController extends Controller
         }
     }
 
-    public function update(Request $request, $sale_code): RedirectResponse
+    public function update(Request $request, $id): RedirectResponse
     {
         try {
             $formData = $request->all();
-            $sale = SaleInformation::query()->where('sale_code', $sale_code)->first();
+            $sale = SaleInformation::query()->where('id', $id)->first();
             DB::beginTransaction();
             if (!$sale) {
                 throw new Exception('ไม่พบข้อมูลเซลล์');
             } else {
-                $sale->name = $formData['name'];
+                $sale->sale_code = $formData['sale_code'];
+                $sale->lark_token = $formData['lark_token'];
+                $sale->name = $formData['sale_name'];
                 $sale->save();
                 DB::commit();
             }
-            return redirect()->back()->with('success', 'อัพเดทข้อมูลเรียบร้อย');
+            return redirect()->back()->with('success', 'อัพเดทข้อมูลเซลล์ '.$formData['sale_name'].' เรียบร้อย');
         } catch (Exception $exception) {
             DB::rollBack();
             return redirect()->back()->with('error', $exception->getMessage());

@@ -131,20 +131,7 @@ Route::post('/genQuPdf', [genQuPdfController::class, 'genQuPdf'])->name('genQuPd
 Route::get('/genReCieveSpPdf/{job_id}',[genQuPdfController::class,'genReCieveSpPdf'])->name('genReCieveSpPdf');
 Route::get('/image-dm/{pid}', [DmImageController::class, 'index'])->name('dmImage');
 require __DIR__ . '/auth.php';
-
-
-Route::get('/test',function(){
-    $users = User::with('store_info')->get();
-    // foreach ($users as $key => $user) {
-    //     dump($user->store_info->shop_name);
-    // }
-    return response()->json([
-        'users' => $users
-    ]);
-});
-
 require __DIR__ . '/fakeForTest.php';
-
 Route::get('/test-page',function(){
    return Inertia::render('Test/TestPage');
 });
