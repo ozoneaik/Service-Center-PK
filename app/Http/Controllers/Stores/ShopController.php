@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Stores;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ShopRequest;
 use App\Models\StoreInformation;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ShopController extends Controller
 {
-    public function store(ShopRequest $request)
+    public function store(ShopRequest $request): RedirectResponse
     {
         $data = $request;
 
@@ -38,7 +42,16 @@ class ShopController extends Controller
         }
     }
 
-    public function searchStoreById($is_code_cust_id){
+    public function edit($id): Response
+    {
+        $store = StoreInformation::query()->findOrFail($id);
+        return Inertia::render('Stores/Manage/EditStore',[
+            'store' => $store
+        ]);
+    }
+
+    public function searchStoreById($is_code_cust_id): JsonResponse
+    {
         $store = StoreInformation::query()->where('is_code_cust_id',$is_code_cust_id)->first();
         if ($store) {
             return response()->json([

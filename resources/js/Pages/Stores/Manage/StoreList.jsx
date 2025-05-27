@@ -1,17 +1,15 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {Head, Link, usePage} from "@inertiajs/react";
+import {Head, Link, router, usePage} from "@inertiajs/react";
 import {
     Container, Table, TableBody, TableCell, TableHead, TableRow,
     TextField, Grid2, InputAdornment, Button, Paper, Stack, Typography
 } from "@mui/material";
-import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
-import StoreIcon from '@mui/icons-material/Store';
-import PasswordIcon from '@mui/icons-material/Password';
-import SearchIcon from '@mui/icons-material/Search';
+
 import {useState} from "react";
 import EditGP from "./EditGP.jsx";
 import AddStore from "./AddStore.jsx";
 import {AlertDialogQuestion} from "@/Components/AlertDialog.js";
+import {Search,Store, LocalPhone, Password} from "@mui/icons-material";
 
 const tableHeads = ['รหัสร้าน', 'ชื่อร้าน / เบอร์โทรศัพท์', 'ที่อยู่', 'GP', 'จำนวนผู้ใช้', 'สต็อกอะไหล่รวม', 'ยอดปรับปรุง (AT)', 'จัดการ'];
 
@@ -21,8 +19,8 @@ const TableDetail = ({shops}) => {
     const [isCodeSel, setIsCodeSel] = useState();
     const handelDelete = (shop) => {
         AlertDialogQuestion({
-            text : `กด ตกลง เพื่อลบ ศูนย์ซ่อม ${shop.shop_name}`,
-            onPassed : (confirm) => {
+            text: `กด ตกลง เพื่อลบ ศูนย์ซ่อม ${shop.shop_name}`,
+            onPassed: (confirm) => {
                 confirm && alert('ขณะนี้ลบไม่ได้');
             }
         })
@@ -61,14 +59,15 @@ const TableDetail = ({shops}) => {
                                         จัดการสต็อกอะไหล่
                                     </Button>
                                     <Stack direction='row' spacing={2}>
-                                        <Button fullWidth variant="contained" color='warning' size="small">
+                                        <Button fullWidth variant="contained" color='warning' size="small"
+                                        onClick={()=>router.get(route('stockSp.shopEdit',{id : shop.id}))}>
                                             แก้ไข
                                         </Button>
                                         <Button
                                             fullWidth variant="contained"
                                             color='error' size="small"
                                             disabled={is_code_cust_id === shop.is_code_cust_id}
-                                            onClick={()=>handelDelete(shop)}
+                                            onClick={() => handelDelete(shop)}
                                         >
                                             ลบ
                                         </Button>
@@ -102,7 +101,7 @@ export default function StoreList({shops}) {
                                 slotProps={{
                                     input: {
                                         startAdornment: <InputAdornment position="start">
-                                            <PasswordIcon/>
+                                            <Password/>
                                         </InputAdornment>
                                     }
                                 }}
@@ -115,7 +114,7 @@ export default function StoreList({shops}) {
                                 slotProps={{
                                     input: {
                                         startAdornment: <InputAdornment position="start">
-                                            <StoreIcon/>
+                                            <Store/>
                                         </InputAdornment>
                                     }
                                 }}
@@ -128,14 +127,14 @@ export default function StoreList({shops}) {
                                 slotProps={{
                                     input: {
                                         startAdornment: <InputAdornment position="start">
-                                            <LocalPhoneIcon/>
+                                            <LocalPhone/>
                                         </InputAdornment>
                                     }
                                 }}
                             />
                         </Grid2>
                         <Grid2 size={12}>
-                            <Button disabled fullWidth startIcon={<SearchIcon/>} variant="contained">
+                            <Button disabled fullWidth startIcon={<Search/>} variant="contained">
                                 ค้นหา (กำลังพัฒนา)
                             </Button>
                         </Grid2>
@@ -143,11 +142,19 @@ export default function StoreList({shops}) {
                         <Grid2 size={12}>
                             <Stack direction={{sm: 'row', xs: 'column'}} justifyContent='space-between'
                                    alignItems='center'>
-                                <Typography variant='h5' fontWeight='bold'>จัดการศูนย์ซ่อม (สต็อกอะไหล่,GP)</Typography>
+                                <Typography variant='h5' fontWeight='bold'>
+                                    จัดการศูนย์ซ่อม (สต็อกอะไหล่,GP)
+                                </Typography>
                                 <Stack direction={{sm: 'row', xs: 'column'}} spacing={2} alignItems='center'>
-                                    <Typography variant="subtitle1">รายการทั้งหมด {shops.length} รายการ</Typography>
-                                    <Button variant="contained"
-                                            onClick={() => setAddStoreOpen(true)}>เพิ่มศูนย์ซ่อม</Button>
+                                    <Typography variant="subtitle1">
+                                        รายการทั้งหมด {shops.length} รายการ
+                                    </Typography>
+                                    <Button
+                                        variant="contained" startIcon={<Search/>}
+                                        onClick={() => setAddStoreOpen(true)}
+                                    >
+                                        เพิ่มศูนย์ซ่อม
+                                    </Button>
                                 </Stack>
                             </Stack>
                         </Grid2>

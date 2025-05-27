@@ -56,6 +56,7 @@ class SearchController extends Controller
                 'views' => $request->views,
             ]);
             if (!$response->successful()) throw new \Exception('ขาดการติดต่อกับ API');
+            dd('API Response: ', $response->json());
             $createJob = $request->input('createJob');
             if ($response->status() === 200) {
                 $searchResults = $response->json();

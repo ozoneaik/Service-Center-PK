@@ -7,7 +7,6 @@ import {
 import { useEffect, useState } from "react";
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import StoreIcon from '@mui/icons-material/Store';
-import CheckIcon from '@mui/icons-material/Check';
 
 // แก้ไขการสะกดผิด fields แทน feilds
 const fields = [

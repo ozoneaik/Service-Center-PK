@@ -38,18 +38,16 @@ function ContentForm({detail}) {
                 <Button
                     onClick={() => handelChangeMenu(value)}
                     sx={{height: {lg: 80}, width: '100%'}} color='primary'
-                    variant={action === 1 ? 'contained' : 'outlined'}
+                    variant={action === value ? 'contained' : 'outlined'}
                 >
                     <Stack direction='column' spacing={2} alignItems='center'>
                         {icon}
                         {title}
-                        {action} {showDetail}
                     </Stack>
                 </Button>
             </Grid2>
         )
     }
-    console.log(detail)
     return (
         <Grid2 size={12}>
             <Grid2 container spacing={2}>
@@ -77,7 +75,7 @@ export default function RpMain({serial_id}) {
     const [detail, setDetail] = useState();
     useEffect(() => {
         setLoading(true);
-        foundJob().then();
+        foundJob().finally(()=>setLoading(false));
     }, [])
 
     const foundJob = async () => {
@@ -102,8 +100,6 @@ export default function RpMain({serial_id}) {
                     }
                 }
             })
-        } finally {
-            setLoading(false)
         }
     }
     return (

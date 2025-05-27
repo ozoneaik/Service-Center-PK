@@ -24,7 +24,7 @@ class SaleController extends Controller
         if (isset($request->sale_code)  && $request->sale_code){
             $query->where('sale_code','like','%'.$request->sale_code.'%');
         }
-        $sales = $query->orderBy('id', 'desc')->paginate(2);
+        $sales = $query->orderBy('id', 'desc')->paginate(100);
         return Inertia::render('Admin/Sales/SaleList', ['sales' => $sales]);
     }
 
