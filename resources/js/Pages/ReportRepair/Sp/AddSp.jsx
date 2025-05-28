@@ -10,7 +10,6 @@ import {
     TableRow,
     Typography,
 } from "@mui/material";
-import 'react-photo-view/dist/react-photo-view.css';
 import {useEffect, useState} from "react";
 import TotalPrice from "@/Pages/ReportRepair/Sp/TotalPrice.jsx";
 import SelectSP from "@/Pages/ReportRepair/Sp/SelectSP.jsx";

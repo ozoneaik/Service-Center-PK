@@ -31,8 +31,7 @@ class ShopRequest extends FormRequest
             'subdistrict' => ['required', 'string', 'max:255'],     // ตำบลต้องไม่ว่าง
             'zipcode' => ['required', 'digits:5'],                  // รหัสไปรษณีย์ต้องมี 5 หลัก
             'full_address' => ['required', 'string', 'max:1000'],   // ที่อยู่เต็มต้องไม่ว่าง
-            'sale_lark_id' => ['required', 'string', 'max:255', 'unique:store_information,sale_lark_id'],
-            'sale_name' => ['required', 'string', 'max:255'],
+            'sale_id' => ['required', 'string', 'max:255',],
         ];
     }
 
@@ -61,8 +60,7 @@ class ShopRequest extends FormRequest
             'zipcode.digits' => 'รหัสไปรษณีย์ต้องมี 5 หลัก',
             'full_address.required' => 'กรุณากรอกที่อยู่แบบเต็ม',
             'full_address.max' => 'ที่อยู่แบบเต็มต้องไม่เกิน 1000 ตัวอักษร',
-            'sale_lark_id.required' => 'กรอก รหัสสเซลล์',
-            'sale_lark_id.unique' => 'ตรวจพบรหัสเซลล์ซ้ำ'
+            'sale_id.required' => 'กรอก รหัสสเซลล์',
         ];
     }
 }

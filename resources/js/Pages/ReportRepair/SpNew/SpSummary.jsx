@@ -10,6 +10,7 @@ import {ImagePreview} from "@/Components/ImagePreview.jsx";
 import Select from "@mui/material/Select";
 import axios from "axios";
 import {AlertDialog} from "@/Components/AlertDialog.js";
+import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 
 const ShowDetail = ({gp}) => (
     <Stack direction={{md: 'column', lg: 'row'}} spacing={2} alignItems='center'>
@@ -31,6 +32,9 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
     const [totalPrice, setTotalPrice] = useState(0);
     const [showAlertRemark, setShowAlertRemark] = useState(false);
     const [selectedRemark, setSelectedRemark] = useState();
+
+    const [currentImage, setCurrentImage] = useState('');
+    const [openPreview, setOpenPreview] = useState(false);
 
     useEffect(() => {
         calculateTotal();
@@ -326,6 +330,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
 
     return (
         <>
+            {openPreview && <SpPreviewImage open={openPreview} setOpen={setOpenPreview} imagePath={currentImage}/>}
             {showAlertZero && <DialogSpZero/>}
             {showAlertRemark && <DialogOnChangeRemark/>}
             <Dialog
@@ -367,9 +372,13 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                                             const rowStyle = item.warranty ? {backgroundColor: '#e8f5e9'} : {};
                                             return (
                                                 <TableRow key={index} sx={{...rowStyle}}>
-                                                    <TableCell width={10} >
-                                                        {/* <ImagePreview src={image_sp_path} /> */}
-                                                        <ImagePreview src={spPath2}/>
+                                                    <TableCell width={10} onClick={() => {
+                                                        setCurrentImage(spPath2);
+                                                        setOpenPreview(true);
+                                                    }}>
+                                                        <img src={spPath2} width={50} alt={(e) => {
+                                                            e.target.src = 'https://images.dcpumpkin.com/images/product/500/default.jpg'
+                                                        }}/>
                                                     </TableCell>
                                                     <TableCell>
                                                         {item.spcode}

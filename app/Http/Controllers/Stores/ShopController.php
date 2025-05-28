@@ -17,7 +17,6 @@ class ShopController extends Controller
     public function store(ShopRequest $request): RedirectResponse
     {
         $data = $request;
-
         try {
             DB::beginTransaction();
             $store = StoreInformation::query()->create([
@@ -28,7 +27,8 @@ class ShopController extends Controller
                 'address_sub' => $data['address'],
                 'province' => $data['province'],
                 'district' => $data['district'],
-                'sub_district' => $data['subdistrict']
+                'sub_district' => $data['subdistrict'],
+                'sale_id' => $data['sale_id'],
             ]);
             DB::commit();
             return Redirect::route('stockSp.shopList', [

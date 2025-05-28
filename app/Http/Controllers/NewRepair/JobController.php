@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\NewRepair;
 
 use App\Http\Controllers\Controller;
+use App\Models\CustomerInJob;
 use App\Models\JobList;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,9 +17,13 @@ class JobController extends Controller
         try {
             $found = JobList::query()->where('serial_id', $serial_id)->orderBy('id','desc')->first();
             if ($found && $found->is_code_key === Auth::user()->is_code_cust_id) {
+                $customer = $this->customerDetail($found->job_id);
                 return response()->json([
                     'message' => 'เจอข้อมูล',
-                    'data' => $found,
+                    'job' => [
+                        'job_detail' => $found,
+                        'customer' => $customer,
+                    ],
                 ]);
             }else{
                 $status = 404;
@@ -32,4 +37,12 @@ class JobController extends Controller
             ],$status ?? 400);
         }
     }
+
+    private function customerDetail($job_id): array
+    {
+        return CustomerInJob::findByJobId($job_id);
+//        return $customer->findByJobId($job_id);
+    }
+
+
 }

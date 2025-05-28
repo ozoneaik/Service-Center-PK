@@ -21,8 +21,7 @@ return new class extends Migration
             $table->string('province',255)->nullable()->comment('จังหวัด');
             $table->string('district',255)->nullable()->comment('เขต/อำเภอ');
             $table->string('sub_district',255)->nullable()->comment('แขวง/ตำบล');
-            $table->string('sale_lark_id')->nullable()->comment('รหัสเซลล์ lark id');
-            $table->string('sale_name')->nullable()->comment('ชื่อเซลล์');
+            $table->string('sale_id')->nullable()->comment('รหัสเซลล์ lark id');
             $table->timestamps();
         });
     }

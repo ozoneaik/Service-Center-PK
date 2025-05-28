@@ -1,16 +1,20 @@
-import { Alert, Button, Grid2, Paper, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
+import {
+    Alert, Button, Grid2, Paper, Stack, Table,
+    TableBody, TableCell, TableHead, TableRow, Typography
+} from "@mui/material";
 import PaletteIcon from "@mui/icons-material/Palette";
-import { ImagePreview } from "@/Components/ImagePreview.jsx";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
 import Checkbox from "@mui/material/Checkbox";
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import SpSummary from "@/Pages/ReportRepair/SpNew/SpSummary.jsx";
+import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 
-export default function SpAdd({ detail, showAdd, setShowAdd, setDetail }) {
+
+export default function SpAdd({detail, showAdd, setShowAdd, setDetail}) {
     const [selected, setSelected] = useState(detail.selected.sp);
     const [open, setOpen] = useState(false);
-    const pid = detail.pid;
-    const spPath = import.meta.env.VITE_IMAGE_PATH + pid;
+    const [openPreview, setOpenPreview] = useState(false);
+    const [currentPreview, setCurrentPreview] = useState(null);
     const [sv, setSv] = useState([{
         spcode: 'SV001',
         spname: 'ค่าบริการ',
@@ -20,12 +24,10 @@ export default function SpAdd({ detail, showAdd, setShowAdd, setDetail }) {
 
     // รวม spAll กับ sv
     const [spAll, setSpAll] = useState(() => {
-        const combinedSp = [...detail.sp]; // สร้างการคัดลอกของ detail.sp
-        sv.forEach(svItem => { // เพิ่มข้อมูลจาก sv เข้าไปใน combinedSp
-            const existingIndex = combinedSp.findIndex(item => item.spcode === svItem.spcode); // ตรวจสอบว่ามีรายการนี้ใน combinedSp หรือไม่
-            if (existingIndex === -1) {// ถ้าไม่มีก็เพิ่มเข้าไป
-                combinedSp.push(svItem);
-            }
+        const combinedSp = [...detail.sp];
+        sv.forEach(svItem => {
+            const existingIndex = combinedSp.findIndex(item => item.spcode === svItem.spcode);
+            if (existingIndex === -1) combinedSp.push(svItem);
         });
 
         return combinedSp;
@@ -55,33 +57,35 @@ export default function SpAdd({ detail, showAdd, setShowAdd, setDetail }) {
             setSelected(prev => prev.filter(sel => sel.spcode !== item.spcode));
         }
     };
-    // ผสาน selected กับ spAll เมื่อมีการโหลดคอมโพเนนต์
+
+
     useEffect(() => {
         if (selected.length > 0) {
-            // สร้าง spAll ใหม่ที่มีสถานะ checked ตามที่เลือกไว้
             const updatedSpAll = spAll.map(item => {
                 const existingSelected = selected.find(sel => sel.spcode === item.spcode);
                 if (existingSelected) {
-                    return existingSelected;  // แทนที่ข้อมูลใน spAll ด้วยข้อมูลจาก selected ที่มี spcode เดียวกัน
+                    return existingSelected;
                 }
                 return item;
             });
-
             setSpAll(updatedSpAll);
         }
     }, []);
     return (
         <>
-            {open && <SpSummary {...{ open, setOpen, detail, selected, setSelected, setDetail, setShowAdd }} />}
+            {openPreview && (
+                <SpPreviewImage open={openPreview} setOpen={setOpenPreview} imagePath={currentPreview}/>
+            )}
+            {open && <SpSummary {...{open, setOpen, detail, selected, setSelected, setDetail, setShowAdd}} />}
             <Grid2 container spacing={2}>
                 <Grid2 size={12}>
                     <Stack direction='row' spacing={2}>
-                        <Alert onClick={() => console.log(selected)} sx={{ mb: 1 }}
-                            icon={<PaletteIcon fontSize="inherit" />} severity="success">
+                        <Alert onClick={() => console.log(selected)} sx={{mb: 1}}
+                               icon={<PaletteIcon fontSize="inherit"/>} severity="success">
                             แถบสีเขียว คือ อะไหล่ที่อยู่ในรับประกัน
                         </Alert>
-                        <Alert onClick={() => console.log(spAll)} icon={<PaletteIcon fontSize="inherit" />}
-                            severity="error">
+                        <Alert onClick={() => console.log(spAll)} icon={<PaletteIcon fontSize="inherit"/>}
+                               severity="error">
                             แถบสีแดง คือ อะไหล่ที่ยังไม่ถูกตั้งราคา
                         </Alert>
                     </Stack>
@@ -92,7 +96,7 @@ export default function SpAdd({ detail, showAdd, setShowAdd, setDetail }) {
                     </Typography>
                 </Grid2>
                 <Grid2 size={12}>
-                    <Paper sx={{ overflow: 'auto' }}>
+                    <Paper sx={{overflow: 'auto'}}>
                         <Table>
                             <TableHead>
                                 <TableRow>
@@ -112,8 +116,14 @@ export default function SpAdd({ detail, showAdd, setShowAdd, setDetail }) {
                                                 onChange={(e) => handelSelect(e, item)}
                                             />
                                         </TableCell>
-                                        <TableCell>
-                                            <ImagePreview src={''} />
+                                        <TableCell onClick={() => {
+                                            setCurrentPreview('https://images.dcpumpkin.com/images/product/500/default.jpg');
+                                            setOpenPreview(true);
+                                        }}>
+                                            <img
+                                                src='https://images.dcpumpkin.com/images/product/500/default.jpg'
+                                                width={50} alt={'no image'}
+                                            />
                                         </TableCell>
                                         <TableCell>{item.spcode}</TableCell>
                                         <TableCell>{item.spname}</TableCell>
@@ -131,7 +141,7 @@ export default function SpAdd({ detail, showAdd, setShowAdd, setDetail }) {
                     </Typography>
                 </Grid2>
                 <Grid2 size={12}>
-                    <Paper sx={{ overflow: 'auto',maxHeight : 400,overflowY : 'auto'}}>
+                    <Paper sx={{overflow: 'auto', maxHeight: 400, overflowY: 'auto'}}>
                         <Table stickyHeader>
                             <TableHead>
                                 <TableRow>
@@ -149,11 +159,11 @@ export default function SpAdd({ detail, showAdd, setShowAdd, setDetail }) {
                                     if (item.spcode !== 'SV001') {
                                         return (
                                             <TableRow key={index}
-                                                sx={
-                                                    item.price_per_unit === '-' ? { backgroundColor: '#fdeded' }
-                                                        : detail.sp_warranty.find(it => it.spcode === item.spcode) ?
-                                                            { backgroundColor: '#edf7ed' } : { backgroundColor: 'white' }
-                                                }
+                                                      sx={
+                                                          item.price_per_unit === '-' ? {backgroundColor: '#fdeded'}
+                                                              : detail.sp_warranty.find(it => it.spcode === item.spcode) ?
+                                                                  {backgroundColor: '#edf7ed'} : {backgroundColor: 'white'}
+                                                      }
                                             >
                                                 <TableCell>
                                                     <Checkbox
@@ -162,13 +172,20 @@ export default function SpAdd({ detail, showAdd, setShowAdd, setDetail }) {
                                                         onChange={(e) => handelSelect(e, item)}
                                                     />
                                                 </TableCell>
-                                                <TableCell>
-                                                    {/* <ImagePreview src={spPath + '/' + item.spcode + '.jpg'}/> */}
-                                                    <ImagePreview src={spPath2} />
+                                                <TableCell onClick={() => {
+                                                    setCurrentPreview(spPath2);
+                                                    setOpenPreview(true);
+                                                }}>
+                                                    <img
+                                                        src={spPath2} width={50} alt={spPath2 || 'no image'}
+                                                        onError={(e) => {
+                                                            e.target.src = 'https://images.dcpumpkin.com/images/product/500/default.jpg'
+                                                        }}
+                                                    />
                                                 </TableCell>
                                                 <TableCell>{item.spcode}</TableCell>
                                                 <TableCell>{item.spname}</TableCell>
-                                                <TableCell>{item.spunit ? item.spunit : item.sp_unit}</TableCell>
+                                                <TableCell>{item.spunit ? item.spunit : item.sp_unit}f</TableCell>
                                             </TableRow>
                                         )
                                     } else {
@@ -185,7 +202,7 @@ export default function SpAdd({ detail, showAdd, setShowAdd, setDetail }) {
                         <Button
                             onClick={() => setOpen(true)}
                             variant='contained'
-                            startIcon={<ModeEditIcon />}
+                            startIcon={<ModeEditIcon/>}
                         >
                             สรุปรายการอะไหล่
                         </Button>
@@ -193,7 +210,7 @@ export default function SpAdd({ detail, showAdd, setShowAdd, setDetail }) {
                             color='error'
                             onClick={() => setShowAdd(false)}
                             variant='outlined'
-                            startIcon={<ModeEditIcon />}
+                            startIcon={<ModeEditIcon/>}
                         >
                             ยกเลิก
                         </Button>

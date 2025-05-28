@@ -253,13 +253,14 @@ class OrderController extends Controller
             }
             // ดึงรหัส sale id เพื่อส่งไปยัง lark ของเซลล์นั้นๆ
             $receive_id = StoreInformation::query()
+                ->leftJoin('sale_information','sale_information.sale_code', '=' , 'store_information.sale_id')
                 ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
-                ->select('sale_lark_id')
+                ->select('sale_information.lark_token')
                 ->first();
             $order->update(['total_price' => $totalOrderPrice]);
             $text = "ศูนย์ซ่อม : " . Auth::user()->store_info->shop_name . "\nแจ้งเรื่อง : สั่งซื้ออะไหล่\nรายการ :\n\n" . implode("\n", $items);
             $body = [
-                "receive_id" => $receive_id?->sale_lark_id ?? 'unknown',
+                "receive_id" => $receive_id?->lark_token ?? 'unknown',
                 "msg_type" => "text",
                 "content" => json_encode(["text" => $text], JSON_UNESCAPED_UNICODE)
             ];

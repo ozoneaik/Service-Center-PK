@@ -12,7 +12,7 @@ import StoreIcon from '@mui/icons-material/Store';
 const fields = [
     { key: "is_code_cust_id", label: "รหัสร้าน", type: 'text' },
     { key: "shop_name", label: "ชื่อร้าน", type: 'text' },
-    { key: "phone", label: "เบอร์โทรศัพท์", type: 'tel' }, // เปลี่ยนเป็น tel แทน number เพื่อรองรับรูปแบบเบอร์โทรศัพท์
+    { key: "phone", label: "เบอร์โทรศัพท์", type: 'tel' },
 
 ];
 
@@ -30,8 +30,7 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave }) {
         subdistrict: "",
         zipcode: "",
         full_address : '',
-        sale_lark_id : '',
-        sale_name : ''
+        sale_id : '',
     });
 
     const [provinces, setProvinces] = useState([]);
@@ -355,23 +354,11 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave }) {
                         </Grid2>
                         <Grid2 size={12}>
                             <TextField
-                                label='รหัสเซลล์ (token ของ lark)' value={data.sale_lark_id} fullWidth
-                                onChange={(e) => setData('sale_lark_id', e.target.value)}
+                                label='รหัสเซลล์ (token ของ lark)' value={data.sale_id} fullWidth
+                                onChange={(e) => setData('sale_id', e.target.value)}
                                 type='text' size="small" required
-                                error={!!errors.sale_lark_id}
-                                helperText={errors.sale_lark_id}
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                            />
-                        </Grid2>
-                        <Grid2 size={12}>
-                            <TextField
-                                label='ชื่อเซลล์' value={data.sale_name} fullWidth
-                                onChange={(e) => setData('sale_name', e.target.value)}
-                                type='text' size="small" required
-                                error={!!errors.sale_name}
-                                helperText={errors.sale_name}
+                                error={!!errors.sale_id}
+                                helperText={errors.sale_id}
                                 InputLabelProps={{
                                     shrink: true,
                                 }}
