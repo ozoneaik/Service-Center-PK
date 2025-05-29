@@ -63,7 +63,9 @@ class sendJobController extends Controller
     public function docJobList(): Response
     {
         logStamp::query()->create(['description' => Auth::user()->user_code . " ดูเมนู ออกเอกสารส่งกลับ"]);
-        $groups = JobList::query()->where('status', 'send')
+        $groups = JobList::query()
+            ->where('is_code_key', Auth::user()->is_code_cust_id)
+            ->where('status', 'send')
             ->select('print_at', 'group_job', 'print_updated_at', 'counter_print', 'created_at')
             ->groupBy('group_job', 'print_at', 'print_updated_at', 'counter_print', 'created_at')
             ->orderBy('created_at', 'desc')
