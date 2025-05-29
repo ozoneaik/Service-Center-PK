@@ -32,7 +32,7 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = Auth::user();
-        $store = $user->store_info;
+        $store = $user->store_info ?? null;
         $saleInfo = null;
         if ($store && $store->sale_id) {
             $saleInfo = SaleInformation::query()
