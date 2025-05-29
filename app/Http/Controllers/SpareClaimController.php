@@ -39,7 +39,7 @@ class SpareClaimController extends Controller
             ->where(function ($query) {
                 $query->where('spare_parts.sp_warranty', true)
                     ->orWhere('spare_parts.approve', 'yes')
-                    ->where('spare_parts.claim_remark','not like', 'ไม่เคลม');
+                    ->where('spare_parts.claim_remark', 'not like', 'ไม่เคลม');
             })
             ->where('spare_parts.status', 'like', 'pending')
             ->where('job_lists.status', 'like', 'success')
@@ -105,10 +105,11 @@ class SpareClaimController extends Controller
                     ]);
                 }
             }
-            $text = "ศูนย์ซ่อม : hello world\nแจ้งเรื่อง : เคลม\nรายการ :\n\n" . implode("\n", $items);
+            $store_info = StoreInformation::query()->where('is_code_cust_id', Auth::user()->is_code_cust_id)->first();
+            $text = "ศูนย์ซ่อม : " . $store_info->shop_name . "\nแจ้งเรื่อง : เคลม\nรายการ :\n\n" . implode("\n", $items);
             $token_lark = StoreInformation::query()
-                ->leftJoin('sale_information','sale_information.sale_code','store_information.sale_id')
-                ->where('store_information.is_code_cust_id',Auth::user()->is_code_cust_id)
+                ->leftJoin('sale_information', 'sale_information.sale_code', 'store_information.sale_id')
+                ->where('store_information.is_code_cust_id', Auth::user()->is_code_cust_id)
                 ->select('sale_information.lark_token')->first();
             $body = [
                 "receive_id" => $token_lark->lark_token,
