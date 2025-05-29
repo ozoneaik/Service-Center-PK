@@ -14,14 +14,16 @@ import ListHistoryRepair from "@/Pages/HistoryRepair/ListHistoryRepair.jsx";
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 
-export default function Dashboard({SN}) {
+export default function Dashboard({SN,JOB_ID}) {
     useEffect(() => {
-        SN && fetchData(SN, false);
+        if (SN && JOB_ID){
+            fetchData(SN, false).then();
+        }
     }, [])
     const [check, setCheck] = useState('before');
     const [detail, setDetail] = useState();
     const [processing, setProcessing] = useState(false);
-    const [sn, setSn] = useState();
+    const [sn, setSn] = useState(SN || '');
     const [showContent, setShowContent] = useState();
 
     const fetchData = async (ser, createJob) => {

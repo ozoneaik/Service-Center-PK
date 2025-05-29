@@ -39,8 +39,11 @@ class SearchController extends Controller
                     $check = false;
                 }
             } else return Inertia::render('Dashboard');
-            return Inertia::render('Dashboard', ['SN' => $request->SN, 'check' => $check]);
-        } else return Inertia::render('Dashboard');
+            return Inertia::render('Dashboard', ['SN' => $request->SN, 'JOB_ID' => $request->JOB_ID, 'check' => $check]);
+        } else if ($request->SN) {
+            return Inertia::render('Dashboard', ['SN' => $request->SN]);
+        }
+        return Inertia::render('Dashboard');
     }
 
     public function detail(SearchRequest $request): JsonResponse

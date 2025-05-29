@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {Head} from "@inertiajs/react";
+import {Head, router} from "@inertiajs/react";
 import {
     Alert, Button, CircularProgress, Container, FormLabel,
     Grid2, Stack, TextField, Typography
@@ -18,6 +18,7 @@ export default function FormWarranty() {
     const [expireDate, setExpireDate] = useState();
     const [loading, setLoading] = useState(false);
     const [detail, setDetail] = useState();
+    const [message, setMessage] = useState('');
 
     const [maxDate, setMaxDate] = useState('');
     const [minDate, setMinDate] = useState('');
@@ -72,14 +73,14 @@ export default function FormWarranty() {
             text: 'กด บันทึก หรือ บันทึก/แจ้งซ่อม เพื่อบันทึกข้อมูลรับประกัน',
             onPassed: async (confirm, confirmAndRedirect) => {
                 if (confirm || confirmAndRedirect) {
-                    await handelSubmit(e);
+                    await handelSubmit(e,confirmAndRedirect);
                 }
             }
         })
     }
 
 
-    const handelSubmit = async (e) => {
+    const handelSubmit = async (e,confirmAndRedirect) => {
         e.preventDefault();
         try {
             const {data, status} = await axios.post('/warranty/store', {
@@ -95,6 +96,10 @@ export default function FormWarranty() {
                 text: data.message
             })
             setWarrantyAt(inputDate)
+            setMessage(data.message)
+            if (confirmAndRedirect) {
+                router.get(route('dashboard',{SN : detail.serial}))
+            }
         } catch (error) {
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
@@ -139,13 +144,13 @@ export default function FormWarranty() {
                                 <form onSubmit={handelSave}>
                                     <Stack direction='row' spacing={2}>
                                         <TextField
-                                            inputProps={{
-                                                min: minDate,
-                                                max: maxDate
-                                            }}
-                                            InputLabelProps={{
-                                                shrink: true
-                                            }}
+                                            // inputProps={{
+                                            //     min: minDate,
+                                            //     max: maxDate
+                                            // }}
+                                            // InputLabelProps={{
+                                            //     shrink: true
+                                            // }}
                                             type='date'
                                             onChange={(e) => setInputDate(e.target.value)}
                                             onKeyDown={(e) => e.preventDefault()} // ป้องกันการป้อนข้อมูลด้วยคีย์บอร์ด
@@ -160,12 +165,13 @@ export default function FormWarranty() {
                     ) : (warrantyAt ? (
                             <Alert security='success' sx={{width: '100%'}}>
                                 <Stack direction='row' spacing={1}>
-                                    <Typography>หมายเลขซีเรียลนี้เคยลงทะเบียนรับประกันไปแล้ว คือ</Typography>
-                                    <Typography fontWeight='bold'>
-                                        {new Date(warrantyAt).toLocaleDateString('th')}
-                                        &nbsp;สิ้นสุดประกันถึง&nbsp;
-                                        {new Date(expireDate).toLocaleDateString('th')}
-                                    </Typography>
+                                    <Typography>{message}</Typography>
+                                    {/*<Typography>หมายเลขซีเรียลนี้เคยลงทะเบียนรับประกันไปแล้ว คือ</Typography>*/}
+                                    {/*<Typography fontWeight='bold'>*/}
+                                    {/*    {new Date(warrantyAt).toLocaleDateString('th')}*/}
+                                    {/*    &nbsp;สิ้นสุดประกันถึง&nbsp;*/}
+                                    {/*    {new Date(expireDate).toLocaleDateString('th')}*/}
+                                    {/*</Typography>*/}
                                 </Stack>
                             </Alert>
                         ) : <></>

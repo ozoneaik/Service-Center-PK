@@ -101,7 +101,7 @@ class WarrantyProductController extends Controller
                 'warranty_period' => $warranty_period,
                 'expire_date' => $expire_date,
             ]);
-            $message = 'บันทึกข้อมูลเสร็จสิ้น';
+            $message = 'บันทึกข้อมูลเสร็จสิ้น สิ้นสุดประกันถึง '.Carbon::parse($expire_date)->toDateTimeString();
             $Status = 200;
             DB::commit();
             logStamp::query()->create(['description' => Auth::user()->user_code . " ลงทะเบียนรับประกัน $serial_id สำเร็จ"]);

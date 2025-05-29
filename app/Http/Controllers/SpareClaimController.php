@@ -8,6 +8,7 @@ use App\Models\ClaimDetail;
 use App\Models\logStamp;
 use App\Models\SparePart;
 use App\Models\StockSparePart;
+use App\Models\StoreInformation;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -105,8 +106,12 @@ class SpareClaimController extends Controller
                 }
             }
             $text = "ศูนย์ซ่อม : hello world\nแจ้งเรื่อง : เคลม\nรายการ :\n\n" . implode("\n", $items);
+            $token_lark = StoreInformation::query()
+                ->leftJoin('sale_information','sale_information.sale_code','store_information.sale_id')
+                ->where('store_information.is_code_cust_id',Auth::user()->is_code_cust_id)
+                ->select('sale_information.lark_token')->first();
             $body = [
-                "receive_id" => "ou_9083bf66d2e3240e0313dc50ae7edba9",
+                "receive_id" => $token_lark->lark_token,
                 "msg_type" => "text",
                 "content" => json_encode(["text" => $text], JSON_UNESCAPED_UNICODE)
             ];
