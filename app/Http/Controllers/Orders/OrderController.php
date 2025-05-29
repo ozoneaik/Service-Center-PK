@@ -61,7 +61,7 @@ class OrderController extends Controller
                             $result['sp'][$key]['added'] = false;
                         }
                         $result['sp'][$key]['remark'] = 'มาจากการสั่งซื้อ';
-                        $result['sp'][$key]['path_file'] = "https://images.pumpkin.tools/SKUS/SP/$sku/" . $result['sp'][$key]['spcode'] . ".jpg";
+                        $result['sp'][$key]['path_file'] = env('VITE_IMAGE_SP') . $result['sp'][$key]['spcode'] . ".jpg";
                     }
 
                 } else throw new \Exception('ไม่พบรหัสสินค้านี้');
@@ -70,6 +70,7 @@ class OrderController extends Controller
             $message = $e->getMessage();
             $status = 400;
         }
+
         return response()->json([
             'message' => $message,
             'sku' => $sku,

@@ -3,10 +3,11 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import {Link, usePage} from '@inertiajs/react';
 import {useState} from 'react';
 import icon from '../assets/images/logo.png'
-import {Avatar, Typography} from "@mui/material";
+import {Avatar, Button, Menu, Typography} from "@mui/material";
 import watermark from '../assets/images/coverMini.jpg'
 import HeaderImage from '../assets/images/cover.png'
 import NavBar from "@/Layouts/NavBar.jsx";
+import {ArrowDownward, ArrowUpward, ListAlt, MenuBook} from "@mui/icons-material";
 
 const HeaderImageStyle = {
     backgroundImage: `url(${HeaderImage})`,
@@ -95,23 +96,13 @@ export default function AuthenticatedLayout({header, children}) {
                         </div>
 
                         <div className="-me-2 flex items-center md:hidden">
-                            <button
+                            <Button
                                 onClick={() => setShowingNavigationDropdown((previousState) => !previousState,)}
-                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
+                                variant={!showingNavigationDropdown ? 'contained' : 'outlined'} color='primary'
+                                startIcon={showingNavigationDropdown ? <ArrowUpward/> : <ArrowDownward/>}
                             >
-                                <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                                    <path
-                                        className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
-                                        strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
-                                        strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
+                                ดูเมนู
+                            </Button>
                         </div>
                     </div>
                 </div>
