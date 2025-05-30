@@ -6,5 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class MenuFileUpload extends Model
 {
-    protected $fillable = ['menu_name'];
+    protected $fillable = [
+        'menu_name',
+        'group'
+    ];
 }

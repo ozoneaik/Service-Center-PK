@@ -7,7 +7,8 @@ export default function ButtonList({menuSel,setMenuSel}) {
     }
     return (
         <>
-            <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>
+            {/*<Stack direction={{xs: 'column', md: 'row'}} spacing={2}>*/}
+            <Stack direction='row' spacing={2} overflow='auto'>
                 <Button
                     disabled={menuSel === 1} onClick={() => handleChangeMenu(1)}
                     variant='contained' sx={{minWidth: 150}}

@@ -7,7 +7,7 @@ import {Avatar, Button, Typography} from "@mui/material";
 import watermark from '../assets/images/coverMini.jpg'
 import HeaderImage from '../assets/images/cover.png'
 import NavBar from "@/Layouts/NavBar.jsx";
-import {ArrowDownward, ArrowUpward,Menu} from "@mui/icons-material";
+import {ArrowDownward, ArrowUpward, Menu} from "@mui/icons-material";
 
 const HeaderImageStyle = {
     backgroundImage: `url(${HeaderImage})`,
@@ -59,7 +59,11 @@ export default function AuthenticatedLayout({header, children}) {
                             <div className="relative ms-3">
                                 <Dropdown>
                                     <Dropdown.Trigger>
-                                        <Button variant='contained' color='primary' endIcon={<Menu/>}>{user.name}</Button>
+                                        <Button size='small' variant='contained' color='primary' endIcon={<Menu/>}>
+                                            <Avatar sx={{color : 'gray' ,width: 28, height: 28,bgcolor : 'white'}}>
+                                                {user.name.split('',1)}
+                                            </Avatar>
+                                        </Button>
                                     </Dropdown.Trigger>
 
                                     <Dropdown.Content>

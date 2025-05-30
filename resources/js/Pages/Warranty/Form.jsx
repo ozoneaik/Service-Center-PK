@@ -73,14 +73,14 @@ export default function FormWarranty() {
             text: 'กด บันทึก หรือ บันทึก/แจ้งซ่อม เพื่อบันทึกข้อมูลรับประกัน',
             onPassed: async (confirm, confirmAndRedirect) => {
                 if (confirm || confirmAndRedirect) {
-                    await handelSubmit(e,confirmAndRedirect);
+                    await handelSubmit(e, confirmAndRedirect);
                 }
             }
         })
     }
 
 
-    const handelSubmit = async (e,confirmAndRedirect) => {
+    const handelSubmit = async (e, confirmAndRedirect) => {
         e.preventDefault();
         try {
             const {data, status} = await axios.post('/warranty/store', {
@@ -88,7 +88,7 @@ export default function FormWarranty() {
                 pid: detail.pid,
                 p_name: detail.pname,
                 date_warranty: inputDate,
-                warrantyperiod : parseInt(detail.warrantyperiod)
+                warrantyperiod: parseInt(detail.warrantyperiod)
             })
             console.log(data, status);
             AlertDialog({
@@ -98,7 +98,7 @@ export default function FormWarranty() {
             setWarrantyAt(inputDate)
             setMessage(data.message)
             if (confirmAndRedirect) {
-                router.get(route('dashboard',{SN : detail.serial}))
+                router.get(route('dashboard', {SN: detail.serial}))
             }
         } catch (error) {
             AlertDialog({
@@ -140,26 +140,35 @@ export default function FormWarranty() {
                                 </Typography>
                             </Grid2>
                             <Grid2 size={12}>
-                                <FormLabel>วันที่ซื้อ</FormLabel>
-                                <form onSubmit={handelSave}>
-                                    <Stack direction='row' spacing={2}>
-                                        <TextField
-                                            // inputProps={{
-                                            //     min: minDate,
-                                            //     max: maxDate
-                                            // }}
-                                            // InputLabelProps={{
-                                            //     shrink: true
-                                            // }}
-                                            type='date'
-                                            onChange={(e) => setInputDate(e.target.value)}
-                                            onKeyDown={(e) => e.preventDefault()} // ป้องกันการป้อนข้อมูลด้วยคีย์บอร์ด
-                                        />
-                                        <Button
-                                            disabled={!inputDate}
-                                            type='submit' variant='contained'>บันทึก</Button>
-                                    </Stack>
-                                </form>
+                                <Stack direction='row' spacing={2}>
+                                    <div>
+                                        <FormLabel>วันที่ซื้อ</FormLabel>
+                                        <form onSubmit={handelSave}>
+                                            <Stack direction='row' spacing={2}>
+                                                <TextField
+                                                    // inputProps={{
+                                                    //     min: minDate,
+                                                    //     max: maxDate
+                                                    // }}
+                                                    // InputLabelProps={{
+                                                    //     shrink: true
+                                                    // }}
+                                                    type='date'
+                                                    onChange={(e) => setInputDate(e.target.value)}
+                                                    onKeyDown={(e) => e.preventDefault()} // ป้องกันการป้อนข้อมูลด้วยคีย์บอร์ด
+                                                />
+                                                <Button
+                                                    disabled={!inputDate}
+                                                    type='submit' variant='contained'>บันทึก</Button>
+                                            </Stack>
+                                        </form>
+                                    </div>
+                                    <div>
+                                        <Typography>ใบรับประกันหรือหลักฐานการซื้อขาย</Typography>
+                                        <TextField type='file'/>
+                                    </div>
+                                </Stack>
+
                             </Grid2>
                         </>
                     ) : (warrantyAt ? (

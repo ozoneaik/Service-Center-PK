@@ -51,7 +51,7 @@ export default function ProductDetail({
                 </Stack>
 
             </Grid2>
-            <Grid2 size={{xs: 12, md: 4}}>
+            <Grid2 size={{xs: 5, md: 4}}>
                 <img src={imagesku || 'https://images.dcpumpkin.com/images/product/500/default.jpg'} alt=""
                      width='100%'/>
             </Grid2>

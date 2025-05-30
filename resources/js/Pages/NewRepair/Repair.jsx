@@ -110,7 +110,7 @@ const SearchSnComponent = ({SN, setSn, onPassed, PID, setPID, loading}) => {
                             input: {startAdornment: (<InputAdornment position={'start'}>S/N :</InputAdornment>)}
                         }}
                         value={SN || ''} onChange={(e) => handleChangeSN(e)}
-                        focused placeholder={'ค้นหาหมายเลขซีเรียล'} fullWidth required
+                        focused placeholder={'ค้นหาหมายเลขซีเรียล หากไม่ทราบกรุณากรอก 9999 เพื่อระบุรหัสสินค้า'} fullWidth required
                     />
                     {showPidForm && (<TextField disabled={loading}
                         slotProps={{

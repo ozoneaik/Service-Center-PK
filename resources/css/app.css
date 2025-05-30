@@ -53,10 +53,10 @@ textarea,select {
     border: solid 1px #c3c3c3;
 }
 
-textarea:focus,select:focus {
-    border : solid 2px #1976d2;
-    outline: none; /* ลบเส้นขอบเริ่มต้นของเบราว์เซอร์ */
-}
+/*textarea:focus,select:focus {*/
+/*    border : solid 2px #1976d2;*/
+/*    outline: none; !* ลบเส้นขอบเริ่มต้นของเบราว์เซอร์ *!*/
+/*}*/
 
 #claim-remark{
     border : none !important;

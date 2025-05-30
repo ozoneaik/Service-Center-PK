@@ -5,6 +5,8 @@ use App\Http\Controllers\BehaviorController;
 use App\Http\Controllers\CustomerInJobController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\NewRepair\RpCustomerController;
+use App\Http\Controllers\NewRepair\RpRemarkAndSymptomController;
 use App\Http\Controllers\RemarkController;
 use App\Http\Controllers\SearchBySkuController;
 use App\Http\Controllers\SearchController;
@@ -68,4 +70,12 @@ Route::prefix('repair')->group(function(){
    Route::get('/',[\App\Http\Controllers\NewRepair\SearchController::class,'index'])->name('repair.index');
    Route::post('/search',[\App\Http\Controllers\NewRepair\SearchController::class,'search'])->name('repair.search');
    Route::post('/found/{serial_id}',[\App\Http\Controllers\NewRepair\JobController::class,'found'])->name('repair.found');
+   Route::prefix('customer')->group(function(){
+        Route::get('/', [RpCustomerController::class,'detail'])->name('repair.customer.detail');
+        Route::post('/', [RpCustomerController::class, 'storeOrUpdate'])->name('repair.customer.store');
+   });
+   Route::prefix('remark-symptom')->group(function(){
+       Route::get('/',[RpRemarkAndSymptomController::class,'detail'])->name('repair.remark.symptom.detail');
+       Route::post('/',[RpRemarkAndSymptomController::class, 'storeOrUpdate'])->name('repair.remark.symptom.store');
+   });
 });

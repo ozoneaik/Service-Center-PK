@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('menu_file_uploads', function (Blueprint $table) {
             $table->id()->comment('ไอดีอ้างอิงเมนู');
             $table->text('menu_name')->unique()->comment('ชื่อเมนู');
+            $table->string('group')->comment('กลุ่ม');
             $table->timestamps();
         });
     }

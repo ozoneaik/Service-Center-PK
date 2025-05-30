@@ -1,12 +1,17 @@
 import {useEffect, useState} from "react";
-import {Button, CircularProgress, Grid2, Stack} from "@mui/material";
+import {Box, Button, CircularProgress, Grid2, Stack, Typography} from "@mui/material";
 import {AlertDialog} from "@/Components/AlertDialog.js";
-import {ViewList} from '@mui/icons-material';
+import {AccountCircle, Build, Camera, Psychology, ViewList, Warning} from '@mui/icons-material';
+import RpSummary from "@/Pages/NewRepair/ReportRepair/RpSummary.jsx";
+import RpCustomer from "@/Pages/NewRepair/ReportRepair/RpCustomer.jsx";
+import RpUploadFile from "@/Pages/NewRepair/ReportRepair/RpUploadFile.jsx";
+import RpSymptomsRemark from "@/Pages/NewRepair/ReportRepair/RpSymptomsRemark.jsx";
 
 
 function ContentForm({detail}) {
     const [action, setAction] = useState(1);
     const [showDetail, setShowDetail] = useState(1);
+    const job_id =  detail.job_detail.job_id;
 
     const handelChangeMenu = (value) => {
         if (value === 1) {
@@ -34,7 +39,7 @@ function ContentForm({detail}) {
     }
     const ButtonStyle = ({title, icon, value}) => {
         return (
-            <Grid2 size={{lg: 12, md: 3}} sx={{width: '100%'}}>
+            <Grid2 size={{md: 12, sm: 4, xs: 6}}>
                 <Button
                     onClick={() => handelChangeMenu(value)}
                     sx={{height: {lg: 80}, width: '100%'}} color='primary'
@@ -51,19 +56,37 @@ function ContentForm({detail}) {
     return (
         <Grid2 size={12}>
             <Grid2 container spacing={2}>
-                <Grid2 size={{xs: 12, lg: 2}}>
+                <Grid2 size={{xs: 12, md: 2}}>
                     <Grid2 container spacing={2}>
+                        {/*<Grid2 size={12}>*/}
+                        {/*<Stack direction='row' spacing={2} overflow='auto'>*/}
                         <ButtonStyle {...{action}} value={1} title={'สรุปการทำงาน'} icon={<ViewList/>}/>
-                        <ButtonStyle {...{action}} value={2} title={'ข้อมูลลูกค้า'} icon={<ViewList/>}/>
+                        <ButtonStyle {...{action}} value={2} title={'ข้อมูลลูกค้า'} icon={<AccountCircle/>}/>
                         <ButtonStyle {...{action}} value={3} title={'อาการเบื้องต้น'} icon={<ViewList/>}/>
-                        <ButtonStyle {...{action}} value={4} title={'รูปภาพ'} icon={<ViewList/>}/>
-                        <ButtonStyle {...{action}} value={5} title={'อาการ/สาเหตุ'} icon={<ViewList/>}/>
-                        <ButtonStyle {...{action}} value={7} title={'อะไหล่'} icon={<ViewList/>}/>
-                        <ButtonStyle {...{action}} value={8} title={'แจ้งเตือน'} icon={<ViewList/>}/>
+                        <ButtonStyle {...{action}} value={4} title={'รูปภาพ/วิดีโอ'} icon={<Camera/>}/>
+                        <ButtonStyle {...{action}} value={5} title={'อาการ/สาเหตุ'} icon={<Psychology/>}/>
+                        <ButtonStyle {...{action}} value={7} title={'อะไหล่'} icon={<Build/>}/>
+                        <ButtonStyle {...{action}} value={8} title={'แจ้งเตือน'} icon={<Warning/>}/>
+                        {/*</Stack>*/}
+                        {/*</Grid2>*/}
                     </Grid2>
                 </Grid2>
-                <Grid2 size={9}>
-                    Content
+                <Grid2 size={{md: 10, xs: 12}} my={2}>
+                    <Stack direction='row' spacing={1} alignItems='center' mb={3}>
+                        <Typography variant='h6' fontWeight='bold'>
+                            {({
+                                1: 'สรุปการทำงาน', 2: 'ข้อมูลลูกค้า', 3: 'อาการเบื้องต้น', 4: 'รูปภาพ/วิดีโอ',
+                                5: 'อาการ/สาเหตุ', 6: 'อะไหล่', 7: 'แจ้งเตือน'
+                            }[action] ?? 'no')}
+                        </Typography>
+                    </Stack>
+                    {({
+                        1: <RpSummary job_id={job_id}/>,
+                        2: <RpCustomer job_id={job_id}/>,
+                        3: <RpSymptomsRemark job_id={job_id}/>,
+                        4: <RpUploadFile job_id={job_id}/>,
+                        5: 'อาการ/สาเหตุ', 6: 'อะไหล่', 7: 'แจ้งเตือน'
+                    }[action] ?? 'no')}
                 </Grid2>
             </Grid2>
         </Grid2>
@@ -75,15 +98,15 @@ export default function RpMain({serial_id}) {
     const [detail, setDetail] = useState();
     useEffect(() => {
         setLoading(true);
-        foundJob().finally(()=>setLoading(false));
+        foundJob().finally(() => setLoading(false));
     }, [])
 
     const foundJob = async () => {
         try {
             const {data, status} = await axios.post(route('repair.found', {serial_id}))
             console.log(data, status);
-            setDetail(data.data);
-            alert(`status = ${status} found`)
+            setDetail(data.job);
+            // alert(`status = ${status} found`)
         } catch (error) {
             console.log(error)
             const errorStatus = error.status
