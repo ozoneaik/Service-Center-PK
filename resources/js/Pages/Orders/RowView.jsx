@@ -1,13 +1,15 @@
 import {Button, Card, CardContent, Grid2, Stack, Typography} from "@mui/material";
-import {useCart} from "@/Pages/Orders/CartContext.jsx";
 import {Box, useMediaQuery, useTheme} from "@mui/material";
 import {AlertDialog} from "@/Components/AlertDialog.js";
 import {useState} from "react";
+import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 
 export default function RowView({spList,setSpList}) {
     const [loading, setLoading] = useState(false);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const [openSpImage, setOpenSpImage] = useState(false);
+    const [spImage, setSpImage] = useState('');
 
     const handleAddToCart = async (item) => {
         try {
@@ -38,32 +40,29 @@ export default function RowView({spList,setSpList}) {
 
     return (
         <>
+            {openSpImage && <SpPreviewImage imagePath={spImage} setOpen={setOpenSpImage} open={openSpImage} />}
             {spList.map((item, index) => (
                 <Grid2 size={12} key={index}>
                     <Card
                         variant="outlined"
                         sx={{
-                            display: 'flex',
-                            flexDirection: isMobile ? 'column' : 'row',
-                            alignItems: isMobile ? 'stretch' : 'center',
-                            width: '100%'
+                            display: 'flex', flexDirection: isMobile ? 'column' : 'row',
+                            alignItems: isMobile ? 'stretch' : 'center', width: '100%'
                         }}
                     >
                         <Box
                             sx={{
-                                display: 'flex',
-                                justifyContent: 'center',
+                                display: 'flex', justifyContent: 'center',
                                 padding: isMobile ? theme.spacing(2, 0, 0, 0) : 0
                             }}
                         >
                             <img
-                                width={isMobile ? 120 : 151}
-                                height={isMobile ? 120 : 'auto'}
-                                style={{
-                                    objectFit: 'contain'
+                                width={isMobile ? 120 : 151} height={isMobile ? 120 : 'auto'}
+                                style={{objectFit: 'contain'}} src={item.path_file} alt="ไม่มีรูป"
+                                onClick={() => {
+                                    setOpenSpImage(true);
+                                    setSpImage(item.path_file)
                                 }}
-                                src={item.path_file}
-                                alt="ไม่มีรูป"
                                 onError={(e) => {
                                     e.target.onerror = null;
                                     e.target.src = "https://images.dcpumpkin.com/images/product/500/default.jpg";

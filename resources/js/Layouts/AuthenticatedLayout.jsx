@@ -3,11 +3,11 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import {Link, usePage} from '@inertiajs/react';
 import {useState} from 'react';
 import icon from '../assets/images/logo.png'
-import {Avatar, Button, Menu, Typography} from "@mui/material";
+import {Avatar, Button, Typography} from "@mui/material";
 import watermark from '../assets/images/coverMini.jpg'
 import HeaderImage from '../assets/images/cover.png'
 import NavBar from "@/Layouts/NavBar.jsx";
-import {ArrowDownward, ArrowUpward, ListAlt, MenuBook} from "@mui/icons-material";
+import {ArrowDownward, ArrowUpward,Menu} from "@mui/icons-material";
 
 const HeaderImageStyle = {
     backgroundImage: `url(${HeaderImage})`,
@@ -46,47 +46,26 @@ export default function AuthenticatedLayout({header, children}) {
                         <div className="flex">
                             <div className="flex shrink-0 items-center gap-2 text-white font-bold">
                                 <Avatar src={icon || ''}/>
-                                <Typography sx={{display: {sm: 'none', xl: 'block'}}}>SERVICE CENTER PK</Typography>
+                                <Typography>SERVICE CENTER PK</Typography>
                             </div>
-                            <div className="hidden space-x-8 md:-my-px md:ms-10 md:flex">
+                            {/*<div className="hidden space-x-8 md:-my-px md:ms-10 md:flex">*/}
+                            <div className="hidden space-x-8 lg:-my-px lg:ms-10 lg:flex">
                                 <NavBar user={user}/>
                             </div>
                         </div>
 
-                        <div className="hidden md:ms-6 md:flex md:items-center">
+                        {/*<div className="hidden md:ms-6 md:flex md:items-center">*/}
+                        <div className="hidden lg:ms-6 lg:flex lg:items-center">
                             <div className="relative ms-3">
                                 <Dropdown>
                                     <Dropdown.Trigger>
-                                        <span className="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
-                                            >
-                                                {user.name}
-
-                                                <svg
-                                                    className="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clipRule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
+                                        <Button variant='contained' color='primary' endIcon={<Menu/>}>{user.name}</Button>
                                     </Dropdown.Trigger>
 
                                     <Dropdown.Content>
                                         <Dropdown.Link href={route('profile.edit')}>
                                             ข้อมูลส่วนตัว
                                         </Dropdown.Link>
-                                        {/* <Dropdown.Link href={route('Manage.index')}>
-                                            จัดการบริการของตัวเอง
-                                        </Dropdown.Link> */}
                                         <Dropdown.Link href={route('logout')} method="post" as="button">
                                             ออกจากระบบ
                                         </Dropdown.Link>
@@ -95,7 +74,8 @@ export default function AuthenticatedLayout({header, children}) {
                             </div>
                         </div>
 
-                        <div className="-me-2 flex items-center md:hidden">
+                        {/*<div className="-me-2 flex items-center md:hidden">*/}
+                        <div className="-me-2 flex items-center lg:hidden">
                             <Button
                                 onClick={() => setShowingNavigationDropdown((previousState) => !previousState,)}
                                 variant={!showingNavigationDropdown ? 'contained' : 'outlined'} color='primary'

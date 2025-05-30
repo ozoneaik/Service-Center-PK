@@ -7,6 +7,8 @@ import RowView from "@/Pages/Orders/RowView.jsx";
 import SumOrder from "@/Pages/Orders/SumOrder.jsx";
 import {Link, router, usePage} from "@inertiajs/react";
 import {CartProvider, useCart} from "@/Pages/Orders/CartContext.jsx";
+import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
+import DmPreview from "@/Pages/ReportRepair/SpNew/DmPreview.jsx";
 
 export default function OrderList({count_cart}) {
     const [dmPreview, setDmPreview] = useState('');
@@ -24,7 +26,6 @@ export default function OrderList({count_cart}) {
         try {
             const {data, status} = await axios.get(`/orders/search/${searchSku.current.value}`);
             if (status === 200) {
-                console.log(data, status);
                 setSpList(data.result.sp || []);
                 if (data.result.sp && data.result.sp.length > 0) {
                     await fetchDm();
@@ -73,10 +74,12 @@ export default function OrderList({count_cart}) {
 
 
 function OrderListContent(props) {
-    const {dmPreview, spList,setSpList, setCardView, searchSku, handleSearch, open, setOpen, loading, setLoading} = props;
-    const {countCart, setCountCart} = props;
+    const {dmPreview, spList,setSpList, searchSku, handleSearch, open, setOpen, loading} = props;
+    const {countCart} = props;
     const {address, setAddress, phone, setPhone} = props;
-    const {cartItems, clearCart} = useCart();
+    const {clearCart} = useCart();
+
+
 
     const handleBuyOrder = async (cartItems) => {
         const {data, status} = await axios.post('/orders/store', {
@@ -96,6 +99,8 @@ function OrderListContent(props) {
         <AuthenticatedLayout>
             {open && <SumOrder phone={phone} setPhone={setPhone} address={address} setAddress={setAddress} open={open}
                                setOpen={setOpen} onBuyOrder={(cartItems) => handleBuyOrder(cartItems)}/>}
+
+
             <Container maxWidth='false' sx={{backgroundColor: 'white', p: 3}}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
@@ -126,7 +131,7 @@ function OrderListContent(props) {
                         <>
                             <Grid2 size={{md: 3, sm: 12}}>
                                 <Card variant='outlined'>
-                                    <img width='100%' src={dmPreview || ''} alt='no image'/>
+                                    <DmPreview detail={{pid : searchSku.current.value}} />
                                 </Card>
                             </Grid2>
                             <Grid2 size={{md: 9, sm: 12}}>
@@ -134,7 +139,7 @@ function OrderListContent(props) {
                                     <Grid2 container spacing={2}>
                                         <Grid2 container spacing={{sx: 0, lg: 2}} height={650}
                                                sx={{overflowY: 'scroll'}}>
-                                            <RowView spList={spList} setSpList={setSpList}/>
+                                            <RowView spList={spList} setSpList={setSpList} />
                                         </Grid2>
                                     </Grid2>
                                 </Paper>

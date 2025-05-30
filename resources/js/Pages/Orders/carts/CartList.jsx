@@ -4,14 +4,13 @@ import {
     Avatar, Box, Button, Card, CardContent, Divider, Grid2, IconButton, Stack, Typography
 } from "@mui/material";
 import React, {useMemo, useState} from "react";
-import RemoveIcon from "@mui/icons-material/Remove";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
 import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
-import CheckIcon from '@mui/icons-material/Check';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import {ArrowBack, Check, Delete, Add, Remove} from "@mui/icons-material";
+import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 
 const ListSp = ({sps, sku_code, setGroups, groups}) => {
+    const [SpPreview, setSpPreview] = useState(false);
+    const [SpImage, setSpImage] = useState('');
     const updateQuantity = async (id, condition = 'add') => {
         try {
             const API_URL = `/orders/carts/add-remove/${condition}`;
@@ -65,13 +64,18 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
 
     return (
         <>
+            {SpPreview && <SpPreviewImage open={SpPreview} setOpen={setSpPreview} imagePath={SpImage} />}
             {sps.map((sp, index) => {
-                const sp_image = `${import.meta.env.VITE_IMAGE_SP}${sku_code}/${sp.sp_code}.jpg`;
+                const sp_image = `${import.meta.env.VITE_IMAGE_SP}/${sp.sp_code}.jpg`;
                 return (
                     <React.Fragment key={index}>
                         <Stack direction='row' width='100%' justifyContent='space-between' alignItems='center'>
                             <Stack direction='row' spacing={2} alignItems='center'>
                                 <img src={sp_image} alt={'ไม่พบรูปภาพ'} width='100'
+                                     onClick={()=> {
+                                         setSpImage(sp_image);
+                                         setSpPreview(true)
+                                     }}
                                      onError={(e) => {
                                          e.target.src = import.meta.env.VITE_IMAGE_DEFAULT
                                      }}
@@ -90,17 +94,17 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
                                     disabled={sp.qty <= 1} size="small"
                                     onClick={() => updateQuantity(sp.id, 'remove')}
                                 >
-                                    <RemoveIcon/>
+                                    <Remove/>
                                 </IconButton>
                                 <Typography variant="body1" sx={{width: '60px', textAlign: 'center'}}>
                                     {sp.qty}
                                 </Typography>
 
                                 <IconButton size="small" onClick={() => updateQuantity(sp.id)}>
-                                    <AddIcon/>
+                                    <Add/>
                                 </IconButton>
                                 <IconButton color="error" size="small" onClick={() => handleRemove(sp)}>
-                                    <DeleteIcon/>
+                                    <Delete/>
                                 </IconButton>
                             </Stack>
                         </Stack>
@@ -169,7 +173,7 @@ export default function CartList({groupSku, totalSp}) {
                         <Grid2 size={12}>
                             <Stack direction='row' spacing={2} justifyContent='space-between'>
                                 <Button
-                                    startIcon={<ArrowBackIcon/>}
+                                    startIcon={<ArrowBack/>}
                                     size='small' variant='contained'
                                     component={Link} href={route('orders.list')}
                                 >
@@ -178,30 +182,6 @@ export default function CartList({groupSku, totalSp}) {
                                 <Typography variant='h6' fontWeight='bold'>ตะกร้าสินค้า</Typography>
                             </Stack>
                         </Grid2>
-                        {/*<Grid2 size={12}>*/}
-                        {/*    <TextField id='claim-remark' multiline minRows={3} fullWidth slotProps={{*/}
-                        {/*        input: {*/}
-                        {/*            startAdornment: (*/}
-                        {/*                <InputAdornment position='start'>*/}
-                        {/*                    <RoomIcon/>*/}
-                        {/*                </InputAdornment>*/}
-                        {/*            )*/}
-                        {/*        }*/}
-                        {/*    }} size='small' label='ที่อยู่' value={address}*/}
-                        {/*               onChange={(e) => setAddress(e.target.value)}/>*/}
-                        {/*</Grid2>*/}
-                        {/*<Grid2 size={12}>*/}
-                        {/*    <TextField fullWidth slotProps={{*/}
-                        {/*        input: {*/}
-                        {/*            startAdornment: (*/}
-                        {/*                <InputAdornment position='start'>*/}
-                        {/*                    <LocalPhoneIcon/>*/}
-                        {/*                </InputAdornment>*/}
-                        {/*            )*/}
-                        {/*        }*/}
-                        {/*    }} size='small' label='เบอร์โทรศัพท์' value={phone}*/}
-                        {/*               onChange={(e) => setPhone(e.target.value)}/>*/}
-                        {/*</Grid2>*/}
                         {groups.map((group, index) => {
                             return (
                                 <Grid2 key={index} size={12}>
@@ -247,7 +227,7 @@ export default function CartList({groupSku, totalSp}) {
                             <Button
                                 loading={processing}
                                 loadingPosition='start'
-                                startIcon={<CheckIcon/>} variant="contained" color="success" size="large"
+                                startIcon={<Check/>} variant="contained" color="success" size="large"
                                 onClick={handleConfirmOrder}>
                                 ยืนยันการสั่งซื้อ
                             </Button>
