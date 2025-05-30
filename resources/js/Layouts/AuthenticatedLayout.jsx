@@ -89,7 +89,8 @@ export default function AuthenticatedLayout({header, children}) {
 
                 <div
                     style={{backgroundColor: '#404040', color: '#fff'}}
-                    className={(showingNavigationDropdown ? 'block' : 'hidden') + ' md:hidden'}
+                    // className={(showingNavigationDropdown ? 'block' : 'hidden') + ' md:hidden'}
+                    className={(showingNavigationDropdown ? 'block' : 'hidden') + ' lg:hidden'}
                 >
                     <div className="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>

@@ -5,7 +5,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import {useRef, useState} from "react";
 import RowView from "@/Pages/Orders/RowView.jsx";
 import SumOrder from "@/Pages/Orders/SumOrder.jsx";
-import {Link, router, usePage} from "@inertiajs/react";
+import {Head, Link, router, usePage} from "@inertiajs/react";
 import {CartProvider, useCart} from "@/Pages/Orders/CartContext.jsx";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 import DmPreview from "@/Pages/ReportRepair/SpNew/DmPreview.jsx";
@@ -97,6 +97,7 @@ function OrderListContent(props) {
 
     return (
         <AuthenticatedLayout>
+            <Head title='🛒 สั่งซื้อะไหล่'/>
             {open && <SumOrder phone={phone} setPhone={setPhone} address={address} setAddress={setAddress} open={open}
                                setOpen={setOpen} onBuyOrder={(cartItems) => handleBuyOrder(cartItems)}/>}
 
