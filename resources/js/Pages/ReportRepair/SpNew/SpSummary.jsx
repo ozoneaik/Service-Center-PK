@@ -366,8 +366,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                                     </TableHead>
                                     <TableBody>
                                         {selectWorking.map((item, index) => {
-                                            const spPath2 = `https://images.pumpkin.tools/SKUS/SP/new/${item.spcode}.jpg`;
-                                            // const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
+                                            const spPath2 = import.meta.env.VITE_IMAGE_SP+item.spcode+'.jpg';
                                             const isWarranty = item.warranty && detail.job.warranty === true;
                                             const rowStyle = item.warranty ? {backgroundColor: '#e8f5e9'} : {};
                                             return (

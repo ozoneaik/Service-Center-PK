@@ -73,7 +73,7 @@ const SpDetail = ({sp, sp_warranty, detail}) => {
                 </TableHead>
                 <TableBody>
                     {sp.map((item, index) => {
-                        const spPath2 = `https://images.pumpkin.tools/SKUS/SP/${detail.pid}/${item.spcode}.jpg`;
+                        const spPath2 = import.meta.env.VITE_IMAGE_SP+item.spcode+'.jpg';
                         return (
                             <TableRow key={index} sx={item.warranty ? highlight : {}}>
                                 <TableCell>
