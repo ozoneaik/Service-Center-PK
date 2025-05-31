@@ -20,13 +20,16 @@ export default function OrderList({count_cart}) {
     const [phone, setPhone] = useState(user.store_info.phone);
     const [loading, setLoading] = useState(false);
     const [countCart,setCountCart] = useState(count_cart);
+    const [product, setProduct] = useState(null);
     const handleSearch = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
             const {data, status} = await axios.get(`/orders/search/${searchSku.current.value}`);
+            console.log(data,status)
             if (status === 200) {
                 setSpList(data.result.sp || []);
+                setProduct(data.result);
                 if (data.result.sp && data.result.sp.length > 0) {
                     await fetchDm();
                 } else setDmPreview('');
@@ -67,6 +70,8 @@ export default function OrderList({count_cart}) {
                 phone={phone}
                 setPhone={setPhone}
                 setLoading={setLoading}
+                product={product}
+                setProduct={setProduct}
             />
         </CartProvider>
     );
@@ -76,10 +81,11 @@ export default function OrderList({count_cart}) {
 function OrderListContent(props) {
     const {dmPreview, spList,setSpList, searchSku, handleSearch, open, setOpen, loading} = props;
     const {countCart} = props;
+    const {product, setProduct} = props;
     const {address, setAddress, phone, setPhone} = props;
     const {clearCart} = useCart();
 
-
+    console.log(product)
 
     const handleBuyOrder = async (cartItems) => {
         const {data, status} = await axios.post('/orders/store', {
@@ -132,7 +138,7 @@ function OrderListContent(props) {
                         <>
                             <Grid2 size={{md: 3, sm: 12}}>
                                 <Card variant='outlined'>
-                                    <DmPreview detail={{pid : searchSku.current.value}} />
+                                    <DmPreview detail={{pid : product.pid,fac_model : product.facmodel}} />
                                 </Card>
                             </Grid2>
                             <Grid2 size={{md: 9, sm: 12}}>

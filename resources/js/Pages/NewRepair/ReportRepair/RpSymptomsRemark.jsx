@@ -23,7 +23,6 @@ export default function RpSymptomsRemark({job_id}) {
         try {
             setLoadingPage(true);
             const {data, status} = await axios.get(route('repair.remark.symptom.detail',{job_id}))
-            console.log(data, status);
             setData('remark', data.remark)
             setData('symptom',data.symptom)
             setData('serial_id',data.serial_id)

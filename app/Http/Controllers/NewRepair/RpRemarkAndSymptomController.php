@@ -7,11 +7,12 @@ use App\Http\Requests\Repair\RemarkAndSymptomRequest;
 use App\Models\JobList;
 use App\Models\Remark;
 use App\Models\Symptom;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class RpRemarkAndSymptomController extends Controller
 {
-    public function detail(Request $request)
+    public function detail(Request $request) : JsonResponse
     {
         try {
             $job_id = $request->get('job_id');
@@ -39,34 +40,39 @@ class RpRemarkAndSymptomController extends Controller
         }
     }
 
-    public  function storeOrUpdate (RemarkAndSymptomRequest $request) {
+    public function storeOrUpdate(RemarkAndSymptomRequest $request): JsonResponse
+    {
         $job_id = $request->get('job_id');
         $serial_id = $request->get('serial_id');
         $remark = $request->get('remark');
         $symptom = $request->get('symptom');
 
-        if ($remark){
+
+        if ($remark) {
             $check = Remark::query()->where('job_id', $job_id)->first();
             if ($check) {
                 $remarkNew = Remark::query()->where('job_id', $job_id)->update(['remark' => $remark]);
-            }else{
+            } else {
                 $remarkNew = Remark::query()->create([
                     'job_id' => $job_id,
                     'serial_id' => $serial_id,
                     'remark' => $remark,
                 ]);
             }
+        }else {
+            $remarkDelete = Remark::query()->where('job_id', $job_id)->first();
+            $remarkDelete->delete();
         }
 
-        if ($symptom){
+        if ($symptom) {
             $check = Symptom::query()->where('job_id', $job_id)->first();
             if ($check) {
-                $symptomNew = Symptom::query()->create([
+                $symptomNew = Symptom::query()->update([
                     'job_id' => $job_id,
                     'serial_id' => $serial_id,
                     'symptom' => $symptom,
                 ]);
-            }else{
+            } else {
                 $symptomNew = Symptom::query()->create([
                     'job_id' => $job_id,
                     'serial_id' => $serial_id,

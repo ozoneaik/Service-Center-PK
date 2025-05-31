@@ -213,7 +213,7 @@ class SearchController extends Controller
                 'p_cat_id' => $data['pcatid'],
                 'p_cat_name' => $data['pCatName'],
                 'p_sub_cat_name' => $data['pSubCatName'],
-                'fac_model' => $data['facmodel'],
+                'fac_model' => $data['facmodel'] === null || $data['facmodel'] === '' ? null : $data['facmodel'],
                 'image_sku' => $data['imagesku'],
                 'warranty' => $data['warranty_status'],
                 'is_code_key' => Auth::user()->is_code_cust_id,

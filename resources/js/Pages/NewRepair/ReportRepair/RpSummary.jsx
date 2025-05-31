@@ -12,7 +12,8 @@ const CardDetail = ({children, headTitle}) => (
     </Card>
 )
 
-export default function RpSummary() {
+export default function RpSummary({detail}) {
+    const customer = detail.customer;
     const [loading, setLoading] = useState(false);
     useEffect(() => {
         setLoading(true);
@@ -26,11 +27,11 @@ export default function RpSummary() {
                         <Stack direction='column' spacing={1}>
                             <Typography fontWeight='bold'>
                                 {'ชื่อ : '}
-                                <span style={{fontWeight: 'normal'}}>{'name'}</span>
+                                <span style={{fontWeight: 'normal'}}>{customer.name}</span>
                             </Typography>
                             <Typography fontWeight='bold'>
                                 {'เบอร์โทร : '}
-                                <span style={{fontWeight: 'normal'}}>{'name'}</span>
+                                <span style={{fontWeight: 'normal'}}>{customer.phone}</span>
                             </Typography>
                         </Stack>
                     </Stack>
@@ -61,8 +62,8 @@ export default function RpSummary() {
             <Grid2 size={{md : 6, sm : 12}}>
                 <CardDetail headTitle='หมายเหตุสำหรับลูกค้า'>
                     <FormGroup>
-                        <FormControlLabel control={<Checkbox defaultChecked />} label="เสนอราคาก่อนซ่อม" />
-                        <FormControlLabel control={<Checkbox defaultChecked />} label="ซ่อมเสร็จส่งกลับทางไปรษณีย์" />
+                        <FormControlLabel control={<Checkbox checked={customer.subremark1} disabled/> } label="เสนอราคาก่อนซ่อม" />
+                        <FormControlLabel control={<Checkbox checked={customer.subremark2} disabled/>} label="ซ่อมเสร็จส่งกลับทางไปรษณีย์" />
                     </FormGroup>
                     <Typography>- การรับประกันไม่รวม ความเสียหายที่เกิดจากการใช้งานและเก็บรักษา ตามเงื่อนไขบนใบรับประกัน</Typography>
                 </CardDetail>

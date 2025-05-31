@@ -81,7 +81,7 @@ function ContentForm({detail}) {
                         </Typography>
                     </Stack>
                     {({
-                        1: <RpSummary job_id={job_id}/>,
+                        1: <RpSummary job_id={job_id} detail={detail}/>,
                         2: <RpCustomer job_id={job_id}/>,
                         3: <RpSymptomsRemark job_id={job_id}/>,
                         4: <RpUploadFile job_id={job_id}/>,
@@ -93,7 +93,7 @@ function ContentForm({detail}) {
     )
 }
 
-export default function RpMain({serial_id}) {
+export default function RpMain({serial_id,productDetail}) {
     const [loading, setLoading] = useState(false);
     const [detail, setDetail] = useState();
     useEffect(() => {
@@ -115,14 +115,23 @@ export default function RpMain({serial_id}) {
                 icon: errorStatus === 404 ? 'question' : 'error',
                 title: errorStatus === 404 ? 'ยืนยันการแจ้งซ่อม' : 'เกิดข้อผิดพลาด',
                 text: errorStatus === 404 ? 'กด ตกลง เพื่อยืนยันการแจ้งซ่อม' : errorMessage,
-                onPassed: (confirm) => {
+                onPassed: async (confirm) => {
                     if (confirm && errorStatus === 404) {
-                        alert('จะแจ้งซ่อม')
+                        await storeJob()
                     } else {
                         alert('เฉยๆ')
                     }
                 }
             })
+        }
+    }
+
+    const storeJob = async () => {
+        try {
+            const {data, status} = await axios.post(route('repair.store',{serial_id,productDetail}));
+            console.log(data, status);
+        }catch (error) {
+            console.log(error)
         }
     }
     return (

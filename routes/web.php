@@ -129,7 +129,7 @@ Route::get('/welcome', function () {
 
 Route::post('/genQuPdf', [genQuPdfController::class, 'genQuPdf'])->name('genQuPdf');
 Route::get('/genReCieveSpPdf/{job_id}',[genQuPdfController::class,'genReCieveSpPdf'])->name('genReCieveSpPdf');
-Route::get('/image-dm/{pid}', [DmImageController::class, 'index'])->name('dmImage');
+Route::get('/image-dm/{pid}/{fag_model}/{dm_type}', [DmImageController::class, 'index'])->name('dmImage');
 require __DIR__ . '/auth.php';
 require __DIR__ . '/fakeForTest.php';
 Route::get('/test-page',function(){

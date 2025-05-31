@@ -29,7 +29,6 @@ export default function Repair({DATA}) {
         setDetail(null);
         try {
             const {data, status} = await axios.post(route('repair.search'), {SN, PID});
-            console.log(data, status)
             setDetail(data.data);
             setSN('');
         } catch (error) {
@@ -82,7 +81,7 @@ export default function Repair({DATA}) {
                                         name={menuNames[menuSel] || 'อื่นๆ'}
                                         Sn={detail.serial || detail.serial_id}
                                     />
-                                    {menuSel === 1 && <RpMain serial_id={detail.serial_id || detail.serial}/>}
+                                    {menuSel === 1 && <RpMain productDetail={detail} serial_id={detail.serial_id || detail.serial}/>}
                                 </Grid2>
                             )}
                         </>

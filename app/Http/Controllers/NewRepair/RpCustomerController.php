@@ -5,6 +5,7 @@ namespace App\Http\Controllers\NewRepair;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Repair\CustomerRequest;
 use App\Models\CustomerInJob;
+use App\Models\JobList;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -13,6 +14,8 @@ class RpCustomerController extends Controller
     public function detail(Request $request): JsonResponse
     {
         $job_id = $request->get('job_id');
+        $job = JobList::query()->where('job_id', $job_id)->select('serial_id')->first();
+        $serial_id = $job->serial_id;
         $customer = CustomerInJob::query()->where('job_id', $job_id)->first();
         $message = 'empty';
         if ($customer) {
@@ -22,6 +25,8 @@ class RpCustomerController extends Controller
         }
         return response()->json([
             'customer' => $customer ?? null,
+            'job_id' => $job_id ?? null,
+            'serial_id' => $serial_id ?? null,
             'message' => $message,
         ]);
     }
@@ -37,8 +42,8 @@ class RpCustomerController extends Controller
                 'phone' => $data['phone'],
                 'address' => $data['address'] ?? null,
                 'remark' => $data['remark'] ?? null,
-                'subremark1' => $data['subremark1'] ?? null,
-                'subremark2' => $data['subremark2'] ?? null,
+                'subremark1' => $data['subremark1'] ?? false,
+                'subremark2' => $data['subremark2'] ?? false,
             ];
 
             if ($customer) {

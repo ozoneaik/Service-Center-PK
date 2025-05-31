@@ -28,6 +28,7 @@ export default function RpCustomer({job_id}) {
             if (status === 200 && data.customer) {
                 setData(data.customer);
             }
+            setData('serial_id', data.serial_id);
         } catch (error) {
             console.log(error)
         }
@@ -41,6 +42,7 @@ export default function RpCustomer({job_id}) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        console.log(data);
         AlertDialogQuestion({
             text: 'กดตกลงเพื่อบันทึกหรืออัพเดทข้อมูลลูกค้า',
             onPassed: async (confirm) => confirm && await storeOrUpdate(data)

@@ -11,4 +11,14 @@ class Remark extends Model
         'remark',
         'job_id'
     ];
+
+    public static function findByJobId($job_id){
+        $remark = Remark::query()->where('job_id', $job_id)->first();
+        $symptom = Symptom::query()->where('job_id', $job_id)->first();
+
+        return [
+            'remark' => $remark ?? null,
+            'symptom' => $symptom ?? null
+        ];
+    }
 }

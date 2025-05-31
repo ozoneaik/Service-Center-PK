@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Repair;
+namespace App\Http\Requests\Repair\Job;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CustomerRequest extends FormRequest
+class JobStoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,11 +22,7 @@ class CustomerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'job_id' => 'required',
-            'serial_id' => 'required',
-            'phone' => 'required',
-            'name' => 'required',
-
+            ''
         ];
     }
 }
