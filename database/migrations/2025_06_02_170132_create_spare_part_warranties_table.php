@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('combo_sub_sets', function (Blueprint $table) {
+        Schema::create('spare_part_warranties', function (Blueprint $table) {
             $table->id();
-            $table->string('sub_sku_code')->comment('รหัสสินค้า');
-            $table->bigInteger('main_combo_id')->comment('รหัสอ้างอิงคอมโบ');
+            $table->string('sp_code')->unique();
             $table->timestamps();
         });
     }
@@ -24,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sub_combo_sets');
+        Schema::dropIfExists('spare_part_warranties');
     }
 };

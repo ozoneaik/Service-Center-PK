@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ComboSet extends Model
+class SparePartWarranty extends Model
 {
     protected $fillable = [
-        'sku_code',
+        'sp_code'
     ];
 }
