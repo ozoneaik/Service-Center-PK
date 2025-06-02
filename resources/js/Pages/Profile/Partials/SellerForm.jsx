@@ -30,29 +30,13 @@ export default function SellerForm({ className = '' }) {
                 {/*<p className="mt-1 text-sm text-gray-600">คำอธิบาย</p>*/}
             </header>
             <form onSubmit={updatePassword} className="mt-6 space-y-6">
-                <div>
-                    {/*<InputLabel htmlFor="sellerId" value="รหัสเซลล์" />*/}
-                    {/*<TextField*/}
-                    {/*    type='hidden'*/}
-                    {/*    id="sellerId" inputRef={sellerIdInput} value={data.sellerId}*/}
-                    {/*    // onChange={(e) => setData('sellerId', e.target.value)}*/}
-                    {/*    fullWidth size='small'*/}
-                    {/*/>*/}
-                    {/*<InputError message={errors.sellerId} className="mt-2" />*/}
-                </div>
 
                 <div>
                     <InputLabel htmlFor="sellerName" value="ชื่อ-นามสกุล" />
-                    <TextField value={sale_info.sale_name}  id="sellerName" type="text" fullWidth size='small' disabled />
+                    <TextField value={sale_info?.sale_name || ''}  id="sellerName" type="text" fullWidth size='small' disabled />
                     <InputError message={errors.password} className="mt-2" />
                 </div>
                 <div className="flex items-center gap-4">
-                    {/*<Button*/}
-                    {/*    variant='contained' disabled={processing} type='submit'*/}
-                    {/*    startIcon={processing && <CircularProgress size={20} />}*/}
-                    {/*>*/}
-                    {/*    บันทึก*/}
-                    {/*</Button>*/}
                     <Transition show={recentlySuccessful}>
                         <p className="text-sm text-gray-600">
                             บันทึกสำเร็จ
