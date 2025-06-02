@@ -1,18 +1,14 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {Head} from '@inertiajs/react';
 import {Button, Container, Grid2, Stack, TextField} from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import {Search,Edit,ManageHistory, YouTube,MenuBook} from '@mui/icons-material';
 import ProductDetail from '@/Components/ProductDetail';
 import {useEffect, useState} from 'react';
 import Progress from "@/Components/Progress.jsx";
 import {AlertDialog, AlertDialogQuestionForSearch, AlertWithFormDialog} from "@/Components/AlertDialog.js";
-import EditIcon from '@mui/icons-material/Edit';
-import ManageHistoryIcon from '@mui/icons-material/ManageHistory';
 import FormRepair from "@/Pages/ReportRepair/FormRepair.jsx";
 import {PathDetail} from "@/Components/PathDetail.jsx";
 import ListHistoryRepair from "@/Pages/HistoryRepair/ListHistoryRepair.jsx";
-import YouTubeIcon from '@mui/icons-material/YouTube';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
 
 export default function Dashboard({SN,JOB_ID}) {
     useEffect(() => {
@@ -85,6 +81,7 @@ export default function Dashboard({SN,JOB_ID}) {
 
     const searchDetailSku = async (sku) => {
         try {
+            setProcessing(true)
             const {data, status} = await axios.post(route('search.sku'), {sku});
             console.log(data, status);
             setSn(data.serial_id);
@@ -135,8 +132,8 @@ export default function Dashboard({SN,JOB_ID}) {
 
     const searchDetail = async (e) => {
         e.preventDefault();
-        setProcessing(true)
-        console.log('sn === 9999', sn)
+
+        console.log('ค้นหารหัส 🔍 sn === 9999', sn)
         if (sn === '9999') {
             await fetchDataBySku()
         } else {
@@ -195,13 +192,13 @@ export default function Dashboard({SN,JOB_ID}) {
     const ButtonList = () => {
         return (
             <Stack direction={{xs: 'column', sm: 'row'}} spacing={2} justifyContent='start' alignItems='center'>
-                <ButtonLink menu={1} icon={<EditIcon/>} title={'แจ้งซ่อม'} data={detail}
+                <ButtonLink menu={1} icon={<Edit/>} title={'แจ้งซ่อม'} data={detail}
                             color='primary'/>
-                <ButtonLink menu={2} icon={<ManageHistoryIcon/>} title={'ดูประวัติการซ่อม'}
+                <ButtonLink menu={2} icon={<ManageHistory/>} title={'ดูประวัติการซ่อม'}
                             data={detail} color='secondary'/>
-                <ButtonLink menu={3} icon={<MenuBookIcon/>} title={'คู่มือ'}
+                <ButtonLink menu={3} icon={<MenuBook/>} title={'คู่มือ'}
                             data={detail} color='pumpkinColor'/>
-                <ButtonLink menu={4} icon={<YouTubeIcon/>} title={'วิดีโอที่เกี่ยวข้อง'}
+                <ButtonLink menu={4} icon={<YouTube/>} title={'วิดีโอที่เกี่ยวข้อง'}
                             data={detail} color='error'/>
             </Stack>
         )
@@ -225,7 +222,7 @@ export default function Dashboard({SN,JOB_ID}) {
                                                    onChange={(e) => setSn(e.target.value)}/>
                                         <Button sx={{minWidth: 100}} disabled={processing || !sn} type='submit'
                                                 size='small' variant='contained'
-                                                startIcon={<SearchIcon/>}>
+                                                startIcon={<Search/>}>
                                             {processing && 'กำลัง'}ค้นหา
                                         </Button>
                                     </Stack>

@@ -3,7 +3,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import {Head, Link, usePage,router} from "@inertiajs/react";
 import SearchIcon from '@mui/icons-material/Search';
 import {
-    Button, Chip, Container, Grid2, MenuItem, Paper, Select,
+    Button, Chip, Container, Grid2, MenuItem, Pagination, Paper, Select,
     Stack,
     Table, TableBody, TableCell, TableHead, TableRow, TextField,
     Typography
@@ -77,11 +77,9 @@ export default function HistoryMain({ jobs }) {
 
 
     const [filters, setFilters] = useState({
-        serial_id: "",
-        job_id: "",
-        phone: "",
-        name: "",
-        status: "",
+        serial_id: "", job_id: "",
+        phone: "", name: "",
+        status: ""
     });
     const handleFilterChange = (e) => {
         setFilters({ ...filters, [e.target.name]: e.target.value });
@@ -180,13 +178,22 @@ export default function HistoryMain({ jobs }) {
                         <Grid2 size={12}>
                             <Stack direction={{sm : 'row' , xs : 'column'}} justifyContent='space-between' alignItems='center'>
                                 <Typography variant='h5' fontWeight='bold'>ประวัติซ่อม</Typography>
-                                <Typography variant="subtitle1">รายการทั้งหมด {jobs.length} รายการ</Typography>
+                                <Typography variant="subtitle1">รายการ {jobs.to} จากรายการทั้งหมด {jobs.total} รายการ</Typography>
                             </Stack>
                         </Grid2>
                         <Grid2 size={12}>
-                            <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
-                                <TableDetail url={url} jobs={jobs} handleShowDetail={handleShowDetail} />
+                            <Paper variant='outlined' sx={{ p: 2,height : 'calc(100vh - 350px)', overflowX: 'auto' }}>
+                                <TableDetail url={url} jobs={jobs.data} handleShowDetail={handleShowDetail} />
                             </Paper>
+                            <Stack mt={3} direction='row' justifyContent='center'>
+                                <Pagination
+                                    count={jobs.links.length-2}
+                                    onChange={(e,page) => {
+                                        console.log(jobs.links.length,page)
+                                        const routeName = url.startsWith("/admin/history-job") ? "admin.history-job" : "history.index";
+                                        router.get(route(routeName), {...filters,page : page}, { preserveState: true });
+                                    }}/>
+                            </Stack>
                         </Grid2>
                     </Grid2>
                 </Container>

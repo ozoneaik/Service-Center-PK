@@ -320,17 +320,6 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
                             </CardDetail>
                         </Grid2>
 
-                        {/* <Grid2 size={12}>
-                                <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
-                                    <Typography variant='h6' fontWeight='bold'>บันทึกอะไหล่</Typography>
-                                    <Grid2 container>
-                                        <Grid2 size={12} sx={{ overflowX: 'auto' }}>
-                                            <SpDetail sp={selected.sp} detail={detail} sp_warranty={selected.sp_warranty} />
-                                        </Grid2>
-                                    </Grid2>
-                                </Paper>
-                            </Grid2> */}
-
                         <Grid2 size={12}>
                             <Paper variant='outlined' sx={{p: 2}}>
                                 <Typography variant='h6' fontWeight='bold'>บันทึกอะไหล่</Typography>
@@ -371,11 +360,6 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
                                     <Button onClick={()=>checkReceiveSku()} variant='contained' startIcon={<ReceiptLongIcon/>}>
                                         รับสินค้า
                                     </Button>
-                                    {/*<a href={route('genReCieveSpPdf', {job_id: detail.job.job_id})} target='_blank'>*/}
-                                    {/*    <Button variant='contained' startIcon={<ReceiptLongIcon/>}>*/}
-                                    {/*        รับสินค้า*/}
-                                    {/*    </Button>*/}
-                                    {/*</a>*/}
                                     {detail.selected.sp.length > 0 && (
                                         <Button onClick={exportQu} startIcon={<PictureAsPdfIcon/>}
                                                 variant='contained' disabled={loading}>

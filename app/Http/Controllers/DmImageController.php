@@ -7,7 +7,7 @@ use Illuminate\Http\JsonResponse;
 
 class DmImageController extends Controller
 {
-    public function index($pid,$fag_model,$dm_type = 'DM01'): JsonResponse
+    public function index($pid,$fag_model='9999',$dm_type = 'DM01'): JsonResponse
     {
         if ($fag_model === '9999'){
             $data = ImageDiagram::query()

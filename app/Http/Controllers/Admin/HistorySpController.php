@@ -14,8 +14,8 @@ class HistorySpController extends Controller
         $query = JobList::query()
             ->leftJoin('customer_in_jobs', 'customer_in_jobs.job_id', '=', 'job_lists.job_id')
             ->leftJoin('store_information as store','store.is_code_cust_id','=','job_lists.is_code_key')
-            ->whereMonth('job_lists.created_at', now()->month)
-            ->whereYear('job_lists.created_at', now()->year)
+//            ->whereMonth('job_lists.created_at', now()->month)
+//            ->whereYear('job_lists.created_at', now()->year)
             ->select('job_lists.*', 'customer_in_jobs.name', 'customer_in_jobs.phone','store.shop_name');
 
         // ค้นหาตาม serial_id
@@ -43,8 +43,8 @@ class HistorySpController extends Controller
             $query->where('job_lists.status', $request->status);
         }
 
-        $jobs = $query->orderBy('job_lists.id', 'desc')->get();
-        
+        $jobs = $query->orderBy('job_lists.id', 'desc')->paginate(100);
+
         return Inertia::render('HistoryPage/HistoryMain', ['jobs' => $jobs]);
     }
 }
