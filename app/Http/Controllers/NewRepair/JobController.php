@@ -14,8 +14,10 @@ use Illuminate\Support\Facades\Log;
 
 class JobController extends Controller
 {
-    public function found($serial_id , $pid): JsonResponse
+    public function found(Request $request): JsonResponse
     {
+        $serial_id = $request->serial_id;
+        $pid = $request->pid;
         try {
             $found = JobList::query()
                 ->where('serial_id', $serial_id)

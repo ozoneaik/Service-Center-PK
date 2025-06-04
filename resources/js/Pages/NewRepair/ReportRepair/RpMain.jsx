@@ -94,6 +94,7 @@ function ContentForm({detail}) {
 }
 
 export default function RpMain({serial_id,productDetail}) {
+    console.log('productDetail >>> ',productDetail);
     const [loading, setLoading] = useState(false);
     const [detail, setDetail] = useState();
     useEffect(() => {
@@ -103,7 +104,7 @@ export default function RpMain({serial_id,productDetail}) {
 
     const foundJob = async () => {
         try {
-            const {data, status} = await axios.post(route('repair.found', {serial_id}))
+            const {data, status} = await axios.post(route('repair.found', {serial_id : productDetail.serial,pid : productDetail.pid}))
             console.log(data, status);
             setDetail(data.job);
             // alert(`status = ${status} found`)

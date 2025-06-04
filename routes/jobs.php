@@ -70,7 +70,7 @@ Route::prefix('send-job')->group(function () {
 Route::prefix('repair')->group(function(){
    Route::get('/',[\App\Http\Controllers\NewRepair\SearchController::class,'index'])->name('repair.index');
    Route::post('/search',[\App\Http\Controllers\NewRepair\SearchController::class,'search'])->name('repair.search');
-   Route::post('/found/{serial_id}/{pid}',[\App\Http\Controllers\NewRepair\JobController::class,'found'])->name('repair.found');
+   Route::post('/found',[\App\Http\Controllers\NewRepair\JobController::class,'found'])->name('repair.found');
    Route::prefix('job')->group(function(){
        Route::post('/store',[\App\Http\Controllers\NewRepair\JobController::class,'storeJob'])->name('repair.store');
    });
