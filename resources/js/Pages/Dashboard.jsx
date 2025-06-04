@@ -83,7 +83,7 @@ export default function Dashboard({SN,JOB_ID}) {
         try {
             setProcessing(true)
             const {data, status} = await axios.post(route('search.sku'), {sku});
-            console.log(data, status);
+            console.log('search Detail Sku ==> ',data, status);
             setSn(data.serial_id);
             const response = await checkSn(data.serial_id);
             if (response.status === 200) {
@@ -94,6 +94,7 @@ export default function Dashboard({SN,JOB_ID}) {
                     await fetchData(data.serial_id, false);
                 }
             } else if (response.status === 400) {
+                console.log('error >> ', response)
                 const showConfirmButton = !(response.message === 'serial_id กำลังถูกซ่อมจากศูนย์บริการอื่น' || response.message === 'serial_id กำลังส่งซ่อมไปยัง ศูนย์ซ่อม Pumpkin');
                 AlertDialogQuestionForSearch({
                     title: response.message,

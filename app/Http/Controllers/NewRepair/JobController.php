@@ -14,19 +14,22 @@ use Illuminate\Support\Facades\Log;
 
 class JobController extends Controller
 {
-    public function found($serial_id): JsonResponse
+    public function found($serial_id , $pid): JsonResponse
     {
         try {
-            $found = JobList::query()->where('serial_id', $serial_id)->orderBy('id','desc')->first();
+            $found = JobList::query()
+                ->where('serial_id', $serial_id)
+                ->where('pid', $pid)
+                ->orderBy('id','desc')->first();
             if ($found && $found->is_code_key === Auth::user()->is_code_cust_id) {
-                $customer = CustomerInJob::findByJobId($found->job_id);
-                $remark_symptom = Remark::findByJobId($found->job_id);
+
+                if ($found->status !== 'success') {
+
+                }
                 return response()->json([
                     'message' => 'เจอข้อมูล',
                     'job' => [
                         'job_detail' => $found,
-                        'customer' => $customer,
-                        'remark_symptom' => $remark_symptom
                     ],
                 ]);
             }else{

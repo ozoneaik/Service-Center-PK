@@ -58,16 +58,21 @@ class SearchController extends Controller
                 'sn' => $request->sn,
                 'views' => $request->views,
             ]);
+
             if (!$response->successful()) throw new \Exception('ขาดการติดต่อกับ API');
             $createJob = $request->input('createJob');
             if ($response->status() === 200) {
+
                 $searchResults = $response->json();
+                $skus = array_keys($searchResults['assets']);
+                dd($skus);
                 $warrantyexpire = $searchResults['warrantyexpire'];
                 $status = $searchResults['status'];
                 if ($searchResults['status'] === 'Fail') {
                     throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $request->sn . ' กรุณาติดต่อเบอร์ 02-8995928 ต่อ 266');
                 }
                 $searchResults = $searchResults['assets'][0];
+                dd(array_keys($searchResults));
 
 
                 // ตรวจในฐานข้อมูลก่อนว่า มีใน warrantyProduct มั้ย
@@ -289,15 +294,13 @@ class SearchController extends Controller
     }
 
     // ค้นหา job โดย sku
-    private function searchSku($serial_id)
+    private function searchSku($serial_id): JsonResponse
     {
         try {
             $job = JobList::query()->where('serial_id', $serial_id)->first();
             $job = $job->toArray();
-            $response = Http::post(env('VITE_API_ORDER'), [
-                'pid' => $job['pid'],
-                'views' => 'single',
-            ]);
+            $body = ['pid' => $job['pid'], 'view' => 'single'];
+            $response = Http::post(env('VITE_API_ORDER'), $body);
             if ($response->successful()) {
                 $responseJson = $response->json();
                 if ($responseJson['status'] == 'SUCCESS') {

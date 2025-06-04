@@ -28,6 +28,7 @@ class SearchController extends Controller
     {
         $request->validate(['SN' => 'required'], ['SN' => 'กรุณากรอกรหัสซีเรียล']);
         $URL = env('API_DETAIL');
+        $api_label = 'P'; // P = Product, S = Serial
         $formData = [];
         try {
             $req = $request->toArray();
@@ -42,15 +43,16 @@ class SearchController extends Controller
                     throw new \Exception($m);
                 }
             } else {
+                $api_label = 'S';
                 $formData['sn'] = $req['SN'];
                 $formData['views'] = 'single';
             }
             // ค้นหาหมายเลขซีเรียล
-            $response = $this->fetchDataFromApi($URL, $formData);
+            $response = $this->fetchDataFromApi($URL, $formData,$api_label);
             if ($response['status']) {
                 return response()->json([
                     'message' => 'ดึงข้อมูลสำเร็จ',
-                    'data' => $response['data'],
+                    'data' => $response,
                 ]);
             }else{
                 throw new \Exception($response['message']);
@@ -64,7 +66,7 @@ class SearchController extends Controller
         }
     }
 
-    private function fetchDataFromApi($URL, $formData): array
+    private function fetchDataFromApi($URL, $formData,$api_label): array
     {
         try {
             $response = Http::withHeaders([
@@ -72,23 +74,33 @@ class SearchController extends Controller
             ])->post($URL, $formData);
             $responseJson = $response->json();
             if ($response->status() == 200 && $responseJson['status'] === 'SUCCESS') {
-                // เช็ค warranty ใน ระบบ
-                $findWarranty = WarrantyProduct::query()->where('serial_id',$formData['sn'])->first();
-                if ($findWarranty) {
-                    $dateWarranty = Carbon::parse($findWarranty->date_warranty);
-                    $expireDate = Carbon::parse($findWarranty->expire_date);
-                    $now = Carbon::now();
-                    if ($now->greaterThanOrEqualTo($dateWarranty) && $now->lessThanOrEqualTo($expireDate)) {
-                        $responseJson['assets'][0]['warranty_status'] = true;
-                    } else $responseJson['assets'][0]['warranty_status'] = false;
+                $response_json = $response->json();
+
+
+                if ($api_label === 'P') {
+                    $sku_list = $response_json['assets'][0];
+                    $sku_list['serial_id'] = 'จะแสดงเมื่อแจ้งซ่อม';
+                    return [
+                        'status' => true,
+                        'combo_set' => false,
+                        'sku_list' => [$sku_list],
+                    ];
                 }else{
-                    $responseJson['assets'][0]['warranty_status'] = $responseJson['warrantyexpire'];
+                    $sku_arr = $response_json['skuset'];
+                    $assets_new_format = array_map(function ($sku) use ($response_json) {
+                        return $response_json['assets'][$sku];
+                    }, $sku_arr);
+                    $combo_set = false;
+                    if (count($assets_new_format) > 1) $combo_set = true;
+
+
+                    return [
+                        'status' => true,
+                        'combo_set' => $combo_set,
+                        'sku_list' => $assets_new_format,
+                    ];
                 }
-                return [
-                    'status' => true,
-                    'message' => 'ดึงข้อมูลสำเร็จ',
-                    'data' => $responseJson['assets'][0]
-                ];
+                // เช็คก่อนว่า เป็น combo set หรือไม่
             } else {
                 $m = "<span>เกิดข้อผิดพลาด server กรุณาติดต่อผู้ดูแลระบบ <br/> เบอร์ 02-8995928 ต่อ 266</span>";
                 throw new \Exception($m);
@@ -97,7 +109,8 @@ class SearchController extends Controller
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
-                'data' => []
+                'combo_set' => null,
+                'sku_list' => null,
             ];
         }
 
