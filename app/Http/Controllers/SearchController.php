@@ -64,15 +64,33 @@ class SearchController extends Controller
             if ($response->status() === 200) {
 
                 $searchResults = $response->json();
-                $skus = array_keys($searchResults['assets']);
-                dd($skus);
+                $skus = $searchResults['skuset'];
                 $warrantyexpire = $searchResults['warrantyexpire'];
                 $status = $searchResults['status'];
                 if ($searchResults['status'] === 'Fail') {
                     throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $request->sn . ' กรุณาติดต่อเบอร์ 02-8995928 ต่อ 266');
                 }
-                $searchResults = $searchResults['assets'][0];
-                dd(array_keys($searchResults));
+
+                if (count($skus) > 1) {
+                    $sku = $request->pid;
+                    if ($sku) {
+                        $searchResults = $searchResults['assets'][$sku];
+                    }else{
+                        $list_sku = [];
+                        foreach ($skus as $key => $value){
+                            $list_sku[$key]['pname'] = $searchResults['assets'][$value]['pname'];
+                            $list_sku[$key]['pid'] = $searchResults['assets'][$value]['pid'];
+                        }
+                        return response()->json([
+                            'message' => 'ตรวจพบสินค้า '.count($skus).' รายการ',
+                            'list_sku' => $list_sku
+                        ],202);
+                    }
+
+                }else{
+                    $searchResults = $searchResults['assets'][$searchResults['skuset'][0]];
+                }
+
 
 
                 // ตรวจในฐานข้อมูลก่อนว่า มีใน warrantyProduct มั้ย
@@ -86,8 +104,9 @@ class SearchController extends Controller
                     } else $searchResults['warranty_status'] = false;
                 } else $searchResults['warranty_status'] = $warrantyexpire;
 
+                $sku = $sku ?? null;
 
-                $searchResults['job'] = $this->storeJob($searchResults, $createJob);
+                $searchResults['job'] = $this->storeJob($searchResults, $createJob,$sku);
                 if ($searchResults['job']['is_code_key'] !== Auth::user()->is_code_cust_id) {
                     throw new \Exception('สินค้าซีเรียลนี้ถูกสร้าง job โดยศูนย์บริการอื่นแล้ว และยังดำเนินการอยู่ หากสงสัย ติดต่อผู้ดูแลระบบ');
                 }
@@ -125,7 +144,7 @@ class SearchController extends Controller
                 'status' => 'Fail',
                 'searchResults' => [],
                 'auth_user' => Auth::user(),
-                'message' => $e->getMessage(),
+                'message' => $e->getMessage() . $e->getFile() . $e->getLine(),
                 'time' => Carbon::now()
             ], 400);
         }
@@ -199,9 +218,15 @@ class SearchController extends Controller
         ];
     }
 
-    private function storeJob($data, $createJob)
+    private function storeJob($data, $createJob,$sku)
     {
-        $job = JobList::query()
+        $query = JobList::query();
+        $query = $query->where('serial_id', $data['serial']);
+        if ($sku){
+            $query->where('pid', $sku);
+        }
+
+        $job = $query
             ->where('serial_id', $data['serial'])
             ->orderBy('id', 'desc')
             ->first();

@@ -12,19 +12,22 @@ use App\Models\logStamp;
 use App\Models\SparePart;
 use App\Models\StockSparePart;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class JobController extends Controller
 {
 
-    public function check($serial_id): JsonResponse
+    public function check(Request $request,$serial_id): JsonResponse
     {
         try {
-            $check = JobList::query()
-                ->where('serial_id', $serial_id)
-                ->orderBy('id', 'desc')
-                ->first();
+            $query = JobList::query();
+            if ($request->pid){
+                $query = $query->where('pid', $request->pid);
+            }
+            $query->where('serial_id', $serial_id);
+            $check = $query->orderBy('id', 'desc')->first();
             if ($check) {
                 if ($check->status === 'pending') {
                     $message = 'พบ job กำลังดำเนินการ';

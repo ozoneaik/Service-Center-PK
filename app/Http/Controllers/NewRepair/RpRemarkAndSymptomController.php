@@ -61,7 +61,9 @@ class RpRemarkAndSymptomController extends Controller
             }
         }else {
             $remarkDelete = Remark::query()->where('job_id', $job_id)->first();
-            $remarkDelete->delete();
+            if($remarkDelete){
+                $remarkDelete->delete();
+            }
         }
 
         if ($symptom) {

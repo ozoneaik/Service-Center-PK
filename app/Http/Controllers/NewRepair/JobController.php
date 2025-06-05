@@ -25,16 +25,24 @@ class JobController extends Controller
                 ->orderBy('id','desc')->first();
             if ($found && $found->is_code_key === Auth::user()->is_code_cust_id) {
 
-                if ($found->status !== 'success') {
-
+                if ($found->status === 'pending') {
+                    return response()->json([
+                        'message' => 'เจอข้อมูล',
+                        'job' => [
+                            'job_detail' => $found,
+                        ],
+                    ]);
+                }elseif ($found->status === 'send') {
+                    throw new \Exception('ส่งไปยัง pumpkin');
+                }else{
+                    $status = 404;
+                    throw new \Exception('<span>ยืนยันการแจ้งซ่อม</span>');
                 }
-                return response()->json([
-                    'message' => 'เจอข้อมูล',
-                    'job' => [
-                        'job_detail' => $found,
-                    ],
-                ]);
-            }else{
+
+            }elseif ($found && $found->is_code_key !== Auth::user()->is_code_cust_id){
+                throw new \Exception('<span>ถูกซ่อมโดยที่อื่น</span>');
+            }
+            else{
                 $status = 404;
                 throw new \Exception('<span>ยืนยันการแจ้งซ่อม</span>');
             }

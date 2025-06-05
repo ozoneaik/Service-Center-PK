@@ -5,6 +5,7 @@ use App\Http\Controllers\BehaviorController;
 use App\Http\Controllers\CustomerInJobController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\NewRepair\RpBehaviourController;
 use App\Http\Controllers\NewRepair\RpCustomerController;
 use App\Http\Controllers\NewRepair\RpRemarkAndSymptomController;
 use App\Http\Controllers\NewRepair\RpUploadFileController;
@@ -84,5 +85,10 @@ Route::prefix('repair')->group(function(){
    });
    Route::prefix('upload-file')->group(function(){
       Route::get('/',[RpUploadFileController::class,'detail'])->name('repair.upload-file.detail');
+   });
+
+   Route::prefix('behaviour')->group(function(){
+       Route::get('/', [RpBehaviourController::class,'detail'])->name('repair.behaviour.detail');
+       Route::post('/',[RpBehaviourController::class, 'storeOrUpdate'])->name('repair.behaviour.store');
    });
 });

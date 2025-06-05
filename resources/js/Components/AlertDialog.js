@@ -5,7 +5,6 @@ const options = {
     confirmButtonText: 'ตกลง',
     allowOutsideClick: false,
     confirmButtonColor: '#f15922',
-    allowEscape : false,
 }
 
 export function AlertDialog({

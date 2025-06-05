@@ -9,6 +9,9 @@ import { ImagePreview } from "@/Components/ImagePreview.jsx";
 import { AlertDialog } from "@/Components/AlertDialog.js";
 
 export const UploadFile = ({ detail, setDetail, setShowDetail }) => {
+
+
+    console.log('uploadFile >>> ', detail);
     const [loading, setLoading] = useState(true);
     const [menuList, setMenuList] = useState([]);
     const [selected, setSelected] = useState(detail.selected.fileUpload);

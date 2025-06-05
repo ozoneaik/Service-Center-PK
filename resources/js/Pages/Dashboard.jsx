@@ -1,7 +1,19 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {Head} from '@inertiajs/react';
-import {Button, Container, Grid2, Stack, TextField} from '@mui/material';
-import {Search,Edit,ManageHistory, YouTube,MenuBook} from '@mui/icons-material';
+import {
+    Box,
+    Button,
+    Card, CardActionArea,
+    CardContent,
+    Container,
+    Dialog,
+    DialogContent, Divider,
+    Grid2,
+    Stack,
+    TextField,
+    Typography
+} from '@mui/material';
+import {Search, Edit, ManageHistory, YouTube, MenuBook} from '@mui/icons-material';
 import ProductDetail from '@/Components/ProductDetail';
 import {useEffect, useState} from 'react';
 import Progress from "@/Components/Progress.jsx";
@@ -10,27 +22,118 @@ import FormRepair from "@/Pages/ReportRepair/FormRepair.jsx";
 import {PathDetail} from "@/Components/PathDetail.jsx";
 import ListHistoryRepair from "@/Pages/HistoryRepair/ListHistoryRepair.jsx";
 
-export default function Dashboard({SN,JOB_ID}) {
+
+const ModalSelectSkuComponent = ({open, setOpen, selectSku, onSelect}) => {
+    const [selectedCard, setSelectedCard] = useState();
+    const [selectedItem, setSelectedItem] = useState();
+
+    console.log(selectSku)
+
+    const handleSelect = (index, sku) => {
+        setSelectedItem(sku)
+        setSelectedCard(index);
+    }
+
+    const handleSelectConfirm = () => {
+        onSelect(selectedItem);
+        setOpen(false);
+    }
+    return (
+        <Dialog
+            open={open}
+            onClose={() => setOpen(false)}
+        >
+            <DialogContent>
+                <Typography variant='h6' fontWeight='bold' mb={2}>เลือกสินค้าที่ต้องการซ่อม</Typography>
+                <Stack direction={{sm: 'column', md: 'row'}} spacing={2} mb={3}>
+                    {selectSku.list_sku && selectSku.list_sku.length > 0 && selectSku.list_sku.map((sku, index) => {
+                            const pImage = import.meta.env.VITE_IMAGE_PID + sku.pid + '.jpg';
+                            return (
+                                <Card key={index} variant='outlined'>
+                                    <CardActionArea
+                                        data-active={selectedCard === index ? '' : undefined}
+                                        sx={{
+                                            height: '100%',
+                                            '&[data-active]': {
+                                                backgroundColor: 'green',
+                                            },
+                                        }}
+                                        onClick={() => handleSelect(index, sku)}
+                                    >
+                                        <CardContent>
+                                            <Stack direction='column' spacing={2}>
+                                                <Box width='100%'>
+                                                    <img src={pImage} width={200} alt=""/>
+                                                </Box>
+                                                <Divider/>
+                                                <Typography>{sku.pid}</Typography>
+                                                <Typography>{sku.pname}</Typography>
+                                            </Stack>
+                                        </CardContent>
+                                    </CardActionArea>
+                                </Card>
+                            )
+                        }
+                    )}
+                </Stack>
+                <Stack direction={{sm: 'column', md: 'row'}} spacing={2}>
+                    <Button onClick={handleSelectConfirm} fullWidth disabled={!selectedItem} variant='contained'>
+                        เลือก {selectedItem && `รหัสสินค้า ${selectedItem.pid} แล้ว`}
+                    </Button>
+                    <Button fullWidth onClick={() => setOpen(false)} variant='outlined' color='error'>
+                        ยกเลิก
+                    </Button>
+                </Stack>
+
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+export default function Dashboard({SN, JOB_ID}) {
     useEffect(() => {
-        if (SN && JOB_ID){
+        if (SN && JOB_ID) {
             fetchData(SN, false).then();
         }
     }, [])
+
+
     const [check, setCheck] = useState('before');
     const [detail, setDetail] = useState();
     const [processing, setProcessing] = useState(false);
     const [sn, setSn] = useState(SN || '');
     const [showContent, setShowContent] = useState();
 
+
+    // เมื่อพบว่า sn เป็น combo set
+    const [selectSku, setSelectSku] = useState();
+    const [selectedSku, setSelectedSku] = useState({sn : '', pid : ''});
+    const [modalSelectSku, setModalSelectSku] = useState(false);
+
+
+    useEffect(() => {
+        if (selectedSku.pid && selectedSku.sn) {
+            searchDetailAfter().finally(()=> setSelectedSku({
+                sn  : '',
+                pid : ''
+            }));
+        }
+    }, [selectedSku]);
+
     const fetchData = async (ser, createJob) => {
         setProcessing(true);
         try {
 
-            const {data} = await axios.post('/search', {
+            const {data, status} = await axios.post('/search', {
                 sn: ser,
                 views: 'single',
+                pid : selectedSku.pid || null,
                 createJob: createJob
             });
+            if (status === 202) { //   // เมื่อพบว่า sn เป็น combo set
+                setSelectSku(data);
+                setModalSelectSku(true)
+            }
             if (data.status === 'SUCCESS') {
                 const responseData = data.searchResults;
                 console.log(data.searchResults)
@@ -53,7 +156,9 @@ export default function Dashboard({SN,JOB_ID}) {
 
     const checkSn = async (SN = sn) => {
         try {
-            const {data, status} = await axios.get(`/jobs/check/${SN}`);
+            const {data, status} = await axios.get(`/jobs/check/${SN}`,{
+                params : {pid : selectedSku.pid}
+            });
             console.log(data, status)
             return {
                 message: data.message,
@@ -83,7 +188,7 @@ export default function Dashboard({SN,JOB_ID}) {
         try {
             setProcessing(true)
             const {data, status} = await axios.post(route('search.sku'), {sku});
-            console.log('search Detail Sku ==> ',data, status);
+            console.log('search Detail Sku ==> ', data, status);
             setSn(data.serial_id);
             const response = await checkSn(data.serial_id);
             if (response.status === 200) {
@@ -118,10 +223,12 @@ export default function Dashboard({SN,JOB_ID}) {
                         }
                     }
                 })
+            } else if (status === 202) {
+                alert('hello')
             } else {
                 AlertDialog({
                     title: 'เกิดข้อผิดพลาด',
-                    text: message,
+                    text: message || 'error',
                 })
             }
             setProcessing(false);
@@ -134,10 +241,12 @@ export default function Dashboard({SN,JOB_ID}) {
     const searchDetail = async (e) => {
         e.preventDefault();
 
-        console.log('ค้นหารหัส 🔍 sn === 9999', sn)
+
         if (sn === '9999') {
+            console.log('ค้นหารหัส 🔍 sn === 9999')
             await fetchDataBySku()
         } else {
+            console.log('ค้นหารหัส 🔍 sn !== 9999')
             await searchDetailAfter();
         }
     }
@@ -205,10 +314,26 @@ export default function Dashboard({SN,JOB_ID}) {
         )
     }
 
+    const handleSelectSku = (sku) => {
+        setSelectedSku(prevState => {
+            return {
+                ...prevState,
+                sn : sn,
+                pid: sku.pid
+            }
+        })
+    }
+
 
     return (
         <AuthenticatedLayout>
             <Head title="หน้าหลัก"/>
+            {modalSelectSku && <ModalSelectSkuComponent
+                open={modalSelectSku}
+                setOpen={setModalSelectSku}
+                selectSku={selectSku}
+                onSelect={(sku)=>handleSelectSku(sku)}
+            />}
             <Container>
                 <div className=" mt-4 p-4 ">
                     <Stack direction='column' spacing={1}>

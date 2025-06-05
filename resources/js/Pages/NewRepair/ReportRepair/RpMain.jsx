@@ -4,14 +4,85 @@ import {AlertDialog} from "@/Components/AlertDialog.js";
 import {AccountCircle, Build, Camera, Psychology, ViewList, Warning} from '@mui/icons-material';
 import RpSummary from "@/Pages/NewRepair/ReportRepair/RpSummary.jsx";
 import RpCustomer from "@/Pages/NewRepair/ReportRepair/RpCustomer.jsx";
-import RpUploadFile from "@/Pages/NewRepair/ReportRepair/RpUploadFile.jsx";
 import RpSymptomsRemark from "@/Pages/NewRepair/ReportRepair/RpSymptomsRemark.jsx";
+import RpBehavior from "@/Pages/NewRepair/ReportRepair/RpBehavior.jsx";
+import RpUploadFile from "@/Pages/NewRepair/ReportRepair/RpUploadFile.jsx";
+import RpSpMain from "@/Pages/NewRepair/ReportRepair/RpSp/RpSpMain.jsx";
 
 
-function ContentForm({detail}) {
+export default function RpMain({serial_id, productDetail}) {
+    console.log('productDetail >>> ', productDetail);
+    const [loading, setLoading] = useState(false);
+    const [detail, setDetail] = useState();
+    useEffect(() => {
+        setLoading(true);
+        foundJob().finally(() => setLoading(false));
+    }, [])
+
+    const foundJob = async () => {
+        try {
+            const body = {
+                serial_id: productDetail.serial,
+                pid: productDetail.pid
+            }
+            const {data, status} = await axios.post(route('repair.found', body))
+            console.log(data, status);
+            setDetail(data.job);
+            // alert(`status = ${status} found`)
+        } catch (error) {
+            console.log(error)
+            const errorStatus = error.status
+            const errorMessage = error.response.data.message
+            AlertDialog({
+                icon: errorStatus === 404 ? 'question' : 'error',
+                title: errorStatus === 404 ? 'ยืนยันการแจ้งซ่อม' : 'เกิดข้อผิดพลาด',
+                text: errorStatus === 404 ? 'กด ตกลง เพื่อยืนยันการแจ้งซ่อม' : errorMessage,
+                onPassed: async (confirm) => {
+                    if (confirm && errorStatus === 404) {
+                        await storeJob();
+                    } else {
+                        alert('เฉยๆ')
+                    }
+                }
+            })
+        }
+    }
+
+    const storeJob = async () => {
+        try {
+            const body = {
+                serial_id: productDetail.serial,
+                productDetail: {
+                    pid : productDetail.pid,
+                    pname: productDetail.pname,
+                    pbaseunit : productDetail.pbaseunit,
+                    pcatid : productDetail.pcatid,
+                    pCatName : productDetail.pCatName,
+                    pSubCatName : productDetail.pSubCatName,
+                    facmodel : productDetail.facmodel,
+                    imagesku : productDetail.imagesku,
+                }
+            };
+            const {data, status} = await axios.post(route('repair.store', body));
+            console.log(data, status);
+            await foundJob();
+        } catch (error) {
+            console.log(error)
+        }
+    }
+    return (
+        <Grid2 container spacing={2}>
+            {loading ? <CircularProgress/> : detail ?
+                <ContentForm productDetail={productDetail} {...{detail}}/> : <>เกิดข้อผิดพลาด</>}
+        </Grid2>
+    )
+}
+
+
+function ContentForm({detail, productDetail}) {
     const [action, setAction] = useState(1);
     const [showDetail, setShowDetail] = useState(1);
-    const job_id =  detail.job_detail.job_id;
+    const job_id = detail.job_detail.job_id;
 
     const handelChangeMenu = (value) => {
         if (value === 1) {
@@ -29,7 +100,11 @@ function ContentForm({detail}) {
         } else if (value === 5) {
             setAction(5);
             setShowDetail(5);
-        } else if (value === 7) {
+        }else if(value === 6) {
+            setAction(6);
+            setShowDetail(6);
+        }
+        else if (value === 7) {
             setAction(7);
             setShowDetail(7);
         } else if (value === 8) {
@@ -65,8 +140,8 @@ function ContentForm({detail}) {
                         <ButtonStyle {...{action}} value={3} title={'อาการเบื้องต้น'} icon={<ViewList/>}/>
                         <ButtonStyle {...{action}} value={4} title={'รูปภาพ/วิดีโอ'} icon={<Camera/>}/>
                         <ButtonStyle {...{action}} value={5} title={'อาการ/สาเหตุ'} icon={<Psychology/>}/>
-                        <ButtonStyle {...{action}} value={7} title={'อะไหล่'} icon={<Build/>}/>
-                        <ButtonStyle {...{action}} value={8} title={'แจ้งเตือน'} icon={<Warning/>}/>
+                        <ButtonStyle {...{action}} value={6} title={'อะไหล่'} icon={<Build/>}/>
+                        <ButtonStyle {...{action}} value={7} title={'แจ้งเตือน'} icon={<Warning/>}/>
                         {/*</Stack>*/}
                         {/*</Grid2>*/}
                     </Grid2>
@@ -84,60 +159,13 @@ function ContentForm({detail}) {
                         1: <RpSummary job_id={job_id} detail={detail}/>,
                         2: <RpCustomer job_id={job_id}/>,
                         3: <RpSymptomsRemark job_id={job_id}/>,
-                        4: <RpUploadFile job_id={job_id}/>,
-                        5: 'อาการ/สาเหตุ', 6: 'อะไหล่', 7: 'แจ้งเตือน'
+                        4: <RpUploadFile job_id={job_id} productDetail={productDetail} jobDetail={detail}/>,
+                        5: <RpBehavior list_behavior={productDetail.listbehavior} job_id={job_id}/>,
+                        6: <RpSpMain detail={productDetail}/>,
+                        7: 'แจ้งเตือน'
                     }[action] ?? 'no')}
                 </Grid2>
             </Grid2>
-        </Grid2>
-    )
-}
-
-export default function RpMain({serial_id,productDetail}) {
-    console.log('productDetail >>> ',productDetail);
-    const [loading, setLoading] = useState(false);
-    const [detail, setDetail] = useState();
-    useEffect(() => {
-        setLoading(true);
-        foundJob().finally(() => setLoading(false));
-    }, [])
-
-    const foundJob = async () => {
-        try {
-            const {data, status} = await axios.post(route('repair.found', {serial_id : productDetail.serial,pid : productDetail.pid}))
-            console.log(data, status);
-            setDetail(data.job);
-            // alert(`status = ${status} found`)
-        } catch (error) {
-            console.log(error)
-            const errorStatus = error.status
-            const errorMessage = error.response.data.message
-            AlertDialog({
-                icon: errorStatus === 404 ? 'question' : 'error',
-                title: errorStatus === 404 ? 'ยืนยันการแจ้งซ่อม' : 'เกิดข้อผิดพลาด',
-                text: errorStatus === 404 ? 'กด ตกลง เพื่อยืนยันการแจ้งซ่อม' : errorMessage,
-                onPassed: async (confirm) => {
-                    if (confirm && errorStatus === 404) {
-                        await storeJob()
-                    } else {
-                        alert('เฉยๆ')
-                    }
-                }
-            })
-        }
-    }
-
-    const storeJob = async () => {
-        try {
-            const {data, status} = await axios.post(route('repair.store',{serial_id,productDetail}));
-            console.log(data, status);
-        }catch (error) {
-            console.log(error)
-        }
-    }
-    return (
-        <Grid2 container spacing={2}>
-            {loading ? <CircularProgress/> : detail ? <ContentForm {...{detail}}/> : <>เกิดข้อผิดพลาด</>}
         </Grid2>
     )
 }

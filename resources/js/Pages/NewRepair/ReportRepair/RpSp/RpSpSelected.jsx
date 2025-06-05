@@ -30,18 +30,18 @@ const TableC = ({detail = [], warranty = false}) => {
                         return (
                             <TableRow key={index} sx={
                                 item.price_per_unit === '-' ? {backgroundColor: '#fdeded'}
-                                    : item.warranty ?
+                                    : detail.sp_warranty.find(it => it.spcode === item.spcode) ?
                                         {backgroundColor: '#edf7ed'} : {backgroundColor: 'white'}
                             }>
                                 <TableCell width={10} onClick={() => {
                                     setCurrentImage(spPath2);
                                     setOpenPreview(true);
                                 }}>
-                                    <img src={spPath2} width={50} alt='no image' onError={(e) => {
+                                    <img src={spPath2} width={50} alt={(e) => {
                                         e.target.src = 'https://images.dcpumpkin.com/images/product/500/default.jpg'
                                     }}/>
                                 </TableCell>
-                                <TableCell>{item.spcode} {item.warranty}
+                                <TableCell>{item.spcode}
                                 </TableCell>
                                 <TableCell>{item.spname}</TableCell>
                                 <TableCell>{item.qty}</TableCell>
@@ -56,13 +56,11 @@ const TableC = ({detail = [], warranty = false}) => {
     )
 }
 
-export default function SpSelected({detail, setShowAdd, showAdd}) {
+export default function RpSpSelected({detail, setShowAdd, showAdd}) {
 
     const handelChangeShow = () => {
         setShowAdd(true);
     }
-
-    console.log(detail)
     return (
         <Grid2 container spacing={2}>
             <Grid2 size={12}>

@@ -10,8 +10,8 @@ import SpSummary from "@/Pages/ReportRepair/SpNew/SpSummary.jsx";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 
 
-export default function SpAdd({detail, showAdd, setShowAdd, setDetail}) {
-    const [selected, setSelected] = useState(detail.selected.sp);
+export default function RpSpAdd({detail, showAdd, setShowAdd, setDetail}) {
+    const [selected, setSelected] = useState(detail?.selected?.sp);
     const [open, setOpen] = useState(false);
     const [openPreview, setOpenPreview] = useState(false);
     const [currentPreview, setCurrentPreview] = useState(null);
@@ -33,13 +33,13 @@ export default function SpAdd({detail, showAdd, setShowAdd, setDetail}) {
         return combinedSp;
     });
     // ตรวจสอบว่ารายการอยู่ใน selected หรือไม่
-    const isSelected = (item) => {
-        return selected.some(sel => sel.spcode === item.spcode);
-    };
+    // const isSelected = (item) => {
+    //     return selected.some(sel => sel.spcode === item.spcode);
+    // };
     // ฟังก์ชั่นจัดการการเลือกรายการ
     const handelSelect = (e, item) => {
         const checked = e.target.checked;
-        const warranty = item.warranty === 'Y';
+        const warranty = detail.sp_warranty.some(t => t.spcode === item.spcode)
         if (checked) { // เพิ่มรายการเข้าไปใน selected
             setSelected(prev => [...prev, {
                 ...item,
@@ -47,7 +47,7 @@ export default function SpAdd({detail, showAdd, setShowAdd, setDetail}) {
                 qty: 1,
                 price_multiple_gp: `${parseFloat(item.price_per_unit) + ((detail.selected.globalGP / 100) * parseFloat(item.price_per_unit))}`,
                 sp_unit: item.spunit,
-                warranty: warranty ? 'Y' : 'N',
+                warranty: warranty,
                 remark: null,
                 claim: false,
                 approve: 'no',
@@ -112,7 +112,7 @@ export default function SpAdd({detail, showAdd, setShowAdd, setDetail}) {
                                     <TableRow key={index}>
                                         <TableCell>
                                             <Checkbox
-                                                checked={isSelected(item)}
+                                                // checked={isSelected(item)}
                                                 onChange={(e) => handelSelect(e, item)}
                                             />
                                         </TableCell>
@@ -159,15 +159,15 @@ export default function SpAdd({detail, showAdd, setShowAdd, setDetail}) {
                                     if (item.spcode !== 'SV001') {
                                         return (
                                             <TableRow key={index}
-                                                      sx={
-                                                          item.price_per_unit === '-' ? {backgroundColor: '#fdeded'}
-                                                              : (item.warranty === 'Y' || item.warranty === true) ?
-                                                                  {backgroundColor: '#edf7ed'} : {backgroundColor: 'white'}
-                                                      }
+                                                      // sx={
+                                                      //     item.price_per_unit === '-' ? {backgroundColor: '#fdeded'}
+                                                      //         : detail.sp_warranty.find(it => it.spcode === item.spcode) ?
+                                                      //             {backgroundColor: '#edf7ed'} : {backgroundColor: 'white'}
+                                                      // }
                                             >
                                                 <TableCell>
                                                     <Checkbox
-                                                        checked={isSelected(item)}
+                                                        // checked={isSelected(item)}
                                                         disabled={item.price_per_unit === '-'}
                                                         onChange={(e) => handelSelect(e, item)}
                                                     />
@@ -183,7 +183,7 @@ export default function SpAdd({detail, showAdd, setShowAdd, setDetail}) {
                                                         }}
                                                     />
                                                 </TableCell>
-                                                <TableCell>{item.spcode} {item.warranty}</TableCell>
+                                                <TableCell>{item.spcode}</TableCell>
                                                 <TableCell>{item.spname}</TableCell>
                                                 <TableCell>{item.spunit ? item.spunit : item.sp_unit}f</TableCell>
                                             </TableRow>
