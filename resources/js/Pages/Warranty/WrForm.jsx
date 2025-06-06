@@ -1,7 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {Head} from "@inertiajs/react";
 import {
-    Button, Container,Grid2,
+    Button, Container, Grid2,
     Stack, TextField, Typography, Paper, Alert, Box
 } from "@mui/material";
 import {Search, CheckCircle, AppRegistration} from "@mui/icons-material";
@@ -53,32 +53,37 @@ export default function WrForm() {
     const handleRegister = (e) => {
         e.preventDefault();
 
-       try {
-           setRegistering(true);
+        try {
+            setRegistering(true);
             AlertDialogQuestion({
-                text : 'กด ตกลง เพื่อยืนยัน',
-                onPassed : async (confirm) => {
+                text: 'กด ตกลง เพื่อยืนยัน',
+                onPassed: async (confirm) => {
                     if (confirm) {
-                        const {data, status} = await axios.post(route('warranty.store'),{
-                            date_warranty : selectedDay,
-                            serial_id: search.current.value,
-                            pid : product.pid,
-                            p_name : product.pname,
-                            warrantyperiod : product.warrantyperiod
-                        });
-                        if (status === 200) {
+                        try {
+                            const {data, status} = await axios.post(route('warranty.store'), {
+                                date_warranty: selectedDay,
+                                serial_id: search.current.value,
+                                pid: product.pid,
+                                p_name: product.pname,
+                                warrantyperiod: product.warrantyperiod
+                            });
                             AlertDialog({
-                                icon : 'success',
-                                text : data.message
+                                icon: 'success',
+                                text: data.message
                             })
                             setIsAlreadyRegistered(true)
+
+                        } catch (error) {
+                            AlertDialog({
+                                title: 'เกิดข้อผิดพลาด',
+                                text: error.response.data.message || error.message || 'error'
+                            });
                         }
                     }
 
                 }
             })
         } catch (error) {
-           console.log(error)
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
                 message: error.response?.data.message || error.message
