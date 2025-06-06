@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 
 // Search from API outsource
 Route::post('/search', [SearchController::class, 'detail'])->name('search');
+Route::post('/search-from-history', [SearchController::class, 'searchFromHistory'])->name('search-from-history');
 Route::post('/search/sku',[SearchBySkuController::class,'detailSku'])->name('search.sku');
 
 Route::prefix('jobs')->group(function(){

@@ -38,10 +38,18 @@ const ModalSelectSkuComponent = ({open, setOpen, selectSku, onSelect}) => {
         onSelect(selectedItem);
         setOpen(false);
     }
+
+    const handleClose = (e,reason) => {
+        if (reason === 'escapeKeyDown' || reason === 'backdropClick') {
+            return ;
+        }
+
+        setOpen(false);
+    }
     return (
         <Dialog
             open={open}
-            onClose={() => setOpen(false)}
+            onClose={handleClose}
         >
             <DialogContent>
                 <Typography variant='h6' fontWeight='bold' mb={2}>เลือกสินค้าที่ต้องการซ่อม</Typography>
@@ -96,6 +104,10 @@ export default function Dashboard({SN, JOB_ID}) {
             fetchData(SN, false).then();
         }
     }, [])
+
+    const searchFormHistory = async () => {
+        console.log(SN, JOB_ID)
+    }
 
 
     const [check, setCheck] = useState('before');

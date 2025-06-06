@@ -19,7 +19,7 @@ class WarrantyProductController extends Controller
     public function index(): Response
     {
         logStamp::query()->create(['description' => Auth::user()->user_code . " ดูเมนู ลงทะเบียนรับประกัน"]);
-        return Inertia::render('Warranty/Form');
+        return Inertia::render('Warranty/WrForm');
     }
 
     public function search(Request $request): JsonResponse
@@ -37,6 +37,20 @@ class WarrantyProductController extends Controller
                 if ($searchResults['status'] === 'Fail') {
                     throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $request->sn);
                 }
+
+                $res_RealProduct = Http::post(env('VITE_API_ORDER'),[
+                    'pid' => $searchResults['skumain'],
+                    'view' => 'single'
+                ]);
+
+                $res_RealProduct = $res_RealProduct->json();
+
+                $real_product = $res_RealProduct['assets'][0];
+                $real_product['serial_id'] = $serial_id;
+
+
+
+
                 $warrantyAt = WarrantyProduct::query()->where('serial_id', $serial_id)->first();
                 $expire_date = $warrantyAt->expire_date ?? '';
                 $warrantyAt = $warrantyAt->date_warranty ?? '';
@@ -49,7 +63,8 @@ class WarrantyProductController extends Controller
                 'message' => 'success',
                 'warrantyAt' => $warrantyAt,
                 'expire_date' => $expire_date,
-                'time' => Carbon::now()
+                'time' => Carbon::now(),
+                'getRealProduct' => $real_product,
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -62,59 +77,70 @@ class WarrantyProductController extends Controller
 
     public function store(WarrantyProductRequest $request): JsonResponse
     {
-//        dd($request->all());
+        // แปลง date_warranty ให้เป็น Carbon instance
         $dateWarranty = Carbon::parse($request->input('date_warranty'));
+
         $now = Carbon::now();
         $dateLimit = $now->copy()->subDays(14);
 
-
+        // เช็คว่าลงทะเบียนเกินวันปัจจุบัน
         if ($dateWarranty->gt($now)) {
             return response()->json([
                 'message' => "วันที่ลงทะเบียนรับประกัน ($dateWarranty) ไม่สามารถมากกว่าวันปัจจุบัน ($now) ได้"
             ], 422);
         }
 
-        // กรณีวันที่ลงทะเบียนย้อนหลังเกิน 14 วัน
+        // เช็คว่าย้อนหลังเกิน 14 วัน
         if ($dateWarranty->lt($dateLimit)) {
             return response()->json([
                 'message' => "วันที่ลงทะเบียนรับประกัน ($dateWarranty) ไม่สามารถย้อนหลังเกิน 14 วัน (ก่อนวันที่ $dateLimit) ได้"
             ], 422);
         }
 
-
+        // ดึงข้อมูลจากฟอร์ม
         $serial_id = $request->input('serial_id');
-        logStamp::query()->create(['description' => Auth::user()->user_code . " พยายามลงทะเบียนรับประกัน $serial_id"]);
+        logStamp::query()->create([
+            'description' => Auth::user()->user_code . " พยายามลงทะเบียนรับประกัน $serial_id"
+        ]);
+
         $pid = $request->input('pid');
         $p_name = $request->input('p_name');
-        $warranty_period = $request->input('warrantyperiod');
-        $date_warranty = $request->input('date_warranty');
-        $expire_date = Carbon::parse($date_warranty)->addMonths($warranty_period);
+        $warranty_period = (int) $request->input('warrantyperiod'); // แปลงเป็น integer เพื่อความปลอดภัย
+        $expire_date = $dateWarranty->copy()->addMonths($warranty_period);
+
         try {
             DB::beginTransaction();
+
             WarrantyProduct::query()->create([
                 'serial_id' => $serial_id,
                 'pid' => $pid,
                 'p_name' => $p_name,
-                'date_warranty' => $date_warranty,
+                'date_warranty' => $dateWarranty->toDateString(), // เก็บแบบ yyyy-mm-dd
                 'user_id' => auth()->id(),
                 'user_is_code_id' => auth()->user()->is_code_cust_id,
                 'warranty_period' => $warranty_period,
-                'expire_date' => $expire_date,
+                'expire_date' => $expire_date->toDateString(),
             ]);
-            $message = 'บันทึกข้อมูลเสร็จสิ้น สิ้นสุดประกันถึง '.Carbon::parse($expire_date)->toDateTimeString();
-            $Status = 200;
+
+            $message = 'บันทึกข้อมูลเสร็จสิ้น สิ้นสุดประกันถึง ' . $expire_date->toDateTimeString();
+            $status = 200;
+
             DB::commit();
-            logStamp::query()->create(['description' => Auth::user()->user_code . " ลงทะเบียนรับประกัน $serial_id สำเร็จ"]);
+
+            logStamp::query()->create([
+                'description' => Auth::user()->user_code . " ลงทะเบียนรับประกัน $serial_id สำเร็จ"
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
             $message = $e->getMessage();
-            $Status = 400;
+            $status = 400;
         } finally {
             return response()->json([
                 'message' => $message,
-            ], $Status);
+            ], $status);
         }
     }
+
 
     public function update(Request $request): JsonResponse
     {

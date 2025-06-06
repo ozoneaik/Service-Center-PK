@@ -75,22 +75,21 @@ class SearchController extends Controller
                     $sku = $request->pid;
                     if ($sku) {
                         $searchResults = $searchResults['assets'][$sku];
-                    }else{
+                    } else {
                         $list_sku = [];
-                        foreach ($skus as $key => $value){
+                        foreach ($skus as $key => $value) {
                             $list_sku[$key]['pname'] = $searchResults['assets'][$value]['pname'];
                             $list_sku[$key]['pid'] = $searchResults['assets'][$value]['pid'];
                         }
                         return response()->json([
-                            'message' => 'ตรวจพบสินค้า '.count($skus).' รายการ',
+                            'message' => 'ตรวจพบสินค้า ' . count($skus) . ' รายการ',
                             'list_sku' => $list_sku
-                        ],202);
+                        ], 202);
                     }
 
-                }else{
+                } else {
                     $searchResults = $searchResults['assets'][$searchResults['skuset'][0]];
                 }
-
 
 
                 // ตรวจในฐานข้อมูลก่อนว่า มีใน warrantyProduct มั้ย
@@ -106,7 +105,7 @@ class SearchController extends Controller
 
                 $sku = $sku ?? null;
 
-                $searchResults['job'] = $this->storeJob($searchResults, $createJob,$sku);
+                $searchResults['job'] = $this->storeJob($searchResults, $createJob, $sku);
                 if ($searchResults['job']['is_code_key'] !== Auth::user()->is_code_cust_id) {
                     throw new \Exception('สินค้าซีเรียลนี้ถูกสร้าง job โดยศูนย์บริการอื่นแล้ว และยังดำเนินการอยู่ หากสงสัย ติดต่อผู้ดูแลระบบ');
                 }
@@ -218,11 +217,11 @@ class SearchController extends Controller
         ];
     }
 
-    private function storeJob($data, $createJob,$sku)
+    private function storeJob($data, $createJob, $sku)
     {
         $query = JobList::query();
         $query = $query->where('serial_id', $data['serial']);
-        if ($sku){
+        if ($sku) {
             $query->where('pid', $sku);
         }
 
@@ -370,6 +369,46 @@ class SearchController extends Controller
         }
 
     }
+
+    public function searchFromHistory(Request $request)
+    {
+        try {
+            $serial_id = $request->input('serial_id');
+            $job_id = $request->input('job_id');
+
+            $job = JobList::query()
+                ->where('serial_id', $serial_id)
+                ->where('job_id', $job_id)
+                ->first();
+
+            if (!$job) throw  new  \Exception('ไม่พบ job นี้');
+
+            $find_data_from_api = Http::post(env('API_DETAIL'),[
+                'sn' => $serial_id,
+                'view' => 'single',
+            ]);
+
+//            if ($find_data_from_api->successful() && ) {
+//                $responseJson = $find_data_from_api->json();
+//                if ($responseJson['status'] == 'SUCCESS') {
+//
+//                }
+//            }
+
+
+            return response()->json([
+                'message' => 'success',
+                'request' => $request->all(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getMessage() . $e->getLine() . $e->getFile(),
+            ]);
+        }
+    }
+
 }
+
 
 
