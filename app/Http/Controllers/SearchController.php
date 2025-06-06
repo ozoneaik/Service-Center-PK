@@ -157,7 +157,9 @@ class SearchController extends Controller
 
     private function BehaviorSelected($job_id): Collection
     {
-        return Behavior::query()
+
+
+        $query = Behavior::query()
             ->where('job_id', $job_id)
             ->select(
                 'id',
@@ -170,6 +172,7 @@ class SearchController extends Controller
                 'updated_at'
             )
             ->get();
+        return $query;
     }
 
     private function RemarkSelected($job_id)
@@ -265,16 +268,15 @@ class SearchController extends Controller
 
     private function CustomerInJob($serial_id, $job_id)
     {
-        $customerInJob = CustomerInJob::where('serial_id', $serial_id)->first();
+        $customerInJob = CustomerInJob::query()->where('serial_id', $serial_id)->first();
 
         if ($customerInJob) {
-            $getLatestJob = CustomerInJob::where('serial_id', $customerInJob->serial_id)
+            $getLatestJob = CustomerInJob::query()->where('serial_id', $customerInJob->serial_id)
                 ->orderBy('id', 'desc')
                 ->first();
 
             if ($getLatestJob) {
-                $getCurrentJob = CustomerInJob::where('job_id', $job_id)->first();
-
+                $getCurrentJob = CustomerInJob::query()->where('job_id', $job_id)->first();
                 if ($getCurrentJob) {
                     return $getCurrentJob;
                 } else {
@@ -376,35 +378,65 @@ class SearchController extends Controller
             $serial_id = $request->input('serial_id');
             $job_id = $request->input('job_id');
 
-            $job = JobList::query()
-                ->where('serial_id', $serial_id)
-                ->where('job_id', $job_id)
-                ->first();
+            $job_find = JobList::query()->where('job_id', $job_id)->first();
+            if (!$job_find) throw  new  \Exception('ไม่พบ job นี้');
+            $job = [];
 
-            if (!$job) throw  new  \Exception('ไม่พบ job นี้');
 
-            $find_data_from_api = Http::post(env('API_DETAIL'),[
+
+            $find_data_from_api = Http::post(env('API_DETAIL'), [
                 'sn' => $serial_id,
                 'view' => 'single',
             ]);
 
-//            if ($find_data_from_api->successful() && ) {
-//                $responseJson = $find_data_from_api->json();
-//                if ($responseJson['status'] == 'SUCCESS') {
-//
-//                }
-//            }
+            if ($find_data_from_api->successful()) {
+                $responseJson = $find_data_from_api->json();
+                if ($responseJson['status'] == 'SUCCESS') {
+                    $warrantyexpire = $responseJson['warrantyexpire'];
+                    // ตรวจในฐานข้อมูลก่อนว่า มีใน warrantyProduct มั้ย
+                    $findWarranty = WarrantyProduct::query()->where('serial_id', $request->sn)->first();
+                    if ($findWarranty) {
+                        $dateWarranty = Carbon::parse($findWarranty->date_warranty);
+                        $expireDate = Carbon::parse($findWarranty->expire_date);
+                        $now = Carbon::now();
+                        if ($now->greaterThanOrEqualTo($dateWarranty) && $now->lessThanOrEqualTo($expireDate)) {
+                            $responseJson['warranty_status'] = true;
+                        } else $responseJson['warranty_status'] = false;
+                    } else $responseJson['warranty_status'] = $warrantyexpire;
+
+
+                    $job = $responseJson['assets'][$job_find->pid];
+                    $job['warranty_status'] = $responseJson['warranty_status'];
+                    $job['job_id'] = $job_id;
+                    $job['serial'] = $serial_id;
+                    $job['history'] = [];
+                    $job['selected']['behavior'] = $this->BehaviorSelected($job_id) ?? [];
+                    $job['selected']['symptom'] = $this->SymptomSelected($job_id) ?? [];
+                    $job['selected']['remark'] = $this->RemarkSelected($job_id) ?? [];
+                    $job['selected']['fileUpload'] = $this->FileSelected($job_id) ?? [];
+                    $job['selected']['customerInJob'] = $this->CustomerInJob($serial_id, $job_id) ?? [];
+                    $sp = $this->SpSelected($job['job_id']);
+                    $job['selected']['sp_warranty'] = $sp['sp_warranty'];
+                    $job['selected']['sp'] = $sp['sp'];
+                    $job['job'] = $job_find;
+
+                } else {
+                    throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $serial_id . ' กรุณาติดต่อเบอร์ 02-8995928 ต่อ 266');
+                }
+            }
+
 
 
             return response()->json([
                 'message' => 'success',
                 'request' => $request->all(),
+                'job' => $job ?? [],
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => $e->getMessage(),
+                'message' => $e->getMessage() . $e->getLine() . $e->getFile(),
                 'error' => $e->getMessage() . $e->getLine() . $e->getFile(),
-            ]);
+            ],400);
         }
     }
 

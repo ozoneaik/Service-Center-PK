@@ -1,17 +1,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {Head} from '@inertiajs/react';
 import {
-    Box,
-    Button,
-    Card, CardActionArea,
-    CardContent,
-    Container,
-    Dialog,
-    DialogContent, Divider,
-    Grid2,
-    Stack,
-    TextField,
-    Typography
+    Box, Button, Card, CardActionArea, CardContent, Container, Dialog, DialogContent, Divider,
+    Grid2, Stack, TextField, Typography
 } from '@mui/material';
 import {Search, Edit, ManageHistory, YouTube, MenuBook} from '@mui/icons-material';
 import ProductDetail from '@/Components/ProductDetail';
@@ -99,15 +90,8 @@ const ModalSelectSkuComponent = ({open, setOpen, selectSku, onSelect}) => {
 }
 
 export default function Dashboard({SN, JOB_ID}) {
-    useEffect(() => {
-        if (SN && JOB_ID) {
-            fetchData(SN, false).then();
-        }
-    }, [])
 
-    const searchFormHistory = async () => {
-        console.log(SN, JOB_ID)
-    }
+
 
 
     const [check, setCheck] = useState('before');
@@ -116,11 +100,37 @@ export default function Dashboard({SN, JOB_ID}) {
     const [sn, setSn] = useState(SN || '');
     const [showContent, setShowContent] = useState();
 
-
     // เมื่อพบว่า sn เป็น combo set
     const [selectSku, setSelectSku] = useState();
     const [selectedSku, setSelectedSku] = useState({sn : '', pid : ''});
     const [modalSelectSku, setModalSelectSku] = useState(false);
+
+
+    useEffect(() => {
+        if (SN && JOB_ID) {
+            searchFormHistory().then(()=>setProcessing(false));
+        }
+    }, [])
+
+
+    const searchFormHistory = async () => {
+        try {
+            setProcessing(true)
+            const {data, status} = await  axios.post(route('search-from-history'),{
+                serial_id : SN,
+                job_id : JOB_ID
+            });
+            console.log('searchFormHistory', data, status)
+            setDetail(data.job);
+        }catch (error) {
+            console.log(error);
+            AlertDialog({
+                title: 'เกิดข้อผิดพลาด',
+                text : error.response.data?.message || error.message,
+            })
+        }
+    }
+
 
 
     useEffect(() => {
