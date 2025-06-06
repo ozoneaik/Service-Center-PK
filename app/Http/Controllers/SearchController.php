@@ -383,48 +383,88 @@ class SearchController extends Controller
             $job = [];
 
 
+            if (str_starts_with($serial_id, '9999')){
+                $pid = $job_find['pid'];
+                $find_data_from_api = Http::post(env('VITE_API_ORDER'), [
+                    'pid' => $pid,
+                    'view' => 'single',
+                ]);
+                if ($find_data_from_api->successful()) {
+                    $responseJson = $find_data_from_api->json();
+                    if ($responseJson['status'] == 'SUCCESS') {
+                        $warrantyexpire = $responseJson['warrantyexpire'] ?? false;
+                        // ตรวจในฐานข้อมูลก่อนว่า มีใน warrantyProduct มั้ย
+                        $findWarranty = WarrantyProduct::query()->where('serial_id', $serial_id)->first();
+                        if ($findWarranty) {
+                            $dateWarranty = Carbon::parse($findWarranty->date_warranty);
+                            $expireDate = Carbon::parse($findWarranty->expire_date);
+                            $now = Carbon::now();
+                            if ($now->greaterThanOrEqualTo($dateWarranty) && $now->lessThanOrEqualTo($expireDate)) {
+                                $responseJson['warranty_status'] = true;
+                            } else $responseJson['warranty_status'] = false;
+                        } else $responseJson['warranty_status'] = $warrantyexpire;
 
-            $find_data_from_api = Http::post(env('API_DETAIL'), [
-                'sn' => $serial_id,
-                'view' => 'single',
-            ]);
 
-            if ($find_data_from_api->successful()) {
-                $responseJson = $find_data_from_api->json();
-                if ($responseJson['status'] == 'SUCCESS') {
-                    $warrantyexpire = $responseJson['warrantyexpire'];
-                    // ตรวจในฐานข้อมูลก่อนว่า มีใน warrantyProduct มั้ย
-                    $findWarranty = WarrantyProduct::query()->where('serial_id', $request->sn)->first();
-                    if ($findWarranty) {
-                        $dateWarranty = Carbon::parse($findWarranty->date_warranty);
-                        $expireDate = Carbon::parse($findWarranty->expire_date);
-                        $now = Carbon::now();
-                        if ($now->greaterThanOrEqualTo($dateWarranty) && $now->lessThanOrEqualTo($expireDate)) {
-                            $responseJson['warranty_status'] = true;
-                        } else $responseJson['warranty_status'] = false;
-                    } else $responseJson['warranty_status'] = $warrantyexpire;
+                        $job = $responseJson['assets'][0];
+                        $job['warranty_status'] = $responseJson['warranty_status'];
+                        $job['job_id'] = $job_id;
+                        $job['serial'] = $serial_id;
+                        $job['history'] = [];
+                        $job['selected']['behavior'] = $this->BehaviorSelected($job_id) ?? [];
+                        $job['selected']['symptom'] = $this->SymptomSelected($job_id) ?? [];
+                        $job['selected']['remark'] = $this->RemarkSelected($job_id) ?? [];
+                        $job['selected']['fileUpload'] = $this->FileSelected($job_id) ?? [];
+                        $job['selected']['customerInJob'] = $this->CustomerInJob($serial_id, $job_id) ?? [];
+                        $sp = $this->SpSelected($job['job_id']);
+                        $job['selected']['sp_warranty'] = $sp['sp_warranty'];
+                        $job['selected']['sp'] = $sp['sp'];
+                        $job['job'] = $job_find;
+
+                    } else {
+                        throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $serial_id . ' กรุณาติดต่อเบอร์ 02-8995928 ต่อ 266');
+                    }
+                }
+            }else{
+                $find_data_from_api = Http::post(env('API_DETAIL'), [
+                    'sn' => $serial_id,
+                    'view' => 'single',
+                ]);
+                if ($find_data_from_api->successful()) {
+                    $responseJson = $find_data_from_api->json();
+                    if ($responseJson['status'] == 'SUCCESS') {
+                        $warrantyexpire = $responseJson['warrantyexpire'];
+                        // ตรวจในฐานข้อมูลก่อนว่า มีใน warrantyProduct มั้ย
+                        $findWarranty = WarrantyProduct::query()->where('serial_id', $serial_id)->first();
+                        if ($findWarranty) {
+                            $dateWarranty = Carbon::parse($findWarranty->date_warranty);
+                            $expireDate = Carbon::parse($findWarranty->expire_date);
+                            $now = Carbon::now();
+                            if ($now->greaterThanOrEqualTo($dateWarranty) && $now->lessThanOrEqualTo($expireDate)) {
+                                $responseJson['warranty_status'] = true;
+                            } else $responseJson['warranty_status'] = false;
+                        } else $responseJson['warranty_status'] = $warrantyexpire;
 
 
-                    $job = $responseJson['assets'][$job_find->pid];
-                    $job['warranty_status'] = $responseJson['warranty_status'];
-                    $job['job_id'] = $job_id;
-                    $job['serial'] = $serial_id;
-                    $job['history'] = [];
-                    $job['selected']['behavior'] = $this->BehaviorSelected($job_id) ?? [];
-                    $job['selected']['symptom'] = $this->SymptomSelected($job_id) ?? [];
-                    $job['selected']['remark'] = $this->RemarkSelected($job_id) ?? [];
-                    $job['selected']['fileUpload'] = $this->FileSelected($job_id) ?? [];
-                    $job['selected']['customerInJob'] = $this->CustomerInJob($serial_id, $job_id) ?? [];
-                    $sp = $this->SpSelected($job['job_id']);
-                    $job['selected']['sp_warranty'] = $sp['sp_warranty'];
-                    $job['selected']['sp'] = $sp['sp'];
-                    $job['job'] = $job_find;
+                        $job = $responseJson['assets'][$job_find->pid];
+                        $job['warranty_status'] = $responseJson['warranty_status'];
+                        $job['job_id'] = $job_id;
+                        $job['serial'] = $serial_id;
+                        $job['history'] = [];
+                        $job['selected']['behavior'] = $this->BehaviorSelected($job_id) ?? [];
+                        $job['selected']['symptom'] = $this->SymptomSelected($job_id) ?? [];
+                        $job['selected']['remark'] = $this->RemarkSelected($job_id) ?? [];
+                        $job['selected']['fileUpload'] = $this->FileSelected($job_id) ?? [];
+                        $job['selected']['customerInJob'] = $this->CustomerInJob($serial_id, $job_id) ?? [];
+                        $sp = $this->SpSelected($job['job_id']);
+                        $job['selected']['sp_warranty'] = $sp['sp_warranty'];
+                        $job['selected']['sp'] = $sp['sp'];
+                        $job['job'] = $job_find;
 
-                } else {
-                    throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $serial_id . ' กรุณาติดต่อเบอร์ 02-8995928 ต่อ 266');
+                    } else {
+                        throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $serial_id . ' กรุณาติดต่อเบอร์ 02-8995928 ต่อ 266');
+                    }
                 }
             }
-
 
 
             return response()->json([
