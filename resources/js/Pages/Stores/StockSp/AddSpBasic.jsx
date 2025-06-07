@@ -1,6 +1,9 @@
 import InputError from "@/Components/InputError.jsx";
 import { useForm, usePage } from "@inertiajs/react";
-import { Alert, Button, CircularProgress, Dialog, DialogContent, Divider, Grid2, InputAdornment, Stack, TextField, Typography, useTheme } from "@mui/material";
+import {
+    Alert, Button, CircularProgress, Dialog, DialogContent,
+    Divider, Grid2, Stack, TextField, Typography, useTheme
+} from "@mui/material";
 import axios from "axios";
 import { useRef, useState } from "react";
 
@@ -23,7 +26,7 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
         setOpenAddSpBasic(false);
     }
 
-    const { data, setData, processing, errors, post,reset } = useForm({
+    const { data, setData, processing, errors, post, reset } = useForm({
         is_code_cust_id: user.is_code_cust_id,
         sku_code: '',
         sku_name: '',
@@ -48,7 +51,7 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
                 onError: (errors) => {
                     console.error("❌ เกิดข้อผิดพลาดจาก Backend:", errors);
                 },
-                onFinish : () => {
+                onFinish: () => {
                     reset()
                 }
             });
@@ -96,9 +99,9 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
             clearTimeout(delaySearchSpname.current)
         }
         delaySearchSpname.current = setTimeout(() => {
-            searchSpName(value).finally(()=>{
+            searchSpName(value).finally(() => {
                 setLoadingSp(false)
-              
+
             })
         }, [1000])
     }
@@ -109,7 +112,7 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
             const { data, status } = await axios.post(route('search-sp', { sp_code }))
             console.log(data, status);
             setData('sp_name', data.sp_name)
-              
+
         } catch (error) {
             setData('sp_name', null);
         }
@@ -170,7 +173,7 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
                             </Grid2>
                             <Grid2 size={{ md: 6, xs: 12 }}>
                                 <Typography>
-                                   ชื่ออะไหล่ = {!loadingSp ? data.sp_name : <CircularProgress size={20}/>}
+                                    ชื่ออะไหล่ = {!loadingSp ? data.sp_name : <CircularProgress size={20} />}
                                 </Typography>
                             </Grid2>
                             <Grid2 size={{ md: 12, xs: 12 }}>
