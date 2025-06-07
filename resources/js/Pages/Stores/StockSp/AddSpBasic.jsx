@@ -12,6 +12,10 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
     const searchSp = useRef(null);
     const [searching, setSerching] = useState(false);
 
+    const delaySearchSpname = useRef(null);
+    const [loadingSp, setLoadingSp] = useState(false);
+
+
     const handleOnClose = (e, reason) => {
         if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
             return;
@@ -19,7 +23,7 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
         setOpenAddSpBasic(false);
     }
 
-    const { data, setData, processing, errors, post } = useForm({
+    const { data, setData, processing, errors, post,reset } = useForm({
         is_code_cust_id: user.is_code_cust_id,
         sku_code: '',
         sku_name: '',
@@ -43,6 +47,9 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
                 },
                 onError: (errors) => {
                     console.error("❌ เกิดข้อผิดพลาดจาก Backend:", errors);
+                },
+                onFinish : () => {
+                    reset()
                 }
             });
 
@@ -78,6 +85,33 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
             console.error("⚠️ เกิดข้อผิดพลาดใน handleSearch() :", error);
         } finally {
             setSerching(false);
+        }
+    }
+
+    const handleOnChange = (e) => {
+        const { value } = e.target;
+        setData('sp_code', value)
+
+        if (delaySearchSpname.current) {
+            clearTimeout(delaySearchSpname.current)
+        }
+        delaySearchSpname.current = setTimeout(() => {
+            searchSpName(value).finally(()=>{
+                setLoadingSp(false)
+              
+            })
+        }, [1000])
+    }
+
+    const searchSpName = async (sp_code) => {
+        try {
+            setLoadingSp(true)
+            const { data, status } = await axios.post(route('search-sp', { sp_code }))
+            console.log(data, status);
+            setData('sp_name', data.sp_name)
+              
+        } catch (error) {
+            setData('sp_name', null);
         }
     }
 
@@ -119,27 +153,6 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
                             <Grid2 size={12}>
                                 <Typography variant="h6" fontWeight='bold'>เพิ่มอะไหล่</Typography>
                             </Grid2>
-                            {/*<Grid2 size={12}>*/}
-                            {/*    <Typography variant='body2' sx={{ color: pumpkinColor.main }}>ข้อมูลสินค้า</Typography>*/}
-                            {/*</Grid2>*/}
-                            {/*<Grid2 size={{ md: 6, xs: 12 }}>*/}
-                            {/*    <TextField*/}
-                            {/*        value={data.sku_code}*/}
-                            {/*        onChange={(e) => setData('sku_code', e.target.value)}*/}
-                            {/*        size="small"*/}
-                            {/*        fullWidth label='รหัสสินค้า'*/}
-                            {/*        placeholder="ตัวอย่าง 50277"*/}
-                            {/*    />*/}
-                            {/*</Grid2>*/}
-                            {/*<Grid2 size={{ md: 6, xs: 12 }}>*/}
-                            {/*    <TextField*/}
-                            {/*        value={data.sku_name}*/}
-                            {/*        onChange={(e) => setData('sku_name', e.target.value)}*/}
-                            {/*        size="small"*/}
-                            {/*        fullWidth label='ชื่อสินค้า'*/}
-                            {/*        placeholder="ตัวอย่าง เครื่องเจียรมือ"*/}
-                            {/*    />*/}
-                            {/*</Grid2>*/}
                             <Grid2 size={12}>
                                 <Typography variant='body2' sx={{ color: pumpkinColor.main }}>ข้อมูลอะไหล่</Typography>
                             </Grid2>
@@ -147,7 +160,8 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
                                 <TextField
                                     error={errors.sp_code && !data.sp_code}
                                     value={data.sp_code}
-                                    onChange={(e) => setData('sp_code', e.target.value)}
+                                    onChange={handleOnChange}
+                                    name="sp_code"
                                     required size="small"
                                     fullWidth label='รหัสอะไหล่'
                                     placeholder="ตัวอย่าง SP001"
@@ -155,15 +169,9 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
                                 <InputError message={errors.sp_code} />
                             </Grid2>
                             <Grid2 size={{ md: 6, xs: 12 }}>
-                                <TextField
-                                    error={errors.sp_name && !data.sp_name}
-                                    value={data.sp_name}
-                                    onChange={(e) => setData('sp_name', e.target.value)}
-                                    required size="small"
-                                    fullWidth label='ชื่ออะไหล่'
-                                    placeholder="ตัวอย่าง ประกบบน"
-                                />
-                                <InputError message={errors.sp_name} />
+                                <Typography>
+                                   ชื่ออะไหล่ = {!loadingSp ? data.sp_name : <CircularProgress size={20}/>}
+                                </Typography>
                             </Grid2>
                             <Grid2 size={{ md: 12, xs: 12 }}>
                                 <TextField

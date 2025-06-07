@@ -30,7 +30,7 @@ const TableC = ({detail = [], warranty = false}) => {
                         return (
                             <TableRow key={index} sx={
                                 item.price_per_unit === '-' ? {backgroundColor: '#fdeded'}
-                                    : item.warranty ?
+                                    : item.warranty === 'Y' ?
                                         {backgroundColor: '#edf7ed'} : {backgroundColor: 'white'}
                             }>
                                 <TableCell width={10} onClick={() => {

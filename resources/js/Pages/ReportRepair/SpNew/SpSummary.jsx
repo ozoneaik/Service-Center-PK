@@ -368,7 +368,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                                         {selectWorking.map((item, index) => {
                                             const spPath2 = import.meta.env.VITE_IMAGE_SP+item.spcode+'.jpg';
                                             const isWarranty = item.warranty && detail.job.warranty === true;
-                                            const rowStyle = item.warranty ? {backgroundColor: '#e8f5e9'} : {};
+                                            const rowStyle = item.warranty === 'Y' ? {backgroundColor: '#e8f5e9'} : {};
                                             return (
                                                 <TableRow key={index} sx={{...rowStyle}}>
                                                     <TableCell width={10} onClick={() => {
@@ -380,7 +380,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                                                         }}/>
                                                     </TableCell>
                                                     <TableCell>
-                                                        {item.spcode}
+                                                        {item.spcode} {item.warranty}
                                                     </TableCell>
                                                     <TableCell>
                                                         {item.spcode === 'SV001' ? (

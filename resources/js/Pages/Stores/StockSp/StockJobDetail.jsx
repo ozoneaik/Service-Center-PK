@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {useState} from "react";
+import {useRef, useState} from "react";
 import {
     Box, TextField, Button, Typography, Grid2, Paper, Container,
     List, ListItem, ListItemText, ListItemButton, Divider, IconButton, Alert, InputAdornment, Stack
@@ -12,6 +12,7 @@ import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutli
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import {router, useForm, usePage} from "@inertiajs/react";
 import {AlertDialogQuestion} from "@/Components/AlertDialog.js";
+import axios from "axios";
 
 export default function StockJobDetail({stock_job_id, jobDetail,stockJob}) {
     const {flash} = usePage().props
@@ -21,6 +22,10 @@ export default function StockJobDetail({stock_job_id, jobDetail,stockJob}) {
     const {data, setData, processing, post, errors} = useForm({
         sp_code: "", sp_name: "", sku_code: "", sku_name: "", sp_qty: 1,
     });
+
+    const [searchingSpName, setSearchingSpName] = useState(false);
+
+    const delaySearch = useRef(null);
 
     const handleSelectItem = (index) => {
         if (jobDetail && jobDetail[index]) {
@@ -63,7 +68,28 @@ export default function StockJobDetail({stock_job_id, jobDetail,stockJob}) {
     const handleChange = (e) => {
         const {name, value} = e.target;
         setData(name, value);
+        if (name === 'sp_code') {
+            if(delaySearch.current){
+                clearTimeout(delaySearch.current)
+            }
+            delaySearch.current = setTimeout(() => {
+                searchSpName(value).finally(()=> setSearchingSpName(false))
+            },[1000])
+            
+        }
     };
+
+     const searchSpName = async (sp_code) => {
+        try {
+            setSearchingSpName(true)
+            const { data, status } = await axios.post(route('search-sp', { sp_code }))
+            console.log(data, status);
+            setData('sp_name', data.sp_name)
+              
+        } catch (error) {
+            setData('sp_name', null);
+        }
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -197,44 +223,10 @@ export default function StockJobDetail({stock_job_id, jobDetail,stockJob}) {
                                                         )
                                                     }
                                                 }}
-                                                required fullWidth id="sp_name" label="ชื่ออะไหล่" name="sp_name"
+                                                disabled fullWidth id="sp_name" label="ชื่ออะไหล่" name="sp_name"
                                                 value={data.sp_name} onChange={handleChange} variant="outlined"
                                             />
                                         </Grid2>
-                                        {/*<Grid2 size={{xs: 12, md: 6}}>*/}
-                                        {/*    <TextField*/}
-                                        {/*        size='small'*/}
-                                        {/*        slotProps={{*/}
-                                        {/*            input: {*/}
-                                        {/*                startAdornment: (*/}
-                                        {/*                    <InputAdornment position='start'>*/}
-                                        {/*                        <PasswordIcon/>*/}
-                                        {/*                    </InputAdornment>*/}
-                                        {/*                )*/}
-                                        {/*            }*/}
-                                        {/*        }}*/}
-                                        {/*        fullWidth id="sku_code" label="รหัสสินค้า" name="sku_code"*/}
-                                        {/*        placeholder='หากจำไม่ได้สามารถเว้นว่างได้'*/}
-                                        {/*        value={data.sku_code} onChange={handleChange} variant="outlined"*/}
-                                        {/*    />*/}
-                                        {/*</Grid2>*/}
-                                        {/*<Grid2 size={{xs: 12, md: 6}}>*/}
-                                        {/*    <TextField*/}
-                                        {/*        placeholder='หากจำไม่ได้สามารถเว้นว่างได้'*/}
-                                        {/*        size='small'*/}
-                                        {/*        slotProps={{*/}
-                                        {/*            input: {*/}
-                                        {/*                startAdornment: (*/}
-                                        {/*                    <InputAdornment position='start'>*/}
-                                        {/*                        <DriveFileRenameOutlineIcon/>*/}
-                                        {/*                    </InputAdornment>*/}
-                                        {/*                )*/}
-                                        {/*            }*/}
-                                        {/*        }}*/}
-                                        {/*        fullWidth id="sku_name" label="ชื่อสินค้า" name="sku_name"*/}
-                                        {/*        value={data.sku_name} onChange={handleChange} variant="outlined"*/}
-                                        {/*    />*/}
-                                        {/*</Grid2>*/}
                                         <Grid2 size={{xs: 12, md: 6}}>
                                             <TextField
                                                 size='small'

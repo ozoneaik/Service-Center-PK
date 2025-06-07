@@ -3,6 +3,7 @@
 use App\Http\Controllers\Stocks\StockJobController;
 use App\Http\Controllers\Stores\ShopController;
 use App\Http\Controllers\Stores\StockSpController;
+use App\Models\StockJob;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('/stock-sp')->group(function(){
@@ -28,3 +29,5 @@ Route::prefix('/stock-job')->group(function(){
 
 
 Route::get('/get-sp/{barcode}',[StockJobController::class,'bill'])->name('getSp');
+
+Route::post('search-sp/{sp_code}',[StockJobController::class,'searchSp'])->name('search-sp');

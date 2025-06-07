@@ -221,4 +221,38 @@ class StockJobController extends Controller
             ], 400);
         }
     }
+
+    public function searchSp($sp_code){
+        try{
+            $response = Http::post(env('VITE_API_ORDER'),[
+                'pid' => $sp_code,
+                'view' => 'single'
+            ]);
+
+            if($response->successful() && $response->status() === 200){
+                
+                $res_json = $response->json();
+                if ($res_json['status'] === 'SUCCESS') {
+                    $p_name = $res_json['assets'][0]['pname'];
+                }else{
+                    throw new \Exception('ไม่พบผลการค้นหา');
+                }
+
+                return response()->json([
+                'message' => 'ดึงข้อมูลสำเร็จ',
+                'sp_code' => $sp_code,
+                'sp_name' => $p_name,
+                'error' => null
+            ]);
+            }
+        }catch(\Exception $e) {
+            $sp_name = null;
+            return response()->json([
+                'message' => 'เกิดข้อผิดพลาด',
+                'sp_code' => $sp_code,
+                'sp_name' => $sp_name,
+                'error' => $e->getMessage() . " บรรทัดที่=>".$e->getLine(). " ไฟล์=>" .$e->getFile()
+            ],400);
+        }
+    }
 }
