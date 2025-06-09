@@ -5,6 +5,7 @@ use App\Http\Controllers\BehaviorController;
 use App\Http\Controllers\CustomerInJobController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\NewRepair\RpAccessoriesController;
 use App\Http\Controllers\NewRepair\RpBehaviourController;
 use App\Http\Controllers\NewRepair\RpCustomerController;
 use App\Http\Controllers\NewRepair\RpRemarkAndSymptomController;
@@ -20,12 +21,12 @@ use Illuminate\Support\Facades\Route;
 // Search from API outsource
 Route::post('/search', [SearchController::class, 'detail'])->name('search');
 Route::post('/search-from-history', [SearchController::class, 'searchFromHistory'])->name('search-from-history');
-Route::post('/search/sku',[SearchBySkuController::class,'detailSku'])->name('search.sku');
+Route::post('/search/sku', [SearchBySkuController::class, 'detailSku'])->name('search.sku');
 
-Route::prefix('jobs')->group(function(){
+Route::prefix('jobs')->group(function () {
     Route::get('/check/{serial_id}', [JobController::class, 'check'])->name('jobs.check');
     Route::post('/update', [JobController::class, 'update'])->name('jobs.update');
-    Route::put('/cancel/{serial_id}',[JobController::class,'cancelJob'])->name('jobs.cancel');
+    Route::put('/cancel/{serial_id}', [JobController::class, 'cancelJob'])->name('jobs.cancel');
 });
 // บันทึกข้อมูลลูกค้า
 Route::prefix('customer-in-job')->group(function () {
@@ -59,37 +60,42 @@ Route::prefix('remark')->group(function () {
 });
 
 Route::prefix('send-job')->group(function () {
-   Route::get('/list',[sendJobController::class, 'sendJobList'])->name('sendJobs.list');
-   Route::post('/update',[sendJobController::class, 'updateJobSelect'])->name('sendJobs.update');
-   Route::get('/doc',[sendJobController::class,'docJobList'])->name('sendJobs.docJobList');
+    Route::get('/list', [sendJobController::class, 'sendJobList'])->name('sendJobs.list');
+    Route::post('/update', [sendJobController::class, 'updateJobSelect'])->name('sendJobs.update');
+    Route::get('/doc', [sendJobController::class, 'docJobList'])->name('sendJobs.docJobList');
 
 
-   Route::get('/group-detail/{job_group}',[sendJobController::class,'groupDetail'])->name('sendJobs.groupDetail');
-   Route::get('/print/{job_group}',[sendJobController::class,'printJobList'])->name('sendJobs.printJobList');
+    Route::get('/group-detail/{job_group}', [sendJobController::class, 'groupDetail'])->name('sendJobs.groupDetail');
+    Route::get('/print/{job_group}', [sendJobController::class, 'printJobList'])->name('sendJobs.printJobList');
 });
 
 
-Route::prefix('repair')->group(function(){
-   Route::get('/',[\App\Http\Controllers\NewRepair\SearchController::class,'index'])->name('repair.index');
-   Route::post('/search',[\App\Http\Controllers\NewRepair\SearchController::class,'search'])->name('repair.search');
-   Route::post('/found',[\App\Http\Controllers\NewRepair\JobController::class,'found'])->name('repair.found');
-   Route::prefix('job')->group(function(){
-       Route::post('/store',[\App\Http\Controllers\NewRepair\JobController::class,'storeJob'])->name('repair.store');
-   });
-   Route::prefix('customer')->group(function(){
-        Route::get('/', [RpCustomerController::class,'detail'])->name('repair.customer.detail');
+Route::prefix('repair')->group(function () {
+    Route::get('/', [\App\Http\Controllers\NewRepair\SearchController::class, 'index'])->name('repair.index');
+    Route::post('/search', [\App\Http\Controllers\NewRepair\SearchController::class, 'search'])->name('repair.search');
+    Route::post('/found', [\App\Http\Controllers\NewRepair\JobController::class, 'found'])->name('repair.found');
+    Route::prefix('job')->group(function () {
+        Route::post('/store', [\App\Http\Controllers\NewRepair\JobController::class, 'storeJob'])->name('repair.store');
+    });
+    Route::prefix('customer')->group(function () {
+        Route::get('/', [RpCustomerController::class, 'detail'])->name('repair.customer.detail');
         Route::post('/', [RpCustomerController::class, 'storeOrUpdate'])->name('repair.customer.store');
-   });
-   Route::prefix('remark-symptom')->group(function(){
-       Route::get('/',[RpRemarkAndSymptomController::class,'detail'])->name('repair.remark.symptom.detail');
-       Route::post('/',[RpRemarkAndSymptomController::class, 'storeOrUpdate'])->name('repair.remark.symptom.store');
-   });
-   Route::prefix('upload-file')->group(function(){
-      Route::get('/',[RpUploadFileController::class,'detail'])->name('repair.upload-file.detail');
-   });
+    });
+    Route::prefix('remark-symptom')->group(function () {
+        Route::get('/', [RpRemarkAndSymptomController::class, 'detail'])->name('repair.remark.symptom.detail');
+        Route::post('/', [RpRemarkAndSymptomController::class, 'storeOrUpdate'])->name('repair.remark.symptom.store');
+    });
+    Route::prefix('upload-file')->group(function () {
+        Route::get('/', [RpUploadFileController::class, 'detail'])->name('repair.upload-file.detail');
+    });
 
-   Route::prefix('behaviour')->group(function(){
-       Route::get('/', [RpBehaviourController::class,'detail'])->name('repair.behaviour.detail');
-       Route::post('/',[RpBehaviourController::class, 'storeOrUpdate'])->name('repair.behaviour.store');
-   });
+    Route::prefix('behaviour')->group(function () {
+        Route::get('/', [RpBehaviourController::class, 'detail'])->name('repair.behaviour.detail');
+        Route::post('/', [RpBehaviourController::class, 'storeOrUpdate'])->name('repair.behaviour.store');
+    });
+
+    Route::prefix('accessories')->group(function () {
+        Route::get('/', [RpAccessoriesController::class, 'detail'])->name('repair.accessories.detail');
+        Route::post('/', [RpAccessoriesController::class, 'storeOrUpdate'])->name('repair.accessories.store');
+    });
 });
