@@ -5,7 +5,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import {ProductTargetProvider} from "./Context/ProductContext.jsx";
-import {TextField, ThemeProvider} from "@mui/material";
+import {ThemeProvider} from "@mui/material";
 import {Theme} from "@/Layouts/themeCustom.jsx";
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 createInertiaApp({

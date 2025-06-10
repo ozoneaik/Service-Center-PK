@@ -2,7 +2,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {Head} from "@inertiajs/react";
 import {Box, Button, Container, Grid2, InputAdornment, Stack, TextField} from "@mui/material";
 import {Search} from '@mui/icons-material';
-import {useEffect, useLayoutEffect, useRef, useState} from "react";
+import {useState} from "react";
 import {AlertDialog} from "@/Components/AlertDialog.js";
 import {ErrorMessage} from "@/assets/ErrorMessage.js";
 import ProductDetail from "@/Components/ProductDetail.jsx";
@@ -28,14 +28,6 @@ export default function Repair({DATA}) {
 
     const [comboSets, setComboSets] = useState();
     const [openSelSku, setOpenSelSku] = useState(false);
-
-    const scrollRef = useRef(null);
-
-    useEffect(() => {
-        if (menuSel !== 0) {
-            scrollRef.current.scrollIntoView({behavior: 'smooth'});
-        }
-    }, [menuSel]);
 
     const handleSearch = async (e) => {
         e.preventDefault();
@@ -101,8 +93,7 @@ export default function Repair({DATA}) {
                                     warrantyperiod={detail.warrantyperiod}
                                 />
                             </Grid2>
-                            <span ref={scrollRef}></span>
-                            <Grid2 size={12} >
+                            <Grid2 size={12}>
                                 <ButtonList {...{menuSel, setMenuSel}} />
                             </Grid2>
                             {menuSel !== 0 && (

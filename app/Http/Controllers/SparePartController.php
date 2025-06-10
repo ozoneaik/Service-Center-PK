@@ -47,7 +47,7 @@ class SparePartController extends Controller
                     'sp_code' => $item['spcode'],
                     'sp_name' => $item['spname'],
                     'price_per_unit' => floatval($item['price_per_unit'] ?? 0),
-                    'gp' => $item['gp'],
+                    'gp' => $item['gp'] ?? 0,
                     'sp_warranty' => $item['warranty'],
                     'approve' => $item['approve'] ?? 'no',
                     'approve_status' => $item['approve_status'] ?? 'yes',

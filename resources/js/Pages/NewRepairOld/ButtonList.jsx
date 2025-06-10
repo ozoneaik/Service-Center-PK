@@ -4,7 +4,6 @@ import {Handyman, History, MenuBook, YouTube} from "@mui/icons-material";
 export default function ButtonList({menuSel,setMenuSel}) {
     const handleChangeMenu = (value) => {
         setMenuSel(parseInt(value))
-
     }
     return (
         <>

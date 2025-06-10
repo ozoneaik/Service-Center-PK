@@ -23,8 +23,8 @@ const ShowDetail = ({gp}) => (
     </Stack>
 )
 
-export default function SpSummary({open, setOpen, detail, selected, setSelected, setDetail, setShowAdd}) {
-    const globalGP = detail.selected.globalGP || 0;
+export default function RpSpSummary({open, setOpen, detail, selected, setSelected, setDetail, setShowAdd}) {
+    const globalGP = detail.selected.globalGP;
     const [loading, setLoading] = useState(false);
     const [targetZero, setTargetZero] = useState();
     const [showAlertZero, setShowAlertZero] = useState(false);
@@ -234,7 +234,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                     </Stack>
                 </DialogContent>
                 <DialogActions>
-                     <Button variant='contained' onClick={()=>handleOnClose()} color="error">ยกเลิก</Button>
+                    <Button variant='contained' onClick={()=>handleOnClose()} color="error">ยกเลิก</Button>
                     <Button
                         onClick={handleSaveZero}
                         variant="contained"
@@ -368,7 +368,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                                         {selectWorking.map((item, index) => {
                                             const spPath2 = import.meta.env.VITE_IMAGE_SP+item.spcode+'.jpg';
                                             const isWarranty = item.warranty && detail.job.warranty === true;
-                                            const rowStyle = item.warranty === 'Y' ? {backgroundColor: '#e8f5e9'} : {};
+                                            const rowStyle = item.warranty ? {backgroundColor: '#e8f5e9'} : {};
                                             return (
                                                 <TableRow key={index} sx={{...rowStyle}}>
                                                     <TableCell width={10} onClick={() => {
@@ -380,7 +380,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                                                         }}/>
                                                     </TableCell>
                                                     <TableCell>
-                                                        {item.spcode} {item.warranty}
+                                                        {item.spcode}
                                                     </TableCell>
                                                     <TableCell>
                                                         {item.spcode === 'SV001' ? (
@@ -399,8 +399,7 @@ export default function SpSummary({open, setOpen, detail, selected, setSelected,
                                                                 size='small'
                                                                 type='number'
                                                                 onChange={(e) => handleChangePrice(e, item)}
-                                                                defaultValue={parseFloat(item.price_per_unit).toFixed(2)}
-                                                                // defaultValue={parseFloat(item.price_multiple_gp).toFixed(2)}
+                                                                defaultValue={parseFloat(item.price_multiple_gp).toFixed(2)}
                                                             />
                                                             {item.remark && (
                                                                 <>

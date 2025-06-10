@@ -171,7 +171,8 @@ export const SummaryForm = ({detail, setDetail, setShowDetail}) => {
                 name: item.spname,
                 qty: item.qty,
                 unit: item.sp_unit ?? 'อัน',
-                price: item.price_multiple_gp,
+                // price: item.price_multiple_gp,
+                price: item.price_per_unit,
                 prod_discount: 20
             });
         });

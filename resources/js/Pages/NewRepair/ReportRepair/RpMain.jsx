@@ -1,171 +1,68 @@
-import {useEffect, useState} from "react";
-import {Box, Button, CircularProgress, Grid2, Stack, Typography} from "@mui/material";
-import {AlertDialog} from "@/Components/AlertDialog.js";
-import {AccountCircle, Build, Camera, Psychology, ViewList, Warning} from '@mui/icons-material';
-import RpSummary from "@/Pages/NewRepair/ReportRepair/RpSummary.jsx";
-import RpCustomer from "@/Pages/NewRepair/ReportRepair/RpCustomer.jsx";
-import RpSymptomsRemark from "@/Pages/NewRepair/ReportRepair/RpSymptomsRemark.jsx";
-import RpBehavior from "@/Pages/NewRepair/ReportRepair/RpBehavior.jsx";
-import RpUploadFile from "@/Pages/NewRepair/ReportRepair/RpUploadFile.jsx";
-import RpSpMain from "@/Pages/NewRepair/ReportRepair/RpSp/RpSpMain.jsx";
+import {Box, Grid2, Tab, Tabs} from "@mui/material";
+import PropTypes from "prop-types";
+import {useState} from "react";
+import RpTab2Form from "@/Pages/NewRepair/Tab2/RpTab2Form.jsx";
+import RpTab1Form from "@/Pages/NewRepair/Tab1/RpTab1Form.jsx";
 
 
-export default function RpMain({serial_id, productDetail}) {
-    console.log('productDetail >>> ', productDetail);
-    const [loading, setLoading] = useState(false);
-    const [detail, setDetail] = useState();
-    useEffect(() => {
-        setLoading(true);
-        foundJob().finally(() => setLoading(false));
-    }, [])
+function CustomTabPanel(props) {
+    const {children, value, index, ...other} = props;
 
-    const foundJob = async () => {
-        try {
-            const body = {
-                serial_id: productDetail.serial,
-                pid: productDetail.pid
-            }
-            const {data, status} = await axios.post(route('repair.found', body))
-            console.log(data, status);
-            setDetail(data.job);
-            // alert(`status = ${status} found`)
-        } catch (error) {
-            console.log(error)
-            const errorStatus = error.status
-            const errorMessage = error.response.data.message
-            AlertDialog({
-                icon: errorStatus === 404 ? 'question' : 'error',
-                title: errorStatus === 404 ? 'ยืนยันการแจ้งซ่อม' : 'เกิดข้อผิดพลาด',
-                text: errorStatus === 404 ? 'กด ตกลง เพื่อยืนยันการแจ้งซ่อม' : errorMessage,
-                onPassed: async (confirm) => {
-                    if (confirm && errorStatus === 404) {
-                        await storeJob();
-                    } else {
-                        alert('เฉยๆ')
-                    }
-                }
-            })
-        }
+    return (
+        <div
+            role='tabpanel'
+            hidden={value !== index}
+            id={`simple-tabpanel-${index}`}
+            aria-labelledby={`simple-tab-${index}`}
+            {...other}
+        >
+            {value === index && <Box sx={{py : 3}}>{children}</Box>}
+        </div>
+    )
+}
+
+export default function RpMain({productDetail,serial_id}) {
+    const [tabValue, setTabValue] = useState(0);
+
+    console.log('productDetail', productDetail)
+    console.log('serial_id', serial_id)
+
+    const handleChange = (event, newValue) => {
+        setTabValue(newValue);
     }
 
-    const storeJob = async () => {
-        try {
-            const body = {
-                serial_id: productDetail.serial,
-                productDetail: {
-                    pid : productDetail.pid,
-                    pname: productDetail.pname,
-                    pbaseunit : productDetail.pbaseunit,
-                    pcatid : productDetail.pcatid,
-                    pCatName : productDetail.pCatName,
-                    pSubCatName : productDetail.pSubCatName,
-                    facmodel : productDetail.facmodel,
-                    imagesku : productDetail.imagesku,
-                }
-            };
-            const {data, status} = await axios.post(route('repair.store', body));
-            console.log(data, status);
-            await foundJob();
-        } catch (error) {
-            console.log(error)
-        }
+    function a11yProps(index) {
+        return {
+            id: `simple-tab-${index}`,
+            'aria-controls': `simple-tabpanel-${index}`,
+        };
     }
+
     return (
         <Grid2 container spacing={2}>
-            {loading ? <CircularProgress/> : detail ?
-                <ContentForm productDetail={productDetail} {...{detail}}/> : <>เกิดข้อผิดพลาด</>}
-        </Grid2>
-    )
-}
+            <Grid2 size={12}>
+                <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
+                    <Tabs value={tabValue} onChange={handleChange} aria-label='tabs-for-repair'>
+                        <Tab label='บันทึกข้อมูลแจ้งซ่อม' {...a11yProps(0)}/>
+                        <Tab label='บันทึกการซ่อม' {...a11yProps(1)}/>
+                    </Tabs>
+                </Box>
 
+                <CustomTabPanel index={0} value={tabValue}>
+                    <RpTab1Form/>
+                </CustomTabPanel>
 
-function ContentForm({detail, productDetail}) {
-    const [action, setAction] = useState(1);
-    const [showDetail, setShowDetail] = useState(1);
-    const job_id = detail.job_detail.job_id;
-
-    const handelChangeMenu = (value) => {
-        if (value === 1) {
-            setAction(1);
-            setShowDetail(1);
-        } else if (value === 2) {
-            setAction(2);
-            setShowDetail(2);
-        } else if (value === 3) {
-            setAction(3);
-            setShowDetail(3);
-        } else if (value === 4) {
-            setAction(4);
-            setShowDetail(4);
-        } else if (value === 5) {
-            setAction(5);
-            setShowDetail(5);
-        }else if(value === 6) {
-            setAction(6);
-            setShowDetail(6);
-        }
-        else if (value === 7) {
-            setAction(7);
-            setShowDetail(7);
-        } else if (value === 8) {
-            setAction(8);
-            setShowDetail(8);
-        }
-    }
-    const ButtonStyle = ({title, icon, value}) => {
-        return (
-            <Grid2 size={{md: 12, sm: 4, xs: 6}}>
-                <Button
-                    onClick={() => handelChangeMenu(value)}
-                    sx={{height: {lg: 80}, width: '100%'}} color='primary'
-                    variant={action === value ? 'contained' : 'outlined'}
-                >
-                    <Stack direction='column' spacing={2} alignItems='center'>
-                        {icon}
-                        {title}
-                    </Stack>
-                </Button>
-            </Grid2>
-        )
-    }
-    return (
-        <Grid2 size={12}>
-            <Grid2 container spacing={2}>
-                <Grid2 size={{xs: 12, md: 2}}>
-                    <Grid2 container spacing={2}>
-                        {/*<Grid2 size={12}>*/}
-                        {/*<Stack direction='row' spacing={2} overflow='auto'>*/}
-                        <ButtonStyle {...{action}} value={1} title={'สรุปการทำงาน'} icon={<ViewList/>}/>
-                        <ButtonStyle {...{action}} value={2} title={'ข้อมูลลูกค้า'} icon={<AccountCircle/>}/>
-                        <ButtonStyle {...{action}} value={3} title={'อาการเบื้องต้น'} icon={<ViewList/>}/>
-                        <ButtonStyle {...{action}} value={4} title={'รูปภาพ/วิดีโอ'} icon={<Camera/>}/>
-                        <ButtonStyle {...{action}} value={5} title={'อาการ/สาเหตุ'} icon={<Psychology/>}/>
-                        <ButtonStyle {...{action}} value={6} title={'อะไหล่'} icon={<Build/>}/>
-                        <ButtonStyle {...{action}} value={7} title={'แจ้งเตือน'} icon={<Warning/>}/>
-                        {/*</Stack>*/}
-                        {/*</Grid2>*/}
-                    </Grid2>
-                </Grid2>
-                <Grid2 size={{md: 10, xs: 12}} my={2}>
-                    <Stack direction='row' spacing={1} alignItems='center' mb={3}>
-                        <Typography variant='h6' fontWeight='bold'>
-                            {({
-                                1: 'สรุปการทำงาน', 2: 'ข้อมูลลูกค้า', 3: 'อาการเบื้องต้น', 4: 'รูปภาพ/วิดีโอ',
-                                5: 'อาการ/สาเหตุ', 6: 'อะไหล่', 7: 'แจ้งเตือน'
-                            }[action] ?? 'no')}
-                        </Typography>
-                    </Stack>
-                    {({
-                        1: <RpSummary job_id={job_id} detail={detail}/>,
-                        2: <RpCustomer job_id={job_id}/>,
-                        3: <RpSymptomsRemark job_id={job_id}/>,
-                        4: <RpUploadFile job_id={job_id} productDetail={productDetail} jobDetail={detail}/>,
-                        5: <RpBehavior list_behavior={productDetail.listbehavior} job_id={job_id}/>,
-                        6: <RpSpMain detail={productDetail}/>,
-                        7: 'แจ้งเตือน'
-                    }[action] ?? 'no')}
-                </Grid2>
+                <CustomTabPanel index={1} value={tabValue}>
+                    <RpTab2Form productDetail={productDetail} serial_id={serial_id}/>
+                </CustomTabPanel>
             </Grid2>
         </Grid2>
     )
 }
+
+CustomTabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.number.isRequired,
+    value: PropTypes.number.isRequired,
+};
+
