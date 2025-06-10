@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('remark')->nullable()->comment('หมายเหตุ');
             $table->boolean('subremark1')->default(false)->comment('เสนอราคาก่อนซ่อม');
             $table->boolean('subremark2')->default(false)->comment('ซ่อมเสร็จส่งกลับทางไปรษณีย์');
+            $table->boolean('subremark3')->default(false)->comment('อื่นๆ');
             $table->timestamps();
         });
     }

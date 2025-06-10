@@ -17,13 +17,14 @@ class SearchController extends Controller
 {
     public function index(Request $request): Response
     {
-        if (isset($request->job_id)){
+        if (isset($request->job_id)) {
             $data = $this->searchFromHistory($request->job_id);
-            return Inertia::render('NewRepair/Repair',['DATA' => $data]);
+            return Inertia::render('NewRepair/Repair', ['DATA' => $data]);
         }
         return Inertia::render('NewRepair/Repair');
     }
 
+//    function ใข้สำหรับการค้นหา ข้อมูลสินค้า
     public function search(Request $request): JsonResponse
     {
         $request->validate(['SN' => 'required'], ['SN' => 'กรุณากรอกรหัสซีเรียล']);
@@ -48,13 +49,13 @@ class SearchController extends Controller
                 $formData['views'] = 'single';
             }
             // ค้นหาหมายเลขซีเรียล
-            $response = $this->fetchDataFromApi($URL, $formData,$api_label);
+            $response = $this->fetchDataFromApi($URL, $formData, $api_label);
             if ($response['status']) {
                 return response()->json([
                     'message' => 'ดึงข้อมูลสำเร็จ',
                     'data' => $response,
                 ]);
-            }else{
+            } else {
                 throw new \Exception($response['message']);
             }
         } catch (\Exception $e) {
@@ -66,7 +67,7 @@ class SearchController extends Controller
         }
     }
 
-    private function fetchDataFromApi($URL, $formData,$api_label): array
+    private function fetchDataFromApi($URL, $formData, $api_label): array
     {
         try {
             $response = Http::withHeaders([
@@ -77,15 +78,24 @@ class SearchController extends Controller
                 $response_json = $response->json();
 
 
+                // หาว่าในระบบได้มีการลงทะเบียนรับประกันหรือไม่
+                $warranty_expire = $response_json['warrantyexpire'];
+                if (isset($formData['sn'])) {
+                    $warranty_expire = $this->findWarranty($formData['sn'], $warranty_expire);
+                }
+
+
                 if ($api_label === 'P') {
                     $sku_list = $response_json['assets'][0];
                     $sku_list['serial_id'] = 'จะแสดงเมื่อแจ้งซ่อม';
                     return [
                         'status' => true,
+                        'data_from_api' => $responseJson,
                         'combo_set' => false,
                         'sku_list' => [$sku_list],
+                        'warranty_expire' => $warranty_expire,
                     ];
-                }else{
+                } else {
                     $sku_arr = $response_json['skuset'];
                     $assets_new_format = array_map(function ($sku) use ($response_json) {
                         return $response_json['assets'][$sku];
@@ -96,8 +106,10 @@ class SearchController extends Controller
 
                     return [
                         'status' => true,
+                        'data_from_api' => $responseJson,
                         'combo_set' => $combo_set,
                         'sku_list' => $assets_new_format,
+                        'warranty_expire' => $warranty_expire,
                     ];
                 }
                 // เช็คก่อนว่า เป็น combo set หรือไม่
@@ -105,7 +117,7 @@ class SearchController extends Controller
                 $m = "<span>เกิดข้อผิดพลาด server กรุณาติดต่อผู้ดูแลระบบ <br/> เบอร์ 02-8995928 ต่อ 266</span>";
                 throw new \Exception($m);
             }
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
@@ -116,15 +128,29 @@ class SearchController extends Controller
 
     }
 
-    private function searchFromHistory($job_id){
+    private function searchFromHistory($job_id)
+    {
         $findDetail = JobList::query()
-            ->where('job_id',$job_id)
-            ->orderBy('id','desc')
+            ->where('job_id', $job_id)
+            ->orderBy('id', 'desc')
             ->first();
         if ($findDetail) {
             return $findDetail;
-        }else{
+        } else {
             return [];
         }
+    }
+
+    private function findWarranty($serial_id, $warranty_expire = false)
+    {
+        $findWarranty = WarrantyProduct::query()->where('serial_id', $serial_id)->first();
+        if ($findWarranty) {
+            $dateWarranty = Carbon::parse($findWarranty->date_warranty);
+            $expireDate = Carbon::parse($findWarranty->expire_date);
+            $now = Carbon::now();
+            if ($now->greaterThanOrEqualTo($dateWarranty) && $now->lessThanOrEqualTo($expireDate)) {
+                return true;
+            } else return false;
+        } else $warranty_expire;
     }
 }

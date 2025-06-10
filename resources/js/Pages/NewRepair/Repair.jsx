@@ -8,7 +8,7 @@ import {ErrorMessage} from "@/assets/ErrorMessage.js";
 import ProductDetail from "@/Components/ProductDetail.jsx";
 import ButtonList from "@/Pages/NewRepair/ButtonList.jsx";
 import {PathDetail} from "@/Components/PathDetail.jsx";
-import RpMain from "@/Pages/NewRepair/ReportRepair/RpMain.jsx";
+import RpMain from "@/Pages/NewRepair/RpMain.jsx";
 import {SelectSku} from "@/Pages/NewRepair/SelectSku.jsx";
 
 const menuNames = {
@@ -43,13 +43,19 @@ export default function Repair({DATA}) {
         setDetail(null);
         try {
             const {data, status} = await axios.post(route('repair.search'), {SN, PID});
-            console.log('repair.research => ', data, status)
             const combo_set = data.data.combo_set;
+            const addWarranty = data.data.warranty_expire; // เก็บสถานะรับประกัน
             if (combo_set) {
                 setOpenSelSku(true);
-                setComboSets(data.data.sku_list)
+                let sku_list = data.data.sku_list;
+                sku_list = sku_list.map((item) => {
+                    return {...item, warranty_status: addWarranty}
+                })
+                setComboSets(sku_list)
             } else {
-                setDetail(data.data.sku_list[0]);
+                let sku_list = data.data.sku_list[0];
+                sku_list = {...sku_list, warranty_status: addWarranty}
+                setDetail(sku_list);
             }
 
             setSN('');
@@ -102,7 +108,7 @@ export default function Repair({DATA}) {
                                 />
                             </Grid2>
                             <span ref={scrollRef}></span>
-                            <Grid2 size={12} >
+                            <Grid2 size={12}>
                                 <ButtonList {...{menuSel, setMenuSel}} />
                             </Grid2>
                             {menuSel !== 0 && (

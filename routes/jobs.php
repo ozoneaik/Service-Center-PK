@@ -5,6 +5,7 @@ use App\Http\Controllers\BehaviorController;
 use App\Http\Controllers\CustomerInJobController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\NewRepair\Before\RpBfController;
 use App\Http\Controllers\NewRepair\RpAccessoriesController;
 use App\Http\Controllers\NewRepair\RpBehaviourController;
 use App\Http\Controllers\NewRepair\RpCustomerController;
@@ -70,13 +71,24 @@ Route::prefix('send-job')->group(function () {
 });
 
 
+// route การแจ้งซ่อมแบบใหม่
 Route::prefix('repair')->group(function () {
     Route::get('/', [\App\Http\Controllers\NewRepair\SearchController::class, 'index'])->name('repair.index');
     Route::post('/search', [\App\Http\Controllers\NewRepair\SearchController::class, 'search'])->name('repair.search');
-    Route::post('/found', [\App\Http\Controllers\NewRepair\JobController::class, 'found'])->name('repair.found');
+
+    // ค้นหา job สร้าง job
+    Route::post('/search-job', [\App\Http\Controllers\NewRepair\JobController::class, 'searchJob'])->name('repair.search.job');
     Route::prefix('job')->group(function () {
         Route::post('/store', [\App\Http\Controllers\NewRepair\JobController::class, 'storeJob'])->name('repair.store');
+        Route::prefix('before-repair')->group(function () {
+           Route::get('/',[RpBfController::class,'index'])->name('repair.before.index');
+        });
+        Route::prefix('after-repair')->group(function () {
+            Route::get('/',)->name('repair.after');
+        });
     });
+
+
     Route::prefix('customer')->group(function () {
         Route::get('/', [RpCustomerController::class, 'detail'])->name('repair.customer.detail');
         Route::post('/', [RpCustomerController::class, 'storeOrUpdate'])->name('repair.customer.store');

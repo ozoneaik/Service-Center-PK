@@ -7,6 +7,8 @@ use App\Http\Requests\Repair\Job\JobStoreRequest;
 use App\Models\CustomerInJob;
 use App\Models\JobList;
 use App\Models\Remark;
+use App\Models\WarrantyProduct;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +16,7 @@ use Illuminate\Support\Facades\Log;
 
 class JobController extends Controller
 {
-    public function found(Request $request): JsonResponse
+    public function searchJob(Request $request): JsonResponse
     {
         $serial_id = $request->serial_id;
         $pid = $request->pid;
@@ -28,9 +30,7 @@ class JobController extends Controller
                 if ($found->status === 'pending') {
                     return response()->json([
                         'message' => 'เจอข้อมูล',
-                        'job' => [
-                            'job_detail' => $found,
-                        ],
+                        'job' => ['job_detail' => $found]
                     ]);
                 }elseif ($found->status === 'send') {
                     throw new \Exception('ส่งไปยัง pumpkin');
@@ -82,8 +82,4 @@ class JobController extends Controller
             'job_detail' => $store_job,
         ]);
     }
-
-
-
-
 }

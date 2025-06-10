@@ -5,6 +5,7 @@ import {useState} from "react";
 import RpBehaviorForm from "@/Pages/NewRepair/Tab2/RpBehaviorForm.jsx";
 import RpSpMain from "@/Pages/NewRepair/Tab2/RpSp/RpSpMain.jsx";
 import RpQu from "@/Pages/NewRepair/Tab2/RpQu.jsx";
+import RpUploadFileAfterForm from "@/Pages/NewRepair/Tab2/RpUploadFileAfterForm.jsx";
 
 
 export default function RpTab2Form({productDetail,serial_id}) {
@@ -134,6 +135,7 @@ export default function RpTab2Form({productDetail,serial_id}) {
                         <CardContent>
                             <HeaderTitle headTitle='สภาพสินค้าหลังซ่อม'/>
                             {/*content here*/}
+                            <RpUploadFileAfterForm/>
                             <Stack direction='row' justifyContent='end' spacing={2}>
                                 <Button
                                     variant='contained' endIcon={<ArrowLeft/>} color='secondary'

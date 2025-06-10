@@ -17,6 +17,7 @@ class CustomerInJob extends Model
         'remark',
         'subremark1',
         'subremark2',
+        'subremark3',
     ];
 
     public static function findByJobId($job_id): array
