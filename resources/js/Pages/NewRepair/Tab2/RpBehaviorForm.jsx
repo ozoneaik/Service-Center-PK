@@ -12,9 +12,15 @@ export default function RpBehaviorForm({listBehavior}) {
         setBehaviors(updatedBehaviors);
     };
 
+    const handleOnSubmit = () => {
+        const behaviors_selected = behaviors.filter(behavior => behavior.selected);
+        console.log(behaviors_selected);
+    }
+
     return (
         <>
             <Stack spacing={2}>
+                <button onClick={handleOnSubmit}>check</button>
                 {Object.entries(
                     behaviors.reduce((groups, behaviour, index) => {
                         const groupKey = behaviour.behaviorname || 'ไม่ระบุกลุ่ม';
@@ -26,25 +32,19 @@ export default function RpBehaviorForm({listBehavior}) {
                     }, {})
                 ).map(([behaviorName, groupBehaviors]) => (
                     <div key={behaviorName}>
-                        <h4 style={{
-                            // margin: '0 0 8px 0',
-                            color: '#d26c19',
-                            fontSize: '16px',
-                            fontWeight: 'bold'
-                        }}>
+                        <h4 style={{color: '#d26c19', fontSize: '16px', fontWeight: 'bold'}}>
                             {behaviorName}
                         </h4>
-                        <Stack
-                            direction='row' flexWrap='wrap' spacing={1}
-                            // sx={{ paddingLeft: 2 }}
-                        >
+                        <Stack direction='row' flexWrap='wrap' spacing={1}>
                             {groupBehaviors.map((behaviour) => (
                                 <FormControlLabel
                                     key={`behavior-${behaviour.originalIndex}-${behaviour.causecode}`}
                                     control={
                                         <Checkbox
                                             checked={behaviour.selected || false}
-                                            onChange={(e) => handleCheckboxChange(behaviour.originalIndex, e.target.checked)}
+                                            onChange={(e) => {
+                                                handleCheckboxChange(behaviour.originalIndex, e.target.checked)
+                                            }}
                                         />
                                     }
                                     label={behaviour.causename || 'ไม่ระบุชื่อ'}

@@ -1,14 +1,31 @@
-import {Button, Card, CardContent, Grid2, Stack, Step, StepLabel, Stepper} from "@mui/material";
+import {
+    Button,
+    Card,
+    CardContent,
+    FormControlLabel,
+    FormLabel,
+    Grid2,
+    Stack,
+    Step,
+    StepLabel,
+    Stepper
+} from "@mui/material";
 import {HeaderTitle} from "@/Pages/NewRepair/HeaderCardTitle.jsx";
-import {ArrowLeft, ArrowRight, Cancel, Done, Save} from "@mui/icons-material";
+import {ArrowLeft, ArrowRight, Cancel, Check, CheckBox, Done, Save} from "@mui/icons-material";
 import {useState} from "react";
 import RpBehaviorForm from "@/Pages/NewRepair/Tab2/RpBehaviorForm.jsx";
 import RpSpMain from "@/Pages/NewRepair/Tab2/RpSp/RpSpMain.jsx";
 import RpQu from "@/Pages/NewRepair/Tab2/RpQu.jsx";
 import RpUploadFileAfterForm from "@/Pages/NewRepair/Tab2/RpUploadFileAfterForm.jsx";
 
+const ButtonStepper = ({children}) => (
+    <Stack direction='row' justifyContent='center' spacing={2} mt={2}>
+        {children}
+    </Stack>
+)
 
-export default function RpTab2Form({productDetail,serial_id}) {
+
+export default function RpTab2Form({productDetail, serial_id}) {
     const [stepForm, setStepForm] = useState(0);
 
     const listBehavior = productDetail.listbehavior;
@@ -20,6 +37,7 @@ export default function RpTab2Form({productDetail,serial_id}) {
         'อะไหล่',
         'ใบเสนอราคา',
         'สภาพสินค้าหลังซ่อม',
+        'สรุปจบงาน'
     ]
 
     const handleChangeStep = (index) => {
@@ -34,6 +52,11 @@ export default function RpTab2Form({productDetail,serial_id}) {
 
     return (
         <Grid2 container spacing={2}>
+            <Grid2 size={12}>
+                <Stack direction='row' justifyContent='center'>
+                    <FormControlLabel control={<CheckBox checked={true}/>} label={'ใบเสนอราคา'}/>
+                </Stack>
+            </Grid2>
             <Grid2 size={12} className='stepper'>
                 <Stepper activeStep={stepForm} alternativeLabel>
                     {steps.map((label, index) => (
@@ -54,14 +77,15 @@ export default function RpTab2Form({productDetail,serial_id}) {
                         <CardContent>
                             <HeaderTitle headTitle='อาการ / สาเหตุ'/>
                             <RpBehaviorForm listBehavior={listBehavior}/>
-                            <Stack direction='row' spacing={2} justifyContent='end'>
+                            <ButtonStepper>
                                 <Button
                                     variant='contained' endIcon={<ArrowRight/>}
                                     onClick={() => handleChangeStep(1)}
                                 >
                                     ถัดไป
                                 </Button>
-                            </Stack>
+                            </ButtonStepper>
+
                         </CardContent>
                     </Card>
                 </Grid2>
@@ -79,7 +103,7 @@ export default function RpTab2Form({productDetail,serial_id}) {
                             <HeaderTitle headTitle='อะไหล่'/>
                             {/*content here*/}
                             <RpSpMain productDetail={productDetail} listSparePart={listSparePart}/>
-                            <Stack direction='row' spacing={2} justifyContent='end'>
+                            <ButtonStepper>
                                 <Button
                                     variant='contained' endIcon={<ArrowLeft/>} color='secondary'
                                     onClick={() => handleChangeStep(0)}
@@ -92,7 +116,7 @@ export default function RpTab2Form({productDetail,serial_id}) {
                                 >
                                     ถัดไป
                                 </Button>
-                            </Stack>
+                            </ButtonStepper>
                         </CardContent>
                     </Card>
                 </Grid2>
@@ -110,7 +134,7 @@ export default function RpTab2Form({productDetail,serial_id}) {
                             <HeaderTitle headTitle='ใบเสนอราคา'/>
                             {/*content here*/}
                             <RpQu/>
-                            <Stack direction='row' justifyContent='end' spacing={2}>
+                            <ButtonStepper>
                                 <Button
                                     variant='contained' endIcon={<ArrowLeft/>} color='secondary'
                                     onClick={() => handleChangeStep(1)}
@@ -123,7 +147,7 @@ export default function RpTab2Form({productDetail,serial_id}) {
                                 >
                                     ถัดไป
                                 </Button>
-                            </Stack>
+                            </ButtonStepper>
                         </CardContent>
                     </Card>
                 </Grid2>
@@ -136,10 +160,36 @@ export default function RpTab2Form({productDetail,serial_id}) {
                             <HeaderTitle headTitle='สภาพสินค้าหลังซ่อม'/>
                             {/*content here*/}
                             <RpUploadFileAfterForm/>
-                            <Stack direction='row' justifyContent='end' spacing={2}>
+                            <ButtonStepper>
                                 <Button
                                     variant='contained' endIcon={<ArrowLeft/>} color='secondary'
-                                    onClick={() => handleChangeStep(2)}
+                                    onClick={() => handleChangeStep(1)}
+                                >
+                                    ย้อนกลับ
+                                </Button>
+                                <Button
+                                    variant='contained' endIcon={<ArrowRight/>}
+                                    onClick={() => handleChangeStep(4)}
+                                >
+                                    ถัดไป
+                                </Button>
+                            </ButtonStepper>
+                        </CardContent>
+                    </Card>
+                </Grid2>
+            )}
+
+            {stepForm === 4 && (
+                <Grid2 size={12}>
+                    <Card variant='outlined' sx={{backgroundColor: '#d9d9d9'}}>
+                        <CardContent>
+                            <HeaderTitle headTitle='สรุปจบงาน'/>
+                            {/*content here*/}
+                            สรุปจบงาน
+                            <ButtonStepper>
+                                <Button
+                                    variant='contained' startIcon={<ArrowLeft/>} color='secondary'
+                                    onClick={() => handleChangeStep(3)}
                                 >
                                     ย้อนกลับ
                                 </Button>
@@ -151,7 +201,7 @@ export default function RpTab2Form({productDetail,serial_id}) {
                                 >
                                     บันทึกและปิดงานซ่อม
                                 </Button>
-                            </Stack>
+                            </ButtonStepper>
                         </CardContent>
                     </Card>
                 </Grid2>

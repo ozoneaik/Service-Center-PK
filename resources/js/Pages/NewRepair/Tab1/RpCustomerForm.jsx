@@ -86,7 +86,7 @@ export default function RpCustomerForm({data, setData}) {
                         multiline minRows={3}
                         sx={{bgcolor: 'white'}}
                         id='remark' name='remark' size='small'
-                        placeholder='หมายเหตุสำหรับลูกค้าในการสื่อสาร เช่น ลูกค้าให้ส่งใบเสนอราคาก่อนซ่อม,ลูกค้าต้องการให้จัดส่งตามที่อยู่การจัดส่ง'
+                        placeholder='หมายเหตุสำหรับลูกค้าในการสื่อสาร เช่น ลูกค้าจะเข้ามารับวันไหน,ลูกค้าต้องการให้ตวรจสอบเครื่องเพิ่มเติมจุดไหนเป็นพิเศษ'
                         required onChange={handleChange}
                     />
                 )}

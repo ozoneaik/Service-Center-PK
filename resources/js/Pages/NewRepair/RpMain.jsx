@@ -27,8 +27,6 @@ export default function RpMain({productDetail, serial_id}) {
     const [JOB, setJOB] = useState();
 
     console.log('productDetail', productDetail)
-    console.log('serial_id', serial_id)
-    console.log('pid', productDetail.pid)
 
     useEffect(() => {
         fetchData().finally(() => setSearchingJob(false))
@@ -39,6 +37,7 @@ export default function RpMain({productDetail, serial_id}) {
             const {data, status} = await axios.post(route('repair.search.job', {
                 serial_id: serial_id, pid: productDetail.pid
             }));
+            console.log('ผลลัพทธ์การค้นหา job >> ',data.job.job_detail)
             setJOB(data.job.job_detail)
         } catch (error) {
             if (error.status === 404) {

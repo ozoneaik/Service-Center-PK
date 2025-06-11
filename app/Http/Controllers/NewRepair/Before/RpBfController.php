@@ -4,6 +4,8 @@ namespace App\Http\Controllers\NewRepair\Before;
 
 use App\Http\Controllers\Controller;
 use App\Models\CustomerInJob;
+use App\Models\FileUpload;
+use App\Models\Remark;
 use Illuminate\Http\Request;
 
 class RpBfController extends Controller
@@ -14,7 +16,9 @@ class RpBfController extends Controller
         try {
             $form = [];
             $form['customer'] = CustomerInJob::findByJobId($job_id);
-            $form['remark_symptom'] = [];
+            $form['remark_symptom_accessory'] = Remark::findByJobId($job_id);
+            $form['file_befores'] = FileUpload::findByJobIdBefore($job_id);
+
             return response()->json([
                 'message' => 'ดึงฟอร์มสำเร็จ',
                 'error' => null,

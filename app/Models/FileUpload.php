@@ -19,10 +19,20 @@ class FileUpload extends Model
     ];
     protected $appends = ['full_file_path'];
 
+    public static function findByJobIdBefore($job_id)
+    {
+        $file_befores = FileUpload::query()
+            ->where('job_id', $job_id)
+            ->where('menu_id', 1)
+            ->get();
+
+        return $file_befores ?? [];
+    }
+
     protected function fullFilePath(): Attribute
     {
-        return Attribute::get(function (){
-            return asset('storage/'.$this->file_path);
+        return Attribute::get(function () {
+            return asset('storage/' . $this->file_path);
         });
     }
 

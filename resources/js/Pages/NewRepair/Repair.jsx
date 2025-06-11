@@ -2,7 +2,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {Head} from "@inertiajs/react";
 import {Box, Button, Container, Grid2, InputAdornment, Stack, TextField} from "@mui/material";
 import {Search} from '@mui/icons-material';
-import {useEffect, useLayoutEffect, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {AlertDialog} from "@/Components/AlertDialog.js";
 import {ErrorMessage} from "@/assets/ErrorMessage.js";
 import ProductDetail from "@/Components/ProductDetail.jsx";

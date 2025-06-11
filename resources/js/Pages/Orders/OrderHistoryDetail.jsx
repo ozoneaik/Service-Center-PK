@@ -16,7 +16,7 @@ import {Head} from "@inertiajs/react";
 
 export default function OrderHistoryDetail({order, listSp, customer}) {
     // สถานะการสั่งซื้อ
-    const steps = ["กำลังรอรับคำสั่งซื้อ", "กำลังดำเนินการจัดเตรียมสินค้า", "คำสั่งซื้อเสร็จสิ้น"];
+    const steps = ["กำลังรอรับคำสั่งซื้อ","รับคำสั่งซื้อ", "กำลังดำเนินการจัดเตรียมสินค้า","อยู่ระหว่างการจัดส่ง", "จัดส่งสำเร็จ"];
 
     return (
         <AuthenticatedLayout>

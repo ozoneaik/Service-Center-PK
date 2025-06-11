@@ -29,8 +29,13 @@ export default function RpTab1Form({JOB, setJOB}) {
         try {
             setLoadingJob(true);
             const {data, status} = await axios.get(route('repair.before.index', {job_id: JOB.job_id}));
+            console.log('ดึงข้อมูล job บันทึกการซ่อม ==> 🔍',data)
             const customer = data.form.customer;
+            const remark_symptom_accessory = data.form.remark_symptom_accessory;
+            const file_befores = data.form.file_befores;
             setData('customer', customer)
+            setData('remark_symptom_accessory', remark_symptom_accessory)
+            setData('file_befores', file_befores)
         } catch (error) {
 
         }
@@ -43,6 +48,7 @@ export default function RpTab1Form({JOB, setJOB}) {
         <>
             {loadingJob ? (<CircularProgress/>) : (
                 <>
+                    <button onClick={()=>console.log(data)}>click</button>
                     <form onSubmit={handleSubmit}>
                         <Grid2 container spacing={2}>
                             <Grid2 size={12}>
@@ -67,7 +73,7 @@ export default function RpTab1Form({JOB, setJOB}) {
                                 >
                                     <CardContent>
                                         <HeaderTitle headTitle='อาการเบื้องต้น'/>
-                                        <RpSRA/>
+                                        <RpSRA data={data} setData={setData}/>
                                     </CardContent>
                                 </Card>
                             </Grid2>
@@ -80,7 +86,7 @@ export default function RpTab1Form({JOB, setJOB}) {
                                 >
                                     <CardContent>
                                         <HeaderTitle headTitle='สภาพสินค้าก่อนซ่อม'/>
-                                        <RpUploadFileBeforeForm/>
+                                        <RpUploadFileBeforeForm data={data} setData={setData}/>
                                     </CardContent>
                                 </Card>
                             </Grid2>
