@@ -24,4 +24,10 @@ class SparePart extends Model
         'claim',
         'claim_remark'
     ];
+
+
+    public static function search($job_id){
+        $sps = SparePart::query()->where('job_id', $job_id)->first();
+        return $sps ?? null;
+    }
 }

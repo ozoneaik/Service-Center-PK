@@ -5,6 +5,8 @@ use App\Http\Controllers\BehaviorController;
 use App\Http\Controllers\CustomerInJobController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\NewRepair\After\RpAfBehaviourController;
+use App\Http\Controllers\NewRepair\After\RpAfController;
 use App\Http\Controllers\NewRepair\Before\RpBfController;
 use App\Http\Controllers\NewRepair\RpAccessoriesController;
 use App\Http\Controllers\NewRepair\RpBehaviourController;
@@ -45,16 +47,16 @@ Route::prefix('upload-file')->group(function () {
     Route::get('/list', [FileUploadController::class, 'list'])->name('uploadFile.show');
     Route::post('/store', [FileUploadController::class, 'store'])->name('uploadFile.store');
 });
-// บันทึกอะไหล่
+/*--------------------------------------- บันทึกอะไหล่ ---------------------------------------*/
 Route::prefix('spare-part')->group(function () {
     Route::get('/show/{serial_id}', [SparePartController::class, 'show'])->name('sparePart.show');
     Route::post('/store', [SparePartController::class, 'store'])->name('sparePart.store');
 });
-// บันทึกอาการเบื้องต้น
+/*--------------------------------------- บันทึกอาการเบื้องต้น ---------------------------------------*/
 Route::prefix('symptom')->group(function () {
     Route::post('/store', [SymptomController::class, 'store'])->name('symptom.store');
 });
-// บันทึกหมายเหตุ
+/*--------------------------------------- บันทึกหมายเหตุ ---------------------------------------*/
 Route::prefix('remark')->group(function () {
     Route::get('/show/{serial_id}', [RemarkController::class, 'show'])->name('remark.show');
     Route::post('/storeOrUpdate', [RemarkController::class, 'storeOrUpdate'])->name('remark.store');
@@ -85,30 +87,34 @@ Route::prefix('repair')->group(function () {
            Route::post('/',[RpBfController::class,'store'])->name('repair.before.store');
         });
         Route::prefix('after-repair')->group(function () {
-            Route::get('/',)->name('repair.after');
+            Route::get('/',[RpAfController::class,'index'])->name('repair.after');
+            Route::prefix('/behaviour')->group(function () {
+                Route::get('/',[RpAfBehaviourController::class,'index'])->name('repair.after.behaviour.index');
+                Route::post('/',[RpAfBehaviourController::class,'store'])->name('repair.after.behaviour.store');
+            });
         });
     });
 
 
-    Route::prefix('customer')->group(function () {
-        Route::get('/', [RpCustomerController::class, 'detail'])->name('repair.customer.detail');
-        Route::post('/', [RpCustomerController::class, 'storeOrUpdate'])->name('repair.customer.store');
-    });
-    Route::prefix('remark-symptom')->group(function () {
-        Route::get('/', [RpRemarkAndSymptomController::class, 'detail'])->name('repair.remark.symptom.detail');
-        Route::post('/', [RpRemarkAndSymptomController::class, 'storeOrUpdate'])->name('repair.remark.symptom.store');
-    });
-    Route::prefix('upload-file')->group(function () {
-        Route::get('/', [RpUploadFileController::class, 'detail'])->name('repair.upload-file.detail');
-    });
-
-    Route::prefix('behaviour')->group(function () {
-        Route::get('/', [RpBehaviourController::class, 'detail'])->name('repair.behaviour.detail');
-        Route::post('/', [RpBehaviourController::class, 'storeOrUpdate'])->name('repair.behaviour.store');
-    });
-
-    Route::prefix('accessories')->group(function () {
-        Route::get('/', [RpAccessoriesController::class, 'detail'])->name('repair.accessories.detail');
-        Route::post('/', [RpAccessoriesController::class, 'storeOrUpdate'])->name('repair.accessories.store');
-    });
+//    Route::prefix('customer')->group(function () {
+//        Route::get('/', [RpCustomerController::class, 'detail'])->name('repair.customer.detail');
+//        Route::post('/', [RpCustomerController::class, 'storeOrUpdate'])->name('repair.customer.store');
+//    });
+//    Route::prefix('remark-symptom')->group(function () {
+//        Route::get('/', [RpRemarkAndSymptomController::class, 'detail'])->name('repair.remark.symptom.detail');
+//        Route::post('/', [RpRemarkAndSymptomController::class, 'storeOrUpdate'])->name('repair.remark.symptom.store');
+//    });
+//    Route::prefix('upload-file')->group(function () {
+//        Route::get('/', [RpUploadFileController::class, 'detail'])->name('repair.upload-file.detail');
+//    });
+//
+//    Route::prefix('behaviour')->group(function () {
+//        Route::get('/', [RpBehaviourController::class, 'detail'])->name('repair.behaviour.detail');
+//        Route::post('/', [RpBehaviourController::class, 'storeOrUpdate'])->name('repair.behaviour.store');
+//    });
+//
+//    Route::prefix('accessories')->group(function () {
+//        Route::get('/', [RpAccessoriesController::class, 'detail'])->name('repair.accessories.detail');
+//        Route::post('/', [RpAccessoriesController::class, 'storeOrUpdate'])->name('repair.accessories.store');
+//    });
 });

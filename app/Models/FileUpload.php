@@ -19,6 +19,15 @@ class FileUpload extends Model
     ];
     protected $appends = ['full_file_path'];
 
+    public static function search($job_id, $menu_id)
+    {
+        $upload_file = FileUpload::query()
+            ->where('job_id', $job_id)
+            ->where('menu_id', $menu_id)
+            ->first();
+        return $upload_file ?? null;
+    }
+
     public static function findByJobIdBefore($job_id)
     {
         $file_befores = FileUpload::query()

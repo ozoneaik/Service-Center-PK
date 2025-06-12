@@ -15,4 +15,13 @@ class Behavior extends Model
         'cause_code',
         'cause_name'
     ];
+
+    public static function search($job_id){
+        $behaviors = Behavior::query()->where('job_id', $job_id)->first();
+        return $behaviors ?? null;
+    }
+    public static function findByJob($job_id){
+        $behaviors = Behavior::query()->where('job_id', $job_id)->get();
+        return $behaviors ?? [];
+    }
 }
