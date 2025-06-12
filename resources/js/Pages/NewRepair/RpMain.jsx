@@ -8,6 +8,7 @@ import RpTab1Form from "@/Pages/NewRepair/Tab1/RpTab1Form.jsx";
 function CustomTabPanel(props) {
     const {children, value, index, ...other} = props;
 
+
     return (
         <div
             role='tabpanel'
@@ -25,8 +26,14 @@ export default function RpMain({productDetail, serial_id}) {
     const [tabValue, setTabValue] = useState(0);
     const [searchingJob, setSearchingJob] = useState(false);
     const [JOB, setJOB] = useState();
+    const [form1Saved, setForm1Saved] = useState(false);
 
-    console.log('productDetail', productDetail)
+    useEffect(() => {
+        if (form1Saved) {
+            setTabValue(1)
+        }
+    }, [form1Saved]);
+
 
     useEffect(() => {
         fetchData().finally(() => setSearchingJob(false))
@@ -67,13 +74,13 @@ export default function RpMain({productDetail, serial_id}) {
                             <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
                                 <Tabs value={tabValue} onChange={handleChange} aria-label='tabs-for-repair'>
                                     <Tab label='บันทึกข้อมูลแจ้งซ่อม' {...a11yProps(0)}/>
-                                    <Tab label='บันทึกการซ่อม' {...a11yProps(1)}/>
+                                    <Tab disabled={!form1Saved} label='บันทึกการซ่อม' {...a11yProps(1)}/>
                                 </Tabs>
                             </Box>
 
                             <CustomTabPanel index={0} value={tabValue}>
                                 <RpTab1Form
-                                    JOB={JOB} setJOB={setJOB}
+                                    JOB={JOB} setJOB={setJOB} form1Saved={form1Saved} setForm1Saved={setForm1Saved}
                                 />
                             </CustomTabPanel>
 

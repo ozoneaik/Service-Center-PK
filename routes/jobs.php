@@ -82,6 +82,7 @@ Route::prefix('repair')->group(function () {
         Route::post('/store', [\App\Http\Controllers\NewRepair\JobController::class, 'storeJob'])->name('repair.store');
         Route::prefix('before-repair')->group(function () {
            Route::get('/',[RpBfController::class,'index'])->name('repair.before.index');
+           Route::post('/',[RpBfController::class,'store'])->name('repair.before.store');
         });
         Route::prefix('after-repair')->group(function () {
             Route::get('/',)->name('repair.after');

@@ -67,27 +67,28 @@ class genQuPdfController extends Controller
 
     public function genReCieveSpPdf($job_id)
     {
-        logStamp::query()->create(['description' => Auth::user()->user_code . " ได้ดูใบรับสินค้า $job_id"]);
-        $job = JobList::query()->where('job_id', $job_id)
-            ->leftJoin('users', 'users.user_code', '=', 'job_lists.user_key')
-            ->leftJoin('store_information as store', 'store.is_code_cust_id', '=', 'users.is_code_cust_id')
-            ->select(
-                'job_lists.*', 'users.name as username', 'users.user_code', 'store.*',
-            )
-            ->first();
-//        dd($job['address']);
-        $job['address'] = htmlspecialchars_decode($job['address']);
-        $behaviors = Behavior::query()->where('job_id', $job_id)->get();
-        $symptom = Symptom::query()->where('job_id', $job_id)->first();
-        $job['symptom'] = $symptom->symptom;
-        $behaviorToString = '';
-        foreach ($behaviors as $key => $behavior) {
-            if ($key === 0) {
-                $behaviorToString = $behaviorToString . $behavior->cause_name;
-            } else {
-                $behaviorToString = $behaviorToString . ' / ' . $behavior->cause_name;
-            }
-        }
-        return Inertia::render('ReportRepair/ReceiveSpPdf', ['job' => $job, 'behaviors' => $behaviorToString]);
+//        logStamp::query()->create(['description' => Auth::user()->user_code . " ได้ดูใบรับสินค้า $job_id"]);
+//        $job = JobList::query()->where('job_id', $job_id)
+//            ->leftJoin('users', 'users.user_code', '=', 'job_lists.user_key')
+//            ->leftJoin('store_information as store', 'store.is_code_cust_id', '=', 'users.is_code_cust_id')
+//            ->select(
+//                'job_lists.*', 'users.name as username', 'users.user_code', 'store.*',
+//            )
+//            ->first();
+////        dd($job['address']);
+//        $job['address'] = htmlspecialchars_decode($job['address']);
+//        $behaviors = Behavior::query()->where('job_id', $job_id)->get();
+//        $symptom = Symptom::query()->where('job_id', $job_id)->first();
+//        $job['symptom'] = $symptom->symptom;
+//        $behaviorToString = '';
+//        foreach ($behaviors as $key => $behavior) {
+//            if ($key === 0) {
+//                $behaviorToString = $behaviorToString . $behavior->cause_name;
+//            } else {
+//                $behaviorToString = $behaviorToString . ' / ' . $behavior->cause_name;
+//            }
+//        }
+        return view('receiveJob');
+//        return Inertia::render('ReportRepair/ReceiveSpPdf', ['job' => $job, 'behaviors' => $behaviorToString]);
     }
 }
