@@ -47,6 +47,7 @@ export default function RpBehaviorForm({listBehavior, JOB,setStepForm}) {
             onPassed: async (confirm) => {
                 if (confirm) {
                     try {
+                        setLoadingForm(true)
                         const {data, status} = await axios.post(route('repair.after.behaviour.store', {
                             behaviors: behaviors_selected,
                             job_id: JOB.job_id,
@@ -61,8 +62,10 @@ export default function RpBehaviorForm({listBehavior, JOB,setStepForm}) {
                         AlertDialog({
                             text: error.response.data?.message || error.message,
                         })
+                    }finally {
+                        setLoadingForm(false)
                     }
-                }
+                }else console.log('ยกเลิกบันทึกฟอร์ม');
             }
         })
     }
