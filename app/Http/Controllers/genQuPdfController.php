@@ -17,6 +17,7 @@ class genQuPdfController extends Controller
     {
         try {
             $data = [
+                "serial" => $request['serial'],
                 'req' => $request['req'],
                 "regenqu" => "Y",
                 "typeservice" => "SC",
@@ -36,9 +37,14 @@ class genQuPdfController extends Controller
                 "remark" => $request['remark'],
                 "cause_remark" => "",
                 "docmt" => "",
-                "serial" => $request['serial'],
                 "emprepair" => ""
             ];
+
+            $data = array_map(function ($item) {
+                return is_string($item) ? mb_convert_encoding($item, 'UTF-8', 'auto') : $item;
+            }, $data);
+
+
             $response = Http::post('http://192.168.0.13/genpdf/api/qu_ass', $data);
             if ($response->status() == 200) {
                 $Json = $response->json();

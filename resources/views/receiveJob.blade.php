@@ -1,61 +1,161 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <title>ใบรับงานซ่อม</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
-    <title>Print Form</title>
     <style>
-        /* ซ่อนทุกอย่างที่ไม่ใช่สิ่งที่เราต้องการปริ้น */
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            #whatToPrint, #whatToPrint * {
-                visibility: visible;
-            }
-            #whatToPrint {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-            }
-        }
-
-        /* ตกแต่งให้ดูดีในโหมดแสดง */
         body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
+            font-family: "TH Sarabun New", sans-serif;
+            font-size: 25px;
+            line-height: 1.4;
+            margin-top: 100px;
+            width: 100%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            box-sizing: border-box;
         }
 
-        #whatToPrint {
-            width: 500px;
+        .center {
+            text-align: center;
+        }
+
+        .divider {
+            border-top: 1px dashed #000;
+            margin: 10px 0;
+        }
+
+        .section {
+            margin-bottom: 10px;
+        }
+
+        #barcode,#barcode_customer {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-width: 100%;
+        }
+
+        .qc-code {
+            display: block;
+           max-width: 100px;
+            height: auto;
+            justify-content : center;
             margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #333;
-            background-color: #f9f9f9;
         }
 
-        button {
-            margin-top: 20px;
+        .label {
+
+            font-weight: bold;
+            display: inline-block;
+            min-width: 120px; /* เพื่อให้ข้อความหลัง label ไม่เบียด */
+            vertical-align: top;
+        }
+
+        @media print {
+            body {
+                width: 80mm;
+            }
+            .cut-page {
+                page-break-after: always;
+            }
         }
     </style>
+
 </head>
 <body>
-
-<div id="whatToPrint">
-    <p>Hi</p>
-    <h1>This should show up in my pdf</h1>
-    <svg id="barcode"></svg>
+<div class="center">
+    <h2>ศูนย์บริการ PCS</h2>
 </div>
 
-<!-- ปุ่มสำหรับสั่งพิมพ์ -->
-<button onclick="window.print()">พิมพ์เอกสาร</button>
+<div class="section">
+    <div><span class="label">ชื่อร้าน:</span> มานีการช่าง</div>
+    <div><span class="label">เบอร์โทรศัพท์:</span> 0931622330</div>
+</div>
 
+<div class="divider"></div>
+
+<svg id="barcode"></svg>
+
+<div class="divider"></div>
+
+
+<div class="section">
+    <div><span class="label">วันที่:</span> {{\Carbon\Carbon::now()}}</div>
+    <div><span class="label">ชื่อลูกค้า:</span> ออฟ</div>
+    <div><span class="label">เบอร์โทรติดต่อ:</span> 0931622330</div>
+    <div><span class="label">S/N:</span> 41641645361231</div>
+    <div>
+        <span class="label">รหัสและชื่อสินค้า:</span> (50277) J-Series เครื่องเจียรมือ 4" 1100W สวิตซ์ท้าย J-G1100W
+    </div>
+    <div><span class="label">อาการ:</span> อาการเสีย</div>
+    <div><span class="label">พนักงานผู้รับงานซ่อม:</span> ออฟ</div>
+    <div><span class="label">อุปกรณ์เสริม:</span> เรื่อย</div>
+    <div><span class="label">หมายเหตุลูกค้า:</span> ลูกค้าอยากกินหนม</div>
+    <div><span class="label">หมายเหตุในศูนย์ซ่อม:</span> ลุกค้าอยากซ่อมเพราะ</div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section center">
+    <img class="qc-code" src="{{ URL::asset('line_qr_code.jpg') }}" alt="ไม่มีรูป">
+    <div>@line : ศูนย์ซ่อม pumpkin</div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section center">
+    เอกสารนี้เป็นหลักฐานการรับสินค้าเพื่อส่งซ่อม<br>
+    กรุณาเก็บไว้เพื่อยืนยันตัวตน
+</div>
+
+<div class="cut-page"></div>
+
+<div class="divider"></div>
+<div class="center">
+    <h2>ศูนย์บริการ PCS</h2>
+    <h2>สำหรับลูกค้า</h2>
+</div>
+
+<div class="section">
+    <div><span class="label">ชื่อร้าน:</span> มานีการช่าง</div>
+    <div><span class="label">เบอร์โทรศัพท์:</span> 0931622330</div>
+</div>
+
+<div class="divider"></div>
+
+<svg id="barcode_customer"></svg>
+
+<div class="divider"></div>
+
+<div class="section">
+    <div><span class="label">วันที่:</span> {{\Carbon\Carbon::now()}}</div>
+    <div><span class="label">S/N:</span> 41641645361231</div>
+    <div>
+        <span class="label">รหัสและชื่อสินค้า:</span> (50277) J-Series เครื่องเจียรมือ 4" 1100W สวิตซ์ท้าย J-G1100W
+    </div>
+    <div><span class="label">อาการ:</span> อาการเสีย</div>
+    <div><span class="label">พนักงานผู้รับงานซ่อม:</span> ออฟ</div>
+    <div><span class="label">อุปกรณ์เสริม:</span> เรื่อย</div>
+    <div><span class="label">หมายเหตุลูกค้า:</span> ลูกค้าอยากกินหนม</div>
+</div>
+<div class="divider"></div>
+
+<div class="section center">
+    <img class="qc-code" src="{{ URL::asset('line_qr_code.jpg') }}" alt="ไม่มีรูป">
+    <div>@line : ศูนย์ซ่อม pumpkin</div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section center">
+    เอกสารนี้เป็นหลักฐานการรับสินค้าเพื่อส่งซ่อม<br>
+    กรุณาเก็บไว้เพื่อยืนยันตัวตน
+</div>
 
 <script>
-    JsBarcode("#barcode", "JOB-1749201869CIS-C");
+    JsBarcode("#barcode", "JOB-12164653216");
+    JsBarcode("#barcode_customer", "JOB-12164653216");
 </script>
 </body>
 </html>

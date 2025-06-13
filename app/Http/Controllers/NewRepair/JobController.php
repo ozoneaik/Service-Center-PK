@@ -30,6 +30,7 @@ class JobController extends Controller
                 if ($found->status === 'pending') {
                     return response()->json([
                         'message' => 'เจอข้อมูล',
+                        'found' => true,
                         'job' => ['job_detail' => $found]
                     ]);
                 }elseif ($found->status === 'send') {
@@ -50,6 +51,7 @@ class JobController extends Controller
             Log::error($e->getMessage() . $e->getFile() . $e->getLine());
             return response()->json([
                 'message' => $e->getMessage(),
+                'found' => false,
                 'data' => [],
             ],$status ?? 400);
         }

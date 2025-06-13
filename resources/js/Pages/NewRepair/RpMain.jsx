@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import {useEffect, useState} from "react";
 import RpTab2Form from "@/Pages/NewRepair/Tab2/RpTab2Form.jsx";
 import RpTab1Form from "@/Pages/NewRepair/Tab1/RpTab1Form.jsx";
+import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
 
 
 function CustomTabPanel(props) {
@@ -44,11 +45,26 @@ export default function RpMain({productDetail, serial_id}) {
             const {data, status} = await axios.post(route('repair.search.job', {
                 serial_id: serial_id, pid: productDetail.pid
             }));
-            console.log('ผลลัพทธ์การค้นหา job >> ',data.job.job_detail)
+            console.log('ผลลัพทธ์การค้นหา job >> ', data.job.job_detail)
             setJOB(data.job.job_detail)
         } catch (error) {
-            if (error.status === 404) {
-                alert(error.response.data.message);
+            if (error.status === 404 && error.response.data?.found === false) {
+                AlertDialogQuestion({
+                    title: 'ยืนยันการแจ้งซ่อม',
+                    text: 'กด ตกลง เพื่อ ยืนยันการแจ้งซ่อม',
+                    onPassed: async (confirm) => {
+                        if (confirm) {
+                            try {
+                                await axios.post(route('repair.store', {serial_id, productDetail}));
+                                fetchData().finally(() => setSearchingJob(false));
+                            } catch (error) {
+                                AlertDialog({
+                                    text: error.response.data?.message || error.message
+                                })
+                            }
+                        }else console.log('มีการยกเลิกสร้าง job');
+                    }
+                })
             }
             console.log(error)
         }

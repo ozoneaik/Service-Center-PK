@@ -7,6 +7,8 @@ use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\NewRepair\After\RpAfBehaviourController;
 use App\Http\Controllers\NewRepair\After\RpAfController;
+use App\Http\Controllers\NewRepair\After\RpAfQuController;
+use App\Http\Controllers\NewRepair\After\RpAfSpSparePartController;
 use App\Http\Controllers\NewRepair\Before\RpBfController;
 use App\Http\Controllers\NewRepair\RpAccessoriesController;
 use App\Http\Controllers\NewRepair\RpBehaviourController;
@@ -92,6 +94,12 @@ Route::prefix('repair')->group(function () {
                 Route::get('/',[RpAfBehaviourController::class,'index'])->name('repair.after.behaviour.index');
                 Route::post('/',[RpAfBehaviourController::class,'store'])->name('repair.after.behaviour.store');
             });
+            Route::prefix('/spare-part')->group(function () {
+               Route::get('/',[RpAfSpSparePartController::class,'index'])->name('repair.after.spare-part.index');
+               Route::post('/',[RpAfSpSparePartController::class,'store'])->name('repair.after.spare-part.store');
+            });
+
+            Route::post('/gen-qu',[RpAfQuController::class,'index'])->name('repair.after.qu.index');
         });
     });
 
