@@ -1,40 +1,26 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
 import { Transition } from '@headlessui/react';
 import {useForm, usePage} from '@inertiajs/react';
-import { useRef } from 'react';
-import { Button, CircularProgress, TextField } from "@mui/material";
+import {FormLabel, TextField} from "@mui/material";
 
 export default function SellerForm({ className = '' }) {
-    const sellerIdInput = useRef(null);
-    const { data, setData, errors, put, reset, processing, recentlySuccessful } = useForm({ sellerId: '', });
+    const {recentlySuccessful ,errors} = useForm({ sellerId: '', });
     const updatePassword = (e) => {
         e.preventDefault();
         alert('กำลังพัฒนา')
-        // put(route('password.update'), {
-        //     preserveScroll: true,
-        //     onSuccess: () => reset(),
-        //     onError: (errors) => {
-        //         if (errors.password) {
-        //             reset('password', 'password_confirmation');
-        //             sellerIdInput.current.focus();
-        //         }
-        //     },
-        // });
     };
     const sale_info = usePage().props.auth.sale_info;
     return (
         <section className={className}>
             <header>
                 <h2 className="text-lg font-medium text-gray-900">พนักงานขาย ประจำร้าน (Sale)</h2>
-                {/*<p className="mt-1 text-sm text-gray-600">คำอธิบาย</p>*/}
             </header>
             <form onSubmit={updatePassword} className="mt-6 space-y-6">
-
                 <div>
-                    <InputLabel htmlFor="sellerName" value="ชื่อ-นามสกุล" />
-                    <TextField value={sale_info?.sale_name || ''}  id="sellerName" type="text" fullWidth size='small' disabled />
-                    <InputError message={errors.password} className="mt-2" />
+                    <FormLabel required htmlFor="sellerName">ชื่อ-นามสกุล</FormLabel>
+                    <TextField
+                        value={sale_info?.sale_name || ''}  id="sellerName" type="text" fullWidth size='small' disabled
+                        error={!!errors.password} helperText={errors.password}
+                    />
                 </div>
                 <div className="flex items-center gap-4">
                     <Transition show={recentlySuccessful}>

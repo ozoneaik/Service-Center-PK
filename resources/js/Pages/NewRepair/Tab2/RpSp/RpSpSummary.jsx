@@ -1,32 +1,15 @@
 import {
-    Alert,
-    Button,
-    Card,
-    CardContent,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    FormControl,
-    Grid2,
-    IconButton,
-    InputLabel,
-    MenuItem,
-    Select, Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    TextField,
-    Typography
+    Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, Grid2,
+    IconButton, InputLabel, MenuItem, Select, Stack, Table, TableBody, TableCell, TableHead, TableRow,
+    TextField, Typography
 } from "@mui/material";
-import { useState } from "react";
+import React,{ useState } from "react";
 import { showDefaultImage } from "@/utils/showImage.js";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import {Check, CheckBox} from "@mui/icons-material";
 
 export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSelected }) {
     const [previewImage, setPreviewImage] = useState(false);
@@ -199,91 +182,103 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                                     const totalPrice = price * qty;
 
                                     return (
-                                        <TableRow
-                                            key={index}
-                                            sx={{
-                                                backgroundColor: sp.warranty === 'Y' ? '#e8f5e8' : 'inherit'
-                                            }}
-                                        >
-                                            <TableCell
-                                                onClick={() => {
-                                                    setPreviewImage(true);
-                                                    setPreviewSelected(imageSp);
-                                                }}
-                                                sx={{ cursor: 'pointer' }}
+                                        <React.Fragment key={index}>
+
+                                            <TableRow
+                                                sx={{backgroundColor: sp.warranty === 'Y' ? '#e8f5e8' : 'inherit'}}
                                             >
-                                                <img
-                                                    width={50}
-                                                    src={imageSp}
-                                                    onError={showDefaultImage}
-                                                    alt=""
-                                                />
-                                            </TableCell>
-                                            <TableCell>{sp.spcode}</TableCell>
-                                            <TableCell>
-                                                {sp.spname}
-                                                {(sp.claim_type && sp.price_per_unit == 0) && (
-                                                    <div style={{ fontSize: '0.8em', color: '#666', marginTop: '4px' }}>
-                                                        เคลม: {sp.claim_type}
-                                                        {sp.claim_note && (
-                                                            <div>หมายเหตุ: {sp.claim_note}</div>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>{sp.spunit}</TableCell>
-                                            <TableCell>
-                                                {isEditing ? (
-                                                    <TextField
-                                                        type="number"
-                                                        size="small"
-                                                        value={isEditing.qty}
-                                                        onChange={(e) => handleEditChange(sp.spcode, 'qty', e.target.value)}
-                                                        inputProps={{ min: 1 }}
-                                                        sx={{ width: '80px' }}
-                                                    />
-                                                ) : (
-                                                    qty
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {isEditing ? (
-                                                    <TextField
-                                                        type="number"
-                                                        size="small"
-                                                        value={isEditing.price_per_unit}
-                                                        onChange={(e) => handleEditChange(sp.spcode, 'price_per_unit', e.target.value)}
-                                                        inputProps={{ min: 0, step: 0.01 }}
-                                                        sx={{ width: '100px' }}
-                                                    />
-                                                ) : (
-                                                    `${price.toFixed(2)} บาท`
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {totalPrice.toFixed(2)} บาท
-                                            </TableCell>
-                                            <TableCell>
-                                                {isEditing ? (
-                                                    <IconButton
-                                                        color="success"
-                                                        onClick={() => handleSaveEdit(sp.spcode)}
-                                                        size="small"
-                                                    >
-                                                        <SaveIcon />
-                                                    </IconButton>
-                                                ) : (
-                                                    <IconButton
-                                                        disabled={sp.spcode === 'SV001'}
-                                                        color="primary"
-                                                        onClick={() => handleEditSpare(sp.spcode)}
-                                                        size="small"
-                                                    >
-                                                        <EditIcon />
-                                                    </IconButton>
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
+                                                <TableCell
+                                                    onClick={() => {
+                                                        setPreviewImage(true);
+                                                        setPreviewSelected(imageSp);
+                                                    }}
+                                                    sx={{ cursor: 'pointer' }}
+                                                >
+                                                    <img width={50} src={imageSp} onError={showDefaultImage} alt=""/>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {sp.spcode}
+                                                    {isEditing && (
+                                                        <>
+                                                            <br/>
+                                                            <Select size='small' name="no-claim" defaultValue={1}
+                                                                    id="no-claim">
+                                                                <MenuItem value={1}>
+                                                                    ลูกค้ามีการดัดแปลงสภาพเครื่องมา
+                                                                </MenuItem>
+                                                                <MenuItem value={2}>
+                                                                    ลูกค้าใช้งานผิดวัตถุประสงค์
+                                                                </MenuItem>
+                                                            </Select>
+                                                        </>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {sp.spname}
+                                                    {(sp.claim_type && sp.price_per_unit == 0) && (
+                                                        <div style={{ fontSize: '0.8em', color: '#666', marginTop: '4px' }}>
+                                                            เคลม: {sp.claim_type}
+                                                            {sp.claim_note && (
+                                                                <div>หมายเหตุ: {sp.claim_note}</div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>{sp.spunit}</TableCell>
+                                                <TableCell>
+                                                    {isEditing ? (
+                                                        <TextField
+                                                            type="number"
+                                                            size="small"
+                                                            value={isEditing.qty}
+                                                            onChange={(e) => handleEditChange(sp.spcode, 'qty', e.target.value)}
+                                                            inputProps={{ min: 1 }}
+                                                            sx={{ width: '80px' }}
+                                                        />
+                                                    ) : (
+                                                        qty
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {isEditing ? (
+                                                        <TextField
+                                                            type="number"
+                                                            size="small"
+                                                            value={isEditing.price_per_unit}
+                                                            onChange={(e) => handleEditChange(sp.spcode, 'price_per_unit', e.target.value)}
+                                                            inputProps={{ min: 0, step: 0.01 }}
+                                                            sx={{ width: '100px' }}
+                                                        />
+                                                    ) : (
+                                                        `${price.toFixed(2)} บาท`
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {totalPrice.toFixed(2)} บาท
+                                                </TableCell>
+                                                <TableCell>
+                                                    {isEditing ? (
+                                                        <IconButton
+                                                            color="success"
+                                                            onClick={() => handleSaveEdit(sp.spcode)}
+                                                            size="small"
+                                                        >
+                                                            <SaveIcon />
+                                                        </IconButton>
+                                                    ) : (
+                                                        <IconButton
+                                                            disabled={sp.spcode === 'SV001'}
+                                                            color="primary"
+                                                            onClick={() => handleEditSpare(sp.spcode)}
+                                                            size="small"
+                                                        >
+                                                            <EditIcon />
+                                                        </IconButton>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        </React.Fragment>
+
                                     );
                                 })}
                                 {/* แถวยอดรวม */}

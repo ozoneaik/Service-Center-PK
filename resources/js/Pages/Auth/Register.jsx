@@ -1,10 +1,6 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Button, Stack, TextField } from '@mui/material';
+import {Button, FormLabel, Stack, TextField} from '@mui/material';
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -28,50 +24,47 @@ export default function Register() {
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="name" value="ชื่อ" />
+                    <FormLabel required htmlFor="name">ชื่อ</FormLabel>
                     <TextField
                         variant='outlined' fullWidth size='small'
                         id='name' type='text' name='name'
                         value={data.name} required
                         onChange={(e) => setData('name', e.target.value)}
+                        error={!!errors.name} helperText={errors.name}
+                        autoFocus
                     />
-                    <InputError message={errors.name} className="mt-2" />
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="email" value="อีเมล" />
+                    <FormLabel required htmlFor="email">อีเมล</FormLabel>
                     <TextField
                         variant='outlined' fullWidth size='small'
                         id='email' type='email' name='email'
                         value={data.email} required
                         onChange={(e) => setData('email', e.target.value)}
+                        error={!!errors.email} helperText={errors.email}
                     />
-                    <InputError message={errors.email} className="mt-2" />
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="password" value="รหัสผ่าน" />
+                    <FormLabel required htmlFor="password">รหัสผ่าน</FormLabel>
                     <TextField
                         variant='outlined' fullWidth size='small'
                         id='password' type='password' name='password'
                         value={data.password} required
                         onChange={(e) => setData('password', e.target.value)}
+                        error={!!errors.password} helperText={errors.password}
                     />
-
-                    <InputError message={errors.password} className="mt-2" />
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="password_confirmation" value="ยืนยันรหัสผ่าน"/>
+                    <FormLabel required htmlFor="password_confirmation">ยืนยันรหัสผ่าน</FormLabel>
                     <TextField
                         variant='outlined' fullWidth size='small'
                         id='password_confirmation' type='password' name='password_confirmation'
                         value={data.password_confirmation} required
                         onChange={(e) => setData('password_confirmation', e.target.value)}
-                    />
-                    <InputError
-                        message={errors.password_confirmation}
-                        className="mt-2"
+                        error={!!errors.password_confirmation} helperText={errors.password_confirmation}
                     />
                 </div>
 

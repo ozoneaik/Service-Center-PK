@@ -24,6 +24,7 @@ class RpAfSpSparePartController extends Controller
     public function store(Request $request) {
         $job_id = $request->get('job_id');
         $serial_id = $request->get('serial_id');
+        $spare_parts = $request->get('spare_parts');
 
         return response()->json([
             'message' => 'success',

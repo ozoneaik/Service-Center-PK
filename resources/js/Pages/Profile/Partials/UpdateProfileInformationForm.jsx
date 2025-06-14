@@ -1,10 +1,6 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
 import {Transition} from '@headlessui/react';
 import {Link, useForm, usePage} from '@inertiajs/react';
-import {Button, CircularProgress, TextField} from "@mui/material";
+import {Button, CircularProgress, FormLabel, TextField} from "@mui/material";
 
 export default function UpdateProfileInformation({mustVerifyEmail, status, className = ''}) {
     const user = usePage().props.auth.user;
@@ -41,7 +37,7 @@ export default function UpdateProfileInformation({mustVerifyEmail, status, class
 
             <form onSubmit={submit} className="mt-6 space-y-6">
                 <div>
-                    <InputLabel htmlFor="name" value="ชื่อ"/>
+                    <FormLabel required htmlFor="name">ชื่อ</FormLabel>
 
                     <TextField
                         id='name'
@@ -52,12 +48,12 @@ export default function UpdateProfileInformation({mustVerifyEmail, status, class
                         autoComplete='name'
                         fullWidth
                         size='small'
+                        error={!!errors.name} helperText={errors.name}
                     />
-                    <InputError className="mt-2" message={errors.name}/>
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="email" value="อีเมล"/>
+                    <FormLabel required htmlFor="email">อีเมล</FormLabel>
                     <TextField
                         id='email'
                         type='email'
@@ -67,12 +63,12 @@ export default function UpdateProfileInformation({mustVerifyEmail, status, class
                         autoComplete='email'
                         fullWidth
                         size='small'
+                        error={!!errors.email} helperText={errors.email}
                     />
-                    <InputError className="mt-2" message={errors.email}/>
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="phone" value="เบอร์โทรศัพท์"/>
+                    <FormLabel required htmlFor="phone">เบอร์โทรศัพท์</FormLabel>
                     <TextField
                         disabled={!user.admin_that_branch}
                         id='phone'
@@ -83,27 +79,28 @@ export default function UpdateProfileInformation({mustVerifyEmail, status, class
                         autoComplete='phone'
                         fullWidth
                         size='small'
+                        error={!!errors.phone} helperText={errors.phone}
                     />
-                    <InputError className="mt-2" message={errors.phone}/>
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="address" value="ที่อยู่"/>
-                    <textarea
+                    <FormLabel required htmlFor="address">ที่อยู่</FormLabel>
+                    <br/>
+                    <TextField
                         disabled={!user.admin_that_branch}
                         id='address'
-                        style={{width: '100%'}}
-                        rows={4}
+                        fullWidth
+                        multiline minRows={4}
                         value={data.address}
                         onChange={(e) => setData('address', e.target.value)}
                         required
                         autoComplete='phone'
+                        error={!!errors.address} helperText={errors.address}
                     />
-                    <InputError className="mt-2" message={errors.address}/>
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="shop_name" value={'ชื่อร้าน ' + `( ${data.is_code_cust_id} )`}/>
+                    <FormLabel required htmlFor="shop_name">ชื่อร้าน {data.is_code_cust_id}</FormLabel>
                     <TextField
                         disabled={!user.admin_that_branch}
                         id='shop_name'
@@ -114,8 +111,8 @@ export default function UpdateProfileInformation({mustVerifyEmail, status, class
                         autoComplete='shop_name'
                         fullWidth
                         size='small'
+                        error={!!errors.shop_name} helperText={errors.shop_name}
                     />
-                    <InputError className="mt-2" message={errors.shop_name}/>
                 </div>
 
                 {mustVerifyEmail && user.email_verified_at === null && (

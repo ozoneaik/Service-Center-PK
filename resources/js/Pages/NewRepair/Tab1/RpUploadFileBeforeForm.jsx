@@ -1,6 +1,6 @@
 import React, {useState, useCallback, useEffect, useMemo, useRef} from 'react';
 import {
-    Box, Button, Typography, Alert, LinearProgress, Chip, Paper,
+    Box, Button, Typography, Alert, Chip, Paper,
     IconButton, Card, CardMedia, CardContent, CardActions, Grid2
 } from '@mui/material';
 import {
@@ -10,8 +10,13 @@ import {
     Image as ImageIcon
 } from '@mui/icons-material';
 import {useDropzone} from 'react-dropzone';
+import {
+    createPreviewUrl, formatFileSize, getFileName, getFileSize, getFileType,
+    isValidFileSize, isValidFileType
+} from "@/utils/fileUploadManage.js";
+import {FileUploading} from "@/Components/FileUploading.jsx";
 
-export default function RpUploadFileBeforeForm({data, setData,form1Saved}) {
+export default function RpUploadFileBeforeForm({data, setData, form1Saved}) {
     const [files, setFiles] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
@@ -36,43 +41,6 @@ export default function RpUploadFileBeforeForm({data, setData,form1Saved}) {
             setData('file_befores', files);
         }
     }, [filesString, dataFilesString, setData, files]);
-
-    // ตรวจสอบประเภทไฟล์
-    const isValidFileType = (file) => {
-        const validTypes = [
-            // รูปภาพ
-            'image/jpeg', 'image/jpg', 'image/png', 'image/gif',
-            'image/webp', 'image/bmp', 'image/svg+xml',
-            // วิดีโอ
-            'video/mp4', 'video/avi', 'video/mov', 'video/wmv',
-            'video/flv', 'video/webm', 'video/mkv'
-        ];
-        return validTypes.includes(file.type);
-    };
-
-    // ตรวจสอบขนาดไฟล์ (5MB = 5 * 1024 * 1024 bytes)
-    const isValidFileSize = (file) => {
-        const maxSize = 5 * 1024 * 1024; // 5MB (แก้ไขจาก comment ที่บอก 10MB)
-        return file.size <= maxSize;
-    };
-
-    // แปลงขนาดไฟล์เป็น readable format
-    const formatFileSize = (bytes) => {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    };
-
-    // สร้าง preview URL สำหรับไฟล์
-    const createPreviewUrl = (file) => {
-        if (file instanceof File) {
-            return URL.createObjectURL(file);
-        }
-        // สำหรับไฟล์ที่มาจาก server (มี full_file_path)
-        return file.full_file_path || file.file_path;
-    };
 
     // จัดการการเลือกไฟล์
     const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
@@ -172,44 +140,6 @@ export default function RpUploadFileBeforeForm({data, setData,form1Saved}) {
             });
         };
     }, []);
-
-    // Helper function to get file name
-    const getFileName = (fileObj) => {
-        if (fileObj.file instanceof File) {
-            return fileObj.file.name;
-        }
-        // สำหรับไฟล์ที่มาจาก server
-        return fileObj.name || fileObj.file_path?.split('/').pop() || 'Unknown file';
-    };
-
-    // Helper function to get file size
-    const getFileSize = (fileObj) => {
-        if (fileObj.file instanceof File) {
-            return fileObj.file.size;
-        }
-        // สำหรับไฟล์ที่มาจาก server อาจไม่มี size
-        return fileObj.size || 0;
-    };
-
-    // Helper function to get file type
-    const getFileType = (fileObj) => {
-        if (fileObj.file instanceof File) {
-            return fileObj.file.type;
-        }
-        // สำหรับไฟล์ที่มาจาก server ต้องเดาจาก extension
-        const fileName = getFileName(fileObj);
-        const extension = fileName.split('.').pop()?.toLowerCase();
-
-        const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
-        const videoExtensions = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'];
-
-        if (imageExtensions.includes(extension)) {
-            return 'image/' + extension;
-        } else if (videoExtensions.includes(extension)) {
-            return 'video/' + extension;
-        }
-        return 'unknown';
-    };
 
     return (
         <Box>
@@ -361,14 +291,7 @@ export default function RpUploadFileBeforeForm({data, setData,form1Saved}) {
                     )}
 
                     {/* Upload Progress */}
-                    {uploading && (
-                        <Box sx={{mt: 2}}>
-                            <Typography variant="body2" gutterBottom>
-                                กำลังอัปโหลด... {uploadProgress}%
-                            </Typography>
-                            <LinearProgress variant="determinate" value={uploadProgress}/>
-                        </Box>
-                    )}
+                    {uploading && <FileUploading uploadProgress={uploadProgress}/>}
                 </>
             )}
         </Box>

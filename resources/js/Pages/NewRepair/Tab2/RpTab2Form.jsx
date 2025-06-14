@@ -17,6 +17,7 @@ import RpBehaviorForm from "@/Pages/NewRepair/Tab2/RpBehaviorForm.jsx";
 import RpSpMain from "@/Pages/NewRepair/Tab2/RpSp/RpSpMain.jsx";
 import RpQu from "@/Pages/NewRepair/Tab2/RpQu.jsx";
 import RpUploadFileAfterForm from "@/Pages/NewRepair/Tab2/RpUploadFileAfterForm.jsx";
+import RpSummary from "@/Pages/NewRepair/Tab2/Summary/RpSummary.jsx";
 
 
 const steps = [
@@ -97,15 +98,6 @@ export default function RpTab2Form({productDetail, JOB, setJOB}) {
                                 <CardContent>
                                     <HeaderTitle headTitle='อาการ / สาเหตุ'/>
                                     <RpBehaviorForm JOB={JOB} listBehavior={listBehavior} setStepForm={setStepForm}/>
-                                    {/*<ButtonStepper>*/}
-                                    {/*    <Button*/}
-                                    {/*        variant='contained' endIcon={<ArrowRight/>}*/}
-                                    {/*        onClick={() => handleChangeStep(1)}*/}
-                                    {/*    >*/}
-                                    {/*        ถัดไป*/}
-                                    {/*    </Button>*/}
-                                    {/*</ButtonStepper>*/}
-
                                 </CardContent>
                             </Card>
                         </Grid2>
@@ -126,20 +118,6 @@ export default function RpTab2Form({productDetail, JOB, setJOB}) {
                                         productDetail={productDetail} listSparePart={listSparePart}
                                         setStepForm={setStepForm} JOB={JOB}
                                     />
-                                    {/*<ButtonStepper>*/}
-                                    {/*    <Button*/}
-                                    {/*        variant='contained' endIcon={<ArrowLeft/>} color='secondary'*/}
-                                    {/*        onClick={() => handleChangeStep(0)}*/}
-                                    {/*    >*/}
-                                    {/*        ย้อนกลับ*/}
-                                    {/*    </Button>*/}
-                                    {/*    <Button*/}
-                                    {/*        variant='contained' endIcon={<ArrowRight/>}*/}
-                                    {/*        onClick={() => handleChangeStep(2)}*/}
-                                    {/*    >*/}
-                                    {/*        ถัดไป*/}
-                                    {/*    </Button>*/}
-                                    {/*</ButtonStepper>*/}
                                 </CardContent>
                             </Card>
                         </Grid2>
@@ -157,20 +135,6 @@ export default function RpTab2Form({productDetail, JOB, setJOB}) {
                                     <HeaderTitle headTitle='ใบเสนอราคา'/>
                                     {/*content here*/}
                                     <RpQu productDetail={productDetail} JOB={JOB}/>
-                                    {/*<ButtonStepper>*/}
-                                    {/*    <Button*/}
-                                    {/*        variant='contained' endIcon={<ArrowLeft/>} color='secondary'*/}
-                                    {/*        onClick={() => handleChangeStep(1)}*/}
-                                    {/*    >*/}
-                                    {/*        ย้อนกลับ*/}
-                                    {/*    </Button>*/}
-                                    {/*    <Button*/}
-                                    {/*        variant='contained' endIcon={<ArrowRight/>}*/}
-                                    {/*        onClick={() => handleChangeStep(3)}*/}
-                                    {/*    >*/}
-                                    {/*        ถัดไป*/}
-                                    {/*    </Button>*/}
-                                    {/*</ButtonStepper>*/}
                                 </CardContent>
                             </Card>
                         </Grid2>
@@ -182,21 +146,7 @@ export default function RpTab2Form({productDetail, JOB, setJOB}) {
                                 <CardContent>
                                     <HeaderTitle headTitle='สภาพสินค้าหลังซ่อม'/>
                                     {/*content here*/}
-                                    <RpUploadFileAfterForm/>
-                                    {/*<ButtonStepper>*/}
-                                    {/*    <Button*/}
-                                    {/*        variant='contained' endIcon={<ArrowLeft/>} color='secondary'*/}
-                                    {/*        onClick={() => handleChangeStep(1)}*/}
-                                    {/*    >*/}
-                                    {/*        ย้อนกลับ*/}
-                                    {/*    </Button>*/}
-                                    {/*    <Button*/}
-                                    {/*        variant='contained' endIcon={<ArrowRight/>}*/}
-                                    {/*        onClick={() => handleChangeStep(4)}*/}
-                                    {/*    >*/}
-                                    {/*        ถัดไป*/}
-                                    {/*    </Button>*/}
-                                    {/*</ButtonStepper>*/}
+                                    <RpUploadFileAfterForm productDetail={productDetail} JOB={JOB}/>
                                 </CardContent>
                             </Card>
                         </Grid2>
@@ -208,24 +158,7 @@ export default function RpTab2Form({productDetail, JOB, setJOB}) {
                                 <CardContent>
                                     <HeaderTitle headTitle='สรุปจบงาน'/>
                                     {/*content here*/}
-                                    สรุปจบงาน
-                                    {/*<ButtonStepper>*/}
-                                    {/*    <Button*/}
-                                    {/*        variant='contained' startIcon={<ArrowLeft/>} color='secondary'*/}
-                                    {/*        onClick={() => handleChangeStep(3)}*/}
-                                    {/*    >*/}
-                                    {/*        ย้อนกลับ*/}
-                                    {/*    </Button>*/}
-                                    {/*    <Button variant='contained' color='error'*/}
-                                    {/*            startIcon={<Cancel/>}>ยกเลิกงานซ่อม</Button>*/}
-                                    {/*    <Button variant='contained' startIcon={<Save/>}>บันทึก</Button>*/}
-                                    {/*    <Button*/}
-                                    {/*        variant='contained' color='success'*/}
-                                    {/*        startIcon={<Done/>}*/}
-                                    {/*    >*/}
-                                    {/*        บันทึกและปิดงานซ่อม*/}
-                                    {/*    </Button>*/}
-                                    {/*</ButtonStepper>*/}
+                                    <RpSummary JOB={JOB} productDetail={productDetail}/>
                                 </CardContent>
                             </Card>
                         </Grid2>

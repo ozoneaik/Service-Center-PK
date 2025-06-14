@@ -11,4 +11,9 @@ class Symptom extends Model
         'serial_id',
         'symptom',
     ];
+
+    public static function findByJobId($job_id){
+        $symptom = Symptom::query()->where('job_id', $job_id)->first();
+        return $symptom->symptom ?? null;
+    }
 }

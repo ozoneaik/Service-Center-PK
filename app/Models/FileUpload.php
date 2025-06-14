@@ -28,11 +28,11 @@ class FileUpload extends Model
         return $upload_file ?? null;
     }
 
-    public static function findByJobIdBefore($job_id)
+    public static function findByJobIdBefore($job_id,$menu_id = 1)
     {
         $file_befores = FileUpload::query()
             ->where('job_id', $job_id)
-            ->where('menu_id', 1)
+            ->where('menu_id', $menu_id)
             ->get();
 
         return $file_befores ?? [];

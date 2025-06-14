@@ -1,5 +1,4 @@
 import {Box, CircularProgress, Grid2, Tab, Tabs} from "@mui/material";
-import PropTypes from "prop-types";
 import {useEffect, useState} from "react";
 import RpTab2Form from "@/Pages/NewRepair/Tab2/RpTab2Form.jsx";
 import RpTab1Form from "@/Pages/NewRepair/Tab1/RpTab1Form.jsx";

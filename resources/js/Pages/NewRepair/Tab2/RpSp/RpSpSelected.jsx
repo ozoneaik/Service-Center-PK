@@ -1,16 +1,5 @@
 import {
-    Button,
-    Card,
-    CardContent,
-    Checkbox,
-    Grid2,
-    IconButton, Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Typography
+    Button, Card, CardContent, Grid2, IconButton, Stack, Table, TableBody, TableCell, TableHead, TableRow
 } from "@mui/material";
 import {showDefaultImage} from "@/utils/showImage.js";
 import {useState} from "react";
@@ -20,7 +9,7 @@ import AddIcon from "@mui/icons-material/Add";
 import RpSpAdd from "./RpSpAdd.jsx";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 
-export default function RpSpSelected({spSelected, listSparePart, onUpdateSpSelected, onAddSpare, setShowSummary}) {
+export default function RpSpSelected({spSelected, listSparePart, onUpdateSpSelected, onAddSpare, setShowSummary,setSpSelected}) {
     const [previewImage, setPreviewImage] = useState(false);
     const [previewSelected, setPreviewSelected] = useState('');
     const [showAddMore, setShowAddMore] = useState(false);
@@ -31,14 +20,7 @@ export default function RpSpSelected({spSelected, listSparePart, onUpdateSpSelec
     };
 
     const handleAddMoreSpares = (newSpares) => {
-        // กรองอะไหล่ที่ยังไม่มีในรายการ
-        const filteredSpares = newSpares.filter(newSp =>
-            !spSelected.some(existingSp => existingSp.spcode === newSp.spcode)
-        );
-
-        if (filteredSpares.length > 0) {
-            onAddSpare(filteredSpares);
-        }
+        setSpSelected(newSpares);
         setShowAddMore(false);
     };
 
@@ -58,6 +40,7 @@ export default function RpSpSelected({spSelected, listSparePart, onUpdateSpSelec
                         </Grid2>
                         <Grid2 size={12}>
                             <RpSpAdd
+                                spSelected={spSelected}
                                 listSparePart={listSparePart}
                                 onAddSpare={handleAddMoreSpares}
                             />
@@ -81,7 +64,7 @@ export default function RpSpSelected({spSelected, listSparePart, onUpdateSpSelec
                         onClick={() => setShowAddMore(true)}
                         sx={{mb: 2}}
                     >
-                        เพิ่มอะไหล่เพิ่มเติม
+                        เพิ่มหรือลดอะไหล่
                     </Button>
 
                     {/* ปุ่มสรุปการเลือกอะไหล่ */}

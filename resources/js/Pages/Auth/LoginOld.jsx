@@ -1,8 +1,6 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, useForm } from '@inertiajs/react';
-import { Button, Stack, TextField } from '@mui/material';
+import {Button, FormLabel, Stack, TextField} from '@mui/material';
 import LoginIcon from '@mui/icons-material/Login';
 
 export default function Login({ status, canResetPassword }) {
@@ -32,27 +30,27 @@ export default function Login({ status, canResetPassword }) {
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="user_code" value="รหัสผู้ใช้งาน" />
+                    <FormLabel required htmlFor="user_code">รหัสผู้ใช้งาน</FormLabel>
                     <TextField
                         variant='outlined' fullWidth size='small'
                         id='user_code' name='user_code'
                         value={data.user_code} required
                         onChange={(e) => setData('user_code', e.target.value)}
+                        error={!!errors.user_code} helperText={errors.user_code}
                     />
 
-                    <InputError message={errors.user_code} className="mt-2" />
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="password" value="รหัสผ่าน" />
+                    <FormLabel required htmlFor="password">รหัสผ่าน</FormLabel>
                     <TextField
                         variant='outlined' fullWidth size='small'
                         id='password' type='password' name='password'
                         value={data.password} required
                         onChange={(e) => setData('password', e.target.value)}
+                        error={!!errors.password} helperText={errors.password}
                     />
 
-                    <InputError message={errors.password} className="mt-2" />
                 </div>
                 <Stack direction='row' mt={2}>
                     <Button type='submit' fullWidth disabled={processing} startIcon={<LoginIcon/>} variant="contained">

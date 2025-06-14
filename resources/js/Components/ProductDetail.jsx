@@ -11,7 +11,7 @@ export default function ProductDetail({
                                           warrantycondition = '',
                                           warrantynote = '',
                                           warrantyperiod = '',
-    status_job
+                                          status_job
                                       }) {
     const Detail = ({value, title, Color = '#f55721'}) => (
         <Typography fontWeight='bold' variant="subtitle1" sx={{color: 'black'}}>
@@ -52,8 +52,8 @@ export default function ProductDetail({
 
             </Grid2>
             <Grid2 size={{xs: 5, md: 4}}>
-                <img src={imagesku || 'https://images.dcpumpkin.com/images/product/500/default.jpg'} alt=""
-                     width='100%'/>
+                <img style={{mixBlendMode: 'multiply',maxHeight : '300px'}}
+                     src={imagesku || 'https://images.dcpumpkin.com/images/product/500/default.jpg'} alt=""/>
             </Grid2>
         </Grid2>
     )

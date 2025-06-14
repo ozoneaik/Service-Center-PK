@@ -7,9 +7,9 @@
     <style>
         body {
             font-family: "TH Sarabun New", sans-serif;
-            font-size: 25px;
-            line-height: 1.4;
-            margin-top: 100px;
+            font-size: 16px;
+            line-height: 1.2;
+            margin: 10px;
             width: 100%;
             word-wrap: break-word;
             overflow-wrap: break-word;
@@ -22,72 +22,93 @@
 
         .divider {
             border-top: 1px dashed #000;
-            margin: 10px 0;
+            margin: 5px 0;
         }
 
         .section {
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
-        #barcode,#barcode_customer {
+        #barcode, #barcode_customer {
             display: block;
             width: 100%;
-            height: auto;
+            height: 40px;
             max-width: 100%;
         }
 
         .qc-code {
             display: block;
-           max-width: 100px;
+            max-width: 60px;
             height: auto;
-            justify-content : center;
             margin: 0 auto;
         }
 
         .label {
-
             font-weight: bold;
             display: inline-block;
-            min-width: 120px; /* เพื่อให้ข้อความหลัง label ไม่เบียด */
+            min-width: 80px;
             vertical-align: top;
         }
 
+        h2 {
+            margin: 5px 0;
+            font-size: 18px;
+        }
+
+        .compact-section {
+            margin-bottom: 3px;
+        }
+
+        .compact-section div {
+            margin-bottom: 2px;
+        }
+
+        .page-break {
+            page-break-before: always;
+            margin-top: 15px;
+        }
+
         @media print {
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
             body {
-                width: 80mm;
+                font-size: 14px;
+                margin: 0;
             }
-            .cut-page {
-                page-break-after: always;
-            }
+            /*.page-break {*/
+            /*    page-break-before: always;*/
+            /*}*/
         }
     </style>
-
 </head>
 <body>
+
+<!-- ส่วนที่ 1: สำหรับร้าน -->
 <div class="center">
     <h2>ศูนย์บริการ PCS</h2>
 </div>
 
-<div class="section">
+<div class="compact-section">
     <div><span class="label">ชื่อร้าน:</span> มานีการช่าง</div>
     <div><span class="label">เบอร์โทรศัพท์:</span> 0931622330</div>
 </div>
 
 <div class="divider"></div>
 
-<svg id="barcode"></svg>
+<div class="center">
+    <svg id="barcode"></svg>
+</div>
 
 <div class="divider"></div>
 
-
-<div class="section">
-    <div><span class="label">วันที่:</span> {{\Carbon\Carbon::now()}}</div>
+<div class="compact-section">
+    <div><span class="label">วันที่:</span> 13 มิถุนายน 2568</div>
     <div><span class="label">ชื่อลูกค้า:</span> ออฟ</div>
     <div><span class="label">เบอร์โทรติดต่อ:</span> 0931622330</div>
     <div><span class="label">S/N:</span> 41641645361231</div>
-    <div>
-        <span class="label">รหัสและชื่อสินค้า:</span> (50277) J-Series เครื่องเจียรมือ 4" 1100W สวิตซ์ท้าย J-G1100W
-    </div>
+    <div><span class="label">รหัสและชื่อสินค้า:</span> (50277) J-Series เครื่องเจียรมือ 4" 1100W สวิตซ์ท้าย J-G1100W</div>
     <div><span class="label">อาการ:</span> อาการเสีย</div>
     <div><span class="label">พนักงานผู้รับงานซ่อม:</span> ออฟ</div>
     <div><span class="label">อุปกรณ์เสริม:</span> เรื่อย</div>
@@ -98,64 +119,73 @@
 <div class="divider"></div>
 
 <div class="section center">
-    <img class="qc-code" src="{{ URL::asset('line_qr_code.jpg') }}" alt="ไม่มีรูป">
-    <div>@line : ศูนย์ซ่อม pumpkin</div>
+    <img class="qc-code" src="line_qr_code.jpg" alt="QR Code">
+    <div style="font-size: 14px;">@line : ศูนย์ซ่อม pumpkin</div>
 </div>
 
 <div class="divider"></div>
 
-<div class="section center">
+<div class="section center" style="font-size: 14px;">
     เอกสารนี้เป็นหลักฐานการรับสินค้าเพื่อส่งซ่อม<br>
     กรุณาเก็บไว้เพื่อยืนยันตัวตน
 </div>
 
-<div class="cut-page"></div>
-
-<div class="divider"></div>
-<div class="center">
-    <h2>ศูนย์บริการ PCS</h2>
-    <h2>สำหรับลูกค้า</h2>
-</div>
-
-<div class="section">
-    <div><span class="label">ชื่อร้าน:</span> มานีการช่าง</div>
-    <div><span class="label">เบอร์โทรศัพท์:</span> 0931622330</div>
-</div>
-
-<div class="divider"></div>
-
-<svg id="barcode_customer"></svg>
-
-<div class="divider"></div>
-
-<div class="section">
-    <div><span class="label">วันที่:</span> {{\Carbon\Carbon::now()}}</div>
-    <div><span class="label">S/N:</span> 41641645361231</div>
-    <div>
-        <span class="label">รหัสและชื่อสินค้า:</span> (50277) J-Series เครื่องเจียรมือ 4" 1100W สวิตซ์ท้าย J-G1100W
+<!-- ส่วนที่ 2: สำหรับลูกค้า -->
+<div class="page-break">
+    <div class="center">
+        <h2>ศูนย์บริการ PCS</h2>
+        <h2 style="margin-top: 0;">สำหรับลูกค้า</h2>
     </div>
-    <div><span class="label">อาการ:</span> อาการเสีย</div>
-    <div><span class="label">พนักงานผู้รับงานซ่อม:</span> ออฟ</div>
-    <div><span class="label">อุปกรณ์เสริม:</span> เรื่อย</div>
-    <div><span class="label">หมายเหตุลูกค้า:</span> ลูกค้าอยากกินหนม</div>
-</div>
-<div class="divider"></div>
 
-<div class="section center">
-    <img class="qc-code" src="{{ URL::asset('line_qr_code.jpg') }}" alt="ไม่มีรูป">
-    <div>@line : ศูนย์ซ่อม pumpkin</div>
-</div>
+    <div class="compact-section">
+        <div><span class="label">ชื่อร้าน:</span> มานีการช่าง</div>
+        <div><span class="label">เบอร์โทรศัพท์:</span> 0931622330</div>
+    </div>
 
-<div class="divider"></div>
+    <div class="divider"></div>
 
-<div class="section center">
-    เอกสารนี้เป็นหลักฐานการรับสินค้าเพื่อส่งซ่อม<br>
-    กรุณาเก็บไว้เพื่อยืนยันตัวตน
+    <div class="center">
+        <svg id="barcode_customer"></svg>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="compact-section">
+        <div><span class="label">วันที่:</span> 13 มิถุนายน 2568</div>
+        <div><span class="label">S/N:</span> 41641645361231</div>
+        <div><span class="label">รหัสและชื่อสินค้า:</span> (50277) J-Series เครื่องเจียรมือ 4" 1100W สวิตซ์ท้าย J-G1100W</div>
+        <div><span class="label">อาการ:</span> อาการเสีย</div>
+        <div><span class="label">พนักงานผู้รับงานซ่อม:</span> ออฟ</div>
+        <div><span class="label">อุปกรณ์เสริม:</span> เรื่อย</div>
+        <div><span class="label">หมายเหตุลูกค้า:</span> ลูกค้าอยากกินหนม</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section center">
+        <img class="qc-code" src="line_qr_code.jpg" alt="QR Code">
+        <div style="font-size: 14px;">@line : ศูนย์ซ่อม pumpkin</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section center" style="font-size: 14px;">
+        เอกสารนี้เป็นหลักฐานการรับสินค้าเพื่อส่งซ่อม<br>
+        กรุณาเก็บไว้เพื่อยืนยันตัวตน
+    </div>
 </div>
 
 <script>
-    JsBarcode("#barcode", "JOB-12164653216");
-    JsBarcode("#barcode_customer", "JOB-12164653216");
+    JsBarcode("#barcode", "JOB-12164653216", {
+        height: 40,
+        width: 2,
+        fontSize: 14
+    });
+    JsBarcode("#barcode_customer", "JOB-12164653216", {
+        height: 40,
+        width: 2,
+        fontSize: 14
+    });
 </script>
 </body>
 </html>

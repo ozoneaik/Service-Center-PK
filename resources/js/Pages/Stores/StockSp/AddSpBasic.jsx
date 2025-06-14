@@ -1,4 +1,3 @@
-import InputError from "@/Components/InputError.jsx";
 import { useForm, usePage } from "@inertiajs/react";
 import {
     Alert, Button, CircularProgress, Dialog, DialogContent,
@@ -162,6 +161,7 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
                             <Grid2 size={{ md: 6, xs: 12 }}>
                                 <TextField
                                     error={errors.sp_code && !data.sp_code}
+                                    helperText={errors.sp_code}
                                     value={data.sp_code}
                                     onChange={handleOnChange}
                                     name="sp_code"
@@ -169,7 +169,6 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
                                     fullWidth label='รหัสอะไหล่'
                                     placeholder="ตัวอย่าง SP001"
                                 />
-                                <InputError message={errors.sp_code} />
                             </Grid2>
                             <Grid2 size={{ md: 6, xs: 12 }}>
                                 <Typography>
@@ -180,11 +179,11 @@ export default function AddSpBasic({ openAddSpBasic, setOpenAddSpBasic }) {
                                 <TextField
                                     required fullWidth label='จำนวนที่รับเข้ามา'
                                     error={errors.qty_sp && !data.qty_sp} value={data.qty_sp}
+                                    helperText={errors.qty_sp}
                                     onChange={(e) => setData('qty_sp', e.target.value)}
                                     type="number" size="small"
                                     placeholder="ตัวอย่าง ประกบบน"
                                 />
-                                <InputError message={errors.qty_sp} />
                             </Grid2>
                             <Grid2 size={12}>
                                 <Stack direction={{ md: 'row', xs: 'column' }} spacing={2}>

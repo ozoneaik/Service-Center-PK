@@ -11,4 +11,9 @@ class AccessoriesNote extends Model
         'serial_id',
         'note'
     ];
+
+    public static function findByJobId($job_id){
+        $accessory = AccessoriesNote::query()->where('job_id', $job_id)->first();
+        return $accessory->note ?? null;
+    }
 }

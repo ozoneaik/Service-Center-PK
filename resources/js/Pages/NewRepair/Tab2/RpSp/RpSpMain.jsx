@@ -90,10 +90,12 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
                                             <RpSpAdd
                                                 listSparePart={listSparePart}
                                                 onAddSpare={handleAddSpare}
+                                                spSelected={spSelected}
                                             />
                                         ) : (
                                             <RpSpSelected
                                                 spSelected={spSelected}
+                                                setSpSelected={setSpSelected}
                                                 listSparePart={listSparePart}
                                                 onUpdateSpSelected={handleUpdateSpSelected}
                                                 onAddSpare={handleAddSpare}

@@ -21,7 +21,14 @@ class RpBfController extends Controller
         try {
             $form = [];
             $form['customer'] = CustomerInJob::findByJobId($job_id);
-            $form['remark_symptom_accessory'] = Remark::findByJobId($job_id);
+            $remark = Remark::findByJobId($job_id);
+            $symptom = Symptom::findByJobId($job_id);
+            $accessory = AccessoriesNote::findByJobId($job_id);
+            $form['remark_symptom_accessory'] = [
+                'remark' => $remark,
+                'symptom' => $symptom,
+                'accessory' => $accessory,
+            ];
             $form['file_befores'] = FileUpload::findByJobIdBefore($job_id);
             $saved = $this->checkForm($form);
 

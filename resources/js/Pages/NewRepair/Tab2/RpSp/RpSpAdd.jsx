@@ -1,10 +1,10 @@
 import {Button, Checkbox, Grid2, Stack, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
 import {showDefaultImage} from "@/utils/showImage.js";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 import SaveIcon from "@mui/icons-material/Save";
 
-export default function RpSpAdd({listSparePart, onAddSpare}) {
+export default function RpSpAdd({listSparePart, onAddSpare, spSelected}) {
     const [previewImage, setPreviewImage] = useState(false);
     const [previewSelected, setPreviewSelected] = useState('');
     const [selectedSpares, setSelectedSpares] = useState([]);
@@ -19,6 +19,18 @@ export default function RpSpAdd({listSparePart, onAddSpare}) {
         price_per_unit: '100.00',
         warranty: 'N'
     };
+
+    // ตั้งค่า state เริ่มต้นตาม spSelected ที่ส่งมา
+    useEffect(() => {
+        if (spSelected && spSelected.length > 0) {
+            // แยกอะไหล่และบริการ
+            const spares = spSelected.filter(sp => sp.spcode !== 'SV001');
+            const hasService = spSelected.some(sp => sp.spcode === 'SV001');
+
+            setSelectedSpares(spares);
+            setSelectedService(hasService);
+        }
+    }, [spSelected]);
 
     const handleSpareCheck = (spare, checked) => {
         if (checked) {
@@ -55,10 +67,14 @@ export default function RpSpAdd({listSparePart, onAddSpare}) {
         return selectedSpares.some(sp => sp.spcode === spcode);
     };
 
+    // คำนวณจำนวนรายการที่เลือกทั้งหมด
+    const totalSelectedItems = selectedSpares.length + (selectedService ? 1 : 0);
+
     return (
         <Grid2 container spacing={2}>
             {previewImage &&
                 <SpPreviewImage open={previewImage} setOpen={setPreviewImage} imagePath={previewSelected}/>}
+
             {/* ตารางบริการ */}
             <Grid2 size={12} bgcolor='white' maxHeight={400} sx={{overflowY: 'auto'}}>
                 <Table stickyHeader>
@@ -147,7 +163,7 @@ export default function RpSpAdd({listSparePart, onAddSpare}) {
             </Grid2>
 
             {/* ปุ่มบันทึกการเลือก */}
-            {(selectedSpares.length > 0 || selectedService) && (
+            {totalSelectedItems > 0 && (
                 <Grid2 size={12}>
                     <Stack justifyContent='end' direction='row'>
                         <Button
@@ -157,7 +173,7 @@ export default function RpSpAdd({listSparePart, onAddSpare}) {
                             onClick={handleSaveSelection}
                             sx={{mb: 2}}
                         >
-                            บันทึกการเลือกอะไหล่ ({selectedSpares.length + (selectedService ? 1 : 0)} รายการ)
+                            บันทึกการเลือกอะไหล่ ({totalSelectedItems} รายการ)
                         </Button>
                     </Stack>
                 </Grid2>

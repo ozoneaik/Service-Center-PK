@@ -7,8 +7,10 @@ use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\NewRepair\After\RpAfBehaviourController;
 use App\Http\Controllers\NewRepair\After\RpAfController;
+use App\Http\Controllers\NewRepair\After\RpAfFileUploadController;
 use App\Http\Controllers\NewRepair\After\RpAfQuController;
 use App\Http\Controllers\NewRepair\After\RpAfSpSparePartController;
+use App\Http\Controllers\NewRepair\After\RpAfSummaryController;
 use App\Http\Controllers\NewRepair\Before\RpBfController;
 use App\Http\Controllers\NewRepair\RpAccessoriesController;
 use App\Http\Controllers\NewRepair\RpBehaviourController;
@@ -100,6 +102,15 @@ Route::prefix('repair')->group(function () {
             });
 
             Route::post('/gen-qu',[RpAfQuController::class,'index'])->name('repair.after.qu.index');
+
+            Route::prefix('/file-upload')->group(function () {
+                Route::get('/',[RpAfFileUploadController::class,'index'])->name('repair.after.file-upload.index');
+                Route::post('/',[RpAfFileUploadController::class,'store'])->name('repair.after.file-upload.store');
+            });
+
+            Route::prefix('/summary')->group(function () {
+                Route::get('/',[RpAfSummaryController::class,'index'])->name('repair.after.summary.index');
+            });
         });
     });
 

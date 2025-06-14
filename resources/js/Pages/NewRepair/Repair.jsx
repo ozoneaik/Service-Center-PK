@@ -25,6 +25,8 @@ export default function Repair({DATA}) {
     const [detail, setDetail] = useState(DATA);
     const [menuSel, setMenuSel] = useState(0);
 
+    const [miniSize, setMiniSize] = useState(false);
+
 
     const [comboSets, setComboSets] = useState();
     const [openSelSku, setOpenSelSku] = useState(false);
@@ -68,6 +70,7 @@ export default function Repair({DATA}) {
                 text: ErrorMessage({status: errorStatus, message: errorMessage})
             });
         } finally {
+            setMiniSize(false);
             setLoading(false);
             setMenuSel(0);
         }
@@ -96,16 +99,21 @@ export default function Repair({DATA}) {
                     {typeof detail === 'object' && detail !== null && (
                         <>
                             <Grid2 size={12}>
-                                <ProductDetail
-                                    serial={detail.serial || detail.serial_id}
-                                    imagesku={detail.imagesku || detail.image_sku}
-                                    pname={detail.pname || detail.p_name}
-                                    pid={detail.pid}
-                                    warranty_status={detail.warranty_status}
-                                    warrantycondition={detail.warrantycondition}
-                                    warrantynote={detail.warrantynote}
-                                    warrantyperiod={detail.warrantyperiod}
-                                />
+                                {!miniSize && (
+                                    <ProductDetail
+                                        serial={detail.serial || detail.serial_id}
+                                        imagesku={detail.imagesku || detail.image_sku}
+                                        pname={detail.pname || detail.p_name}
+                                        pid={detail.pid}
+                                        warranty_status={detail.warranty_status}
+                                        warrantycondition={detail.warrantycondition}
+                                        warrantynote={detail.warrantynote}
+                                        warrantyperiod={detail.warrantyperiod}
+                                    />
+                                )}
+                                <Button fullWidth onClick={()=>setMiniSize(!miniSize)}>
+                                    {!miniSize ? 'ย่อรายละเอียดสินค้า' : 'แสดงรายละเอียดสินค้า'}
+                                </Button>
                             </Grid2>
                             <span ref={scrollRef}></span>
                             <Grid2 size={12}>
