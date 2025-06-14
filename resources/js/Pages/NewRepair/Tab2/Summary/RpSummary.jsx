@@ -1,4 +1,4 @@
-import {Button, Card, CardContent, CircularProgress, Divider, Grid2, Stack, Typography} from "@mui/material";
+import {Button, Grid2, Stack} from "@mui/material";
 import {useEffect, useState} from "react";
 import RpsCustomer from "@/Pages/NewRepair/Tab2/Summary/RpsCustomer.jsx";
 import RpsBehavior from "@/Pages/NewRepair/Tab2/Summary/RpsBehavior.jsx";
@@ -7,7 +7,7 @@ import RpsRemarkCustomer from "@/Pages/NewRepair/Tab2/Summary/RpsRemarkCustomer.
 import RpsSymptomRemarkAccessory from "@/Pages/NewRepair/Tab2/Summary/RpsSymptomRemarkAccessory.jsx";
 import RpsDoc from "@/Pages/NewRepair/Tab2/Summary/RpsDoc.jsx";
 import {Cancel, Save} from "@mui/icons-material";
-import {AlertDialog} from "@/Components/AlertDialog.js";
+import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
 import RpsSparePart from "@/Pages/NewRepair/Tab2/Summary/RpsSparePart.jsx";
 import SkeletonLoading from "@/Components/SkeletonLoading.jsx";
 import {CardComponent} from "@/Components/CardComponent.jsx";
@@ -36,6 +36,30 @@ export default function RpSummary({JOB}) {
         }
     }
 
+    const handleCloseJob = () => {
+        AlertDialogQuestion({
+            title: 'ปิดงานซ่อม',
+            text: '<p style="color: darkorange;margin-bottom: 10px;">กรุณาเช็คให้ถี่ถ้วนก่อนปิดงานซ่อม</p><p>กด ตกลง เพื่อปิดงานซ่อม</p>',
+            onPassed : async (confirm) => {
+                if (confirm){
+                    alert('กำลังพัฒนา')
+                }else console.log('ไม่ได้กดตกลงในการปิดงานซ่อม')
+            }
+        })
+    }
+
+    const handleCancelJob = () => {
+        AlertDialogQuestion({
+            title : 'ยกเลิกงานซ่อม',
+            text : 'กด ตกลง เพื่อ ยกเลิกงานซ่อม<br/>หากต้องการกลับมาซ่อมกรุณาแจ้งซ่อม อีกครั้ง',
+            onPassed : async (confirm) => {
+                if (confirm) {
+                    alert('กำลังพัฒนา')
+                }else console.log('ไม่ได้กดตกลงในการยกเลิกงานซ่อม')
+            }
+        })
+    }
+
     return (
         <>
             {loading ? (<SkeletonLoading/>) : (
@@ -47,7 +71,7 @@ export default function RpSummary({JOB}) {
                     </Grid2>
                     <Grid2 size={12}>
                         {/*<CardComponent headTitle='รูปภาพ/วิดีโอสำหรับเคลมสินค้า'>*/}
-                            <RpsUploadFile file_uploads={result.file_uploads}/>
+                        <RpsUploadFile file_uploads={result.file_uploads}/>
                         {/*</CardComponent>*/}
                     </Grid2>
                     <Grid2 size={12}>
@@ -78,10 +102,16 @@ export default function RpSummary({JOB}) {
                     {/*</Grid2>*/}
                     <Grid2 size={12}>
                         <Stack direction='row' justifyContent='end' spacing={2}>
-                            <Button variant='contained' color='error' startIcon={<Cancel/>}>
+                            <Button
+                                variant='contained' color='error' startIcon={<Cancel/>}
+                                onClick={handleCancelJob}
+                            >
                                 ยกเลิกงานซ่อม
                             </Button>
-                            <Button variant='contained' startIcon={<Save/>}>
+                            <Button
+                                variant='contained' startIcon={<Save/>}
+                                onClick={handleCloseJob}
+                            >
                                 ปิดงานซ่อม
                             </Button>
                         </Stack>

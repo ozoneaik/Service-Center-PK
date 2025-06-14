@@ -2,6 +2,9 @@ import {Grid2, Stack} from "@mui/material";
 import {CardComponent} from "@/Components/CardComponent.jsx";
 import {getFileType} from "@/utils/fileUploadManage.js";
 
+const sizeImage = 100;
+const sizeVideo = 150;
+
 export default function RpsUploadFile({file_uploads}) {
     const file_befores = file_uploads?.file_befores || [];
     const file_afters = file_uploads?.file_afters || [];
@@ -28,15 +31,17 @@ const ShowMedia = ({list}) => (
             console.log(getType)
             if (getType === 'video/mp4') {
                 return (
-                    <video key={index} width={200} height={200} controls>
+                    <video key={index} width={sizeVideo} height={sizeVideo} controls>
                         <source src={file.full_file_path}/>
                     </video>
                 )
             } else {
                 return (
-                    <img src={file.full_file_path} width={200} alt="" key={index}/>
+                    <img loading='lazy' src={file.full_file_path} width={sizeImage} height={sizeImage} alt="" key={index}/>
                 )
             }
         })}
     </Stack>
 )
+
+
