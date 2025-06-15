@@ -53,15 +53,28 @@ export default function RpMain({productDetail, serial_id}) {
                     text: 'กด ตกลง เพื่อ ยืนยันการแจ้งซ่อม',
                     onPassed: async (confirm) => {
                         if (confirm) {
+                            const product_format = {
+                                pid: productDetail.pid,
+                                pname: productDetail.pname,
+                                pbaseunit: productDetail.pbaseunit,
+                                pcatid: productDetail.pcatid,
+                                pCatName: productDetail.pCatName,
+                                pSubCatName: productDetail.pSubCatName,
+                                facmodel: productDetail.facmodel,
+                                imagesku: productDetail.imagesku,
+                            }
                             try {
-                                await axios.post(route('repair.store', {serial_id, productDetail}));
+                                await axios.post(route('repair.store', {
+                                        serial_id, productDetail: product_format
+                                    })
+                                );
                                 fetchData().finally(() => setSearchingJob(false));
                             } catch (error) {
                                 AlertDialog({
                                     text: error.response.data?.message || error.message
                                 })
                             }
-                        }else console.log('มีการยกเลิกสร้าง job');
+                        } else console.log('มีการยกเลิกสร้าง job');
                     }
                 })
             }

@@ -9,7 +9,7 @@ import AddIcon from "@mui/icons-material/Add";
 import RpSpAdd from "./RpSpAdd.jsx";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 
-export default function RpSpSelected({spSelected, listSparePart, onUpdateSpSelected, onAddSpare, setShowSummary,setSpSelected}) {
+export default function RpSpSelected({spSelected, listSparePart, onUpdateSpSelected, onAddSpare, setShowSummary,setSpSelected,JOB}) {
     const [previewImage, setPreviewImage] = useState(false);
     const [previewSelected, setPreviewSelected] = useState('');
     const [showAddMore, setShowAddMore] = useState(false);
@@ -40,6 +40,7 @@ export default function RpSpSelected({spSelected, listSparePart, onUpdateSpSelec
                         </Grid2>
                         <Grid2 size={12}>
                             <RpSpAdd
+                                JOB={JOB}
                                 spSelected={spSelected}
                                 listSparePart={listSparePart}
                                 onAddSpare={handleAddMoreSpares}
@@ -98,6 +99,7 @@ export default function RpSpSelected({spSelected, listSparePart, onUpdateSpSelec
                             <TableCell>ชื่ออะไหล่</TableCell>
                             <TableCell>หน่วย</TableCell>
                             <TableCell>จำนวน</TableCell>
+                            <TableCell>ราคา</TableCell>
                             <TableCell>จัดการ</TableCell>
                         </TableRow>
                     </TableHead>
@@ -124,6 +126,7 @@ export default function RpSpSelected({spSelected, listSparePart, onUpdateSpSelec
                                     <TableCell>{sp.spname}</TableCell>
                                     <TableCell>{sp.spunit}</TableCell>
                                     <TableCell>{sp.qty || 1}</TableCell>
+                                    <TableCell>{sp.price_per_unit || 0}</TableCell>
                                     <TableCell>
                                         <IconButton
                                             color="error"

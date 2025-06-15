@@ -149,6 +149,7 @@ class RpBfController extends Controller
                 $store_accessory->save();
             }else AccessoriesNote::query()->where('job_id', $job_id)->delete();
 
+            // บันทึก file
             $this->store_file($file_befores,$serial_id,$job_id);
 
             DB::commit();

@@ -4,7 +4,7 @@ import {useState, useEffect} from "react";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 import SaveIcon from "@mui/icons-material/Save";
 
-export default function RpSpAdd({listSparePart, onAddSpare, spSelected}) {
+export default function RpSpAdd({listSparePart, onAddSpare, spSelected,JOB}) {
     const [previewImage, setPreviewImage] = useState(false);
     const [previewSelected, setPreviewSelected] = useState('');
     const [selectedSpares, setSelectedSpares] = useState([]);
@@ -15,8 +15,8 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected}) {
         spcode: 'SV001',
         spname: 'ค่าบริการ',
         spunit: 'ครั้ง',
-        stdprice_per_unit: '100.00',
-        price_per_unit: '100.00',
+        stdprice_per_unit: '0',
+        price_per_unit: '0',
         warranty: 'N'
     };
 
@@ -71,7 +71,24 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected}) {
     const totalSelectedItems = selectedSpares.length + (selectedService ? 1 : 0);
 
     return (
+
         <Grid2 container spacing={2}>
+            {/* ปุ่มบันทึกการเลือก */}
+            {totalSelectedItems > 0 && (
+                <Grid2 size={12}>
+                    <Stack justifyContent='start' direction='row'>
+                        <Button
+                            variant="contained"
+                            color="success"
+                            startIcon={<SaveIcon />}
+                            onClick={handleSaveSelection}
+                            sx={{mb: 2}}
+                        >
+                            บันทึกการเลือกอะไหล่ ({totalSelectedItems} รายการ)
+                        </Button>
+                    </Stack>
+                </Grid2>
+            )}
             {previewImage &&
                 <SpPreviewImage open={previewImage} setOpen={setPreviewImage} imagePath={previewSelected}/>}
 
@@ -136,7 +153,7 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected}) {
                                 <TableRow
                                     key={index}
                                     sx={{
-                                        backgroundColor: sp.warranty === 'Y' ? '#e8f5e8' :
+                                        backgroundColor: (sp.warranty === 'Y' && JOB.warranty) ? '#e8f5e8' :
                                             (!sp.price_per_unit || sp.price_per_unit === '0') ? '#ffebee' : 'inherit'
                                     }}
                                 >
@@ -162,22 +179,7 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected}) {
                 </Table>
             </Grid2>
 
-            {/* ปุ่มบันทึกการเลือก */}
-            {totalSelectedItems > 0 && (
-                <Grid2 size={12}>
-                    <Stack justifyContent='end' direction='row'>
-                        <Button
-                            variant="contained"
-                            color="success"
-                            startIcon={<SaveIcon />}
-                            onClick={handleSaveSelection}
-                            sx={{mb: 2}}
-                        >
-                            บันทึกการเลือกอะไหล่ ({totalSelectedItems} รายการ)
-                        </Button>
-                    </Stack>
-                </Grid2>
-            )}
+
         </Grid2>
     )
 }

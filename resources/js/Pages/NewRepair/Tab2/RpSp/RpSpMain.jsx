@@ -19,6 +19,7 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
         fetchData().finally(() => setLoading(false));
     }, []);
 
+
     const fetchData = async () => {
         try {
             setLoading(true);
@@ -48,6 +49,13 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
         setSpSelected(updatedSpares);
     }
 
+
+    // หากบันทึกจากหน้า สรุปรายการอะไหล่เสร็จสิ้น
+    const Saved = () => {
+        // fetchData().finally(()=>setLoading(false))
+        setStepForm(3);
+    }
+
     return (
         <>
             <button onClick={handleOnClick}>Click</button>
@@ -55,9 +63,11 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
                 <>
                     {showSummary ? (
                         <RpSpSummary
+                            JOB={JOB}
                             spSelected={spSelected}
                             setShowSummary={setShowSummary}
                             onUpdateSpSelected={handleUpdateSpSelected}
+                            onSaved={Saved}
                         />
                     ) : (
                         <Grid2 container spacing={2}>
@@ -72,10 +82,12 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
                                 <Grid2 container spacing={2}>
                                     <Grid2 size={12}>
                                         <Stack direction='row' spacing={2}>
-                                            <Alert sx={{mb: 1}}
-                                                   icon={<PaletteIcon fontSize="inherit"/>} severity="success">
-                                                แถบสีเขียว คือ อะไหล่ที่อยู่ในรับประกัน
-                                            </Alert>
+                                            {JOB.warranty && (
+                                                <Alert sx={{mb: 1}}
+                                                       icon={<PaletteIcon fontSize="inherit"/>} severity="success">
+                                                    แถบสีเขียว คือ อะไหล่ที่อยู่ในรับประกัน
+                                                </Alert>
+                                            )}
                                             <Alert icon={<PaletteIcon fontSize="inherit"/>}
                                                    severity="error">
                                                 แถบสีแดง คือ อะไหล่ที่ยังไม่ถูกตั้งราคา
@@ -88,12 +100,14 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
                                     <Grid2 size={12}>
                                         {spSelected.length === 0 ? (
                                             <RpSpAdd
+                                                JOB={JOB}
                                                 listSparePart={listSparePart}
                                                 onAddSpare={handleAddSpare}
                                                 spSelected={spSelected}
                                             />
                                         ) : (
                                             <RpSpSelected
+                                                JOB={JOB}
                                                 spSelected={spSelected}
                                                 setSpSelected={setSpSelected}
                                                 listSparePart={listSparePart}

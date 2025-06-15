@@ -10,8 +10,9 @@ import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {Check, CheckBox} from "@mui/icons-material";
+import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
 
-export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSelected }) {
+export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSelected,JOB,onSaved }) {
     const [previewImage, setPreviewImage] = useState(false);
     const [previewSelected, setPreviewSelected] = useState('');
     const [editingSpares, setEditingSpares] = useState({});
@@ -129,6 +130,34 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
         setClaimData({ claimType: '', claimNote: '' });
     };
 
+    const handleSubmit = () => {
+        AlertDialogQuestion({
+            title : 'ยืนยันการบันทึก',
+            text : 'กด ตกลง เพื่อบันทึกรายการอะไหล่',
+            onPassed : async (confirm) => {
+                if (confirm) {
+                    try {
+                        const {data, status} = await axios.post(route('repair.after.spare-part.store',{
+                            job_id : JOB.job_id,
+                            serial_id : JOB.serial_id,
+                            spare_parts : spSelected
+                        }))
+                        console.log(data, status)
+                        AlertDialog({
+                            icon : 'success',
+                            text : data.message,
+                            onPassed : () => onSaved()
+                        })
+                    }catch (error) {
+                        AlertDialog({
+                            text : error.response?.data?.message || error.message,
+                        })
+                    }
+                }else console.log('ไม่ได้กด confirm')
+            }
+        })
+    }
+
     return (
         <Grid2 container spacing={2}>
             {previewImage && (
@@ -185,7 +214,7 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                                         <React.Fragment key={index}>
 
                                             <TableRow
-                                                sx={{backgroundColor: sp.warranty === 'Y' ? '#e8f5e8' : 'inherit'}}
+                                                sx={{backgroundColor: (sp.warranty === 'Y' && JOB.warranty) ? '#e8f5e8' : 'inherit'}}
                                             >
                                                 <TableCell
                                                     onClick={() => {
@@ -301,7 +330,11 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
 
             <Grid2 size={12}>
                 <Stack direction='row' justifyContent='end'>
-                    <Button variant='contained' onClick={()=>console.log(spSelected)} startIcon={<SaveIcon/>}>
+                    <Button
+                        disabled={Object.keys(editingSpares).length !== 0}
+                        variant='contained' startIcon={<SaveIcon/>}
+                        onClick={handleSubmit}
+                    >
                         บันทึก
                     </Button>
                 </Stack>

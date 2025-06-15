@@ -14,8 +14,7 @@ import {
     getFileSize, getFileType, isValidFileSize, isValidFileType,
 } from "@/utils/fileUploadManage.js";
 import {FileUploading} from "@/Components/FileUploading.jsx";
-
-
+import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
 
 export default function RpUploadFileAfterForm({productDetail, JOB}) {
     const {data, setData} = useForm({});
@@ -58,7 +57,8 @@ export default function RpUploadFileAfterForm({productDetail, JOB}) {
 
     useEffect(() => {
         if (initializedRef.current && filesString !== dataFilesString) {
-            setData('file_befores', files);
+            // แก้ไข: ใช้ file_afters แทน file_befores
+            setData('file_afters', files);
         }
     }, [filesString, dataFilesString, setData, files]);
 
@@ -161,6 +161,88 @@ export default function RpUploadFileAfterForm({productDetail, JOB}) {
         };
     }, []);
 
+    const handleSave = () => {
+        AlertDialogQuestion({
+            title : 'สภาพสินค้าหลังซ่อม',
+            text : 'กด ตกลง เพื่อ บันทึกรูปภาพหรือวิดีโอ สภาพสินค้าหลังซ่อม',
+            onPassed : async (confirm) => {
+                if (confirm){
+                    try {
+                        setUploading(true);
+                        setUploadProgress(0);
+
+                        const formData = new FormData();
+
+                        // แก้ไข: ส่งข้อมูลไฟล์ในรูปแบบที่ Controller คาดหวัง
+                        const fileUploads = files.map((fileItem, index) => {
+                            if (fileItem.file instanceof File) {
+                                // ไฟล์ใหม่ที่ต้องอัปโหลด
+                                formData.append(`file_uploads[${index}][file]`, fileItem.file);
+                                return {
+                                    id: fileItem.id,
+                                    name: fileItem.name,
+                                    size: fileItem.size,
+                                    type: fileItem.type
+                                };
+                            } else {
+                                // ไฟล์เดิมที่มีอยู่แล้ว
+                                return {
+                                    id: fileItem.id,
+                                    name: fileItem.name || getFileName(fileItem),
+                                    size: fileItem.size || getFileSize(fileItem),
+                                    type: fileItem.type || getFileType(fileItem)
+                                };
+                            }
+                        });
+
+                        // เพิ่มข้อมูล metadata
+                        formData.append('file_uploads', JSON.stringify(fileUploads));
+                        formData.append('serial_id', JOB.serial_id);
+                        formData.append('job_id', JOB.job_id);
+
+                        console.log('Sending data:', fileUploads);
+
+                        const {data, status} = await axios.post(
+                            route('repair.after.file-upload.store'),
+                            formData,
+                            {
+                                headers: {
+                                    'Content-Type': 'multipart/form-data',
+                                },
+                                onUploadProgress: (progressEvent) => {
+                                    const percentCompleted = Math.round(
+                                        (progressEvent.loaded * 100) / progressEvent.total
+                                    );
+                                    setUploadProgress(percentCompleted);
+                                },
+                            }
+                        );
+
+                        AlertDialog({
+                            icon : 'success',
+                            text : data.message
+                        });
+
+                        // รีเฟรชข้อมูลหลังบันทึกสำเร็จ
+                        await fetchData();
+
+                        console.log(data, status);
+                    } catch (error) {
+                        AlertDialog({
+                            text : error.response?.data?.message || error.message
+                        });
+                        console.error('Upload error:', error);
+                    } finally {
+                        setUploading(false);
+                        setUploadProgress(0);
+                    }
+                } else {
+                    console.log('ไม่ได้กด confirm');
+                }
+            }
+        });
+        console.log('Current files:', files);
+    }
 
     return (
         <Box>
@@ -238,7 +320,6 @@ export default function RpUploadFileAfterForm({productDetail, JOB}) {
                 </Box>
             )}
 
-
             <Paper
                 {...getRootProps()}
                 sx={{
@@ -290,8 +371,15 @@ export default function RpUploadFileAfterForm({productDetail, JOB}) {
             {/* Upload Progress */}
             {uploading && <FileUploading uploadProgress={uploadProgress}/>}
 
-            <Stack direction='row' justifyContent='end' mt={2} onClick={()=>console.log(files)}>
-                <Button startIcon={<Save/>} variant='contained'>บันทึก</Button>
+            <Stack direction='row' justifyContent='end' mt={2} >
+                <Button
+                    onClick={handleSave}
+                    startIcon={<Save/>}
+                    variant='contained'
+                    disabled={uploading}
+                >
+                    {uploading ? 'กำลังบันทึก...' : 'บันทึก'}
+                </Button>
             </Stack>
         </Box>
     );
