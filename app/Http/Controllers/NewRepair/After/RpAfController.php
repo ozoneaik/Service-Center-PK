@@ -4,6 +4,7 @@ namespace App\Http\Controllers\NewRepair\After;
 
 use App\Http\Controllers\Controller;
 use App\Models\Behavior;
+use App\Models\CustomerInJob;
 use App\Models\FileUpload;
 use App\Models\SparePart;
 use Illuminate\Http\Request;
@@ -27,8 +28,11 @@ class RpAfController extends Controller
         if ($check_upload_after_file !== null) {
             $step = 4; //ไปยัง step สรุปการทำงาน
         }
+
+        $check_subremark1 = (bool)CustomerInJob::query()->where('job_id', $job_id)->select('subremark1')->first();
         return response()->json([
             'step' => $step,
+            'subremark1' => $check_subremark1
         ]);
     }
 }

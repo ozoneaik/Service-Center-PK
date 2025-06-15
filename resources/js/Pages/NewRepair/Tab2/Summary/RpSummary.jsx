@@ -5,7 +5,6 @@ import RpsBehavior from "@/Pages/NewRepair/Tab2/Summary/RpsBehavior.jsx";
 import RpsUploadFile from "@/Pages/NewRepair/Tab2/Summary/RpsUploadFile.jsx";
 import RpsRemarkCustomer from "@/Pages/NewRepair/Tab2/Summary/RpsRemarkCustomer.jsx";
 import RpsSymptomRemarkAccessory from "@/Pages/NewRepair/Tab2/Summary/RpsSymptomRemarkAccessory.jsx";
-import RpsDoc from "@/Pages/NewRepair/Tab2/Summary/RpsDoc.jsx";
 import {Cancel, Save} from "@mui/icons-material";
 import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
 import RpsSparePart from "@/Pages/NewRepair/Tab2/Summary/RpsSparePart.jsx";
@@ -27,7 +26,6 @@ export default function RpSummary({JOB}) {
                 serial_id: JOB.serial_id,
                 job_id: JOB.job_id
             }))
-            console.log(data, status)
             setResult(data)
         } catch (error) {
             AlertDialog({
@@ -40,22 +38,44 @@ export default function RpSummary({JOB}) {
         AlertDialogQuestion({
             title: 'ปิดงานซ่อม',
             text: '<p style="color: darkorange;margin-bottom: 10px;">กรุณาเช็คให้ถี่ถ้วนก่อนปิดงานซ่อม</p><p>กด ตกลง เพื่อปิดงานซ่อม</p>',
-            onPassed : async (confirm) => {
-                if (confirm){
-                    alert('กำลังพัฒนา')
-                }else console.log('ไม่ได้กดตกลงในการปิดงานซ่อม')
+            onPassed: async (confirm) => {
+                if (confirm) {
+                    try {
+                        const {data, status} = await axios.post(route('close-repair', {job_id: JOB.job_id}));
+                        AlertDialog({
+                            icon: 'success',
+                            text: data.message
+                        })
+                    } catch (error) {
+                        AlertDialog({
+                            text: error.response?.data?.message || error.message
+                        })
+                    }
+                } else console.log('ไม่ได้กดตกลงในการปิดงานซ่อม')
             }
         })
     }
 
     const handleCancelJob = () => {
         AlertDialogQuestion({
-            title : 'ยกเลิกงานซ่อม',
-            text : 'กด ตกลง เพื่อ ยกเลิกงานซ่อม<br/>หากต้องการกลับมาซ่อมกรุณาแจ้งซ่อม อีกครั้ง',
-            onPassed : async (confirm) => {
+            title: 'ยกเลิกงานซ่อม',
+            text: 'กด ตกลง เพื่อ ยกเลิกงานซ่อม<br/>หากต้องการกลับมาซ่อมกรุณาแจ้งซ่อม อีกครั้ง',
+            onPassed: async (confirm) => {
                 if (confirm) {
-                    alert('กำลังพัฒนา')
-                }else console.log('ไม่ได้กดตกลงในการยกเลิกงานซ่อม')
+                    try {
+                        const {data, status} = await axios.post(route('cancel-repair',{
+                            job_id : JOB.job_id
+                        }))
+                        AlertDialog({
+                            icon : 'success',
+                            text : data.message
+                        })
+                    } catch (error) {
+                        AlertDialog({
+                            text: error.response?.data?.message || error.message
+                        })
+                    }
+                } else console.log('ไม่ได้กดตกลงในการยกเลิกงานซ่อม')
             }
         })
     }

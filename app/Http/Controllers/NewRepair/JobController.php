@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class JobController extends Controller
@@ -83,5 +84,68 @@ class JobController extends Controller
             'serial_id' => $store_job->serial_id,
             'job_detail' => $store_job,
         ]);
+    }
+
+    public function closeJob(Request $request){
+        $job_id = $request->get('job_id');
+        $serial_id = $request->get('serial_id');
+        try {
+
+            DB::beginTransaction();
+            // เช็คก่อนว่า สถานะ job ตอนนี้เป็นอย่างไร
+            $check_job_status = JobList::query()->where('job_id', $job_id)->first();
+            if (isset($check_job_status) && $check_job_status->status === 'pending') {
+                $check_job_status->status = 'success';
+                $check_job_status->save();
+            }else{
+                throw new \Exception('ไม่สามารถผิดจ็อบได้');
+            }
+            DB::rollBack();
+//            DB::commit();
+            return response()->json([
+                'job_id' => $job_id,
+                'serial_id' => $serial_id,
+                'message' => 'ปิดงานซ่อมสำเร็จ'
+            ]);
+        }catch (\Exception $e){
+            DB::rollBack();
+            return response()->json([
+                'job_id' => $job_id,
+                'serial_id' => $serial_id,
+                'message' => $e->getMessage(),
+                'error' => $e->getMessage() . $e->getFile() . $e->getLine(),
+            ]);
+        }
+    }
+
+    public function cancelJob(Request $request){
+        $job_id = $request->get('job_id');
+        $serial_id = $request->get('serial_id');
+        try {
+            DB::beginTransaction();
+            // เช็คก่อนว่า สถานะ job ตอนนี้เป็นอย่างไร
+            $check_job_status = JobList::query()->where('job_id', $job_id)->first();
+            if (isset($check_job_status) && $check_job_status->status === 'pending') {
+                $check_job_status->status = 'cancel';
+                $check_job_status->save();
+            }else{
+                throw new \Exception('ไม่สามารถผิดจ็อบได้');
+            }
+            DB::rollBack();
+//            DB::commit();
+            return response()->json([
+                'job_id' => $job_id,
+                'serial_id' => $serial_id,
+                'message' => 'ยกเลิกงานซ่อมสำเร็จ'
+            ]);
+        }catch (\Exception $e){
+            DB::rollBack();
+            return response()->json([
+                'job_id' => $job_id,
+                'serial_id' => $serial_id,
+                'message' => $e->getMessage(),
+                'error' => $e->getMessage() . $e->getFile() . $e->getLine(),
+            ]);
+        }
     }
 }

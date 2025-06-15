@@ -84,12 +84,18 @@ Route::prefix('repair')->group(function () {
 
     // ค้นหา job สร้าง job
     Route::post('/search-job', [\App\Http\Controllers\NewRepair\JobController::class, 'searchJob'])->name('repair.search.job');
+
     Route::prefix('job')->group(function () {
         Route::post('/store', [\App\Http\Controllers\NewRepair\JobController::class, 'storeJob'])->name('repair.store');
+        Route::post('/close-repair',[\App\Http\Controllers\NewRepair\JobController::class, 'closeJob'])->name('close-repair');
+        Route::post('/cancel-repair',[\App\Http\Controllers\NewRepair\JobController::class, 'cancelJob'])->name('cancel-repair');
+
         Route::prefix('before-repair')->group(function () {
            Route::get('/',[RpBfController::class,'index'])->name('repair.before.index');
            Route::post('/',[RpBfController::class,'store'])->name('repair.before.store');
+           Route::post('/work-receipt',[RpBfController::class,'WorkReceipt'])->name('repair.before.work.receipt');
         });
+
         Route::prefix('after-repair')->group(function () {
             Route::get('/',[RpAfController::class,'index'])->name('repair.after');
             Route::prefix('/behaviour')->group(function () {
@@ -113,27 +119,4 @@ Route::prefix('repair')->group(function () {
             });
         });
     });
-
-
-//    Route::prefix('customer')->group(function () {
-//        Route::get('/', [RpCustomerController::class, 'detail'])->name('repair.customer.detail');
-//        Route::post('/', [RpCustomerController::class, 'storeOrUpdate'])->name('repair.customer.store');
-//    });
-//    Route::prefix('remark-symptom')->group(function () {
-//        Route::get('/', [RpRemarkAndSymptomController::class, 'detail'])->name('repair.remark.symptom.detail');
-//        Route::post('/', [RpRemarkAndSymptomController::class, 'storeOrUpdate'])->name('repair.remark.symptom.store');
-//    });
-//    Route::prefix('upload-file')->group(function () {
-//        Route::get('/', [RpUploadFileController::class, 'detail'])->name('repair.upload-file.detail');
-//    });
-//
-//    Route::prefix('behaviour')->group(function () {
-//        Route::get('/', [RpBehaviourController::class, 'detail'])->name('repair.behaviour.detail');
-//        Route::post('/', [RpBehaviourController::class, 'storeOrUpdate'])->name('repair.behaviour.store');
-//    });
-//
-//    Route::prefix('accessories')->group(function () {
-//        Route::get('/', [RpAccessoriesController::class, 'detail'])->name('repair.accessories.detail');
-//        Route::post('/', [RpAccessoriesController::class, 'storeOrUpdate'])->name('repair.accessories.store');
-//    });
 });

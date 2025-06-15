@@ -55,15 +55,15 @@ class RpBfController extends Controller
             return false;
         }
         $customer = $form['customer'];
-        if (empty($customer['phone']) || empty($customer['name'])){
+        if (empty($customer['phone']) || empty($customer['name'])) {
             return false;
         }
         $remark_symptom_accessory = $form['remark_symptom_accessory'];
-        if (empty($remark_symptom_accessory['symptom'])){
+        if (empty($remark_symptom_accessory['symptom'])) {
             return false;
         }
         $file_befores = $form['file_befores'];
-        if (count($file_befores) < 1){
+        if (count($file_befores) < 1) {
             return false;
         }
 
@@ -79,7 +79,7 @@ class RpBfController extends Controller
                 'customer' => 'required',
                 'remark_symptom_accessory' => 'required',
                 'file_befores' => 'required'
-            ],[
+            ], [
                 'file_befores.required' => '<span>จำเป็นต้องอัปโหลดรูปหรือวิดีโอ<br/>🗃️สภาพสินค้าก่อนซ่อม🗃️<br/>อย่างน้อย 1 รายการ</span>'
             ]);
             $job_id = $request->job_id;
@@ -94,7 +94,7 @@ class RpBfController extends Controller
             $check_customer = CustomerInJob::query()->where('job_id', $job_id)->first();
             if ($check_customer) {
                 $store_customer = $check_customer;
-            }else{
+            } else {
                 $store_customer = new CustomerInJob();
             }
             if (isset($customer['name']) || isset($customer['phone'])) {
@@ -106,12 +106,12 @@ class RpBfController extends Controller
                 $store_customer->remark = $customer['remark'] ?? null;
                 $store_customer->subremark1 = $customer['subremark1'] ?? false;
                 $store_customer->subremark2 = $customer['subremark2'] ?? false;
-                if (isset($customer['subremark3'])){
+                if (isset($customer['subremark3']) && $customer['subremark3'] !== '0') {
                     $store_customer->subremark3 = $customer['subremark3'];
                     $store_customer->remark = $customer['remark'];
                 }
                 $store_customer->save();
-            }else throw new \Exception('กรุณากรอกชื่อ และ นามสกุล');
+            } else throw new \Exception('กรุณากรอกชื่อ และ นามสกุล');
 
 
             // บันทึกหมายเหตุสำหรับสื่อสารภายในศูนย์ซ่อม
@@ -122,35 +122,35 @@ class RpBfController extends Controller
             $store_remark->save();
 
             // บันทึกอาการเบื้องต้น หากกรอกเข้ามา
-            if (isset($remark_symptom_accessory['symptom'])){
+            if (isset($remark_symptom_accessory['symptom'])) {
                 $check_symptom = Symptom::query()->where('job_id', $job_id)->first();
                 if ($check_symptom) {
                     $store_symptom = $check_symptom;
-                }else{
+                } else {
                     $store_symptom = new Symptom();
                 }
                 $store_symptom->job_id = $job_id;
                 $store_symptom->serial_id = $serial_id;
                 $store_symptom->symptom = $remark_symptom_accessory['symptom'];
                 $store_symptom->save();
-            }else Symptom::query()->where('job_id', $job_id)->delete();
+            } else Symptom::query()->where('job_id', $job_id)->delete();
 
             // บันทึกหมายเหตุอุปกรณ์เสริม หากกรอกเข้ามา
-            if (isset($remark_symptom_accessory['accessory'])){
+            if (isset($remark_symptom_accessory['accessory'])) {
                 $check_accessory = AccessoriesNote::query()->where('job_id', $job_id)->first();
                 if ($check_accessory) {
                     $store_accessory = $check_accessory;
-                }else{
+                } else {
                     $store_accessory = new AccessoriesNote();
                 }
                 $store_accessory->job_id = $job_id;
                 $store_accessory->serial_id = $serial_id;
                 $store_accessory->note = $remark_symptom_accessory['accessory'];
                 $store_accessory->save();
-            }else AccessoriesNote::query()->where('job_id', $job_id)->delete();
+            } else AccessoriesNote::query()->where('job_id', $job_id)->delete();
 
             // บันทึก file
-            $this->store_file($file_befores,$serial_id,$job_id);
+            $this->store_file($file_befores, $serial_id, $job_id);
 
             DB::commit();
             return back()->with('success', "บันทึกข้อมูลสำเร็จ กรุณากรอกฟอร์ม บันทึกการซ่อมต่อ");
@@ -160,11 +160,12 @@ class RpBfController extends Controller
         }
     }
 
-    private function store_file ($file_befores,$serial_id,$job_id) {
+    private function store_file($file_befores, $serial_id, $job_id)
+    {
 
         $keep = [];
-        foreach ($file_befores as $key=>$file_data) {
-            if (is_numeric($file_data['id'])){
+        foreach ($file_befores as $key => $file_data) {
+            if (is_numeric($file_data['id'])) {
                 $keep[$key] = $file_data['id'];
             }
         }
@@ -197,7 +198,7 @@ class RpBfController extends Controller
                     'menu_id' => 1,
                     'file_path' => $file_path,
                 ]);
-            }elseif (isset($file_data['id']) && is_numeric($file_data['id'])) {
+            } elseif (isset($file_data['id']) && is_numeric($file_data['id'])) {
                 $stored_files[] = $file_data;
             }
         }
@@ -211,5 +212,27 @@ class RpBfController extends Controller
         }
 
         FileUpload::query()->where('job_id', $job_id)->whereNotIn('id', $keep)->delete();
+    }
+
+
+    public function WorkReceipt(Request $request)
+    {
+        $job_id = $request->get('job_id');
+        $find_symptom = Symptom::findByJobId($job_id);
+        if ($find_symptom){
+            return response()->json([
+                'job_id' => $job_id,
+                'find_symptom' => true,
+                'message' => 'รับใบรับสินค้า',
+                'path' => route('genReCieveSpPdf',['job_id' => $job_id])
+            ]);
+        }else{
+            return response()->json([
+                'job_id' => $job_id,
+                'find_symptom' => false,
+                'message' => 'กรุณากรอกอาการเบื้องต้นก่อน',
+                'path' => null
+            ],400);
+        }
     }
 }

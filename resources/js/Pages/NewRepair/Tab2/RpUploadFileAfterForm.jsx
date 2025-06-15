@@ -16,7 +16,7 @@ import {
 import {FileUploading} from "@/Components/FileUploading.jsx";
 import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
 
-export default function RpUploadFileAfterForm({productDetail, JOB}) {
+export default function RpUploadFileAfterForm({productDetail, JOB,setStepForm}) {
     const {data, setData} = useForm({});
     const [files, setFiles] = useState([]);
     const [uploading, setUploading] = useState(false);
@@ -163,10 +163,10 @@ export default function RpUploadFileAfterForm({productDetail, JOB}) {
 
     const handleSave = () => {
         AlertDialogQuestion({
-            title : 'สภาพสินค้าหลังซ่อม',
-            text : 'กด ตกลง เพื่อ บันทึกรูปภาพหรือวิดีโอ สภาพสินค้าหลังซ่อม',
-            onPassed : async (confirm) => {
-                if (confirm){
+            title: 'สภาพสินค้าหลังซ่อม',
+            text: 'กด ตกลง เพื่อ บันทึกรูปภาพหรือวิดีโอ สภาพสินค้าหลังซ่อม',
+            onPassed: async (confirm) => {
+                if (confirm) {
                     try {
                         setUploading(true);
                         setUploadProgress(0);
@@ -200,15 +200,10 @@ export default function RpUploadFileAfterForm({productDetail, JOB}) {
                         formData.append('serial_id', JOB.serial_id);
                         formData.append('job_id', JOB.job_id);
 
-                        console.log('Sending data:', fileUploads);
-
-                        const {data, status} = await axios.post(
-                            route('repair.after.file-upload.store'),
+                        const {data, status} = await axios.post(route('repair.after.file-upload.store'),
                             formData,
                             {
-                                headers: {
-                                    'Content-Type': 'multipart/form-data',
-                                },
+                                headers: {'Content-Type': 'multipart/form-data',},
                                 onUploadProgress: (progressEvent) => {
                                     const percentCompleted = Math.round(
                                         (progressEvent.loaded * 100) / progressEvent.total
@@ -219,17 +214,14 @@ export default function RpUploadFileAfterForm({productDetail, JOB}) {
                         );
 
                         AlertDialog({
-                            icon : 'success',
-                            text : data.message
+                            icon: 'success',
+                            text: data.message,
+                            onPassed : () => setStepForm(4)
                         });
 
-                        // รีเฟรชข้อมูลหลังบันทึกสำเร็จ
-                        await fetchData();
-
-                        console.log(data, status);
                     } catch (error) {
                         AlertDialog({
-                            text : error.response?.data?.message || error.message
+                            text: error.response?.data?.message || error.message
                         });
                         console.error('Upload error:', error);
                     } finally {
@@ -371,12 +363,12 @@ export default function RpUploadFileAfterForm({productDetail, JOB}) {
             {/* Upload Progress */}
             {uploading && <FileUploading uploadProgress={uploadProgress}/>}
 
-            <Stack direction='row' justifyContent='end' mt={2} >
+            <Stack direction='row' justifyContent='end' mt={2}>
                 <Button
                     onClick={handleSave}
                     startIcon={<Save/>}
                     variant='contained'
-                    disabled={uploading}
+                    disabled={uploading || files.length === 0}
                 >
                     {uploading ? 'กำลังบันทึก...' : 'บันทึก'}
                 </Button>

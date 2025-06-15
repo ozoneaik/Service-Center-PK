@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AccessoriesNote;
 use App\Models\Behavior;
+use App\Models\CustomerInJob;
 use App\Models\JobList;
 use App\Models\logStamp;
+use App\Models\Remark;
+use App\Models\StoreInformation;
 use App\Models\Symptom;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -73,6 +78,31 @@ class genQuPdfController extends Controller
 
     public function genReCieveSpPdf($job_id)
     {
+        $customer = CustomerInJob::findByJobId($job_id);
+        $remark = Remark::findByJobId($job_id);
+        $symptom = Symptom::findByJobId($job_id);
+        $product = JobList::query()->where('job_id', $job_id)->first();
+        $accessory = AccessoriesNote::findByJobId($job_id);
+        $behavior = Behavior::query()->where('job_id', $job_id)->first();
+
+        $user_key = User::query()->where('user_code',$product->user_key)->first();
+
+        $store = StoreInformation::query()->where('is_code_cust_id',$product['is_code_key'])->first();
+
+        return view('receiveJob',[
+            'customer' => $customer,
+            'remark' => $remark,
+            'product' => $product,
+            'accessory' => $accessory,
+            'behavior' => $behavior,
+            'symptom' => $symptom,
+            'user_key' => $user_key,
+            'store' => $store,
+        ]);
+//        return Inertia::render('ReportRepair/ReceiveSpPdf', ['job' => $job, 'behaviors' => $behaviorToString]);
+    }
+}
+
 //        logStamp::query()->create(['description' => Auth::user()->user_code . " ได้ดูใบรับสินค้า $job_id"]);
 //        $job = JobList::query()->where('job_id', $job_id)
 //            ->leftJoin('users', 'users.user_code', '=', 'job_lists.user_key')
@@ -89,12 +119,8 @@ class genQuPdfController extends Controller
 //        $behaviorToString = '';
 //        foreach ($behaviors as $key => $behavior) {
 //            if ($key === 0) {
-//                $behaviorToString = $behaviorToString . $behavior->cause_name;
-//            } else {
-//                $behaviorToString = $behaviorToString . ' / ' . $behavior->cause_name;
+//                $behaviorToStr
+////                $behaviorToing = $behaviorToString . $behavior->cause_name;
+//            } else {String = $behaviorToString . ' / ' . $behavior->cause_name;
 //            }
 //        }
-        return view('receiveJob');
-//        return Inertia::render('ReportRepair/ReceiveSpPdf', ['job' => $job, 'behaviors' => $behaviorToString]);
-    }
-}

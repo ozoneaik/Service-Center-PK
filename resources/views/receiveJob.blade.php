@@ -91,8 +91,8 @@
 </div>
 
 <div class="compact-section">
-    <div><span class="label">ชื่อร้าน:</span> มานีการช่าง</div>
-    <div><span class="label">เบอร์โทรศัพท์:</span> 0931622330</div>
+    <div><span class="label">ชื่อร้าน:</span> {{$store['shop_name']}}</div>
+    <div><span class="label">เบอร์โทรศัพท์:</span> {{$store['phone']}}</div>
 </div>
 
 <div class="divider"></div>
@@ -104,22 +104,22 @@
 <div class="divider"></div>
 
 <div class="compact-section">
-    <div><span class="label">วันที่:</span> 13 มิถุนายน 2568</div>
-    <div><span class="label">ชื่อลูกค้า:</span> ออฟ</div>
-    <div><span class="label">เบอร์โทรติดต่อ:</span> 0931622330</div>
-    <div><span class="label">S/N:</span> 41641645361231</div>
-    <div><span class="label">รหัสและชื่อสินค้า:</span> (50277) J-Series เครื่องเจียรมือ 4" 1100W สวิตซ์ท้าย J-G1100W</div>
-    <div><span class="label">อาการ:</span> อาการเสีย</div>
-    <div><span class="label">พนักงานผู้รับงานซ่อม:</span> ออฟ</div>
-    <div><span class="label">อุปกรณ์เสริม:</span> เรื่อย</div>
-    <div><span class="label">หมายเหตุลูกค้า:</span> ลูกค้าอยากกินหนม</div>
-    <div><span class="label">หมายเหตุในศูนย์ซ่อม:</span> ลุกค้าอยากซ่อมเพราะ</div>
+    <div><span class="label">วันที่:</span> {{\Carbon\Carbon::now()->format('d/m/Y ')}}</div>
+    <div><span class="label">ชื่อลูกค้า:</span> {{$customer['name']}}</div>
+    <div><span class="label">เบอร์โทรติดต่อ:</span> {{$customer['phone']}}</div>
+    <div><span class="label">S/N:</span> {{$product['serial_id']}}</div>
+    <div><span class="label">รหัสและชื่อสินค้า:</span> ({{$product['pid']}}) {{$product['p_name']}}</div>
+    <div><span class="label">อาการ:</span> {{$symptom ?? '-'}}</div>
+    <div><span class="label">พนักงานผู้รับงานซ่อม:</span> {{$user_key['name']}}</div>
+    <div><span class="label">อุปกรณ์เสริม:</span> {{$accessory['note'] ?? '-'}}</div>
+    <div><span class="label">หมายเหตุลูกค้า:</span> {{$customer['remark'] ?? '-'}}</div>
+    <div><span class="label">หมายเหตุในศูนย์ซ่อม:</span> {{$remark}}</div>
 </div>
 
 <div class="divider"></div>
 
 <div class="section center">
-    <img class="qc-code" src="line_qr_code.jpg" alt="QR Code">
+    <img class="qc-code" src="{{asset('line_qr_code.jpg')}}" alt="QR Code">
     <div style="font-size: 14px;">@line : ศูนย์ซ่อม pumpkin</div>
 </div>
 
@@ -138,8 +138,8 @@
     </div>
 
     <div class="compact-section">
-        <div><span class="label">ชื่อร้าน:</span> มานีการช่าง</div>
-        <div><span class="label">เบอร์โทรศัพท์:</span> 0931622330</div>
+        <div><span class="label">ชื่อร้าน:</span> {{$store['shop_name']}}</div>
+        <div><span class="label">เบอร์โทรศัพท์:</span> {{$store['phone']}}</div>
     </div>
 
     <div class="divider"></div>
@@ -151,19 +151,19 @@
     <div class="divider"></div>
 
     <div class="compact-section">
-        <div><span class="label">วันที่:</span> 13 มิถุนายน 2568</div>
-        <div><span class="label">S/N:</span> 41641645361231</div>
-        <div><span class="label">รหัสและชื่อสินค้า:</span> (50277) J-Series เครื่องเจียรมือ 4" 1100W สวิตซ์ท้าย J-G1100W</div>
-        <div><span class="label">อาการ:</span> อาการเสีย</div>
-        <div><span class="label">พนักงานผู้รับงานซ่อม:</span> ออฟ</div>
-        <div><span class="label">อุปกรณ์เสริม:</span> เรื่อย</div>
-        <div><span class="label">หมายเหตุลูกค้า:</span> ลูกค้าอยากกินหนม</div>
+        <div><span class="label">วันที่:</span> {{\Carbon\Carbon::now()->format('d/m/Y ')}}</div>
+        <div><span class="label">S/N:</span> {{$product['serial_id']}}</div>
+        <div><span class="label">รหัสและชื่อสินค้า:</span> ({{$product['pid']}}) {{$product['p_name']}}</div>
+        <div><span class="label">อาการ:</span> {{$symptom ?? '-'}}</div>
+        <div><span class="label">พนักงานผู้รับงานซ่อม:</span> {{$user_key['name']}}</div>
+        <div><span class="label">อุปกรณ์เสริม:</span> {{$accessory['note'] ?? '-'}}</div>
+        <div><span class="label">หมายเหตุลูกค้า:</span> {{$customer['remark'] ?? '-'}}</div>
     </div>
 
     <div class="divider"></div>
 
     <div class="section center">
-        <img class="qc-code" src="line_qr_code.jpg" alt="QR Code">
+        <img class="qc-code" src="{{asset('line_qr_code.jpg')}}" alt="QR Code">
         <div style="font-size: 14px;">@line : ศูนย์ซ่อม pumpkin</div>
     </div>
 
@@ -176,12 +176,12 @@
 </div>
 
 <script>
-    JsBarcode("#barcode", "JOB-12164653216", {
+    JsBarcode("#barcode", "{{$product['job_id']}}", {
         height: 40,
         width: 2,
         fontSize: 14
     });
-    JsBarcode("#barcode_customer", "JOB-12164653216", {
+    JsBarcode("#barcode_customer", "{{$product['job_id']}}", {
         height: 40,
         width: 2,
         fontSize: 14

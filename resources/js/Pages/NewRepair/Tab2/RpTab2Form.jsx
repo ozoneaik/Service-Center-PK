@@ -41,6 +41,7 @@ export default function RpTab2Form({productDetail, JOB, setJOB}) {
     const listBehavior = productDetail.listbehavior;
     const listSparePart = productDetail.sp
     const [loading, setLoading] = useState(false);
+    const [subremark1, setSubremark1] = useState(false);
 
     useEffect(() => {
         checkStep().finally(() => setLoading(false));
@@ -54,6 +55,7 @@ export default function RpTab2Form({productDetail, JOB, setJOB}) {
             }));
             console.log(data, status)
             setStepForm(data.step)
+            setSubremark1(data.subremark1)
         } catch (error) {
             console.log(error)
         }
@@ -74,8 +76,8 @@ export default function RpTab2Form({productDetail, JOB, setJOB}) {
             {loading ? (<CircularProgress/>) : (
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
-                        <Stack direction='row' justifyContent='center'>
-                            <FormControlLabel control={<CheckBox checked={true}/>} label={'ใบเสนอราคา'}/>
+                        <Stack direction='row' justifyContent='start'>
+                            <FormControlLabel disabled control={<CheckBox checked={subremark1}/>} label={'ใบเสนอราคา'}/>
                         </Stack>
                     </Grid2>
                     <Grid2 size={12} className='stepper'>
@@ -146,7 +148,7 @@ export default function RpTab2Form({productDetail, JOB, setJOB}) {
                                 <CardContent>
                                     <HeaderTitle headTitle='สภาพสินค้าหลังซ่อม'/>
                                     {/*content here*/}
-                                    <RpUploadFileAfterForm productDetail={productDetail} JOB={JOB}/>
+                                    <RpUploadFileAfterForm productDetail={productDetail} JOB={JOB} setStepForm={setStepForm}/>
                                 </CardContent>
                             </Card>
                         </Grid2>

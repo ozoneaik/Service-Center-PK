@@ -7,6 +7,7 @@ import {Save} from "@mui/icons-material";
 import {useEffect, useState} from "react";
 import {useForm} from "@inertiajs/react";
 import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
+import RpWorkReceipt from "@/Pages/NewRepair/Tab1/RpWorkReceipt.jsx";
 
 const textQuestion = `
 <span>กด ตกลง เพื่อยืนยันการบันทึกข้อมูลแจ้งซ่อม</span>
@@ -159,6 +160,19 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved}) {
                                     <CardContent>
                                         <HeaderTitle headTitle='สภาพสินค้าก่อนซ่อม'/>
                                         <RpUploadFileBeforeForm form1Saved={form1Saved} data={data} setData={setData}/>
+                                    </CardContent>
+                                </Card>
+                            </Grid2>
+                            <Grid2 size={12}>
+                                <Card
+                                    variant='outlined'
+                                    sx={(theme) => (
+                                        {backgroundColor: theme.palette.cardFormRpColor.main}
+                                    )}
+                                >
+                                    <CardContent>
+                                        <HeaderTitle headTitle='สภาพสินค้าก่อนซ่อม'/>
+                                        <RpWorkReceipt form1Saved={form1Saved} JOB={JOB}/>
                                     </CardContent>
                                 </Card>
                             </Grid2>
