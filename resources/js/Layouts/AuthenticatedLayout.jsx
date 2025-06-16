@@ -97,7 +97,7 @@ export default function AuthenticatedLayout({header, children}) {
                     className={(showingNavigationDropdown ? 'block' : 'hidden') + ' lg:hidden'}
                 >
                     <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
+                        <ResponsiveNavLink href={route('repair.index')} active={route().current('repair.index')}>
                             แจ้งซ่อม
                         </ResponsiveNavLink>
                         <ResponsiveNavLink href={route('history.index')} active={route().current('history.index')}>

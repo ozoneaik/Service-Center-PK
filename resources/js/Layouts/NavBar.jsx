@@ -34,7 +34,7 @@ export default function NavBar({ user }) {
 
     return (
         <>
-            <NavLink href={route('dashboard')} active={route().current('dashboard')}>แจ้งซ่อม</NavLink>
+            {/*<NavLink href={route('dashboard')} active={route().current('dashboard')}>แจ้งซ่อม</NavLink>*/}
             <NavLink href={route('repair.index')} active={route().current('repair.index')}>แจ้งซ่อม (new version)</NavLink>
             <NavLink href={route('history.index')} active={route().current('history.index')}>ประวัติซ่อม</NavLink>
             <div
