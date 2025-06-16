@@ -19,6 +19,7 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected,JOB}) {
         price_per_unit: '0',
         warranty: 'N',
         sp_warranty: false,
+        price_multiple_gp : 0
     };
 
     // ตั้งค่า state เริ่มต้นตาม spSelected ที่ส่งมา
