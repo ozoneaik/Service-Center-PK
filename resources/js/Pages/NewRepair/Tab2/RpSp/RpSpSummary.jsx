@@ -38,6 +38,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
         setEditingSpares(prev => ({
             ...prev,
             [spcode]: {
+                ...spare,
                 price_multiple_gp: spare.price_multiple_gp || 0,
                 qty: spare.qty || 1
             }
@@ -65,6 +66,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
             if (sp.spcode === spcode) {
                 return {
                     ...sp,
+                    spname : editData.spname,
                     price_multiple_gp: newPrice,
                     qty: parseInt(editData.qty) || 1,
                     remark_noclaim: editData.remark_noclaim,
@@ -237,7 +239,22 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                     <img width={50} src={imageSp} onError={showDefaultImage} alt=""/>
                                                 </TableCell>
                                                 <TableCell>
-                                                    ({sp.spcode})&nbsp;{sp.spname}
+                                                    {(isEditing && sp.spcode === 'SV001') ? (
+                                                        <>
+                                                            <TextField
+                                                                type="text"
+                                                                multiline
+                                                                minRows={2}
+                                                                size="small"
+                                                                value={isEditing.spname}
+                                                                onChange={(e) => handleEditChange(sp.spcode, 'spname', e.target.value)}
+                                                                sx={{width: '250px'}}
+                                                            />
+                                                        </>
+                                                    ) : (
+                                                        <>({sp.spcode})&nbsp;{sp.spname}</>
+                                                    )}
+                                                    {/*({sp.spcode})&nbsp;{sp.spname}*/}
                                                     {JOB.warranty && sp.remark_noclaim && (
                                                         <div style={{
                                                             fontSize: '0.8em',
@@ -270,7 +287,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                                 onChange={(e) => handleEditChange(sp.spcode, 'remark_noclaim', e.target.value)}
                                                                 size='small' name="remark_noclaim"
                                                                 defaultValue={sp.remark_noclaim || 'ไม่กรอก'}
-                                                                    id="no-claim">
+                                                                id="no-claim">
                                                                 <MenuItem value={'ไม่กรอก'}>
                                                                     ไม่กรอก
                                                                 </MenuItem>
@@ -286,7 +303,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                 </TableCell>
                                                 <TableCell>{sp.spunit}</TableCell>
                                                 <TableCell>
-                                                {isEditing && sp.spcode !== 'SV001' ? (
+                                                    {isEditing && sp.spcode !== 'SV001' ? (
                                                         <TextField
                                                             type="number"
                                                             size="small"
