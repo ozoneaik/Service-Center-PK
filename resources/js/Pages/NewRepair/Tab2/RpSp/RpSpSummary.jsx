@@ -225,7 +225,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                         <React.Fragment key={index}>
 
                                             <TableRow
-                                                sx={{backgroundColor: (sp.sp_warranty === 'Y' || sp.warranty) ? '#e8f5e8' : 'inherit'}}
+                                                sx={{backgroundColor: JOB.warranty && (sp.sp_warranty === 'Y' || sp.warranty === 'Y') ? '#e8f5e8' : 'inherit'}}
                                             >
                                                 <TableCell
                                                     onClick={() => {

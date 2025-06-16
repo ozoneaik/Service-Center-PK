@@ -124,7 +124,7 @@ export default function RpSpSelected({
                                 <TableRow
                                     key={index}
                                     sx={{
-                                        backgroundColor: (sp.sp_warranty === 'Y' || sp.warranty === 'Y') ? '#e8f5e8' :
+                                        backgroundColor: JOB.warranty && (sp.sp_warranty === 'Y' || sp.warranty === 'Y') ? '#e8f5e8' :
                                             (!sp.price_per_unit || sp.price_per_unit === '0') ? '#ffebee' : 'inherit'
                                     }}
                                 >
