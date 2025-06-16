@@ -238,13 +238,15 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                 </TableCell>
                                                 <TableCell>
                                                     ({sp.spcode})&nbsp;{sp.spname}
-                                                    <div style={{
-                                                        fontSize: '0.8em',
-                                                        color: '#666',
-                                                        marginTop: '4px'
-                                                    }}>
-                                                        หมายเหตุของการไม่เคลม: {sp.remark_noclaim}
-                                                    </div>
+                                                    {JOB.warranty && sp.remark_noclaim && (
+                                                        <div style={{
+                                                            fontSize: '0.8em',
+                                                            color: '#666',
+                                                            marginTop: '4px'
+                                                        }}>
+                                                            หมายเหตุของการไม่เคลม: {sp.remark_noclaim}
+                                                        </div>
+                                                    )}
 
 
                                                     {(sp.claim_remark && parseFloat(sp.price_multiple_gp) === 0) && (
@@ -259,7 +261,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                             )}
                                                         </div>
                                                     )}
-                                                    {isEditing && (
+                                                    {(isEditing && JOB.warranty) && (
                                                         <>
                                                             <br/>
                                                             <>หมายเหตุของการไม่เคลม (ไม่บังคับ)</>
