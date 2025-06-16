@@ -53,7 +53,7 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
     // หากบันทึกจากหน้า สรุปรายการอะไหล่เสร็จสิ้น
     const Saved = () => {
         // fetchData().finally(()=>setLoading(false))
-        setStepForm(3);
+        setStepForm(2);
     }
 
     return (

@@ -103,6 +103,7 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMa
                                 onPassed : () => {
                                     resMessage.success && fetchData().finally(() => {
                                         setLoadingJob(false)
+                                        window.open(route('genReCieveSpPdf',JOB.job_id),'_blank')
                                     })
                                 }
                             });
@@ -121,7 +122,7 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMa
         <>
             {loadingJob ? (<CircularProgress/>) : (
                 <>
-                    <button onClick={() => console.log(data)}>click</button>
+                    {/*<button onClick={() => console.log(data)}>click</button>*/}
                     <form onSubmit={handleSubmit}>
                         <Grid2 container spacing={2}>
                             <Grid2 size={12}>

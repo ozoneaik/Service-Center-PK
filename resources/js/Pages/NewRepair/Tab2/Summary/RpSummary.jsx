@@ -10,6 +10,7 @@ import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
 import RpsSparePart from "@/Pages/NewRepair/Tab2/Summary/RpsSparePart.jsx";
 import SkeletonLoading from "@/Components/SkeletonLoading.jsx";
 import {CardComponent} from "@/Components/CardComponent.jsx";
+import {router} from "@inertiajs/react";
 
 export default function RpSummary({JOB,setMainStep,setJOB}) {
     const [loading, setLoading] = useState(false);
@@ -50,7 +51,8 @@ export default function RpSummary({JOB,setMainStep,setJOB}) {
                             icon: 'success',
                             text: data.message,
                             onPassed : () => {
-                                setJOB({...JOB, status: 'success'})
+                                setJOB({...JOB, status: 'success'});
+                                router.get(route('repair.index'));
                             }
                         })
                     } catch (error) {
@@ -95,7 +97,8 @@ export default function RpSummary({JOB,setMainStep,setJOB}) {
                         }))
                         AlertDialog({
                             icon : 'success',
-                            text : data.message
+                            text : data.message,
+                            onPassed : () => router.get(route('repair.index'))
                         })
                     } catch (error) {
                         AlertDialog({

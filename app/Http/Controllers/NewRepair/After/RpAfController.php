@@ -17,8 +17,13 @@ class RpAfController extends Controller
         $serial_id = $request->get('serial_id');
         $job_id = $request->get('job_id');
         $check_behaviours = Behavior::search($job_id);
+        $check_subremark1 = CustomerInJob::query()->where('job_id', $job_id)->first();
         if ($check_behaviours !== null) {
             $step = 1; // ไปยัง step เลือกรายการอะไหล่
+        }else{
+            if ($check_subremark1['subremark1']){
+                $step = 1;
+            }
         }
         $check_sp = SparePart::search($job_id);
         if ($check_sp !== null) {
@@ -29,10 +34,14 @@ class RpAfController extends Controller
             $step = 4; //ไปยัง step สรุปการทำงาน
         }
 
-        $check_subremark1 = (bool)CustomerInJob::query()->where('job_id', $job_id)->select('subremark1')->first();
+        if ($check_subremark1['subremark1']) {
+            $subremark1 = true;
+        }else{
+            $subremark1 = false;
+        }
         return response()->json([
             'step' => $step,
-            'subremark1' => $check_subremark1
+            'subremark1' => $subremark1
         ]);
     }
 }

@@ -85,12 +85,12 @@ class HistoryRepairController extends Controller
         $hisSystem = $this->historyInSystem($serial_id);
         // dd($hisSystem);
         $data['history'] = $hisSystem;
-        $data['detail'] = $searchResults['assets'][0] ?? [];
+//        $data['detail'] = $searchResults['assets'][0] ?? [];
         // $data['history'] = array_merge($hisSystem, $searchResults['assets'][0]['history']);
         return response()->json([
             'message' => 'success',
-            'history' => $data['history'],
-            'detail' => $data['detail'],
+            'history' => $data['history'] ?? [],
+            'detail' => $data['detail'] ?? [],
         ]);
     }
 

@@ -10,6 +10,7 @@ import ButtonList from "@/Pages/NewRepair/ButtonList.jsx";
 import {PathDetail} from "@/Components/PathDetail.jsx";
 import RpMain from "@/Pages/NewRepair/RpMain.jsx";
 import {SelectSku} from "@/Pages/NewRepair/SelectSku.jsx";
+import ListHistoryRepair from "@/Pages/HistoryRepair/ListHistoryRepair.jsx";
 
 const menuNames = {
     1: 'แจ้งซ่อม',
@@ -129,6 +130,7 @@ export default function Repair({DATA}) {
                                     />
                                     {menuSel === 1 &&
                                         <RpMain productDetail={detail} serial_id={detail.serial_id || detail.serial}/>}
+                                    {menuSel === 2 && <ListHistoryRepair serial_id={detail.serial_id}/>}
                                 </Grid2>
                             )}
                         </>

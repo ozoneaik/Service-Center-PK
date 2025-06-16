@@ -161,6 +161,7 @@ class JobController extends Controller
                 }
                 // อัพเดทสถานะ job เป็น ปิดงานซ่อม
                 $check_job_status->status = 'success';
+                $check_job_status->close_job_by = Auth::user()->user_code;
                 $check_job_status->save();
             } else {
                 throw new \Exception('ไม่สามารถผิดจ็อบได้');
@@ -198,13 +199,14 @@ class JobController extends Controller
             // เช็คก่อนว่า สถานะ job ตอนนี้เป็นอย่างไร
             $check_job_status = JobList::query()->where('job_id', $job_id)->first();
             if (isset($check_job_status) && $check_job_status->status === 'pending') {
-                $check_job_status->status = 'cancel';
+                $check_job_status->status = 'canceled';
+                $check_job_status->close_job_by = Auth::user()->user_code;
                 $check_job_status->save();
             } else {
                 throw new \Exception('ไม่สามารถผิดจ็อบได้');
             }
-            DB::rollBack();
-//            DB::commit();
+//            DB::rollBack();
+            DB::commit();
             return response()->json([
                 'job_id' => $job_id,
                 'serial_id' => $serial_id,

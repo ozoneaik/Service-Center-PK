@@ -8,10 +8,12 @@ import {
     Stack,
     Step,
     StepLabel,
-    Stepper
+    Stepper,
+
 } from "@mui/material";
+import Checkbox from '@mui/material/Checkbox';
 import {HeaderTitle} from "@/Pages/NewRepair/HeaderCardTitle.jsx";
-import {ArrowLeft, ArrowRight, Cancel, Check, CheckBox, Done, Save} from "@mui/icons-material";
+import {ArrowLeft, ArrowRight, Cancel, Check, Done, Save} from "@mui/icons-material";
 import {useEffect, useState} from "react";
 import RpBehaviorForm from "@/Pages/NewRepair/Tab2/RpBehaviorForm.jsx";
 import RpSpMain from "@/Pages/NewRepair/Tab2/RpSp/RpSpMain.jsx";
@@ -36,7 +38,7 @@ const ButtonStepper = ({children}) => (
 )
 
 
-export default function RpTab2Form({productDetail, JOB,setMainStep,MainStep,setJOB}) {
+export default function RpTab2Form({productDetail, JOB, setMainStep, MainStep, setJOB}) {
     const [stepForm, setStepForm] = useState(0);
     const listBehavior = productDetail.listbehavior;
     const listSparePart = productDetail.sp
@@ -44,16 +46,16 @@ export default function RpTab2Form({productDetail, JOB,setMainStep,MainStep,setJ
     const [subremark1, setSubremark1] = useState(false);
     const [firstRender, setFirstRender] = useState(true);
 
-    useEffect(()=> {
-        if(firstRender){
+    useEffect(() => {
+        if (firstRender) {
             setFirstRender(false)
-        }else{
+        } else {
             console.log('render step', MainStep.sub_step)
-            if(MainStep.step === 'after'){
+            if (MainStep.step === 'after') {
                 setStepForm(MainStep.sub_step)
             }
         }
-    },[MainStep])
+    }, [MainStep])
 
     useEffect(() => {
         checkStep().finally(() => setLoading(false));
@@ -66,8 +68,11 @@ export default function RpTab2Form({productDetail, JOB,setMainStep,MainStep,setJ
                 job_id: JOB.job_id
             }));
             console.log(data, status)
-            setStepForm(data.step)
             setSubremark1(data.subremark1)
+            if (data.subremark1) {
+                setStepForm(1)
+            }
+            setStepForm(data.step)
         } catch (error) {
             console.log(error)
         }
@@ -89,8 +94,9 @@ export default function RpTab2Form({productDetail, JOB,setMainStep,MainStep,setJ
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
                         <Stack direction='row' justifyContent='start'>
-                            <FormControlLabel disabled control={<CheckBox checked={subremark1}/>} label={'ใบเสนอราคา'}/>
-                            <button onClick={()=>console.log(stepForm)}>stepForm</button>
+
+                            <FormControlLabel disabled control={<Checkbox checked={subremark1}/>} label={'ใบเสนอราคา'}/>
+                            {/*<button onClick={() => console.log(stepForm)}>stepForm</button>*/}
                         </Stack>
                     </Grid2>
                     <Grid2 size={12} className='stepper'>
@@ -162,7 +168,7 @@ export default function RpTab2Form({productDetail, JOB,setMainStep,MainStep,setJ
                                 <CardContent>
                                     <HeaderTitle headTitle='ใบเสนอราคา'/>
                                     {/*content here*/}
-                                    <RpQu productDetail={productDetail} JOB={JOB}/>
+                                    <RpQu productDetail={productDetail} JOB={JOB} setStepForm={setStepForm}/>
                                 </CardContent>
                             </Card>
                         </Grid2>
@@ -189,7 +195,8 @@ export default function RpTab2Form({productDetail, JOB,setMainStep,MainStep,setJ
                                 <CardContent>
                                     <HeaderTitle headTitle='สรุปจบงาน'/>
                                     {/*content here*/}
-                                    <RpSummary setJOB={setJOB} setMainStep={setMainStep} JOB={JOB} productDetail={productDetail}/>
+                                    <RpSummary setJOB={setJOB} setMainStep={setMainStep} JOB={JOB}
+                                               productDetail={productDetail}/>
                                 </CardContent>
                             </Card>
                         </Grid2>

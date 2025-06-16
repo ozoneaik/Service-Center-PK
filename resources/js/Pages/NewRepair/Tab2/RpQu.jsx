@@ -1,8 +1,8 @@
 import {useEffect, useState} from "react";
 import {Button, CircularProgress, Grid2, Stack} from "@mui/material";
-import {Assignment, Download} from "@mui/icons-material";
+import {ArrowRight, Assignment, Download} from "@mui/icons-material";
 
-export default function RpQu({JOB}) {
+export default function RpQu({JOB,setStepForm}) {
 
     console.log('JOB => ', JOB)
 
@@ -72,6 +72,13 @@ export default function RpQu({JOB}) {
                     </div>
                 )}
             </Grid2>
+                {!pathPdf && (
+            <Grid2 size={12}>
+                <Stack direction='row' justifyContent='end' onClick={()=>setStepForm(3)}>
+                    <Button variant='contained' color='secondary' endIcon={<ArrowRight/>}>ไปยังฟอร์ม สภาพสินค้าหลังซ่อม</Button>
+                </Stack>
+            </Grid2>
+                )}
 
         </Grid2>
     )
