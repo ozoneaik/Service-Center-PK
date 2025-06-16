@@ -110,10 +110,11 @@ export default function RpBehaviorForm({listBehavior, JOB,setStepForm}) {
                     </Stack>
                     <Stack direction='row' justifyContent='end'>
                         <Button
+                            disabled={JOB.status !== 'pending'}
                             onClick={handleOnSubmit} loading={loadingForm}
                             variant='contained' startIcon={<Save/>}
                         >
-                            บันทึก
+                            {JOB.status === 'success' ? 'ปิดงานซ่อมแล้ว' : 'บันทึก'}
                         </Button>
                     </Stack>
                 </>

@@ -368,9 +368,9 @@ export default function RpUploadFileAfterForm({productDetail, JOB,setStepForm}) 
                     onClick={handleSave}
                     startIcon={<Save/>}
                     variant='contained'
-                    disabled={uploading || files.length === 0}
+                    disabled={uploading || files.length === 0 || JOB.status !== 'pending'}
                 >
-                    {uploading ? 'กำลังบันทึก...' : 'บันทึก'}
+                    {uploading ? 'กำลังบันทึก...' : JOB.status === 'pending' ? 'บันทึก' : 'ปิดงานซ่อมแล้ว'}
                 </Button>
             </Stack>
         </Box>

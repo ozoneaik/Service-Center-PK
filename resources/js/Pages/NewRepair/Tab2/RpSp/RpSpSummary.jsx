@@ -3,8 +3,8 @@ import {
     IconButton, InputLabel, MenuItem, Select, Stack, Table, TableBody, TableCell, TableHead, TableRow,
     TextField, Typography
 } from "@mui/material";
-import React,{ useState } from "react";
-import { showDefaultImage } from "@/utils/showImage.js";
+import React, {useState} from "react";
+import {showDefaultImage} from "@/utils/showImage.js";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
@@ -12,21 +12,20 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {Check, CheckBox} from "@mui/icons-material";
 import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
 
-export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSelected,JOB,onSaved }) {
+export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelected, JOB, onSaved}) {
     const [previewImage, setPreviewImage] = useState(false);
     const [previewSelected, setPreviewSelected] = useState('');
     const [editingSpares, setEditingSpares] = useState({});
     const [claimDialog, setClaimDialog] = useState(false);
     const [selectedSpareForClaim, setSelectedSpareForClaim] = useState(null);
     const [claimData, setClaimData] = useState({
-        claimType: '',
-        claimNote: ''
+        claim: '', claim_remark: '', remark: ''
     });
 
     // คำนวณยอดรวม
     const calculateTotal = () => {
         return spSelected.reduce((total, sp) => {
-            const price = parseFloat(sp.price_per_unit || 0);
+            const price = parseFloat(sp.price_multiple_gp || 0);
             const qty = parseInt(sp.qty || 1);
             return total + (price * qty);
         }, 0);
@@ -35,10 +34,11 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
     // จัดการการแก้ไขข้อมูลอะไหล่
     const handleEditSpare = (spcode) => {
         const spare = spSelected.find(sp => sp.spcode === spcode);
+        console.log(spare)
         setEditingSpares(prev => ({
             ...prev,
             [spcode]: {
-                price_per_unit: spare.price_per_unit || '',
+                price_multiple_gp: spare.price_multiple_gp || 0,
                 qty: spare.qty || 1
             }
         }));
@@ -49,39 +49,43 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
         const editData = editingSpares[spcode];
         if (!editData) return;
 
+        const newPrice = parseFloat(editData.price_multiple_gp);
+        console.log('newPrice', editData);
+
+        // ถ้าราคาเป็น 0 ให้เปิด dialog สำหรับเคลม
+        if (newPrice === 0) {
+            const spare = spSelected.find(sp => sp.spcode === spcode);
+            setSelectedSpareForClaim(spare);
+            setClaimDialog(true);
+            return; // ออกจากฟังก์ชัน รอให้กรอกข้อมูลเคลม
+        }
+
+        // ถ้าราคาไม่เป็น 0 ให้อัพเดทได้เลย
         const updatedSpares = spSelected.map(sp => {
             if (sp.spcode === spcode) {
-                const newPrice = editData.price_per_unit;
-
-                // ถ้าราคาเป็น 0 ให้เปิด dialog สำหรับเคลม
-                if (parseFloat(newPrice) === 0) {
-                    setSelectedSpareForClaim(sp);
-                    setClaimDialog(true);
-                    return sp; // ยังไม่อัพเดทก่อน รอให้กรอกข้อมูลเคลม
-                }
-
                 return {
                     ...sp,
-                    price_per_unit: newPrice,
-                    qty: parseInt(editData.qty) || 1
+                    price_multiple_gp: newPrice,
+                    qty: parseInt(editData.qty) || 1,
+                    remark_noclaim: editData.remark_noclaim,
                 };
             }
             return sp;
         });
 
-        // ถ้าราคาไม่เป็น 0 ให้อัพเดทได้เลย
-        if (parseFloat(editData.price_per_unit) !== 0) {
-            onUpdateSpSelected(updatedSpares);
-            setEditingSpares(prev => {
-                const newState = { ...prev };
-                delete newState[spcode];
-                return newState;
-            });
-        }
+        onUpdateSpSelected(updatedSpares);
+
+        // ลบข้อมูลการแก้ไขออกจาก state
+        setEditingSpares(prev => {
+            const newState = {...prev};
+            delete newState[spcode];
+            return newState;
+        });
     };
 
     // จัดการการเปลี่ยนแปลงข้อมูลในการแก้ไข
     const handleEditChange = (spcode, field, value) => {
+        console.log(spcode, field, value);
         setEditingSpares(prev => ({
             ...prev,
             [spcode]: {
@@ -91,9 +95,12 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
         }));
     };
 
-    // จัดการการบันทึกข้อมูลเคลม
+
+// จัดการการบันทึกข้อมูลเคลม
     const handleSaveClaimData = () => {
         if (!selectedSpareForClaim) return;
+
+        console.log(selectedSpareForClaim, spSelected);
 
         const editData = editingSpares[selectedSpareForClaim.spcode];
 
@@ -101,10 +108,11 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
             if (sp.spcode === selectedSpareForClaim.spcode) {
                 return {
                     ...sp,
-                    price_per_unit: editData.price_per_unit,
-                    qty: parseInt(editData.qty) || 1,
-                    claim_type: claimData.claimType,
-                    claim_note: claimData.claimNote
+                    price_multiple_gp: 0, // บังคับให้เป็น 0 สำหรับการเคลม
+                    qty: parseInt(editData?.qty) || 1,
+                    claim: claimData.claim_remark !== 'ไม่เคลม',
+                    claim_remark: claimData.claim_remark,
+                    remark: claimData.remark,
                 };
             }
             return sp;
@@ -114,46 +122,47 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
 
         // รีเซ็ตข้อมูล
         setEditingSpares(prev => {
-            const newState = { ...prev };
+            const newState = {...prev};
             delete newState[selectedSpareForClaim.spcode];
             return newState;
         });
         setClaimDialog(false);
         setSelectedSpareForClaim(null);
-        setClaimData({ claimType: '', claimNote: '' });
+        setClaimData({claim: '', claim_remark: '', remark: ''});
     };
 
     // ปิด dialog เคลม
     const handleCloseClaimDialog = () => {
         setClaimDialog(false);
         setSelectedSpareForClaim(null);
-        setClaimData({ claimType: '', claimNote: '' });
+        setClaimData({claim: '', claim_remark: '', remark: ''});
     };
 
     const handleSubmit = () => {
+        console.log(spSelected)
         AlertDialogQuestion({
-            title : 'ยืนยันการบันทึก',
-            text : 'กด ตกลง เพื่อบันทึกรายการอะไหล่',
-            onPassed : async (confirm) => {
+            title: 'ยืนยันการบันทึก',
+            text: 'กด ตกลง เพื่อบันทึกรายการอะไหล่',
+            onPassed: async (confirm) => {
                 if (confirm) {
                     try {
-                        const {data, status} = await axios.post(route('repair.after.spare-part.store',{
-                            job_id : JOB.job_id,
-                            serial_id : JOB.serial_id,
-                            spare_parts : spSelected
+                        const {data, status} = await axios.post(route('repair.after.spare-part.store', {
+                            job_id: JOB.job_id,
+                            serial_id: JOB.serial_id,
+                            spare_parts: spSelected
                         }))
                         console.log(data, status)
                         AlertDialog({
-                            icon : 'success',
-                            text : data.message,
-                            onPassed : () => onSaved()
+                            icon: 'success',
+                            text: data.message,
+                            onPassed: () => onSaved()
                         })
-                    }catch (error) {
+                    } catch (error) {
                         AlertDialog({
-                            text : error.response?.data?.message || error.message,
+                            text: error.response?.data?.message || error.message,
                         })
                     }
-                }else console.log('ไม่ได้กด confirm')
+                } else console.log('ไม่ได้กด confirm')
             }
         })
     }
@@ -172,9 +181,9 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
             <Grid2 size={12}>
                 <Button
                     variant="outlined"
-                    startIcon={<ArrowBackIcon />}
+                    startIcon={<ArrowBackIcon/>}
                     onClick={() => setShowSummary(false)}
-                    sx={{ mb: 2 }}
+                    sx={{mb: 2}}
                 >
                     กลับไปแก้ไขรายการ
                 </Button>
@@ -182,9 +191,9 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
 
             {/* ตารางสรุปรายการ */}
             <Grid2 size={12}>
-                <Card sx={{overflow : 'auto'}}>
+                <Card sx={{overflow: 'auto'}}>
                     <CardContent>
-                        <Typography variant="h6" sx={{ mb: 2 }}>
+                        <Typography variant="h6" sx={{mb: 2}}>
                             สรุปรายการอะไหล่และบริการ
                         </Typography>
 
@@ -192,11 +201,12 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                             <TableHead>
                                 <TableRow>
                                     <TableCell>รูปภาพ</TableCell>
-                                    <TableCell>รหัสอะไหล่</TableCell>
-                                    <TableCell>ชื่ออะไหล่</TableCell>
+                                    <TableCell>รหัสและชื่ออะไหล่</TableCell>
+                                    {/*<TableCell>ชื่ออะไหล่</TableCell>*/}
                                     <TableCell>หน่วย</TableCell>
                                     <TableCell>จำนวน</TableCell>
                                     <TableCell>ราคาต่อหน่วย</TableCell>
+                                    <TableCell>ราคาที่ + GP แล้ว</TableCell>
                                     <TableCell>ราคารวม</TableCell>
                                     <TableCell>จัดการ</TableCell>
                                 </TableRow>
@@ -206,51 +216,70 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                                     const imageSp = sp.spcode === 'SV001' ? '' :
                                         import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
                                     const isEditing = editingSpares[sp.spcode];
-                                    const price = parseFloat(sp.price_per_unit || 0);
+                                    const price_per_unit = parseFloat(sp.price_per_unit || 0);
+                                    const price_multiple_gp = parseFloat(sp.price_multiple_gp || sp.price_per_unit || 0);
                                     const qty = parseInt(sp.qty || 1);
-                                    const totalPrice = price * qty;
+                                    const totalPrice = price_multiple_gp * qty;
 
                                     return (
                                         <React.Fragment key={index}>
 
                                             <TableRow
-                                                sx={{backgroundColor: (sp.warranty === 'Y' && JOB.warranty) ? '#e8f5e8' : 'inherit'}}
+                                                sx={{backgroundColor: (sp.sp_warranty === 'Y' || sp.warranty) ? '#e8f5e8' : 'inherit'}}
                                             >
                                                 <TableCell
                                                     onClick={() => {
                                                         setPreviewImage(true);
                                                         setPreviewSelected(imageSp);
                                                     }}
-                                                    sx={{ cursor: 'pointer' }}
+                                                    sx={{cursor: 'pointer'}}
                                                 >
                                                     <img width={50} src={imageSp} onError={showDefaultImage} alt=""/>
                                                 </TableCell>
                                                 <TableCell>
-                                                    {sp.spcode}
+                                                    ({sp.spcode})&nbsp;{sp.spname}
+                                                    <div style={{
+                                                        fontSize: '0.8em',
+                                                        color: '#666',
+                                                        marginTop: '4px'
+                                                    }}>
+                                                        หมายเหตุของการไม่เคลม: {sp.remark_noclaim}
+                                                    </div>
+
+
+                                                    {(sp.claim_remark && parseFloat(sp.price_multiple_gp) === 0) && (
+                                                        <div style={{
+                                                            fontSize: '0.8em',
+                                                            color: '#666',
+                                                            marginTop: '4px'
+                                                        }}>
+                                                            เคลม: {sp.claim_remark}
+                                                            {sp.remark && (
+                                                                <div>หมายเหตุ: {sp.remark}</div>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                     {isEditing && (
                                                         <>
                                                             <br/>
-                                                            <Select size='small' name="no-claim" defaultValue={1}
+                                                            <>หมายเหตุของการไม่เคลม (ไม่บังคับ)</>
+                                                            <br/>
+                                                            <Select
+                                                                onChange={(e) => handleEditChange(sp.spcode, 'remark_noclaim', e.target.value)}
+                                                                size='small' name="remark_noclaim"
+                                                                defaultValue={sp.remark_noclaim || 'ไม่กรอก'}
                                                                     id="no-claim">
-                                                                <MenuItem value={1}>
+                                                                <MenuItem value={'ไม่กรอก'}>
+                                                                    ไม่กรอก
+                                                                </MenuItem>
+                                                                <MenuItem value={'ลูกค้ามีการดัดแปลงสภาพเครื่องมา'}>
                                                                     ลูกค้ามีการดัดแปลงสภาพเครื่องมา
                                                                 </MenuItem>
-                                                                <MenuItem value={2}>
+                                                                <MenuItem value={'ลูกค้าใช้งานผิดวัตถุประสงค์'}>
                                                                     ลูกค้าใช้งานผิดวัตถุประสงค์
                                                                 </MenuItem>
                                                             </Select>
                                                         </>
-                                                    )}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {sp.spname}
-                                                    {(sp.claim_type && sp.price_per_unit == 0) && (
-                                                        <div style={{ fontSize: '0.8em', color: '#666', marginTop: '4px' }}>
-                                                            เคลม: {sp.claim_type}
-                                                            {sp.claim_note && (
-                                                                <div>หมายเหตุ: {sp.claim_note}</div>
-                                                            )}
-                                                        </div>
                                                     )}
                                                 </TableCell>
                                                 <TableCell>{sp.spunit}</TableCell>
@@ -261,25 +290,31 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                                                             size="small"
                                                             value={isEditing.qty}
                                                             onChange={(e) => handleEditChange(sp.spcode, 'qty', e.target.value)}
-                                                            inputProps={{ min: 1 }}
-                                                            sx={{ width: '80px' }}
+                                                            inputProps={{min: 1}}
+                                                            sx={{width: '80px'}}
                                                         />
                                                     ) : (
                                                         qty
                                                     )}
                                                 </TableCell>
                                                 <TableCell>
+                                                    {`${price_per_unit.toFixed(2)} บาท`}
+                                                </TableCell>
+                                                <TableCell onClick={() => console.log(spSelected)}>
                                                     {isEditing ? (
                                                         <TextField
                                                             type="number"
                                                             size="small"
-                                                            value={isEditing.price_per_unit}
-                                                            onChange={(e) => handleEditChange(sp.spcode, 'price_per_unit', e.target.value)}
-                                                            inputProps={{ min: 0, step: 0.01 }}
-                                                            sx={{ width: '100px' }}
+                                                            value={isEditing.price_multiple_gp}
+                                                            onChange={(e) => handleEditChange(sp.spcode, 'price_multiple_gp', e.target.value)}
+                                                            inputProps={{min: 0, step: 1}}
+                                                            sx={{width: '100px'}}
                                                         />
                                                     ) : (
-                                                        `${price.toFixed(2)} บาท`
+                                                        <>
+                                                            {parseFloat(sp.price_multiple_gp || 0)}
+                                                        </>
+                                                        // `${price_multiple_gp.toFixed(2)} บาท`
                                                     )}
                                                 </TableCell>
                                                 <TableCell>
@@ -292,7 +327,7 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                                                             onClick={() => handleSaveEdit(sp.spcode)}
                                                             size="small"
                                                         >
-                                                            <SaveIcon />
+                                                            <SaveIcon/>
                                                         </IconButton>
                                                     ) : (
                                                         <IconButton
@@ -301,7 +336,7 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                                                             onClick={() => handleEditSpare(sp.spcode)}
                                                             size="small"
                                                         >
-                                                            <EditIcon />
+                                                            <EditIcon/>
                                                         </IconButton>
                                                     )}
                                                 </TableCell>
@@ -311,12 +346,12 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                                     );
                                 })}
                                 {/* แถวยอดรวม */}
-                                <TableRow sx={{ backgroundColor: '#f5f5f5', fontWeight: 'bold' }}>
+                                <TableRow sx={{backgroundColor: '#f5f5f5', fontWeight: 'bold'}}>
                                     <TableCell colSpan={6} align="right">
                                         <Typography>ยอดรวมทั้งหมด: </Typography>
                                     </TableCell>
                                     <TableCell>
-                                        <Typography color="primary" >
+                                        <Typography color="primary">
                                             {calculateTotal().toFixed(2)} บาท
                                         </Typography>
                                     </TableCell>
@@ -349,14 +384,14 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                     </Typography>
                 </DialogTitle>
                 <DialogContent>
-                    <Grid2 container spacing={2} sx={{ mt: 1 }}>
+                    <Grid2 container spacing={2} sx={{mt: 1}}>
                         <Grid2 size={12}>
                             <FormControl fullWidth required>
                                 <InputLabel>ประเภทการเคลม</InputLabel>
                                 <Select
-                                    value={claimData.claimType}
+                                    value={claimData.claim_remark}
                                     label="ประเภทการเคลม"
-                                    onChange={(e) => setClaimData(prev => ({ ...prev, claimType: e.target.value }))}
+                                    onChange={(e) => setClaimData(prev => ({...prev, claim_remark: e.target.value}))}
                                 >
                                     <MenuItem value="ไม่เคลม">ไม่เคลม</MenuItem>
                                     <MenuItem value="เคลมสินค้านี้ซีเรียงหมดประกันตามเงื่อนไขแล้ว">
@@ -374,8 +409,8 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                                 multiline
                                 rows={3}
                                 label="หมายเหตุการเคลม"
-                                value={claimData.claimNote}
-                                onChange={(e) => setClaimData(prev => ({ ...prev, claimNote: e.target.value }))}
+                                value={claimData.remark}
+                                onChange={(e) => setClaimData(prev => ({...prev, remark: e.target.value}))}
                                 required={claimData.claimType !== 'ไม่เคลม'}
                                 helperText={claimData.claimType === 'ไม่เคลม' ? 'ไม่บังคับกรอก' : 'บังคับกรอก'}
                             />
@@ -387,7 +422,7 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                     <Button
                         onClick={handleSaveClaimData}
                         variant="contained"
-                        disabled={!claimData.claimType || (claimData.claimType !== 'ไม่เคลม' && !claimData.claimNote.trim())}
+                        disabled={(claimData.claim_remark !== 'ไม่เคลม' && !claimData.remark.trim())}
                     >
                         บันทึก
                     </Button>

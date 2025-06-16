@@ -29,6 +29,7 @@ return new class extends Migration
             $table->string('remark')->nullable()->comment('หมายเหตุ');
             $table->boolean('claim')->nullable()->comment('สถานะเคลม');
             $table->string('claim_remark',255)->nullable()->comment('หมายเหตุ เมื่อกรอกราคาอะไหล่เท่ากับ 0');
+            $table->string('remark_noclaim')->nullable()->comment('หมายเหตุการของไม่เคลม');
             $table->timestamps();
         });
     }

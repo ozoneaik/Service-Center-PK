@@ -15,7 +15,7 @@ const textQuestion = `
 <span style="color: red">⚠️ เมื่อบันทึกแล้ว จะไม่สามารถย้อนกลับมาแก้ไขในหน้านี้ได้</span>
 `
 
-export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved}) {
+export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMainStep}) {
     const [loadingJob, setLoadingJob] = useState(false);
     const {data, setData, processing, post} = useForm({
         job_id : JOB.job_id,

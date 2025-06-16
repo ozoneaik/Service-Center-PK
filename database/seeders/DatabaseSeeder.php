@@ -67,12 +67,35 @@ class DatabaseSeeder extends Seeder
             'sub_district' => 'แขวงแสมดำ',
         ]);
 
-        $menu_file_uplaods = ['สภาพสินค้าก่อนซ่อม','สภาพสินค้าหลังซ่อม','ภาพอะไหล่ที่เสียส่งเคลม','ภาพอะไหล่ที่เปลี่ยน','ภาพอะไหล่เสี่ยอื่นๆ'];
+        $menu_file_uplaods = [
+            [
+                'menu_name' => 'สภาพสินค้าก่อนซ่อม',
+                'menu_id' => 1
+            ],
+            [
+                'menu_name' => 'สภาพสินค้าหลังซ่อม',
+                'menu_id' => 2
+            ],
+            [
+                'menu_name' => 'ภาพอะไหล่ที่เสียส่งเคลม',
+                'menu_id' => 3
+            ],
+            [
+                'menu_name' => 'ภาพอะไหล่ที่เปลี่ยน',
+                'menu_id' => 4
+            ],
+            [
+                'menu_name' => 'ภาพอะไหล่เสี่ยอื่นๆ',
+                'menu_id' => 5
+            ],
+
+        ];
 
         foreach ($menu_file_uplaods as $key => $menu_file_upload) {
             MenuFileUpload::query()->create([
-                'menu_name' => $menu_file_upload
-            ]);    
+                'menu_name' => $menu_file_upload['menu_name'],
+                'group' => $menu_file_upload['menu_id'],
+            ]);
         }
     }
 }

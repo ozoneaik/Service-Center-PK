@@ -34,7 +34,7 @@ export const TableDetail = ({ jobs, handleShowDetail, url }) => {
                     <TableRow key={index}>
                         <TableCell><img src={job.image_sku} width={50} alt="no image" /></TableCell>
                         <TableCell>
-                            <Link href={route('dashboard',{SN : job.serial_id,JOB_ID : job.job_id})}>
+                            <Link href={route('repair.index',{job_id : job.job_id})}>
                                 {job.serial_id}
                             </Link>
                         </TableCell>

@@ -36,12 +36,24 @@ const ButtonStepper = ({children}) => (
 )
 
 
-export default function RpTab2Form({productDetail, JOB, setJOB}) {
+export default function RpTab2Form({productDetail, JOB,setMainStep,MainStep,setJOB}) {
     const [stepForm, setStepForm] = useState(0);
     const listBehavior = productDetail.listbehavior;
     const listSparePart = productDetail.sp
     const [loading, setLoading] = useState(false);
     const [subremark1, setSubremark1] = useState(false);
+    const [firstRender, setFirstRender] = useState(true);
+
+    useEffect(()=> {
+        if(firstRender){
+            setFirstRender(false)
+        }else{
+            console.log('render step', MainStep.sub_step)
+            if(MainStep.step === 'after'){
+                setStepForm(MainStep.sub_step)
+            }
+        }
+    },[MainStep])
 
     useEffect(() => {
         checkStep().finally(() => setLoading(false));
@@ -78,13 +90,27 @@ export default function RpTab2Form({productDetail, JOB, setJOB}) {
                     <Grid2 size={12}>
                         <Stack direction='row' justifyContent='start'>
                             <FormControlLabel disabled control={<CheckBox checked={subremark1}/>} label={'ใบเสนอราคา'}/>
+                            <button onClick={()=>console.log(stepForm)}>stepForm</button>
                         </Stack>
                     </Grid2>
                     <Grid2 size={12} className='stepper'>
                         <Stepper activeStep={stepForm} alternativeLabel>
                             {steps.map((label, index) => (
-                                <Step key={index} onClick={() => handleSelectStep(index, label)}>
-                                    <StepLabel>{label}</StepLabel>
+                                <Step
+                                    key={index} onClick={() => handleSelectStep(index, label)}
+                                >
+                                    <StepLabel
+                                        sx={{
+                                            transition: 'all 0.1s ease-in-out',
+                                            '&:hover': {
+                                                backgroundColor: '#d9d9d9',
+                                                cursor: 'pointer',
+                                                borderRadius: '10px'
+                                            }
+                                        }}
+                                    >
+                                        {label}
+                                    </StepLabel>
                                 </Step>
                             ))}
                         </Stepper>
@@ -148,7 +174,10 @@ export default function RpTab2Form({productDetail, JOB, setJOB}) {
                                 <CardContent>
                                     <HeaderTitle headTitle='สภาพสินค้าหลังซ่อม'/>
                                     {/*content here*/}
-                                    <RpUploadFileAfterForm productDetail={productDetail} JOB={JOB} setStepForm={setStepForm}/>
+                                    <RpUploadFileAfterForm
+                                        productDetail={productDetail} JOB={JOB}
+                                        setStepForm={setStepForm}
+                                    />
                                 </CardContent>
                             </Card>
                         </Grid2>
@@ -160,7 +189,7 @@ export default function RpTab2Form({productDetail, JOB, setJOB}) {
                                 <CardContent>
                                     <HeaderTitle headTitle='สรุปจบงาน'/>
                                     {/*content here*/}
-                                    <RpSummary JOB={JOB} productDetail={productDetail}/>
+                                    <RpSummary setJOB={setJOB} setMainStep={setMainStep} JOB={JOB} productDetail={productDetail}/>
                                 </CardContent>
                             </Card>
                         </Grid2>

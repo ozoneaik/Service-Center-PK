@@ -78,7 +78,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('warranty')->group(function () {
         Route::get('/index', [WarrantyProductController::class,'index'])->name('warranty.index');
         Route::post('/search', [WarrantyProductController::class, 'search'])->name('warranty.search');
-        Route::post('/store', [WarrantyProductController::class, 'store'])->name('');
+        Route::post('/store', [WarrantyProductController::class, 'store'])->name('warranty.store');
         Route::put('/update', [WarrantyProductController::class, 'update'])->name('warranty.update');
         Route::get('/fetchDataLocal/{serial_id}', [WarrantyProductController::class, 'fetchDataLocal'])->name('warranty.fetchDataLocal');
     });

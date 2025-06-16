@@ -22,6 +22,9 @@ return new class extends Migration
             $table->string('p_cat_name')->nullable();
             $table->string('p_sub_cat_name')->nullable();
             $table->string('fac_model')->nullable();
+            $table->string('warranty_condition')->nullable()->comment('เงื่อนไขรับประกัน');
+            $table->string('warranty_note')->nullable()->comment('โน็ตการรับประกัน');
+            $table->string('warranty_period')->nullable()->comment('ระยะเวลารับประกัน');
             $table->string('image_sku')->nullable();
             $table->string('status')->default('pending');
             $table->boolean('warranty')->default(false)->comment('สถานะรับประกัน');

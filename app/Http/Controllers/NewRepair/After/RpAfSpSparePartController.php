@@ -39,6 +39,18 @@ class RpAfSpSparePartController extends Controller
             $created = [];
             // สร้างใหม่
             foreach ($spare_parts as $key=>$spare_part) {
+                $claim = $spare_part['claim'] ?? false;
+                if(isset($spare_part['warranty']) && $spare_part['warranty'] === 'Y') {
+                    $warranty = true;
+                }elseif(isset($spare_part['warranty']) && $spare_part['warranty'] === 'N') {
+                    $warranty = false;
+                }elseif (isset($spare_part['sp_warranty']) && $spare_part['sp_warranty'] === 'Y') {
+                    $warranty = true;
+                }elseif (isset($spare_part['sp_warranty']) && $spare_part['sp_warranty'] === 'N') {
+                    $warranty = false;
+                }else{
+                    $warranty = false;
+                }
                 $created[$key] = SparePart::query()->create([
                     'serial_id' => $serial_id,
                     'job_id' => $job_id,
@@ -46,15 +58,17 @@ class RpAfSpSparePartController extends Controller
                     'sp_name' => $spare_part['spname'],
                     'price_per_unit' => floatval($spare_part['price_per_unit'] ?? 0),
                     'gp' => $spare_part['gp'] ?? 0,
-                    'sp_warranty' => $spare_part['sp_warranty'],
+//                    'sp_warranty' => $spare_part['sp_warranty'],
+                    'sp_warranty' => $warranty,
                     'approve' => $spare_part['approve'] ?? 'no',
                     'approve_status' => $spare_part['approve_status'] ?? 'yes',
                     'price_multiple_gp' => $spare_part['price_multiple_gp'],
                     'qty' => $spare_part['qty'] ?? 0,
                     'sp_unit' => $spare_part['spunit'] ?? 'อัน',
-                    'claim' => $spare_part['spcode'] === 'SV001' ? false : (bool)$spare_part['claim'],
+                    'claim' => $spare_part['spcode'] === 'SV001' ? false : $claim,
                     'claim_remark' => $spare_part['claim_remark'] ?? null,
                     'remark' => $spare_part['remark'] ?? null,
+                    'remark_noclaim' => $spare_part['remark_noclaim'] ?? null,
                 ]);
             }
 

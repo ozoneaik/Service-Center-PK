@@ -4,7 +4,7 @@ import {useState, useEffect} from "react";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 import SaveIcon from "@mui/icons-material/Save";
 
-export default function RpSpAdd({listSparePart, onAddSpare, spSelected,JOB}) {
+export default function RpSpAdd({listSparePart, onAddSpare, spSelected, JOB}) {
     const [previewImage, setPreviewImage] = useState(false);
     const [previewSelected, setPreviewSelected] = useState('');
     const [selectedSpares, setSelectedSpares] = useState([]);
@@ -19,7 +19,7 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected,JOB}) {
         price_per_unit: '0',
         warranty: 'N',
         sp_warranty: false,
-        price_multiple_gp : 0
+        price_multiple_gp: 0
     };
 
     // ตั้งค่า state เริ่มต้นตาม spSelected ที่ส่งมา
@@ -37,7 +37,13 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected,JOB}) {
     const handleSpareCheck = (spare, checked) => {
         if (checked) {
             // เพิ่มอะไหล่ใหม่ พร้อมกับ qty = 1
-            setSelectedSpares(prev => [...prev, {...spare, qty: 1}]);
+            setSelectedSpares(prev => [
+                ...prev, {
+                    ...spare,
+                    qty: 1,
+                    price_multiple_gp: spare.price_per_unit
+                }
+            ]);
         } else {
             // ลบอะไหล่ออก
             setSelectedSpares(prev => prev.filter(sp => sp.spcode !== spare.spcode));
@@ -82,7 +88,7 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected,JOB}) {
                         <Button
                             variant="contained"
                             color="success"
-                            startIcon={<SaveIcon />}
+                            startIcon={<SaveIcon/>}
                             onClick={handleSaveSelection}
                             sx={{mb: 2}}
                         >
@@ -141,8 +147,8 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected,JOB}) {
                         <TableRow>
                             <TableCell>เลือก</TableCell>
                             <TableCell>รูปภาพ</TableCell>
-                            <TableCell>รหัสอะไหล่</TableCell>
-                            <TableCell>ชื่ออะไหล่</TableCell>
+                            <TableCell>รหัสและชื่ออะไหล่</TableCell>
+                            <TableCell>ราคาอะไหล่</TableCell>
                             <TableCell>หน่วย</TableCell>
                         </TableRow>
                     </TableHead>
@@ -171,8 +177,12 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected,JOB}) {
                                     }}>
                                         <img width={50} src={imageSp} onError={showDefaultImage} alt=""/>
                                     </TableCell>
-                                    <TableCell>{sp.spcode}</TableCell>
-                                    <TableCell>{sp.spname}</TableCell>
+                                    <TableCell>
+                                        {sp.spcode}
+                                        <br/>
+                                        {sp.spname}
+                                    </TableCell>
+                                    <TableCell>{sp.price_per_unit}</TableCell>
                                     <TableCell>{sp.spunit}</TableCell>
                                 </TableRow>
                             )

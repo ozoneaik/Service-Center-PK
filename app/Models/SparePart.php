@@ -22,7 +22,8 @@ class SparePart extends Model
         'approve_status',
         'remark',
         'claim',
-        'claim_remark'
+        'claim_remark',
+        'remark_noclaim'
     ];
 
 
@@ -51,7 +52,8 @@ class SparePart extends Model
                 'approve_status',
                 'remark',
                 'claim',
-                'claim_remark'
+                'claim_remark',
+                'remark_noclaim'
             )
             ->get();
 

@@ -67,6 +67,7 @@ export default function WrForm() {
                                 p_name: product.pname,
                                 warrantyperiod: product.warrantyperiod
                             });
+                            console.log(data)
                             AlertDialog({
                                 icon: 'success',
                                 text: data.message
@@ -76,7 +77,7 @@ export default function WrForm() {
                         } catch (error) {
                             AlertDialog({
                                 title: 'เกิดข้อผิดพลาด',
-                                text: error.response.data.message || error.message || 'error'
+                                text: error.response?.data?.message || error.message || 'error'
                             });
                         }
                     }

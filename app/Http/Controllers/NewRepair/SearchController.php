@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\NewRepair;
 
 use App\Http\Controllers\Controller;
+use App\Models\Behavior;
 use App\Models\JobList;
 use App\Models\WarrantyProduct;
 use Carbon\Carbon;
@@ -79,7 +80,7 @@ class SearchController extends Controller
 
 
                 // หาว่าในระบบได้มีการลงทะเบียนรับประกันหรือไม่
-                $warranty_expire = $response_json['warrantyexpire'];
+                $warranty_expire = $response_json['warrantyexpire'] ?? false;
                 if (isset($formData['sn'])) {
                     $warranty_expire = $this->findWarranty($formData['sn'], $warranty_expire);
                 }
@@ -87,7 +88,7 @@ class SearchController extends Controller
 
                 if ($api_label === 'P') {
                     $sku_list = $response_json['assets'][0];
-                    $sku_list['serial_id'] = 'จะแสดงเมื่อแจ้งซ่อม';
+                    $sku_list['serial_id'] = '9999';
                     return [
                         'status' => true,
                         'data_from_api' => $responseJson,
@@ -134,7 +135,35 @@ class SearchController extends Controller
             ->where('job_id', $job_id)
             ->orderBy('id', 'desc')
             ->first();
+
+        $sp = [];
+        $listbehavior = [];
+
+        try {
+            $search_product_from_api = Http::post(env('VITE_API_ORDER'),[
+                'pid' => $findDetail['pid'],
+                'views' => 'single'
+            ]);
+            if ($search_product_from_api->successful()){
+                $search_product_from_api = $search_product_from_api->json();
+                if ($search_product_from_api['status'] == 'SUCCESS'){
+                    $sp = $search_product_from_api['assets'][0]['sp'];
+                    $listbehavior = $search_product_from_api['assets'][0]['listbehavior'];
+                }else{
+                    throw new \Exception('error');
+                }
+            }
+        }catch (\Exception $e){
+            $sp = [];
+            $listbehavior = [];
+        }
+
+        $findDetail['sp'] = $sp;
+        $findDetail['listbehavior'] = $listbehavior;
+
         if ($findDetail) {
+            $get_sku_and_behavior = [];
+            $pid = $findDetail['pid'];
             return $findDetail;
         } else {
             return [];

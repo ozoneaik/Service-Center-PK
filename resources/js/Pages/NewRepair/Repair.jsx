@@ -19,6 +19,7 @@ const menuNames = {
 };
 
 export default function Repair({DATA}) {
+    console.log('DATA ==> ', DATA)
     const [SN, setSN] = useState('');
     const [PID, setPID] = useState('');
     const [loading, setLoading] = useState(false);
@@ -47,6 +48,7 @@ export default function Repair({DATA}) {
             const {data, status} = await axios.post(route('repair.search'), {SN, PID});
             const combo_set = data.data.combo_set;
             const addWarranty = data.data.warranty_expire; // เก็บสถานะรับประกัน
+            console.log('Searching Product ==> ',data)
             if (combo_set) {
                 setOpenSelSku(true);
                 let sku_list = data.data.sku_list;
@@ -62,7 +64,6 @@ export default function Repair({DATA}) {
 
             setSN('');
         } catch (error) {
-            console.log(error)
             const errorMessage = error.response.data.message;
             const errorStatus = error.status;
             AlertDialog({
@@ -105,10 +106,10 @@ export default function Repair({DATA}) {
                                         imagesku={detail.imagesku || detail.image_sku}
                                         pname={detail.pname || detail.p_name}
                                         pid={detail.pid}
-                                        warranty_status={detail.warranty_status}
-                                        warrantycondition={detail.warrantycondition}
-                                        warrantynote={detail.warrantynote}
-                                        warrantyperiod={detail.warrantyperiod}
+                                        warranty_status={detail.warranty_status || detail.warranty}
+                                        warrantycondition={detail.warrantycondition || detail.warranty_condition || ''}
+                                        warrantynote={detail.warrantynote || detail.warranty_note || ''}
+                                        warrantyperiod={detail.warrantyperiod || detail.warranty_period || ''}
                                     />
                                 )}
                                 <Button fullWidth onClick={()=>setMiniSize(!miniSize)}>
@@ -124,6 +125,7 @@ export default function Repair({DATA}) {
                                     <PathDetail
                                         name={menuNames[menuSel] || 'อื่นๆ'}
                                         Sn={detail.serial || detail.serial_id}
+                                        job_id={detail.job_id} jobStatus={detail.status}
                                     />
                                     {menuSel === 1 &&
                                         <RpMain productDetail={detail} serial_id={detail.serial_id || detail.serial}/>}

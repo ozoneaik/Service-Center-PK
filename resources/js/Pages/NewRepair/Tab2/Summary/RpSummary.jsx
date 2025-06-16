@@ -11,8 +11,9 @@ import RpsSparePart from "@/Pages/NewRepair/Tab2/Summary/RpsSparePart.jsx";
 import SkeletonLoading from "@/Components/SkeletonLoading.jsx";
 import {CardComponent} from "@/Components/CardComponent.jsx";
 
-export default function RpSummary({JOB}) {
+export default function RpSummary({JOB,setMainStep,setJOB}) {
     const [loading, setLoading] = useState(false);
+    const [loadingSave, setLoadingSave] = useState(false);
     const [result, setResult] = useState({});
 
     useEffect(() => {
@@ -28,8 +29,10 @@ export default function RpSummary({JOB}) {
             }))
             setResult(data)
         } catch (error) {
+            const validation_errors = error.response?.data?.message || error.message;
+
             AlertDialog({
-                text: error.response.data.message || error.message,
+                text: validation_errors,
             });
         }
     }
@@ -41,15 +44,39 @@ export default function RpSummary({JOB}) {
             onPassed: async (confirm) => {
                 if (confirm) {
                     try {
+                        setLoadingSave(true);
                         const {data, status} = await axios.post(route('close-repair', {job_id: JOB.job_id}));
                         AlertDialog({
                             icon: 'success',
-                            text: data.message
+                            text: data.message,
+                            onPassed : () => {
+                                setJOB({...JOB, status: 'success'})
+                            }
                         })
                     } catch (error) {
+                        const validation_errors = error.response?.data?.message || error.message;
                         AlertDialog({
-                            text: error.response?.data?.message || error.message
+                            text: validation_errors,
+                            onPassed :(confirm) => {
+                                if (confirm) {
+                                    if (validation_errors === 'กรุณาบันทึกข้อมูลลูกค้าที่จำเป็นก่อน') {
+                                        setMainStep({step: 'before', sub_step: 0})
+                                    }else if(validation_errors === 'กรุณากรอกอาการเบื้องต้น'){
+                                        setMainStep({step: 'before', sub_step: 0})
+                                    }else if(validation_errors === 'กรุณาอัปโหลดไฟล์ สภาพสินค้าก่อนซ่อม'){
+                                        setMainStep({step: 'before', sub_step: 0})
+                                    }else if(validation_errors === 'กรุณากรอกอาการสาเหตุ'){
+                                        setMainStep({step: 'after', sub_step: 0})
+                                    }else if(validation_errors === 'กรุณากรอกอะไหล่'){
+                                        setMainStep({step: 'after', sub_step: 1})
+                                    }else if(validation_errors === 'สภาพสินค้าหลังซ่อม'){
+                                        setMainStep({step: 'after', sub_step: 3})
+                                    }
+                                }
+                            }
                         })
+                    }finally {
+                        setLoadingSave(false)
                     }
                 } else console.log('ไม่ได้กดตกลงในการปิดงานซ่อม')
             }
@@ -123,16 +150,20 @@ export default function RpSummary({JOB}) {
                     <Grid2 size={12}>
                         <Stack direction='row' justifyContent='end' spacing={2}>
                             <Button
+                                loading={loadingSave}
                                 variant='contained' color='error' startIcon={<Cancel/>}
                                 onClick={handleCancelJob}
+                                disabled={JOB.status !== 'pending'}
                             >
                                 ยกเลิกงานซ่อม
                             </Button>
                             <Button
+                                loading={loadingSave}
                                 variant='contained' startIcon={<Save/>}
                                 onClick={handleCloseJob}
+                                disabled={JOB.status !== 'pending'}
                             >
-                                ปิดงานซ่อม
+                                {JOB.status === 'success' ? 'ปิดงานซ่อมแล้ว' : 'ปิดงานซ่อม'}
                             </Button>
                         </Stack>
                     </Grid2>
