@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return redirect()->route(Auth::check() ? 'dashboard' : 'login');
+    return redirect()->route(Auth::check() ? 'repair.index' : 'login');
 });
 
 Route::get('/dashboard', [SearchController::class,'index'])->middleware(['auth', 'verified'])->name('dashboard');

@@ -53,7 +53,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
         console.log('newPrice', editData);
 
         // ถ้าราคาเป็น 0 ให้เปิด dialog สำหรับเคลม
-        if (newPrice === 0) {
+        if (newPrice === 0 && spcode !== 'SV001') {
             const spare = spSelected.find(sp => sp.spcode === spcode);
             setSelectedSpareForClaim(spare);
             setClaimDialog(true);
@@ -286,7 +286,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                 </TableCell>
                                                 <TableCell>{sp.spunit}</TableCell>
                                                 <TableCell>
-                                                    {isEditing ? (
+                                                {isEditing && sp.spcode !== 'SV001' ? (
                                                         <TextField
                                                             type="number"
                                                             size="small"
@@ -333,7 +333,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                         </IconButton>
                                                     ) : (
                                                         <IconButton
-                                                            disabled={sp.spcode === 'SV001'}
+                                                            // disabled={sp.spcode === 'SV001'}
                                                             color="primary"
                                                             onClick={() => handleEditSpare(sp.spcode)}
                                                             size="small"

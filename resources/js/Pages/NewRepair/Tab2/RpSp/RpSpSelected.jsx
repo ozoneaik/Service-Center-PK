@@ -125,7 +125,7 @@ export default function RpSpSelected({
                                     key={index}
                                     sx={{
                                         backgroundColor: JOB.warranty && (sp.sp_warranty === 'Y' || sp.warranty === 'Y') ? '#e8f5e8' :
-                                            (!sp.price_per_unit || sp.price_per_unit === '0') ? '#ffebee' : 'inherit'
+                                            (!sp.price_per_unit || sp.price_per_unit === '-') ? '#ffebee' : 'inherit'
                                     }}
                                 >
                                     <TableCell onClick={() => {
