@@ -33,7 +33,7 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
         $request->session()->regenerate();
         logStamp::query()->create(['description' => "มีการพยายามเข้าสู่ระบบ user_code =>  $request->user_code"]);
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended(route('repair.index', absolute: false));
     }
 
     /**
