@@ -22,6 +22,7 @@ export default function RpQu({JOB,setStepForm}) {
             }));
             console.log(data, status)
             setPathPdf(data.pathUrl)
+            window.open(data.pathUrl,'_blank');
         } catch (error) {
             console.log(error)
         }
@@ -58,20 +59,20 @@ export default function RpQu({JOB,setStepForm}) {
                     )}
                 </Stack>
             </Grid2>
-            <Grid2 size={12}>
-                {pathPdf && (
-                    <div style={{
-                        width: '100%',
-                        height: '100%',
-                        margin: 0,
-                        padding: 0,
-                    }}>
-                        <iframe src={pathPdf} style={{width: '100%', height: '500px'}} title="PDF Viewer">
-                            RpQu
-                        </iframe>
-                    </div>
-                )}
-            </Grid2>
+            {/*<Grid2 size={12}>*/}
+            {/*    {pathPdf && (*/}
+            {/*        <div style={{*/}
+            {/*            width: '100%',*/}
+            {/*            height: '100%',*/}
+            {/*            margin: 0,*/}
+            {/*            padding: 0,*/}
+            {/*        }}>*/}
+            {/*            <iframe src={pathPdf} style={{width: '100%', height: '500px'}} title="PDF Viewer">*/}
+            {/*                RpQu*/}
+            {/*            </iframe>*/}
+            {/*        </div>*/}
+            {/*    )}*/}
+            {/*</Grid2>*/}
                 {!pathPdf && (
             <Grid2 size={12}>
                 <Stack direction='row' justifyContent='end' onClick={()=>setStepForm(3)}>
