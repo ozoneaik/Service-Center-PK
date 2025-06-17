@@ -83,13 +83,13 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
                                     <Grid2 size={12}>
                                         <Stack direction='row' spacing={2}>
                                             {JOB.warranty && (
-                                                <Alert sx={{mb: 1}}
+                                                <Alert sx={{mb: 1,width : '100%'}}
                                                        icon={<PaletteIcon fontSize="inherit"/>} severity="success">
                                                     แถบสีเขียว คือ อะไหล่ที่อยู่ในรับประกัน
                                                 </Alert>
                                             )}
                                             <Alert icon={<PaletteIcon fontSize="inherit"/>}
-                                                   severity="error">
+                                                   severity="error" sx={{mb: 1,width : '100%'}}>
                                                 แถบสีแดง คือ อะไหล่ที่ยังไม่ถูกตั้งราคา
                                             </Alert>
                                         </Stack>

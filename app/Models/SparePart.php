@@ -43,7 +43,7 @@ class SparePart extends Model
                 'sp_name as spname',
                 'price_per_unit',
                 'qty',
-                'sp_warranty',
+                'sp_warranty as warranty',
                 'sp_unit as spunit',
                 'gp',
                 'price_multiple_gp',
@@ -57,10 +57,10 @@ class SparePart extends Model
             )
             ->get();
 
-        foreach ($spare_parts as $key=>$spare_part){
-            if ($spare_part['sp_warranty']){
-                $spare_part['sp_warranty'] = 'Y';
-            }else $spare_part['sp_warranty'] = 'N';
+        foreach ($spare_parts as $spare_part){
+            if ($spare_part['warranty']){
+                $spare_part['warranty'] = 'Y';
+            }else $spare_part['warranty'] = 'N';
         }
         return $spare_parts ?? [];
     }

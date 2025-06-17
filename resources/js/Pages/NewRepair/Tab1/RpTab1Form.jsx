@@ -172,7 +172,7 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMa
                                     )}
                                 >
                                     <CardContent>
-                                        <HeaderTitle headTitle='สภาพสินค้าก่อนซ่อม'/>
+                                        <HeaderTitle headTitle='ใบรับงานสินค้า'/>
                                         <RpWorkReceipt form1Saved={form1Saved} JOB={JOB}/>
                                     </CardContent>
                                 </Card>

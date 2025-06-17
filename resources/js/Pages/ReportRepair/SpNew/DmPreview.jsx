@@ -16,7 +16,8 @@ export default function DmPreview({detail}) {
             setLoading(true);
             const fac_model = detail.fac_model || '9999';
             const dm_type = detail.dm_type || 'DM01';
-            const {data} = await axios.get(`/image-dm/${detail.pid}/${fac_model}/${dm_type}`)
+            const {data} = await axios.get(route('dmImage',{pid : detail.pid,fac_model,dm_type}));
+            // const {data} = await axios.get(`/image-dm/${detail.pid}/${fac_model}/${dm_type}`)
             setDmPart(data);
         } catch (error) {
             console.error(error)

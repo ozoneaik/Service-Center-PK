@@ -56,17 +56,22 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
         // ถ้าราคาเป็น 0 ให้เปิด dialog สำหรับเคลม
         if (newPrice === 0 && spcode !== 'SV001') {
             const spare = spSelected.find(sp => sp.spcode === spcode);
-            setSelectedSpareForClaim(spare);
-            setClaimDialog(true);
-            return; // ออกจากฟังก์ชัน รอให้กรอกข้อมูลเคลม
+            console.log(spare)
+            if (!(spare.warranty === 'Y' && JOB.warranty)) {
+                setSelectedSpareForClaim(spare);
+                setClaimDialog(true);
+                return; // ออกจากฟังก์ชัน รอให้กรอกข้อมูลเคลม
+            }
         }
-
+        if (JOB.warranty && editData.warranty === 'Y' && newPrice === 0) {
+            alert('สินค้า อยู่ในประกัน และ สถานะ อะไห่ เป็น true และ ราคา เป็น 0');
+        }
         // ถ้าราคาไม่เป็น 0 ให้อัพเดทได้เลย
         const updatedSpares = spSelected.map(sp => {
             if (sp.spcode === spcode) {
                 return {
                     ...sp,
-                    spname : editData.spname,
+                    spname: editData.spname,
                     price_multiple_gp: newPrice,
                     qty: parseInt(editData.qty) || 1,
                     remark_noclaim: editData.remark_noclaim,
@@ -74,6 +79,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
             }
             return sp;
         });
+
 
         onUpdateSpSelected(updatedSpares);
 
@@ -88,6 +94,33 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
     // จัดการการเปลี่ยนแปลงข้อมูลในการแก้ไข
     const handleEditChange = (spcode, field, value) => {
         console.log(spcode, field, value);
+
+        // ถ้ามีการเปลี่ยนแปลง หมายเหตุของการไม่เคลม
+        if (field === 'remark_noclaim') {
+            if (value !== 'เคลมปกติ') {
+                const sp_sel = spSelected.find(sp => sp.spcode === spcode)
+                console.log(sp_sel)
+                setEditingSpares(prev => ({
+                    ...prev,
+                    [spcode]: {
+                        ...prev[spcode],
+                        price_multiple_gp: sp_sel.price_per_unit,
+                        [field]: value
+                    }
+                }));
+                return;
+            } else {
+                setEditingSpares(prev => ({
+                    ...prev,
+                    [spcode]: {
+                        ...prev[spcode],
+                        price_multiple_gp: 0,
+                        [field]: value
+                    }
+                }));
+                return;
+            }
+        }
         setEditingSpares(prev => ({
             ...prev,
             [spcode]: {
@@ -95,6 +128,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                 [field]: value
             }
         }));
+
     };
 
 
@@ -132,6 +166,12 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
         setSelectedSpareForClaim(null);
         setClaimData({claim: '', claim_remark: '', remark: ''});
     };
+
+    const handleCloseModal = (e, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+            return;
+        }
+    }
 
     // ปิด dialog เคลม
     const handleCloseClaimDialog = () => {
@@ -219,7 +259,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                         import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
                                     const isEditing = editingSpares[sp.spcode];
                                     const price_per_unit = parseFloat(sp.price_per_unit || 0);
-                                    const price_multiple_gp = parseFloat(sp.price_multiple_gp || sp.price_per_unit || 0);
+                                    const price_multiple_gp = parseFloat(sp.price_multiple_gp || 0);
                                     const qty = parseInt(sp.qty || 1);
                                     const totalPrice = price_multiple_gp * qty;
 
@@ -227,7 +267,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                         <React.Fragment key={index}>
 
                                             <TableRow
-                                                sx={{backgroundColor: JOB.warranty && (sp.sp_warranty === 'Y' || sp.warranty === 'Y') ? '#e8f5e8' : 'inherit'}}
+                                                sx={{backgroundColor: JOB.warranty && sp.warranty === 'Y' ? '#e8f5e8' : 'inherit'}}
                                             >
                                                 <TableCell
                                                     onClick={() => {
@@ -252,7 +292,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                             />
                                                         </>
                                                     ) : (
-                                                        <>({sp.spcode})&nbsp;{sp.spname}</>
+                                                        <>({sp.spcode})&nbsp;{sp.spname} {sp.warranty}</>
                                                     )}
                                                     {/*({sp.spcode})&nbsp;{sp.spname}*/}
                                                     {JOB.warranty && sp.remark_noclaim && (
@@ -278,7 +318,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                             )}
                                                         </div>
                                                     )}
-                                                    {(isEditing && JOB.warranty) && (
+                                                    {(isEditing && JOB.warranty && sp.warranty === 'Y') && (
                                                         <>
                                                             <br/>
                                                             <>หมายเหตุของการไม่เคลม (ไม่บังคับ)</>
@@ -286,10 +326,10 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                             <Select
                                                                 onChange={(e) => handleEditChange(sp.spcode, 'remark_noclaim', e.target.value)}
                                                                 size='small' name="remark_noclaim"
-                                                                defaultValue={sp.remark_noclaim || 'ไม่กรอก'}
+                                                                defaultValue={sp.remark_noclaim || 'เคลมปกติ'}
                                                                 id="no-claim">
-                                                                <MenuItem value={'ไม่กรอก'}>
-                                                                    ไม่กรอก
+                                                                <MenuItem value={'เคลมปกติ'}>
+                                                                    เคลมปกติ
                                                                 </MenuItem>
                                                                 <MenuItem value={'ลูกค้ามีการดัดแปลงสภาพเครื่องมา'}>
                                                                     ลูกค้ามีการดัดแปลงสภาพเครื่องมา
@@ -395,7 +435,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
             </Grid2>
 
             {/* Dialog สำหรับกรอกข้อมูลเคลม */}
-            <Dialog open={claimDialog} onClose={handleCloseClaimDialog} maxWidth="sm" fullWidth>
+            <Dialog open={claimDialog} onClose={handleCloseModal} maxWidth="sm" fullWidth>
                 <DialogTitle>
                     ระบุข้อมูลการเคลม
                     <Typography variant="body2" color="text.secondary">

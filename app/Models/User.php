@@ -28,7 +28,7 @@ class User extends Authenticatable
         'user_code',
     ];
 
-    public function username()
+    public function username(): string
     {
         return 'user_code';
     }

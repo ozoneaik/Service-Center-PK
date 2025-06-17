@@ -118,18 +118,6 @@
 
 <div class="divider"></div>
 
-<div class="section center">
-    <img class="qc-code" src="{{asset('line_qr_code.jpg')}}" alt="QR Code">
-    <div style="font-size: 14px;">@line : ศูนย์ซ่อม pumpkin</div>
-</div>
-
-<div class="divider"></div>
-
-<div class="section center" style="font-size: 14px;">
-    เอกสารนี้เป็นหลักฐานการรับสินค้าเพื่อส่งซ่อม<br>
-    กรุณาเก็บไว้เพื่อยืนยันตัวตน
-</div>
-
 <!-- ส่วนที่ 2: สำหรับลูกค้า -->
 <div class="page-break">
     <div class="center">

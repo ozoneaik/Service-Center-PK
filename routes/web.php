@@ -36,9 +36,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-
-
-
     // จัดการ Jobs
     require __DIR__ . '/jobs.php';
 
@@ -127,11 +124,13 @@ Route::get('/welcome', function () {
     ]);
 })->name('welcome');
 
-Route::post('/genQuPdf', [genQuPdfController::class, 'genQuPdf'])->name('genQuPdf');
-Route::get('/genReCieveSpPdf/{job_id}',[genQuPdfController::class,'genReCieveSpPdf'])->name('genReCieveSpPdf');
-Route::get('/image-dm/{pid}/{fag_model}/{dm_type}', [DmImageController::class, 'index'])->name('dmImage');
+//Route::post('/genQuPdf', [genQuPdfController::class, 'genQuPdf'])->name('genQuPdf');
+Route::get('/image-dm/{pid}/{fac_model}/{dm_type}', [DmImageController::class, 'index'])->name('dmImage');
+
 require __DIR__ . '/auth.php';
 require __DIR__ . '/fakeForTest.php';
+
+
 Route::get('/test-page',function(){
    return Inertia::render('Test/TestPage');
 });

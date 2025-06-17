@@ -36,12 +36,15 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected, JOB}) {
 
     const handleSpareCheck = (spare, checked) => {
         if (checked) {
+            console.log(spare)
+            const ZeroValue = (spare.warranty === 'Y' && JOB.warranty) ? 0 : spare.price_per_unit;
+            console.log(ZeroValue)
             // เพิ่มอะไหล่ใหม่ พร้อมกับ qty = 1
             setSelectedSpares(prev => [
                 ...prev, {
                     ...spare,
                     qty: 1,
-                    price_multiple_gp: spare.price_per_unit
+                    price_multiple_gp: ZeroValue
                 }
             ]);
         } else {

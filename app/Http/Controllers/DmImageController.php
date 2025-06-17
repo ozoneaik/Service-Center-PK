@@ -7,9 +7,9 @@ use Illuminate\Http\JsonResponse;
 
 class DmImageController extends Controller
 {
-    public function index($pid,$fag_model='9999',$dm_type = 'DM01'): JsonResponse
+    public function index($pid,$fac_model='9999',$dm_type = 'DM01'): JsonResponse
     {
-        if ($fag_model === '9999'){
+        if ($fac_model === '9999'){
             $data = ImageDiagram::query()
                 ->where('sku_code', $pid)
                 ->where('dm_type', $dm_type)
@@ -19,7 +19,7 @@ class DmImageController extends Controller
             $data = ImageDiagram::query()
                 ->where('sku_code', $pid)
                 ->where('dm_type', $dm_type)
-                ->where('fac_model', $fag_model)
+                ->where('fac_model', $fac_model)
                 ->orderBy('layer')
                 ->get();
         }
