@@ -81,7 +81,8 @@ class SearchController extends Controller
 
                 // หาว่าในระบบได้มีการลงทะเบียนรับประกันหรือไม่
                 $warranty_expire = $response_json['warrantyexpire'] ?? false;
-                if (isset($formData['sn'])) {
+                
+                if (isset($formData['sn']) && !$warranty_expire) {
                     $warranty_expire = $this->findWarranty($formData['sn'], $warranty_expire);
                 }
 
