@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\NewRepair\After;
 
 use App\Http\Controllers\Controller;
+use App\Models\CustomerInJob;
 use App\Models\SparePart;
 use Dflydev\DotAccessData\Data;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class RpAfSpSparePartController extends Controller
 {
@@ -72,13 +74,29 @@ class RpAfSpSparePartController extends Controller
                 ]);
             }
 
+
             DB::commit();
+
+            // ถ้า job มีการเลือกใบเสนอราคา
+            $full_file_path_qu = '';
+            $subremark1 = CustomerInJob::findByJobId($job_id);
+            if ($subremark1['subremark1']) {
+                $create_qu = app()->call('App\Http\Controllers\NewRepair\After\RpAfQuController@store', [
+                    'job_id' => $job_id,
+                ]);
+
+                $data = json_decode($create_qu->getContent(), true);
+
+                $full_file_path_qu = $data['full_file_path'];
+
+            }
             return response()->json([
                 'message' => 'success',
                 'error' => null,
                 'job_id' => $job_id,
                 'serial_id' => $serial_id,
                 'spare_parts' => $spare_parts,
+                'full_file_path_qu' => $full_file_path_qu,
                 'created' => $created,
             ]);
 

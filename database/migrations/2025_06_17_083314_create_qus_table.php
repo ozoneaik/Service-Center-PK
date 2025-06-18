@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('qus', function (Blueprint $table) {
             $table->id();
             $table->string('job_id')->comment('รหัสจ็อบ');
+            $table->string('file_name')->comment('ชือไฟล์');
             $table->string('file_path')->comment('ที่อยู่ไฟล์');
+            $table->integer('counter_print')->default(0)->comment('จำนวนการพิมพ์');
             $table->timestamps();
         });
     }

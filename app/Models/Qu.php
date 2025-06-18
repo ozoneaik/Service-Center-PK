@@ -9,15 +9,24 @@ class Qu extends Model
 {
     protected $fillable = [
         'job_id',
-        'path_file',
+        'file_name',
+        'file_path',
+        'counter_print'
     ];
+
+    protected $appends = ['full_file_path'];
 
 
     protected function fullFilePath(): Attribute
     {
         return Attribute::get(function () {
-            return asset('storage/' . $this->path_file);
+            return asset('storage/' . $this->file_path);
         });
+    }
+
+    public static function findByJobId($job_id){
+        $qu = Qu::query()->where('job_id', $job_id)->orderBy('created_at', 'desc')->get();;
+        return $qu ?? [];
     }
 
 

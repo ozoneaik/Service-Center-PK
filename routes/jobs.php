@@ -44,11 +44,11 @@ Route::prefix('repair')->group(function () {
             });
 
             Route::prefix('/qu')->group(function() {
-//               Route::get('/',[RpAfQuController::class,'index'])->name('repair.after.qu.index');
+               Route::get('/',[RpAfQuController::class,'index'])->name('repair.after.qu.index');
                Route::post('/',[RpAfQuController::class,'store'])->name('repair.after.qu.store');
             });
 
-            Route::post('/gen-qu',[RpAfQuController::class,'index'])->name('repair.after.qu.index');
+//            Route::post('/gen-qu',[RpAfQuController::class,'index'])->name('repair.after.qu.index');
 
             Route::prefix('/file-upload')->group(function () {
                 Route::get('/',[RpAfFileUploadController::class,'index'])->name('repair.after.file-upload.index');

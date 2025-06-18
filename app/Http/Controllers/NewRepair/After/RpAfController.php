@@ -20,14 +20,11 @@ class RpAfController extends Controller
         $check_subremark1 = CustomerInJob::query()->where('job_id', $job_id)->first();
         if ($check_behaviours !== null) {
             $step = 1; // ไปยัง step เลือกรายการอะไหล่
-        }else{
-            if ($check_subremark1['subremark1']){
-                $step = 1;
-            }
         }
+
         $check_sp = SparePart::search($job_id);
         if ($check_sp !== null) {
-            $step = 2; // ไปยัง step ใบนำเสนอราคา
+            $step = 2; // ไปยังสภานสินค้าหลังซ่อม
         }
         $check_upload_after_file = FileUpload::search($job_id, 2);
         if ($check_upload_after_file !== null) {
@@ -36,7 +33,7 @@ class RpAfController extends Controller
 
         if ($check_subremark1['subremark1']) {
             $subremark1 = true;
-        }else{
+        } else {
             $subremark1 = false;
         }
         return response()->json([

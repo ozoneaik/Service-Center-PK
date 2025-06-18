@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\FileUpload;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
@@ -18,7 +19,7 @@ class RpAfFileUploadController extends Controller
 
         // แก้ไข: เปลี่ยนจาก findByJobIdBefore เป็น findByJobIdAfter หรือใช้ menu_id = 2
         $file_afters = FileUpload::where('job_id', $job_id)
-            ->where('menu_id', 2) // menu_id = 2 สำหรับไฟล์หลังซ่อม
+            ->whereIn('menu_id', [2,3,4,5]) // menu_id = 2 สำหรับไฟล์หลังซ่อม
             ->get()
             ->map(function ($file) {
                 return [
@@ -29,6 +30,7 @@ class RpAfFileUploadController extends Controller
                     'full_file_path' => Storage::url($file->file_path),
                     'file_path' => $file->file_path,
                     'created_at' => $file->created_at,
+                    'menu_id' => $file->menu_id,
                 ];
             });
 
@@ -57,6 +59,7 @@ class RpAfFileUploadController extends Controller
         }
 
         try {
+            DB::beginTransaction();
             $stored_files = [];
             $keep = [];
 
@@ -90,7 +93,7 @@ class RpAfFileUploadController extends Controller
                     $file_record = FileUpload::create([
                         'serial_id' => $serial_id,
                         'job_id' => $job_id,
-                        'menu_id' => 2, // 2 = หลังซ่อม
+                        'menu_id' => $file_data['menu_id'],
                         'file_path' => $file_path,
                     ]);
 
@@ -98,7 +101,7 @@ class RpAfFileUploadController extends Controller
                         'id' => $file_record->id,
                         'serial_id' => $serial_id,
                         'job_id' => $job_id,
-                        'menu_id' => 2,
+                        'menu_id' => $file_data['menu_id'],
                         'file_path' => $file_path,
                         'full_file_path' => Storage::url($file_path),
                         'name' => $new_filename,
@@ -110,6 +113,8 @@ class RpAfFileUploadController extends Controller
                 } elseif (isset($file_data['id']) && is_numeric($file_data['id'])) {
                     // ไฟล์เดิมที่มีอยู่แล้ว - เก็บไว้
                     $existing_file = FileUpload::find($file_data['id']);
+                    $existing_file['menu_id'] = $file_data['menu_id'];
+                    $existing_file->save();
                     if ($existing_file) {
                         $stored_files[] = [
                             'id' => $existing_file->id,
@@ -124,6 +129,8 @@ class RpAfFileUploadController extends Controller
                 }
             }
 
+            DB::commit();
+
             return response()->json([
                 'message' => 'บันทึกไฟล์สำเร็จ',
                 'error' => null,
@@ -134,6 +141,7 @@ class RpAfFileUploadController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('File upload error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -161,7 +169,7 @@ class RpAfFileUploadController extends Controller
     {
         // หาไฟล์ที่ต้องลบ
         $files_to_delete = FileUpload::where('job_id', $job_id)
-            ->where('menu_id', 2) // เฉพาะไฟล์หลังซ่อม
+            ->whereIn('menu_id', [2,3,4,5]) // เฉพาะไฟล์หลังซ่อม
             ->when(!empty($keep), function ($query) use ($keep) {
                 return $query->whereNotIn('id', $keep);
             })

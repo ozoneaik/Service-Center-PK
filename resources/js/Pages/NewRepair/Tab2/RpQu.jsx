@@ -1,18 +1,29 @@
 import {useEffect, useState} from "react";
-import {Button, CircularProgress, Grid2, Stack} from "@mui/material";
+import {Button, CircularProgress, Grid2, Stack, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
 import {ArrowRight, Assignment, Download} from "@mui/icons-material";
+import {DateFormat, DateFormatTh} from "@/Components/DateFormat.jsx";
 
-export default function RpQu({JOB,setStepForm}) {
-
-    console.log('JOB => ', JOB)
+export default function RpQu({JOB, setStepForm}) {
 
     const [loading, setLoading] = useState(false);
-
     const [pathPdf, setPathPdf] = useState();
+    const [qus, setQus] = useState([]);
+
 
     useEffect(() => {
-        // fetchDataSparePart().finally(() => setLoading(false));
+        fetchData().finally(() => setLoading(false));
     }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const {data, status} = await axios.get(route('repair.after.qu.index', {job_id: JOB.job_id}));
+            console.log(data, status)
+            setQus(data.list)
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     const fetchDataSparePart = async () => {
         try {
@@ -21,8 +32,8 @@ export default function RpQu({JOB,setStepForm}) {
                 job_id: JOB.job_id,
             }));
             console.log(data, status)
-            setPathPdf(data.pathUrl)
-            window.open(data.pathUrl,'_blank');
+            setPathPdf(data.full_file_path)
+            window.open(data.full_file_path, '_blank');
         } catch (error) {
             console.log(error)
         }
@@ -45,42 +56,62 @@ export default function RpQu({JOB,setStepForm}) {
     return (
         <Grid2 container spacing={2}>
             <Grid2 size={12}>
-                <Stack direction={{sm : 'row' , xs : 'column'}} justifyContent={{sm : 'space-between' , xs : 'start'}} gap={2}>
+                <Stack direction={{sm: 'row', xs: 'column'}} justifyContent={{sm: 'space-between', xs: 'start'}}
+                       gap={2}>
                     <Button loading={loading} variant='contained' startIcon={<Assignment/>} onClick={getQuotation}>
                         {loading ? 'กำลังสร้างใบเสนอราคา' : 'สร้างใบเสนอราคา'}
                     </Button>
-                    {pathPdf && (
-                        <Button
-                            variant='contained' startIcon={<Download/>}
-                            id='download' color='success' onClick={downloadFile}
-                        >
-                            ดาวน์โหลด
-                        </Button>
-                    )}
+                    <Button
+                        variant='contained' startIcon={<Download/>}
+                        id='download' color='success' onClick={downloadFile}
+                    >
+                        ดาวน์โหลดไฟล์สุด
+                    </Button>
                 </Stack>
             </Grid2>
-            {/*<Grid2 size={12}>*/}
-            {/*    {pathPdf && (*/}
-            {/*        <div style={{*/}
-            {/*            width: '100%',*/}
-            {/*            height: '100%',*/}
-            {/*            margin: 0,*/}
-            {/*            padding: 0,*/}
-            {/*        }}>*/}
-            {/*            <iframe src={pathPdf} style={{width: '100%', height: '500px'}} title="PDF Viewer">*/}
-            {/*                RpQu*/}
-            {/*            </iframe>*/}
-            {/*        </div>*/}
-            {/*    )}*/}
-            {/*</Grid2>*/}
-                {!pathPdf && (
-            <Grid2 size={12}>
-                <Stack direction='row' justifyContent='end' onClick={()=>setStepForm(3)}>
-                    <Button variant='contained' color='secondary' endIcon={<ArrowRight/>}>ไปยังฟอร์ม สภาพสินค้าหลังซ่อม</Button>
-                </Stack>
-            </Grid2>
-                )}
+            {!loading && (
+                <Grid2 size={12} sx={{bgcolor: 'white'}}>
+                    <Table stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>ชื่อไฟล์ ใบเสนอราคา</TableCell>
+                                <TableCell>สร้างเมื่อ</TableCell>
+                                <TableCell align='right'>จำนวนดาวน์โหลด</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {qus.length > 0 ? (
+                                <>
+                                    {qus.map((qu, index) => (
+                                        <TableRow key={index}>
+                                            <TableCell>
+                                                <a href={qu.full_file_path} target='_blank'>
+                                                    {qu.file_name}
+                                                </a>
+                                                {/*<a href={qu.pull_file_path} target='_blank'>*/}
+                                                {/*    {qu.file_name} {qu.path_file}*/}
+                                                {/*</a>*/}
+                                            </TableCell>
+                                            <TableCell>{DateFormatTh({date : qu.created_at})}</TableCell>
+                                            <TableCell align='right'>{qu.counter_print}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </>
+                            ) : (
+                                <TableRow>
+                                    <TableCell align='center' colSpan={3}>ไม่พบรายการ</TableCell>
+                                </TableRow>
+                            )}
 
+                        </TableBody>
+                    </Table>
+                </Grid2>
+            )}
+            <Grid2 size={12}>
+                <Stack direction='row' justifyContent='end' onClick={() => setStepForm(3)}>
+                    <Button variant='contained' color='secondary' endIcon={<ArrowRight/>}>ถัดไป</Button>
+                </Stack>
+            </Grid2>
         </Grid2>
     )
 }

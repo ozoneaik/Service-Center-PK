@@ -187,20 +187,13 @@ function RowTable(props) {
                         </TableCell>
                         <TableCell>
                             {'('}{sp.spcode}{')'}&nbsp;{sp.spname}
-                            {sp.remark_noclaim && (
-                                <p style={{color: 'gray', fontSize: 10}}>
-                                    สาเหตุของการไม่เคม : {sp.remark_noclaim}
-                                </p>
+                            {sp.remark_noclaim &&
+                                <TextDetailDesktop label='สาเหตุของการไม่เคม' value={sp.remark_noclaim}/>}
+                            {(parseFloat(sp.price_multiple_gp) === 0 && sp.claim_remark) && (
+                                <TextDetailDesktop label='เคลม' value={sp.claim_remark}/>
                             )}
-                            {parseFloat(sp.price_multiple_gp) === 0 && (
-                                <>
-                                    <p style={{color: 'gray', fontSize: 10}}>
-                                        เคลม : {sp.claim_remark}
-                                    </p>
-                                    <p style={{color: 'gray', fontSize: 10}}>
-                                        หมายเหตุ : {sp.remark}
-                                    </p>
-                                </>
+                            {(parseFloat(sp.price_multiple_gp) === 0 && sp.remark) && (
+                                <TextDetailDesktop label='หมายเหตุ' value={sp.remark}/>
                             )}
                         </TableCell>
                         <TableCell>{sp.qty || 1}</TableCell>
@@ -256,6 +249,12 @@ function RowTable(props) {
 const TextDetail = ({label, value}) => (
     <Typography sx={breakWord}>
         <span style={{fontWeight: 'bold', color: '#f15922'}}>{label}</span>: {value}
+    </Typography>
+)
+
+const TextDetailDesktop = ({label, value}) => (
+    <Typography sx={breakWord} fontSize={10} color={'gray'}>
+        <span style={{fontWeight : 'bold'}}>{label}</span>: {value}
     </Typography>
 )
 

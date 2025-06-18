@@ -23,7 +23,7 @@ class RpAfSummaryController extends Controller
         $behaviours = Behavior::findByJob($job_id);
         $file_uploads = [
             'file_befores' => FileUpload::findByJobIdBefore($job_id,1),
-            'file_afters' => FileUpload::findByJobIdBefore($job_id,2),
+            'file_afters' => FileUpload::query()->where('job_id',$job_id)->whereIn('menu_id',[2,3,4,5])->get() ?? []
         ];
         $symptoms = Symptom::findByJobId($job_id);
         $remark = Remark::findByJobId($job_id);

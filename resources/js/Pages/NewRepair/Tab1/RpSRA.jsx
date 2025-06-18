@@ -15,7 +15,7 @@ export default function RpSRA({data, setData,form1Saved}) {
             <FormControl>
                 <FormLabel required>กรอกอาการเบื้องต้น</FormLabel>
                 <TextField
-                    disabled={form1Saved}
+                    // disabled={form1Saved}
                     value={data.remark_symptom_accessory?.symptom || ''}
                     multiline minRows={3} sx={{bgcolor: 'white'}}
                     id='symptom' name='symptom' size='small'
@@ -27,7 +27,7 @@ export default function RpSRA({data, setData,form1Saved}) {
             <FormControl>
                 <FormLabel>หมายเหตุอุปกรณ์เสริม</FormLabel>
                 <TextField
-                    disabled={form1Saved}
+                    // disabled={form1Saved}
                     value={data.remark_symptom_accessory?.accessory || ''}
                     multiline minRows={3} sx={{bgcolor: 'white'}}
                     id='accessory' name='accessory' size='small'
@@ -39,7 +39,7 @@ export default function RpSRA({data, setData,form1Saved}) {
             <FormControl>
                 <FormLabel>หมายเหตุสำหรับสื่อสารภายในศูนย์ซ่อม</FormLabel>
                 <TextField
-                    disabled={form1Saved}
+                    // disabled={form1Saved}
                     value={data.remark_symptom_accessory?.remark || ''}
                     multiline minRows={3} sx={{bgcolor: 'white'}}
                     id='remark' name='remark' size='small'

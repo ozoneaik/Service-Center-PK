@@ -25,7 +25,7 @@ export default function RpCustomerForm({data, setData,form1Saved}) {
             <FormControl>
                 <FormLabel required>เบอร์โทรศัพท์</FormLabel>
                 <TextField
-                    disabled={form1Saved}
+                    // disabled={form1Saved}
                     value={data.customer?.phone || ''}
                     id='phone' name='phone' size='small'
                     placeholder='ตัวอย่าง : 081-234-5678' type='number'
@@ -36,7 +36,7 @@ export default function RpCustomerForm({data, setData,form1Saved}) {
             <FormControl>
                 <FormLabel required>ชื่อ-นามสกุล</FormLabel>
                 <TextField
-                    disabled={form1Saved}
+                    // disabled={form1Saved}
                     value={data.customer?.name || ''}
                     id='name' name='name' size='small'
                     placeholder='ตัวอย่าง : มานี มานะ'
@@ -47,7 +47,7 @@ export default function RpCustomerForm({data, setData,form1Saved}) {
             <FormControl>
                 <FormLabel>ที่อยู่</FormLabel>
                 <TextField
-                    disabled={form1Saved}
+                    // disabled={form1Saved}
                     value={data.customer?.address || ''}
                     multiline minRows={3}
                     sx={{bgcolor: 'white'}}
@@ -63,7 +63,7 @@ export default function RpCustomerForm({data, setData,form1Saved}) {
                 <Stack direction={{md: 'row', sm: 'column'}} spacing={1}>
                     <FormControlLabel control={
                         <Checkbox
-                            disabled={form1Saved}
+                            // disabled={form1Saved}
                             name='subremark1' id='subremark1'
                             checked={Boolean(data.customer?.subremark1)}
                             onChange={handleChecked}
@@ -71,7 +71,7 @@ export default function RpCustomerForm({data, setData,form1Saved}) {
                     } label="เสนอราคาก่อนซ่อม"/>
                     <FormControlLabel control={
                         <Checkbox
-                            disabled={form1Saved}
+                            // disabled={form1Saved}
                             name='subremark2' id='subremark2'
                             checked={Boolean(data.customer?.subremark2)}
                             onChange={handleChecked}
@@ -79,7 +79,7 @@ export default function RpCustomerForm({data, setData,form1Saved}) {
                     } label="ซ่อมเสร็จส่งกลับทางไปรษณีย์"/>
                     <FormControlLabel control={
                         <Checkbox
-                            disabled={form1Saved}
+                            // disabled={form1Saved}
                             name='subremark3' id='subremark3'
                             checked={Boolean(data.customer?.subremark3)}
                             onChange={handleChecked}
@@ -88,7 +88,7 @@ export default function RpCustomerForm({data, setData,form1Saved}) {
                 </Stack>
                 {data.customer?.subremark3 && (
                     <TextField
-                        disabled={form1Saved}
+                        // disabled={form1Saved}
                         value={data.customer?.remark || ''}
                         multiline minRows={3}
                         sx={{bgcolor: 'white'}}

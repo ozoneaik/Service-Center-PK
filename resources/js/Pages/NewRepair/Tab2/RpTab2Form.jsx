@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import Checkbox from '@mui/material/Checkbox';
 import {HeaderTitle} from "@/Pages/NewRepair/HeaderCardTitle.jsx";
-import {ArrowLeft, ArrowRight, Cancel, Check, Done, Save} from "@mui/icons-material";
+import {ArrowLeft, ArrowRight, Cancel, Check, Done, Download, Save} from "@mui/icons-material";
 import {useEffect, useState} from "react";
 import RpBehaviorForm from "@/Pages/NewRepair/Tab2/RpBehaviorForm.jsx";
 import RpSpMain from "@/Pages/NewRepair/Tab2/RpSp/RpSpMain.jsx";
@@ -93,10 +93,18 @@ export default function RpTab2Form({productDetail, JOB, setMainStep, MainStep, s
             {loading ? (<CircularProgress/>) : (
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
-                        <Stack direction='row' justifyContent='start'>
-
+                        <Stack direction={{sm : 'column', md :'row'}} justifyContent='space-between'>
                             <FormControlLabel disabled control={<Checkbox checked={subremark1}/>} label={'ใบเสนอราคา'}/>
                             {/*<button onClick={() => console.log(stepForm)}>stepForm</button>*/}
+                            <Stack direction='row' spacing={2}>
+                                <Button fullWidth variant='outlined' size='small' color='secondary' startIcon={<Download/>}>
+                                    ใบรับงานสินค้า
+                                </Button>
+                                <Button fullWidth variant='outlined' size='small' startIcon={<Download/>}>
+                                    ใบเสนอราคา
+                                </Button>
+                            </Stack>
+
                         </Stack>
                     </Grid2>
                     <Grid2 size={12} className='stepper'>
@@ -150,7 +158,7 @@ export default function RpTab2Form({productDetail, JOB, setMainStep, MainStep, s
                                     {/*content here*/}
                                     <RpSpMain
                                         productDetail={productDetail} listSparePart={listSparePart}
-                                        setStepForm={setStepForm} JOB={JOB}
+                                        setStepForm={setStepForm} JOB={JOB} subremark1={subremark1}
                                     />
                                 </CardContent>
                             </Card>

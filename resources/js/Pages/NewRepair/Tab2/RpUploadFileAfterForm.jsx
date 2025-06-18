@@ -1,7 +1,20 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useDropzone} from "react-dropzone";
 import {
-    Alert, Box, Button, Card, CardActions, CardContent, CardMedia, Chip, Grid2, IconButton, Paper, Stack,
+    Alert,
+    Box,
+    Button,
+    Card,
+    CardActions,
+    CardContent,
+    CardMedia,
+    Chip,
+    Grid2,
+    IconButton,
+    MenuItem,
+    Paper,
+    Select,
+    Stack,
     Typography
 } from "@mui/material";
 import {
@@ -16,7 +29,7 @@ import {
 import {FileUploading} from "@/Components/FileUploading.jsx";
 import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
 
-export default function RpUploadFileAfterForm({productDetail, JOB,setStepForm}) {
+export default function RpUploadFileAfterForm({productDetail, JOB, setStepForm}) {
     const {data, setData} = useForm({});
     const [files, setFiles] = useState([]);
     const [uploading, setUploading] = useState(false);
@@ -43,7 +56,6 @@ export default function RpUploadFileAfterForm({productDetail, JOB,setStepForm}) 
         }
     }
 
-    // Initialize files from data (only once)
     useEffect(() => {
         if (data.file_afters && Array.isArray(data.file_afters) && !initializedRef.current) {
             setFiles(data.file_afters);
@@ -57,7 +69,6 @@ export default function RpUploadFileAfterForm({productDetail, JOB,setStepForm}) 
 
     useEffect(() => {
         if (initializedRef.current && filesString !== dataFilesString) {
-            // แก้ไข: ใช้ file_afters แทน file_befores
             setData('file_afters', files);
         }
     }, [filesString, dataFilesString, setData, files]);
@@ -102,7 +113,8 @@ export default function RpUploadFileAfterForm({productDetail, JOB,setStepForm}) 
             id: Math.random().toString(36).substr(2, 9),
             name: file.name,
             size: file.size,
-            type: file.type
+            type: file.type,
+            menu_id: 2
         }));
 
         setFiles(prev => [...prev, ...filesWithPreview]);
@@ -182,7 +194,8 @@ export default function RpUploadFileAfterForm({productDetail, JOB,setStepForm}) 
                                     id: fileItem.id,
                                     name: fileItem.name,
                                     size: fileItem.size,
-                                    type: fileItem.type
+                                    type: fileItem.type,
+                                    menu_id : fileItem.menu_id
                                 };
                             } else {
                                 // ไฟล์เดิมที่มีอยู่แล้ว
@@ -190,7 +203,8 @@ export default function RpUploadFileAfterForm({productDetail, JOB,setStepForm}) 
                                     id: fileItem.id,
                                     name: fileItem.name || getFileName(fileItem),
                                     size: fileItem.size || getFileSize(fileItem),
-                                    type: fileItem.type || getFileType(fileItem)
+                                    type: fileItem.type || getFileType(fileItem),
+                                    menu_id : fileItem.menu_id
                                 };
                             }
                         });
@@ -216,7 +230,7 @@ export default function RpUploadFileAfterForm({productDetail, JOB,setStepForm}) 
                         AlertDialog({
                             icon: 'success',
                             text: data.message,
-                            onPassed : () => setStepForm(4)
+                            onPassed: () => setStepForm(4)
                         });
 
                     } catch (error) {
@@ -233,7 +247,20 @@ export default function RpUploadFileAfterForm({productDetail, JOB,setStepForm}) 
                 }
             }
         });
-        console.log('Current files:', files);
+    }
+
+    const handleChangeMenu = (file_id, menu_id) => {
+        const updateFile  = files.find(file => file.id === file_id)
+        updateFile.menu_id = menu_id
+        setFiles(prev => {
+            const updated = prev.map(f => {
+                if (f.id === file_id) {
+                    return updateFile
+                }
+                return f
+            })
+            return updated;
+        })
     }
 
     return (
@@ -285,7 +312,7 @@ export default function RpUploadFileAfterForm({productDetail, JOB,setStepForm}) 
                                             <Typography variant="caption" color="text.secondary">
                                                 {fileSize > 0 ? formatFileSize(fileSize) : 'Unknown size'}
                                             </Typography>
-                                            <Box sx={{mt: 1}}>
+                                            <Box sx={{my: 1}}>
                                                 <Chip
                                                     icon={isImage ? <ImageIcon/> : <VideoFileIcon/>}
                                                     label={isImage ? 'รูปภาพ' : 'วิดีโอ'}
@@ -293,16 +320,29 @@ export default function RpUploadFileAfterForm({productDetail, JOB,setStepForm}) 
                                                     color={isImage ? 'primary' : 'secondary'}
                                                 />
                                             </Box>
+                                            <Select
+                                                fullWidth size='small' variant='outlined'
+                                                value={fileObj.menu_id}
+                                                onChange={(e) => handleChangeMenu(fileObj.id, e.target.value)}
+                                            >
+                                                <MenuItem value={2}>สภาพสินค้าหลังซ่อม</MenuItem>
+                                                <MenuItem value={3}>ภาพอะไหล่ที่เสียส่งเคลม</MenuItem>
+                                                <MenuItem value={4}>ภาพอะไหล่ที่เปลี่ยน</MenuItem>
+                                                <MenuItem value={5}>ภาพอะไหล่เสี่ยอื่นๆ</MenuItem>
+                                            </Select>
                                         </CardContent>
 
                                         <CardActions sx={{pt: 0}}>
-                                            <IconButton
+                                            <Button
+                                                fullWidth
+                                                startIcon={<DeleteIcon/>}
+                                                variant='contained'
                                                 onClick={() => removeFile(fileObj.id)}
                                                 color="error"
                                                 size="small"
                                             >
-                                                <DeleteIcon/>
-                                            </IconButton>
+                                                ลบ
+                                            </Button>
                                         </CardActions>
                                     </Card>
                                 </Grid2>

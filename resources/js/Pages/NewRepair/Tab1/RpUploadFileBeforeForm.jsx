@@ -147,11 +147,15 @@ export default function RpUploadFileBeforeForm({data, setData, form1Saved}) {
             {files.length > 0 && (
                 <Box sx={{mb: 3}}>
                     <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2}}>
+                        {/*<Typography variant="h6">*/}
+                        {/*    ไฟล์ที่เลือก ({files.length} ไฟล์)*/}
+                        {/*</Typography>*/}
                         <Typography variant="h6">
-                            ไฟล์ที่เลือก ({files.length} ไฟล์)
+                            ควรอัปโหลดอย่างน้อย 1 ไฟล์
                         </Typography>
+                        {/*<Typography variant='body1'>ควรอัปโหลดอย่างน้อย 1 ไฟล์</Typography>*/}
                         <Button
-                            disabled={form1Saved}
+                            // disabled={form1Saved}
                             onClick={clearAllFiles}
                             color="error"
                             size="small"
@@ -217,7 +221,7 @@ export default function RpUploadFileBeforeForm({data, setData, form1Saved}) {
 
                                         <CardActions sx={{pt: 0}}>
                                             <IconButton
-                                                disabled={form1Saved}
+                                                // disabled={form1Saved}
                                                 onClick={() => removeFile(fileObj.id)}
                                                 color="error"
                                                 size="small"
@@ -233,67 +237,67 @@ export default function RpUploadFileBeforeForm({data, setData, form1Saved}) {
                 </Box>
             )}
 
-            {!form1Saved && (
-                <>
+            {/*{!form1Saved && (*/}
+            {/*    <>*/}
 
-                    <Paper
-                        {...getRootProps()}
-                        sx={{
-                            p: 3,
-                            textAlign: 'center',
-                            cursor: 'pointer',
-                            border: '2px dashed',
-                            borderColor: isDragActive ? 'primary.main' : 'grey.300',
-                            bgcolor: isDragActive ? 'primary.50' : 'grey.50',
-                            '&:hover': {
-                                borderColor: 'primary.main',
-                                bgcolor: 'primary.50'
-                            }
-                        }}
-                        elevation={0}
-                    >
-                        <input {...getInputProps()} />
-                        <CloudUploadIcon
-                            sx={{
-                                fontSize: 48,
-                                color: 'primary.main',
-                                mb: 2
-                            }}
-                        />
-                        <Typography variant="h6" gutterBottom>
-                            {isDragActive ? 'วางไฟล์ที่นี่...' : 'ลากไฟล์มาวาง หรือคลิกเพื่อเลือกไฟล์'}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            รองรับไฟล์รูปภาพและวิดีโอ ขนาดไม่เกิน 5MB ต่อไฟล์
-                        </Typography>
-                        <Box sx={{mt: 2}}>
-                            <Chip label="รูปภาพ: JPG, PNG, GIF, WebP, BMP, SVG" size="small" sx={{mr: 1, mb: 1}}/>
-                            <Chip label="วิดีโอ: MP4, AVI, MOV, WMV, FLV, WebM, MKV" size="small" sx={{mb: 1}}/>
-                        </Box>
-                    </Paper>
+            {/*        <Paper*/}
+            {/*            {...getRootProps()}*/}
+            {/*            sx={{*/}
+            {/*                p: 3,*/}
+            {/*                textAlign: 'center',*/}
+            {/*                cursor: 'pointer',*/}
+            {/*                border: '2px dashed',*/}
+            {/*                borderColor: isDragActive ? 'primary.main' : 'grey.300',*/}
+            {/*                bgcolor: isDragActive ? 'primary.50' : 'grey.50',*/}
+            {/*                '&:hover': {*/}
+            {/*                    borderColor: 'primary.main',*/}
+            {/*                    bgcolor: 'primary.50'*/}
+            {/*                }*/}
+            {/*            }}*/}
+            {/*            elevation={0}*/}
+            {/*        >*/}
+            {/*            <input {...getInputProps()} />*/}
+            {/*            <CloudUploadIcon*/}
+            {/*                sx={{*/}
+            {/*                    fontSize: 48,*/}
+            {/*                    color: 'primary.main',*/}
+            {/*                    mb: 2*/}
+            {/*                }}*/}
+            {/*            />*/}
+            {/*            <Typography variant="h6" gutterBottom>*/}
+            {/*                {isDragActive ? 'วางไฟล์ที่นี่...' : 'ลากไฟล์มาวาง หรือคลิกเพื่อเลือกไฟล์'}*/}
+            {/*            </Typography>*/}
+            {/*            <Typography variant="body2" color="text.secondary">*/}
+            {/*                รองรับไฟล์รูปภาพและวิดีโอ ขนาดไม่เกิน 5MB ต่อไฟล์*/}
+            {/*            </Typography>*/}
+            {/*            <Box sx={{mt: 2}}>*/}
+            {/*                <Chip label="รูปภาพ: JPG, PNG, GIF, WebP, BMP, SVG" size="small" sx={{mr: 1, mb: 1}}/>*/}
+            {/*                <Chip label="วิดีโอ: MP4, AVI, MOV, WMV, FLV, WebM, MKV" size="small" sx={{mb: 1}}/>*/}
+            {/*            </Box>*/}
+            {/*        </Paper>*/}
 
-                    {/* Error Messages */}
-                    {errors.length > 0 && (
-                        <Alert severity="error" sx={{mt: 2}}>
-                            <ul style={{margin: 0, paddingLeft: 20}}>
-                                {errors.map((error, index) => (
-                                    <li key={index}>{error}</li>
-                                ))}
-                            </ul>
-                        </Alert>
-                    )}
+            {/*        /!* Error Messages *!/*/}
+            {/*        {errors.length > 0 && (*/}
+            {/*            <Alert severity="error" sx={{mt: 2}}>*/}
+            {/*                <ul style={{margin: 0, paddingLeft: 20}}>*/}
+            {/*                    {errors.map((error, index) => (*/}
+            {/*                        <li key={index}>{error}</li>*/}
+            {/*                    ))}*/}
+            {/*                </ul>*/}
+            {/*            </Alert>*/}
+            {/*        )}*/}
 
-                    {/* Success Message */}
-                    {success && (
-                        <Alert severity="success" sx={{mt: 2}}>
-                            {success}
-                        </Alert>
-                    )}
+            {/*        /!* Success Message *!/*/}
+            {/*        {success && (*/}
+            {/*            <Alert severity="success" sx={{mt: 2}}>*/}
+            {/*                {success}*/}
+            {/*            </Alert>*/}
+            {/*        )}*/}
 
-                    {/* Upload Progress */}
-                    {uploading && <FileUploading uploadProgress={uploadProgress}/>}
-                </>
-            )}
+            {/*        /!* Upload Progress *!/*/}
+            {/*        {uploading && <FileUploading uploadProgress={uploadProgress}/>}*/}
+            {/*    </>*/}
+            {/*)}*/}
         </Box>
     );
 }

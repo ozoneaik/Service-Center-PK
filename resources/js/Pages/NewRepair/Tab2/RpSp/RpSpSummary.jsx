@@ -18,6 +18,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
     const [editingSpares, setEditingSpares] = useState({});
     const [claimDialog, setClaimDialog] = useState(false);
     const [selectedSpareForClaim, setSelectedSpareForClaim] = useState(null);
+    const [loading, setLoading] = useState(false);
     const [claimData, setClaimData] = useState({
         claim: '', claim_remark: '', remark: ''
     });
@@ -47,49 +48,51 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
 
     // บันทึกการแก้ไข
     const handleSaveEdit = (spcode) => {
-        const editData = editingSpares[spcode];
-        if (!editData) return;
+            const editData = editingSpares[spcode];
+            if (!editData) return;
 
-        const newPrice = parseFloat(editData.price_multiple_gp);
-        console.log('newPrice', editData);
+            const newPrice = parseFloat(editData.price_multiple_gp);
 
-        // ถ้าราคาเป็น 0 ให้เปิด dialog สำหรับเคลม
-        if (newPrice === 0 && spcode !== 'SV001') {
-            const spare = spSelected.find(sp => sp.spcode === spcode);
-            console.log(spare)
-            if (!(spare.warranty === 'Y' && JOB.warranty)) {
-                setSelectedSpareForClaim(spare);
-                setClaimDialog(true);
-                return; // ออกจากฟังก์ชัน รอให้กรอกข้อมูลเคลม
+            // ถ้าราคาเป็น 0 ให้เปิด dialog สำหรับเคลม
+            if (newPrice === 0 && spcode !== 'SV001') {
+                const spare = spSelected.find(sp => sp.spcode === spcode);
+                if (!(spare.warranty === 'Y' && JOB.warranty)) {
+                    console.log('59 => ', spare, claimData)
+                    setSelectedSpareForClaim(spare);
+                    setClaimData({
+                        claim_remark: spare.claim_remark,
+                        remark: spare.remark,
+                    })
+                    setClaimDialog(true);
+                    return; // ออกจากฟังก์ชัน รอให้กรอกข้อมูลเคลม
+                }
             }
+            // ถ้าราคาไม่เป็น 0 ให้อัพเดทได้เลย
+            const updatedSpares = spSelected.map(sp => {
+                if (sp.spcode === spcode) {
+                    return {
+                        ...sp,
+                        spname: editData.spname,
+                        price_multiple_gp: newPrice,
+                        qty: parseInt(editData.qty) || 1,
+                        remark_noclaim: editData.remark_noclaim,
+                        claim: editData.claim,
+                    };
+                }
+                return sp;
+            });
+
+
+            onUpdateSpSelected(updatedSpares);
+
+            // ลบข้อมูลการแก้ไขออกจาก state
+            setEditingSpares(prev => {
+                const newState = {...prev};
+                delete newState[spcode];
+                return newState;
+            });
         }
-        if (JOB.warranty && editData.warranty === 'Y' && newPrice === 0) {
-            alert('สินค้า อยู่ในประกัน และ สถานะ อะไห่ เป็น true และ ราคา เป็น 0');
-        }
-        // ถ้าราคาไม่เป็น 0 ให้อัพเดทได้เลย
-        const updatedSpares = spSelected.map(sp => {
-            if (sp.spcode === spcode) {
-                return {
-                    ...sp,
-                    spname: editData.spname,
-                    price_multiple_gp: newPrice,
-                    qty: parseInt(editData.qty) || 1,
-                    remark_noclaim: editData.remark_noclaim,
-                };
-            }
-            return sp;
-        });
-
-
-        onUpdateSpSelected(updatedSpares);
-
-        // ลบข้อมูลการแก้ไขออกจาก state
-        setEditingSpares(prev => {
-            const newState = {...prev};
-            delete newState[spcode];
-            return newState;
-        });
-    };
+    ;
 
     // จัดการการเปลี่ยนแปลงข้อมูลในการแก้ไข
     const handleEditChange = (spcode, field, value) => {
@@ -99,12 +102,13 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
         if (field === 'remark_noclaim') {
             if (value !== 'เคลมปกติ') {
                 const sp_sel = spSelected.find(sp => sp.spcode === spcode)
-                console.log(sp_sel)
+                alert('เคลมไม่ปกติ')
                 setEditingSpares(prev => ({
                     ...prev,
                     [spcode]: {
                         ...prev[spcode],
                         price_multiple_gp: sp_sel.price_per_unit,
+                        claim: false,
                         [field]: value
                     }
                 }));
@@ -115,11 +119,25 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                     [spcode]: {
                         ...prev[spcode],
                         price_multiple_gp: 0,
+                        claim: true,
                         [field]: value
                     }
                 }));
                 return;
             }
+        }
+
+        if (field === 'price_multiple_gp' && parseFloat(value) === 0 && JOB.warranty) {
+            setEditingSpares(prev => ({
+                ...prev,
+                [spcode]: {
+                    ...prev[spcode],
+                    claim: true,
+                    remark_noclaim: 'เคลมปกติ',
+                    [field]: value
+                }
+            }));
+            return;
         }
         setEditingSpares(prev => ({
             ...prev,
@@ -181,13 +199,13 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
     };
 
     const handleSubmit = () => {
-        console.log(spSelected)
         AlertDialogQuestion({
             title: 'ยืนยันการบันทึก',
             text: 'กด ตกลง เพื่อบันทึกรายการอะไหล่',
             onPassed: async (confirm) => {
                 if (confirm) {
                     try {
+                        setLoading(true);
                         const {data, status} = await axios.post(route('repair.after.spare-part.store', {
                             job_id: JOB.job_id,
                             serial_id: JOB.serial_id,
@@ -197,12 +215,14 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                         AlertDialog({
                             icon: 'success',
                             text: data.message,
-                            onPassed: () => onSaved()
+                            onPassed: () => onSaved(data.full_file_path_qu)
                         })
                     } catch (error) {
                         AlertDialog({
                             text: error.response?.data?.message || error.message,
                         })
+                    }finally {
+                        setLoading(false);
                     }
                 } else console.log('ไม่ได้กด confirm')
             }
@@ -276,7 +296,8 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                     }}
                                                     sx={{cursor: 'pointer'}}
                                                 >
-                                                    <img width={50} src={imageSp} onError={showDefaultImage} alt=""/>
+                                                    <img width={50} src={imageSp} onError={showDefaultImage}
+                                                         alt=""/>
                                                 </TableCell>
                                                 <TableCell>
                                                     {(isEditing && sp.spcode === 'SV001') ? (
@@ -292,10 +313,18 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                             />
                                                         </>
                                                     ) : (
-                                                        <>({sp.spcode})&nbsp;{sp.spname} {sp.warranty}</>
+                                                        <>
+                                                            ({sp.spcode})&nbsp;{sp.spname}
+                                                            <br/>
+                                                            {sp.warranty}
+                                                            <br/>
+                                                            {sp.claim ? 'claim' : 'noclaim'}
+                                                            <br/>
+                                                            {sp.remark_noclaim}
+                                                        </>
                                                     )}
                                                     {/*({sp.spcode})&nbsp;{sp.spname}*/}
-                                                    {JOB.warranty && sp.remark_noclaim && (
+                                                    {JOB.warranty && sp.warranty === 'Y' && !sp.claim && sp.remark_noclaim && (
                                                         <div style={{
                                                             fontSize: '0.8em',
                                                             color: '#666',
@@ -425,6 +454,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
             <Grid2 size={12}>
                 <Stack direction='row' justifyContent='end'>
                     <Button
+                        loading={loading}
                         disabled={Object.keys(editingSpares).length !== 0}
                         variant='contained' startIcon={<SaveIcon/>}
                         onClick={handleSubmit}
@@ -450,7 +480,10 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                 <Select
                                     value={claimData.claim_remark}
                                     label="ประเภทการเคลม"
-                                    onChange={(e) => setClaimData(prev => ({...prev, claim_remark: e.target.value}))}
+                                    onChange={(e) => setClaimData(prev => ({
+                                        ...prev,
+                                        claim_remark: e.target.value
+                                    }))}
                                 >
                                     <MenuItem value="ไม่เคลม">ไม่เคลม</MenuItem>
                                     <MenuItem value="เคลมสินค้านี้ซีเรียงหมดประกันตามเงื่อนไขแล้ว">
@@ -481,7 +514,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                     <Button
                         onClick={handleSaveClaimData}
                         variant="contained"
-                        disabled={(claimData.claim_remark !== 'ไม่เคลม' && !claimData.remark.trim())}
+                        disabled={(claimData.claim_remark !== 'ไม่เคลม' && !claimData.remark?.trim())}
                     >
                         บันทึก
                     </Button>

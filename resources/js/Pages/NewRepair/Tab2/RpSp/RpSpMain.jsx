@@ -7,7 +7,7 @@ import PaletteIcon from "@mui/icons-material/Palette";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import React, {useEffect, useState} from "react";
 
-export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB}) {
+export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB,subremark1}) {
     const pid = productDetail.pid;
     const fac_model = productDetail.facmodel;
     const DM = productDetail.dm || 'DM01';
@@ -51,9 +51,12 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
 
 
     // หากบันทึกจากหน้า สรุปรายการอะไหล่เสร็จสิ้น
-    const Saved = () => {
+    const Saved = (full_file_path = null) => {
         // fetchData().finally(()=>setLoading(false))
         setStepForm(2);
+        if (full_file_path) {
+            window.open(full_file_path, '_blank');
+        }
     }
 
     return (
@@ -67,7 +70,7 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
                             spSelected={spSelected}
                             setShowSummary={setShowSummary}
                             onUpdateSpSelected={handleUpdateSpSelected}
-                            onSaved={Saved}
+                            onSaved={(full_file_path)=>Saved(full_file_path)}
                         />
                     ) : (
                         <Grid2 container spacing={2}>
