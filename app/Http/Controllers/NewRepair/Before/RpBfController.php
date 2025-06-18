@@ -11,6 +11,8 @@ use App\Models\Symptom;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class RpBfController extends Controller
 {
@@ -211,7 +213,26 @@ class RpBfController extends Controller
             return;
         }
 
-        FileUpload::query()->where('job_id', $job_id)->whereNotIn('id', $keep)->delete();
+//        FileUpload::query()->where('job_id', $job_id)->whereNotIn('id', $keep)->delete();
+
+        $files_to_delete = FileUpload::where('job_id', $job_id)
+            ->where('menu_id', 1)
+            ->when(!empty($keep), function ($query) use ($keep) {
+                return $query->whereNotIn('id', $keep);
+            })
+            ->get();
+
+        foreach ($files_to_delete as $file) {
+            // ลบไฟล์จาก storage
+            if (Storage::disk('public')->exists($file->file_path)) {
+                Storage::disk('public')->delete($file->file_path);
+                Log::info("Deleted file from storage: {$file->file_path}");
+            }
+
+            // ลบข้อมูลจากฐานข้อมูล
+            $file->delete();
+            Log::info("Deleted file record from database: ID {$file->id}");
+        }
     }
 
 
