@@ -14,6 +14,7 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
     const [loading, setLoading] = useState(false);
     const [spSelected, setSpSelected] = useState([]);
     const [showSummary, setShowSummary] = useState(false);
+    const [showAddMore, setShowAddMore] = useState(false);
 
     useEffect(() => {
         fetchData().finally(() => setLoading(false));
@@ -32,12 +33,6 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
         } catch (error) {
             console.log(error)
         }
-    }
-
-    const handleOnClick = () => {
-        console.log('productDetail => ',productDetail)
-        console.log('listSparePart => ',listSparePart)
-        console.log('spSelected => ',spSelected)
     }
 
     const handleAddSpare = (newSpares) => {
@@ -61,7 +56,6 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
 
     return (
         <>
-            <button onClick={handleOnClick}>Click</button>
             {loading ? (<CircularProgress/>) : (
                 <>
                     {showSummary ? (
@@ -120,24 +114,6 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
                                             />
                                         )}
                                     </Grid2>
-
-                                    {/* ปุ่มสรุปการเลือกอะไหล่ */}
-                                    {/*{spSelected.length > 0 && (*/}
-                                    {/*    <Grid2 size={12}>*/}
-                                    {/*        <Stack direction='row' justifyContent='end'>*/}
-                                    {/*            <Button*/}
-                                    {/*                variant="contained"*/}
-                                    {/*                color="primary"*/}
-                                    {/*                startIcon={<SummarizeIcon />}*/}
-                                    {/*                onClick={() => setShowSummary(true)}*/}
-                                    {/*                sx={{mb: 2}}*/}
-                                    {/*            >*/}
-                                    {/*                สรุปการเลือกอะไหล่*/}
-                                    {/*            </Button>*/}
-                                    {/*        </Stack>*/}
-
-                                    {/*    </Grid2>*/}
-                                    {/*)}*/}
                                 </Grid2>
                             </Grid2>
                         </Grid2>

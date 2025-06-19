@@ -1,14 +1,31 @@
-import {Button, Checkbox, Grid2, Stack, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
+import {
+    Box,
+    Button, Card, CardContent,
+    Checkbox, Divider,
+    Grid2,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow, Typography,
+    useMediaQuery
+} from "@mui/material";
 import {showDefaultImage} from "@/utils/showImage.js";
 import {useState, useEffect} from "react";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 import SaveIcon from "@mui/icons-material/Save";
+import Collapse from "@mui/material/Collapse";
 
 export default function RpSpAdd({listSparePart, onAddSpare, spSelected, JOB}) {
     const [previewImage, setPreviewImage] = useState(false);
     const [previewSelected, setPreviewSelected] = useState('');
     const [selectedSpares, setSelectedSpares] = useState([]);
     const [selectedService, setSelectedService] = useState(false);
+
+    const [openIndex, setOpenIndex] = useState(null);
+
+    const isMobile = useMediaQuery('(max-width:600px)');
 
     // ข้อมูลบริการ SV001
     const serviceData = {
@@ -44,7 +61,7 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected, JOB}) {
                     ...spare,
                     qty: 1,
                     price_multiple_gp: ZeroValue,
-                    claim : spare.warranty === 'Y' && JOB.warranty
+                    claim: spare.warranty === 'Y' && JOB.warranty
                 }
             ]);
         } else {
@@ -82,122 +99,165 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected, JOB}) {
     const totalSelectedItems = selectedSpares.length + (selectedService ? 1 : 0);
 
     return (
-
-        <Grid2 container spacing={2}>
-            {/* ปุ่มบันทึกการเลือก */}
-            {totalSelectedItems > 0 && (
-                <Grid2 size={12}>
-                    <Stack justifyContent='start' direction='row'>
-                        <Button
-                            variant="contained"
-                            color="success"
-                            startIcon={<SaveIcon/>}
-                            onClick={handleSaveSelection}
-                            sx={{mb: 2}}
-                        >
-                            บันทึกการเลือกอะไหล่ ({totalSelectedItems} รายการ)
-                        </Button>
-                    </Stack>
-                </Grid2>
-            )}
-            {previewImage &&
-                <SpPreviewImage open={previewImage} setOpen={setPreviewImage} imagePath={previewSelected}/>}
-
-            {/* ตารางบริการ */}
-            <Grid2 size={12} bgcolor='white' maxHeight={400} sx={{overflowY: 'auto'}}>
-                <Table stickyHeader>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell colSpan={5} sx={{fontWeight: 'bold', fontSize: 20}}>บริการ</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>เลือก</TableCell>
-                            <TableCell>รูปภาพ</TableCell>
-                            <TableCell>รหัสอะไหล่</TableCell>
-                            <TableCell>ชื่ออะไหล่</TableCell>
-                            <TableCell>หน่วย</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        <TableRow>
-                            <TableCell>
-                                <Checkbox
-                                    checked={selectedService}
-                                    onChange={(e) => handleServiceCheck(e.target.checked)}
-                                />
-                            </TableCell>
-                            <TableCell onClick={() => {
-                                setPreviewImage(true);
-                                setPreviewSelected('')
-                            }}>
-                                <img width={50} src={''} onError={showDefaultImage} alt=""/>
-                            </TableCell>
-                            <TableCell>SV001</TableCell>
-                            <TableCell>ค่าบริการ</TableCell>
-                            <TableCell>ครั้ง</TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </Grid2>
-
-            {/* ตารางอะไหล่ */}
-            <Grid2 size={12} bgcolor='white' maxHeight={400} sx={{overflowY: 'auto'}}>
-                <Table stickyHeader>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell colSpan={5} sx={{fontWeight: 'bold', fontSize: 20}}>อะไหล่</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>เลือก</TableCell>
-                            <TableCell>รูปภาพ</TableCell>
-                            <TableCell>รหัสและชื่ออะไหล่</TableCell>
-                            <TableCell>ราคาอะไหล่</TableCell>
-                            <TableCell>หน่วย</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
+        <>
+            {isMobile ? (
+                <Grid2 size={12} maxHeight={400} overflow='auto'>
+                    <Stack spacing={2}>
                         {listSparePart.map((sp, index) => {
                             const imageSp = import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
                             const isSelected = isSpareSelected(sp.spcode);
+                            const isOpen = openIndex === index;
+                            const GreenHighlight = (sp.warranty === 'Y' && JOB.warranty) ? '#e8f5e8' :
+                                (!sp.price_per_unit || sp.price_per_unit === '-') ? '#ffebee' : 'inherit';
 
                             return (
-                                <TableRow
-                                    key={index}
+                                <Card
+                                    key={sp.spcode}
                                     sx={{
-                                        backgroundColor: (sp.warranty === 'Y' && JOB.warranty) ? '#e8f5e8' :
-                                            (!sp.price_per_unit || sp.price_per_unit === '-') ? '#ffebee' : 'inherit'
+                                        backgroundColor: GreenHighlight,
+                                        cursor: 'pointer',
+                                        '&:hover': {backgroundColor: '#f5f5f5'}
                                     }}
                                 >
-                                    <TableCell>
-                                        <Checkbox
-                                            disabled={sp.price_per_unit === '-' || !sp.price_per_unit}
-                                            checked={isSelected}
-                                            onChange={(e) => handleSpareCheck(sp, e.target.checked)}
-                                        />
-                                    </TableCell>
-                                    <TableCell onClick={() => {
-                                        setPreviewImage(true);
-                                        setPreviewSelected(imageSp)
-                                    }}>
-                                        <img width={50} src={imageSp} onError={showDefaultImage} alt=""/>
-                                    </TableCell>
-                                    <TableCell>
-                                        {sp.spcode}
-                                        <br/>
-                                        {sp.spname}
-                                        <br/>
-                                        {sp.warranty}
-                                    </TableCell>
-                                    <TableCell>{sp.price_per_unit}</TableCell>
-                                    <TableCell>{sp.spunit}</TableCell>
-                                </TableRow>
-                            )
+                                    <CardContent
+                                        onClick={() => setOpenIndex(isOpen ? null : index)}
+                                        sx={{pb: '8px !important'}}
+                                    >
+                                        <Box display="flex" alignItems="center" justifyContent="space-between">
+                                            <Box display="flex" alignItems="center" gap={2}>
+                                                <img
+                                                    width={50}
+                                                    height={50}
+                                                    src={imageSp}
+                                                    onError={showDefaultImage}
+                                                    alt=""
+                                                    style={{borderRadius: 4}}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setPreviewImage(true);
+                                                        setPreviewSelected(imageSp);
+                                                    }}
+                                                />
+                                                <Box>
+                                                    <Typography variant="body2" fontWeight="bold">
+                                                        {sp.spcode}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        {sp.spname}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="primary" fontWeight="bold">
+                                                        {sp.price_per_unit || 0} บาท
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                            <Checkbox
+                                                disabled={sp.price_per_unit === '-' || !sp.price_per_unit}
+                                                checked={isSelected}
+                                                onClick={(e) => e.stopPropagation()}
+                                                onChange={(e) => handleSpareCheck(sp, e.target.checked)}
+                                            />
+                                        </Box>
+                                    </CardContent>
+
+                                    <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                                        <CardContent sx={{pt: 0}}>
+                                            <Divider sx={{mb: 2}}/>
+                                            <Typography variant="body2">หน่วย: {sp.spunit}</Typography>
+                                            <Typography variant="body2">การรับประกัน: {sp.warranty}</Typography>
+                                        </CardContent>
+                                    </Collapse>
+                                </Card>
+                            );
                         })}
-                    </TableBody>
-                </Table>
-            </Grid2>
+                    </Stack>
+                </Grid2>
+            ) : (
+                // *** แสดงตารางเดิมใน Desktop view (ไม่ต้องเปลี่ยน) ***
+                <Grid2 size={12} bgcolor='white' maxHeight={400} sx={{overflowY: 'auto'}}>
+                    <Table stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell colSpan={5} sx={{fontWeight: 'bold', fontSize: 20}}>อะไหล่</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>เลือก</TableCell>
+                                <TableCell>รูปภาพ</TableCell>
+                                <TableCell>รหัสและชื่ออะไหล่</TableCell>
+                                <TableCell>ราคาอะไหล่</TableCell>
+                                <TableCell>หน่วย</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {listSparePart.map((sp, index) => {
+                                const imageSp = import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
+                                const isSelected = isSpareSelected(sp.spcode);
 
+                                return (
+                                    <TableRow
+                                        key={index}
+                                        sx={{
+                                            backgroundColor: (sp.warranty === 'Y' && JOB.warranty) ? '#e8f5e8' :
+                                                (!sp.price_per_unit || sp.price_per_unit === '-') ? '#ffebee' : 'inherit'
+                                        }}
+                                    >
+                                        <TableCell>
+                                            <Checkbox
+                                                disabled={sp.price_per_unit === '-' || !sp.price_per_unit}
+                                                checked={isSelected}
+                                                onChange={(e) => handleSpareCheck(sp, e.target.checked)}
+                                            />
+                                        </TableCell>
+                                        <TableCell onClick={() => {
+                                            setPreviewImage(true);
+                                            setPreviewSelected(imageSp)
+                                        }}>
+                                            <img width={50} src={imageSp} onError={showDefaultImage} alt=""/>
+                                        </TableCell>
+                                        <TableCell>
+                                            {sp.spcode}
+                                            <br/>
+                                            {sp.spname}
+                                            <br/>
+                                            {sp.warranty}
+                                        </TableCell>
+                                        <TableCell>{sp.price_per_unit}</TableCell>
+                                        <TableCell>{sp.spunit}</TableCell>
+                                    </TableRow>
+                                )
+                            })}
+                        </TableBody>
+                    </Table>
+                </Grid2>
+            )}
+            {totalSelectedItems > 0 && (
+                <Box
+                    position="fixed"
+                    bottom={0}
+                    left={0}
+                    width="100%"
+                    zIndex={1000}
+                    bgcolor="white"
+                    boxShadow={3}
+                    p={1}
+                >
+                    <Grid2 container>
+                        <Grid2 size={12}>
+                            <Stack  direction='row' justifyContent='end'>
+                                <Button
+                                    fullWidth={isMobile}
+                                    variant="contained"
+                                    color="success"
+                                    startIcon={<SaveIcon />}
+                                    onClick={handleSaveSelection}
+                                >
+                                    บันทึกการเลือกอะไหล่ ({totalSelectedItems} รายการ)
+                                </Button>
+                            </Stack>
+                        </Grid2>
+                    </Grid2>
+                </Box>
+            )}
+        </>
 
-        </Grid2>
     )
 }

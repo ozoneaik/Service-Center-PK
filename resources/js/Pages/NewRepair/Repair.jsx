@@ -20,7 +20,6 @@ const menuNames = {
 };
 
 export default function Repair({DATA}) {
-    console.log('DATA ==> ', DATA)
     const [SN, setSN] = useState('');
     const [PID, setPID] = useState('');
     const [loading, setLoading] = useState(false);
@@ -130,7 +129,7 @@ export default function Repair({DATA}) {
                                     />
                                     {menuSel === 1 &&
                                         <RpMain productDetail={detail} serial_id={detail.serial_id || detail.serial}/>}
-                                    {menuSel === 2 && <ListHistoryRepair serial_id={detail.serial_id}/>}
+                                    {menuSel === 2 && <ListHistoryRepair serial_id={detail.serial || detail.serial_id}/>}
                                 </Grid2>
                             )}
                         </>

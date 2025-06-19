@@ -1,4 +1,4 @@
-import {Box, CircularProgress, Grid2, Tab, Tabs} from "@mui/material";
+import {Alert, Box, CircularProgress, Grid2, Tab, Tabs} from "@mui/material";
 import {useEffect, useState} from "react";
 import RpTab2Form from "@/Pages/NewRepair/Tab2/RpTab2Form.jsx";
 import RpTab1Form from "@/Pages/NewRepair/Tab1/RpTab1Form.jsx";
@@ -7,8 +7,6 @@ import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
 
 function CustomTabPanel(props) {
     const {children, value, index, ...other} = props;
-
-
     return (
         <div
             role='tabpanel'
@@ -23,6 +21,7 @@ function CustomTabPanel(props) {
 }
 
 export default function RpMain({productDetail, serial_id}) {
+    const [message, setMessage] = useState('ไม่สามารถกระทำการใดๆ');
     const [tabValue, setTabValue] = useState(0);
     const [searchingJob, setSearchingJob] = useState(false);
     const [JOB, setJOB] = useState();
@@ -34,9 +33,9 @@ export default function RpMain({productDetail, serial_id}) {
     });
 
     useEffect(() => {
-        if (MainStep.step === 'before'){
+        if (MainStep.step === 'before') {
             setTabValue(0)
-        }else{
+        } else {
             setTabValue(1)
         }
     }, [MainStep]);
@@ -56,7 +55,7 @@ export default function RpMain({productDetail, serial_id}) {
             setSearchingJob(true)
             const {data, status} = await axios.post(route('repair.search.job', {
                 serial_id: serial_id, pid: productDetail.pid,
-                job_id : productDetail.job_id || null
+                job_id: productDetail.job_id || null
             }));
             setJOB(data.job.job_detail)
         } catch (error) {
@@ -76,10 +75,10 @@ export default function RpMain({productDetail, serial_id}) {
                                 pSubCatName: productDetail.pSubCatName,
                                 facmodel: productDetail.facmodel,
                                 imagesku: productDetail.imagesku,
-                                warrantyperiod : productDetail.warrantyperiod,
-                                warrantycondition : productDetail.warrantycondition,
-                                warrantynote : productDetail.warrantynote,
-                                warranty : productDetail.warranty  || productDetail.warranty_status || productDetail.warrantyexpire || false
+                                warrantyperiod: productDetail.warrantyperiod,
+                                warrantycondition: productDetail.warrantycondition,
+                                warrantynote: productDetail.warrantynote,
+                                warranty: productDetail.warranty || productDetail.warranty_status || productDetail.warrantyexpire || false
                             }
                             try {
                                 await axios.post(route('repair.store', {
@@ -91,12 +90,13 @@ export default function RpMain({productDetail, serial_id}) {
                                 AlertDialog({
                                     text: error.response.data?.message || error.message
                                 })
+                                console.log(error)
                             }
                         } else console.log('มีการยกเลิกสร้าง job');
                     }
                 })
             }
-            console.log(error)
+            setMessage(error.response.data?.message)
         }
     }
 
@@ -141,7 +141,11 @@ export default function RpMain({productDetail, serial_id}) {
                                 />
                             </CustomTabPanel>
                         </Grid2>
-                    ) : (<>ไม่สามารถกระทำการใดๆได้</>)}
+                    ) : (
+                        <Alert sx={{width : '100%',mb : 2}} severity='info'>
+                            {message}
+                        </Alert>
+                    )}
                 </>
             )}
         </Grid2>

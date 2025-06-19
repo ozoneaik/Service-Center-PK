@@ -10,6 +10,7 @@ use App\Models\Qu;
 use App\Models\Remark;
 use App\Models\SparePart;
 use App\Models\StoreInformation;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\Storage;
 
 class RpAfQuController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $job_id = $request->get('job_id');
         $qus = Qu::findByJobId($job_id);
@@ -28,7 +29,7 @@ class RpAfQuController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         try {
             $job_id = $request->get('job_id');

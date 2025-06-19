@@ -8,7 +8,7 @@ import {
     Stack,
     Step,
     StepLabel,
-    Stepper,
+    Stepper, Tooltip,
 
 } from "@mui/material";
 import Checkbox from '@mui/material/Checkbox';
@@ -50,7 +50,6 @@ export default function RpTab2Form({productDetail, JOB, setMainStep, MainStep, s
         if (firstRender) {
             setFirstRender(false)
         } else {
-            console.log('render step', MainStep.sub_step)
             if (MainStep.step === 'after') {
                 setStepForm(MainStep.sub_step)
             }
@@ -67,7 +66,6 @@ export default function RpTab2Form({productDetail, JOB, setMainStep, MainStep, s
                 serial_id: JOB.serial_id,
                 job_id: JOB.job_id
             }));
-            console.log(data, status)
             setSubremark1(data.subremark1)
             if (data.subremark1) {
                 setStepForm(1)
@@ -78,12 +76,7 @@ export default function RpTab2Form({productDetail, JOB, setMainStep, MainStep, s
         }
     }
 
-
-    const handleChangeStep = (index) => {
-        setStepForm(index);
-    }
     const handleSelectStep = (index, label) => {
-        // (index < stepForm) && setStepForm(index)
         setStepForm(index)
     }
 
@@ -97,12 +90,18 @@ export default function RpTab2Form({productDetail, JOB, setMainStep, MainStep, s
                             <FormControlLabel disabled control={<Checkbox checked={subremark1}/>} label={'ใบเสนอราคา'}/>
                             {/*<button onClick={() => console.log(stepForm)}>stepForm</button>*/}
                             <Stack direction='row' spacing={2}>
-                                <Button fullWidth variant='outlined' size='small' color='secondary' startIcon={<Download/>}>
-                                    ใบรับงานสินค้า
-                                </Button>
-                                <Button fullWidth variant='outlined' size='small' startIcon={<Download/>}>
-                                    ใบเสนอราคา
-                                </Button>
+                                <Tooltip title='ปริ้นใบรับงาน'>
+                                    <Button variant='outlined' size='small' color='secondary' startIcon={<Download/>}>
+                                        ใบรับงานสินค้า
+                                    </Button>
+                                </Tooltip>
+
+                                <Tooltip title='ปริ้นใบรับงาน'>
+                                    <Button variant='outlined' size='small' startIcon={<Download/>}>
+                                        ใบเสนอราคา
+                                    </Button>
+                                </Tooltip>
+
                             </Stack>
 
                         </Stack>

@@ -14,6 +14,7 @@ use App\Http\Controllers\ManageBranchController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Stores\UserController;
+use App\Http\Controllers\Test\DomPdfController;
 use App\Http\Controllers\WarrantyProductController;
 use App\Models\User;
 use Illuminate\Foundation\Application;
@@ -134,5 +135,8 @@ require __DIR__ . '/fakeForTest.php';
 Route::get('/test-page',function(){
    return Inertia::render('Test/TestPage');
 });
+
+Route::get('/dom-pdf', [DomPdfController::class,'index'])->name('dom-pdf.index');
+
 
 
