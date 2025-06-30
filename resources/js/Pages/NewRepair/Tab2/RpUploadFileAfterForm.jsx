@@ -403,16 +403,29 @@ export default function RpUploadFileAfterForm({productDetail, JOB, setStepForm})
             {/* Upload Progress */}
             {uploading && <FileUploading uploadProgress={uploadProgress}/>}
 
-            <Stack direction='row' justifyContent='end' mt={2}>
-                <Button
-                    onClick={handleSave}
-                    startIcon={<Save/>}
-                    variant='contained'
-                    disabled={uploading || files.length === 0 || JOB.status !== 'pending'}
-                >
-                    {uploading ? 'กำลังบันทึก...' : JOB.status === 'pending' ? 'บันทึก' : 'ปิดงานซ่อมแล้ว'}
-                </Button>
-            </Stack>
+            <Box
+                position="fixed"
+                bottom={0}
+                left={0}
+                width="100%"
+                zIndex={1000}
+                bgcolor="white"
+                boxShadow={3}
+                p={1}
+            >
+                <Stack direction='row' justifyContent='end'>
+                    <Button
+                        onClick={handleSave}
+                        startIcon={<Save/>}
+                        variant='contained'
+                        disabled={uploading || files.length === 0 || JOB.status !== 'pending'}
+                    >
+                        {uploading ? 'กำลังบันทึก...' : JOB.status === 'pending' ? 'บันทึก' : 'ปิดงานซ่อมแล้ว'}
+                    </Button>
+                </Stack>
+
+            </Box>
+
         </Box>
     );
 }

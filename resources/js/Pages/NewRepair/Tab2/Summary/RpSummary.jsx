@@ -1,4 +1,4 @@
-import {Button, Grid2, Stack} from "@mui/material";
+import {Box, Button, Grid2, Stack} from "@mui/material";
 import {useEffect, useState} from "react";
 import RpsCustomer from "@/Pages/NewRepair/Tab2/Summary/RpsCustomer.jsx";
 import RpsBehavior from "@/Pages/NewRepair/Tab2/Summary/RpsBehavior.jsx";
@@ -113,7 +113,7 @@ export default function RpSummary({JOB,setMainStep,setJOB}) {
     return (
         <>
             {loading ? (<SkeletonLoading/>) : (
-                <Grid2 container spacing={2}>
+                <Grid2 container spacing={2} mb={3}>
                     <Grid2 size={12}>
                         <CardComponent headTitle='ข้อมูลลูกค้า'>
                             <RpsCustomer customer={result.customer}/>
@@ -129,7 +129,7 @@ export default function RpSummary({JOB,setMainStep,setJOB}) {
                             <RpsBehavior behaviours={result.behaviours}/>
                         </CardComponent>
                     </Grid2>
-                    <Grid2 size={12}>
+                    <Grid2 size={12} >
                         <CardComponent headTitle='บันทึกอะไหล่'>
                             <RpsSparePart spare_parts={result.spare_parts}/>
                         </CardComponent>
@@ -150,6 +150,17 @@ export default function RpSummary({JOB,setMainStep,setJOB}) {
                     {/*<Grid2 size={12}>*/}
                     {/*    <RpsDoc/>*/}
                     {/*</Grid2>*/}
+                    <Box
+                        position="fixed"
+                        bottom={0}
+                        left={0}
+                        width="100%"
+                        zIndex={1000}
+                        bgcolor="white"
+                        boxShadow={3}
+                        p={1}
+                    >
+
                     <Grid2 size={12}>
                         <Stack direction='row' justifyContent='end' spacing={2}>
                             <Button
@@ -170,6 +181,7 @@ export default function RpSummary({JOB,setMainStep,setJOB}) {
                             </Button>
                         </Stack>
                     </Grid2>
+                    </Box>
                 </Grid2>
             )}
         </>

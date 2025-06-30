@@ -84,7 +84,7 @@ export default function RpTab2Form({productDetail, JOB, setMainStep, MainStep, s
     return (
         <>
             {loading ? (<CircularProgress/>) : (
-                <Grid2 container spacing={2}>
+                <Grid2 container spacing={2} mb={3}>
                     <Grid2 size={12}>
                         <Stack direction={{sm : 'column', md :'row'}} justifyContent='space-between'>
                             <FormControlLabel disabled control={<Checkbox checked={subremark1}/>} label={'ใบเสนอราคา'}/>

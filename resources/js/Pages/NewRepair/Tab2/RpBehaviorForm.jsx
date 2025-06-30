@@ -1,4 +1,4 @@
-import {Button, Checkbox, CircularProgress, FormControlLabel, Stack} from "@mui/material";
+import {Box, Button, Checkbox, CircularProgress, FormControlLabel, Stack} from "@mui/material";
 import {useEffect, useState} from "react";
 import {Save} from "@mui/icons-material";
 import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
@@ -108,15 +108,21 @@ export default function RpBehaviorForm({listBehavior, JOB,setStepForm}) {
                             </div>
                         ))}
                     </Stack>
-                    <Stack direction='row' justifyContent='end'>
-                        <Button
-                            disabled={JOB.status !== 'pending'}
-                            onClick={handleOnSubmit} loading={loadingForm}
-                            variant='contained' startIcon={<Save/>}
-                        >
-                            {JOB.status === 'success' ? 'ปิดงานซ่อมแล้ว' : 'บันทึก'}
-                        </Button>
-                    </Stack>
+                    <Box
+                        position="fixed" bottom={0} left={0} p={1}
+                        width="100%" zIndex={1000} bgcolor="white" boxShadow={3}
+                    >
+                        <Stack direction='row' justifyContent='end' >
+                            <Button
+                                disabled={JOB.status !== 'pending'}
+                                onClick={handleOnSubmit} loading={loadingForm}
+                                variant='contained' startIcon={<Save/>}
+                            >
+                                {JOB.status === 'success' ? 'ปิดงานซ่อมแล้ว' : 'บันทึก'}
+                            </Button>
+                        </Stack>
+                    </Box>
+
                 </>
             )}
         </>

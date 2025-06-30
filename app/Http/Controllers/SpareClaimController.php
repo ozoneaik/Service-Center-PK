@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ClaimRequest;
 use App\Models\Claim;
 use App\Models\ClaimDetail;
+use App\Models\JobList;
 use App\Models\logStamp;
 use App\Models\SparePart;
 use App\Models\StockSparePart;
@@ -32,6 +33,37 @@ class SpareClaimController extends Controller
         //            ->Orwhere('spare_parts.claim', true)
         //            ->groupBy('sp_code', 'sp_name', 'sp_unit')
         //            ->get();
+
+        $job_success = JobList::query()
+            ->where('is_code_key', Auth::user()->is_code_cust_id)
+            ->where('status', 'success')
+            ->get();
+        $sp_selected = [];
+        foreach ($job_success as $key => $job) {
+            if ($job['status']){
+                $spareParts = SparePart::query()->where('job_id', $job->job_id)
+                    ->where('status','pending')
+                    ->where('price_multiple_gp',0)
+                    ->get();
+                foreach ($spareParts as $sp) {
+                    if ($sp['remark_noclaim'] == 'เคลมปกติ' || $sp['claim']){
+                        $sp_selected[$key] = $sp;
+                    }
+                }
+                dd($spareParts,true,$sp_selected);
+            }else{
+                $spareParts = SparePart::query()->where('job_id', $job->job_id)
+                    ->where('status','pending')
+                    ->where('price_multiple_gp',0)
+                    ->get();
+                foreach ($spareParts as $sp) {
+                    if ($sp['claim']){
+                        $sp_selected[$key] = $sp;
+                    }
+                }
+                dd($spareParts->toArray(),false);
+            }
+        }
 
         $spareParts = SparePart::query()
             ->select('spare_parts.sp_code', 'spare_parts.sp_name', 'spare_parts.sp_unit', DB::raw('SUM(spare_parts.qty) as qty'), 'job_lists.is_code_key')
