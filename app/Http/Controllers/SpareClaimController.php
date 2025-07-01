@@ -39,31 +39,68 @@ class SpareClaimController extends Controller
             ->where('status', 'success')
             ->get();
         $sp_selected = [];
-        foreach ($job_success as $key => $job) {
-            if ($job['status']){
-                $spareParts = SparePart::query()->where('job_id', $job->job_id)
-                    ->where('status','pending')
-                    ->where('price_multiple_gp',0)
-                    ->get();
-                foreach ($spareParts as $sp) {
-                    if ($sp['remark_noclaim'] == 'เคลมปกติ' || $sp['claim']){
-                        $sp_selected[$key] = $sp;
+
+        $global_index = 0;
+        foreach ($job_success as $job) {
+            $spareParts = SparePart::query()
+                ->where('job_id', $job->job_id)
+                ->where('status', 'pending')
+                ->where('price_multiple_gp', 0)
+                ->get();
+
+            foreach ($spareParts as $sp) {
+                $should_add = false;
+
+                if ($job->warranty) {
+                    // ถ้ามี warranty ให้เช็คทั้ง remark_noclaim และ claim
+                    if ($sp->remark_noclaim == 'เคลมปกติ' || $sp->claim) {
+                        $should_add = true;
+                    }
+                } else {
+                    // ถ้าไม่มี warranty ให้เช็คแค่ claim
+                    if ($sp->claim) {
+                        $should_add = true;
                     }
                 }
-                dd($spareParts,true,$sp_selected);
-            }else{
-                $spareParts = SparePart::query()->where('job_id', $job->job_id)
-                    ->where('status','pending')
-                    ->where('price_multiple_gp',0)
-                    ->get();
-                foreach ($spareParts as $sp) {
-                    if ($sp['claim']){
-                        $sp_selected[$key] = $sp;
-                    }
+
+                if ($should_add) {
+                    $sp_selected[$global_index] = $sp->toArray();
+                    $global_index++;
                 }
-                dd($spareParts->toArray(),false);
             }
         }
+
+        $sp_selected_alt = [];
+
+        foreach ($job_success as $job) {
+            $spareParts = SparePart::query()
+                ->where('job_id', $job->job_id)
+                ->where('status', 'pending')
+                ->where('price_multiple_gp', 0)
+                ->get();
+
+            foreach ($spareParts as $sp) {
+                if ($job->warranty) {
+                    if ($sp->remark_noclaim == 'เคลมปกติ' || $sp->claim) {
+                        $sp_selected_alt[] = $sp->toArray();
+                    }
+                } else {
+                    if ($sp->claim) {
+                        $sp_selected_alt[] = $sp->toArray();
+                    }
+                }
+            }
+        }
+
+        $group = [];
+
+        for($i=0;$i < count($sp_selected_alt);$i++){
+            dd(count($sp_selected_alt));
+        }
+        dd($sp_selected_alt);
+
+
+//        return Inertia::render('SpareClaim/ClaimMain', ['spareParts' => $sp_selected_alt]);
 
         $spareParts = SparePart::query()
             ->select('spare_parts.sp_code', 'spare_parts.sp_name', 'spare_parts.sp_unit', DB::raw('SUM(spare_parts.qty) as qty'), 'job_lists.is_code_key')

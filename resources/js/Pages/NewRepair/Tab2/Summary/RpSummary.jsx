@@ -131,7 +131,7 @@ export default function RpSummary({JOB,setMainStep,setJOB}) {
                     </Grid2>
                     <Grid2 size={12} >
                         <CardComponent headTitle='บันทึกอะไหล่'>
-                            <RpsSparePart spare_parts={result.spare_parts}/>
+                            <RpsSparePart JOB={JOB} spare_parts={result.spare_parts}/>
                         </CardComponent>
                     </Grid2>
                     <Grid2 size={12}>

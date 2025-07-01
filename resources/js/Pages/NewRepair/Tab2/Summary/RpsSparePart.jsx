@@ -5,9 +5,10 @@ import {
 import {showDefaultImage} from "@/utils/showImage.js";
 import {useState} from "react";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
+import {green} from "@mui/material/colors";
 
 
-export default function RpsSparePart({spare_parts}) {
+export default function RpsSparePart({spare_parts,JOB}) {
     const isMobile = useMediaQuery('(max-width:600px)');
     const [previewImage, setPreviewImage] = useState(false);
     const [previewSelected, setPreviewSelected] = useState('');
@@ -31,8 +32,9 @@ export default function RpsSparePart({spare_parts}) {
                 <Stack spacing={1}>
                     {spare_parts?.map((sp, index) => {
                         const imageSp = import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
+                        const greenHighlight = (sp.warranty === 'Y' && JOB.warranty) ? '#e8f5e8' : 'white';
                         return (
-                            <Card key={index} variant='outlined'>
+                            <Card key={index} variant='outlined' sx={{backgroundColor : greenHighlight}}>
                                 <CardContent>
                                     <Stack spacing={1}>
                                         <img
@@ -40,11 +42,18 @@ export default function RpsSparePart({spare_parts}) {
                                             onClick={() => handleSelectImage(imageSp)}
                                             onError={showDefaultImage} alt=""
                                         />
-                                        <Typography>ชื่อ/รหัสอะไหล่ : {sp.spname} {sp.spcode}</Typography>
-                                        <Typography>จำนวน : {sp.qty}</Typography>
-                                        <Typography>ราคาต่อหน่วย : {sp.price_multiple_gp} ต่อ 1 {sp.spunit}</Typography>
-                                        <Typography>ราคารวม
-                                            : {calculateTotalPrice(sp.price_multiple_gp, sp.qty)}</Typography>
+                                        <Typography>
+                                            ชื่อ/รหัสอะไหล่ : {sp.spname} {sp.spcode}
+                                        </Typography>
+                                        <Typography>
+                                            จำนวน : {sp.qty}
+                                        </Typography>
+                                        <Typography>
+                                            ราคาต่อหน่วย : {sp.price_multiple_gp} ต่อ 1 {sp.spunit}
+                                        </Typography>
+                                        <Typography>
+                                            ราคารวม : {calculateTotalPrice(sp.price_multiple_gp, sp.qty)}
+                                        </Typography>
                                         {sp.claim_remark && (
                                             <>
                                                 ประเภทการเคลม : {sp.claim_remark}
@@ -79,8 +88,9 @@ export default function RpsSparePart({spare_parts}) {
                         <TableBody>
                             {spare_parts?.map((sp, index) => {
                                 const imageSp = import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
+                                const greenHighlight = (sp.warranty === 'Y' && JOB.warranty) ? '#e8f5e8' : 'white';
                                 return (
-                                    <TableRow key={index}>
+                                    <TableRow key={index} sx={{backgroundColor : greenHighlight}}>
                                         <TableCell onClick={() => handleSelectImage(imageSp)}>
                                             <img width={50} src={imageSp} onError={showDefaultImage} alt=""/>
                                         </TableCell>
