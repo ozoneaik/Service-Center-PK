@@ -29,7 +29,6 @@ export default function DialogDetail({open , setOpen, data,sparePartsDetail}){
                         <TableRow>
                             <TableCell>Job</TableCell>
                             <TableCell>Serial</TableCell>
-                            <TableCell>รหัสสินค้า</TableCell>
                             <TableCell>รหัสอะไหล่</TableCell>
                             <TableCell>ชื่ออะไหล่</TableCell>
                             <TableCell>จำนวน</TableCell>
@@ -41,7 +40,6 @@ export default function DialogDetail({open , setOpen, data,sparePartsDetail}){
                             <TableRow key={index}>
                                 <TableCell>{item.job_id}</TableCell>
                                 <TableCell>{item.serial_id}</TableCell>
-                                <TableCell>{item.p_name}</TableCell>
                                 <TableCell sx={{color : item.sp_warranty ? 'green' : ''}}>{item.sp_code}</TableCell>
                                 <TableCell>{item.sp_name}</TableCell>
                                 <TableCell>{item.qty}</TableCell>

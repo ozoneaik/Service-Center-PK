@@ -8,7 +8,6 @@ use App\Models\ClaimDetail;
 use App\Models\JobList;
 use App\Models\logStamp;
 use App\Models\SparePart;
-use App\Models\StockSparePart;
 use App\Models\StoreInformation;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -22,18 +21,6 @@ class SpareClaimController extends Controller
 {
     public function index(): Response
     {
-        //        $spareParts = SparePart::query()->select('sp_code', 'sp_name', DB::raw('SUM(qty) as qty'), 'sp_unit')
-        //            ->leftJoin('job_lists', 'job_lists.job_id', '=', 'spare_parts.job_id')
-        //            ->where('spare_parts.status', 'pending')
-        //            ->where('spare_parts.sp_warranty',true)
-        //            ->orWhere('spare_parts.approve','yes')
-        //            ->orWhere('spare_parts.approve_status','yes')
-        //            ->where('job_lists.status', 'like', 'success')
-        //            ->where('job_lists.user_id', auth()->user()->is_code_cust_id)
-        //            ->Orwhere('spare_parts.claim', true)
-        //            ->groupBy('sp_code', 'sp_name', 'sp_unit')
-        //            ->get();
-
         $job_success = JobList::query()
             ->where('is_code_key', Auth::user()->is_code_cust_id)
             ->where('status', 'success')
@@ -92,53 +79,26 @@ class SpareClaimController extends Controller
             }
         }
 
-        $group = [];
+        $groupAssoc = [];
 
-        for($i=0;$i < count($sp_selected_alt);$i++){
-            dd(count($sp_selected_alt));
+        foreach ($sp_selected_alt as $item) {
+            $code = $item['sp_code'];
+            if (!isset($groupAssoc[$code])) {
+                $groupAssoc[$code] = [
+                    'sp_code' => $item['sp_code'],
+                    'sp_name' => $item['sp_name'],
+                    'sp_unit' => $item['sp_unit'],
+                    'qty' => 0,
+                    'detail' => [],
+                ];
+            }
+            $groupAssoc[$code]['qty'] += $item['qty'];
+            $groupAssoc[$code]['detail'][] = $item;
         }
-        dd($sp_selected_alt);
+        $group = array_values($groupAssoc);
 
 
-//        return Inertia::render('SpareClaim/ClaimMain', ['spareParts' => $sp_selected_alt]);
-
-        $spareParts = SparePart::query()
-            ->select('spare_parts.sp_code', 'spare_parts.sp_name', 'spare_parts.sp_unit', DB::raw('SUM(spare_parts.qty) as qty'), 'job_lists.is_code_key')
-            ->leftJoin('job_lists', 'job_lists.job_id', '=', 'spare_parts.job_id')
-            ->where(function ($query) {
-                $query->where('spare_parts.sp_warranty', true)
-                    ->orWhere('spare_parts.approve', 'yes')
-                    ->where('spare_parts.claim_remark', 'not like', 'ไม่เคลม');
-            })
-            ->where('spare_parts.status', 'like', 'pending')
-            ->where('job_lists.status', 'like', 'success')
-            ->where('job_lists.is_code_key', Auth::user()->is_code_cust_id)
-            ->groupBy('spare_parts.sp_code', 'spare_parts.sp_name', 'spare_parts.sp_unit', 'job_lists.is_code_key')
-            ->get();
-
-
-        foreach ($spareParts as $key => $sp) {
-            $sp['detail'] = SparePart::query()
-                ->leftJoin('job_lists', 'job_lists.job_id', 'spare_parts.job_id')
-                ->where('sp_code', $sp['sp_code'])
-                ->where('spare_parts.status', 'pending')
-                ->where('job_lists.status', 'success')
-                ->where('job_lists.is_code_key', Auth::user()->is_code_cust_id)
-                ->get();
-            // foreach ($sp['detail'] as $k => $sp) {
-            //     $test = StockSparePart::query()
-            //     ->where('is_code_cust_id',$sp['is_code_key'])->first();
-            //     // $sp['details']['stock_local']
-            //     $sp->test = $k;
-            //     dump($test->toArray(),$sp->toArray());
-            // }
-            $sp['stock_local'] = StockSparePart::query()
-                ->where('is_code_cust_id', $sp['is_code_key'])
-                ->where('sp_code', $sp['sp_code'])
-                ->first();
-        }
-        // dd($spareParts->toArray());
-        return Inertia::render('SpareClaim/ClaimMain', ['spareParts' => $spareParts]);
+        return Inertia::render('SpareClaim/ClaimMain', ['spareParts' => $group]);
     }
 
     public function store(ClaimRequest $request): JsonResponse
@@ -189,6 +149,8 @@ class SpareClaimController extends Controller
                 'app_id' => env('VITE_LARK_APP_ID'),
                 'app_secret' => env('VITE_LARK_APP_SECRET')
             ]);
+
+            $message = 'สร้างเอกสารการเคลมสำเร็จ';
             if ($response->successful()) {
                 $responseJson = $response->json();
                 $tenant_access_token = $responseJson['tenant_access_token'];
@@ -197,16 +159,16 @@ class SpareClaimController extends Controller
                     'Authorization' => 'Bearer ' . $tenant_access_token,
                 ])->post('https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=open_id', $body);
                 if (!$responseSend->successful()) {
-                    throw new \Exception('ไม่สามารถส่งการแจ้งเตือนไปหา lark ได้');
+                    $message = 'สร้างเอกสารการเคลมสำเร็จ แต่ไม่สามารถส่งการแจ้งเตือนไปหาเซลล์ประจำร้านได้';
                 }
             } else {
-                throw new \Exception('ไม่สามารถส่งการแจ้งเตือนไปหา lark ได้');
+                $message = 'สร้างเอกสารการเคลมสำเร็จ แต่ไม่สามารถส่งการแจ้งเตือนไปหาเซลล์ประจำร้านได้';
             }
 
             DB::commit();
             logStamp::query()->create(['description' => Auth::user()->user_code . " สร้างเอกสารเคลม $claim_id สำเร็จ"]);
             return response()->json([
-                'message' => 'สร้างเอกสารการเคลมสำเร็จ'
+                'message' => $message
             ]);
         } catch (\Exception $exception) {
             DB::rollBack();

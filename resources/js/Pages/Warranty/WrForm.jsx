@@ -175,6 +175,12 @@ export default function WrForm() {
                                                     >
                                                         {registering ? 'กำลังลงทะเบียน...' : 'ลงทะเบียน'}
                                                     </Button>
+
+
+                                                </Stack>
+                                                <Stack spacing={2}>
+                                                    <Typography>อัปโหลดไฟล์หลักฐาน</Typography>
+                                                    <TextField type='file'/>
                                                 </Stack>
                                             </Box>
                                         </Stack>

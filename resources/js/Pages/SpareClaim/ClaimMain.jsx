@@ -11,8 +11,6 @@ import AlreadyClaim from "@/Pages/SpareClaim/AlreadyClaim.jsx";
 import {Link} from "@inertiajs/react";
 
 export default function ClaimMain({spareParts}) {
-    console.log(spareParts);
-    
     return (
         <AuthenticatedLayout>
             <Container maxWidth='false'>

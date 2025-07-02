@@ -2,16 +2,20 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {Head, router, useForm, usePage} from "@inertiajs/react";
 import {
     Button, Card, Grid2, Paper, Stack, Typography,
-    Table, TableBody, TableCell, TableHead, TableRow, Alert, TextField, Divider,
+    Table, TableBody, TableCell, TableHead, TableRow, Alert, TextField, Divider, useMediaQuery,
+    CardContent, Box
 } from "@mui/material";
 import Checkbox from "@mui/material/Checkbox";
 import {useEffect, useState} from "react";
 import {DateFormatTh} from "@/Components/DateFormat.jsx";
 import {Search} from '@mui/icons-material';
+import {AlertDialogQuestion} from "@/Components/AlertDialog.js";
 
 const tableHeads = ['เลขที่ JOB', 'ข้อมูลเบื้องต้น', 'สร้างเมื่อ'];
 
 export default function SenJobList({jobs}) {
+
+    const isMobile = useMediaQuery('(max-width:600px)');
     const {data, setData, post, processing, errors} = useForm({
         selectedJobs: []
     });
@@ -22,9 +26,9 @@ export default function SenJobList({jobs}) {
 
     useEffect(() => {
         const savedSelectedJob = localStorage.getItem('selectedJobs');
-        if (savedSelectedJob){
+        if (savedSelectedJob) {
             const parsedJobs = JSON.parse(savedSelectedJob);
-            setData('selectedJobs',parsedJobs)
+            setData('selectedJobs', parsedJobs)
             localStorage.removeItem('selectedJobs')
         }
     }, []);
@@ -57,21 +61,41 @@ export default function SenJobList({jobs}) {
             return;
         }
 
-        // ส่งข้อมูลไปยัง route ปิดงาน
-        post(route('sendJobs.update'), {
-            onFinish: () => {
-                setShowAlert(true)
-                setData('selectedJobs', []);
+        AlertDialogQuestion({
+           title : 'แน่ใจหรือไม่',
+           text : 'กด ตกลง เพื่อยืนยันการส่งซ่อมไปยัง PK',
+            onPassed : (confirm) => {
+                if (confirm) {
+                    post(route('sendJobs.update'), {
+                        onFinish: () => {
+                            setShowAlert(true)
+                            setData('selectedJobs', []);
+                        }
+                    });
+                }
             }
         });
+        // ส่งข้อมูลไปยัง route ปิดงาน
+
     }
 
     const isSelected = (jobId) => data.selectedJobs.some(job => job.job_id === jobId);
 
     const handleSearch = (e) => {
         e.preventDefault();
-        localStorage.setItem('selectedJobs',JSON.stringify(data.selectedJobs));
+        localStorage.setItem('selectedJobs', JSON.stringify(data.selectedJobs));
         router.get(route('sendJobs.list', {searchSku, searchSn}))
+    }
+
+    // สำหรับ Mobile View - การเลือกทั้งหมด
+    const handleSelectAllMobile = (e) => {
+        if (e.target.checked) {
+            // เลือกทั้งหมด
+            setData('selectedJobs', jobs);
+        } else {
+            // ยกเลิกการเลือกทั้งหมด
+            setData('selectedJobs', []);
+        }
     }
 
     return (
@@ -85,16 +109,18 @@ export default function SenJobList({jobs}) {
                             <Typography variant='body1'>รายการทั้งหมด {jobs.length} รายการ</Typography>
                         </Stack>
                         <form onSubmit={handleSearch}>
-                            <Stack direction='row' alignItems='center' spacing={2} mt={2}>
+                            <Stack direction={{md: 'row', sm: 'column'}} gap={2} mt={2}>
                                 <TextField
-                                    sx={{minWidth: 500}} onChange={(e) => setSearchSku(e.target.value)}
+                                    fullWidth={isMobile}
+                                    onChange={(e) => setSearchSku(e.target.value)}
                                     label='ค้นหารหัสสินค้า' size='small'
                                 />
                                 <TextField
-                                    sx={{minWidth: 500}} onChange={(e) => setSearchSn(e.target.value)}
+                                    fullWidth={isMobile}
+                                    onChange={(e) => setSearchSn(e.target.value)}
                                     label='ค้นหาหมายเลขซีเรียล' size='small'
                                 />
-                                <Button startIcon={<Search/>} type='submit' variant='contained'>
+                                <Button fullWidth={isMobile} startIcon={<Search/>} type='submit' variant='contained'>
                                     ค้นหา
                                 </Button>
                             </Stack>
@@ -112,66 +138,159 @@ export default function SenJobList({jobs}) {
                                    severity='error'>{flash.error}</Alert>
                         </Grid2>
                     )}
-                    <Grid2 size={12}>
-                        <Card variant='outlined'>
-                            <Table>
-                                <TableHead>
-                                    <TableRow sx={TABLE_HEADER_STYLE}>
-                                        <TableCell>
-                                            <Checkbox
-                                                checked={data.selectedJobs.length === jobs.length}
-                                                indeterminate={data.selectedJobs.length > 0 && data.selectedJobs.length < jobs.length}
-                                                onChange={(e) => {
-                                                    if (e.target.checked) {
-                                                        // เลือกทั้งหมด
-                                                        setData('selectedJobs', jobs);
-                                                    } else {
-                                                        // ยกเลิกการเลือกทั้งหมด
-                                                        setData('selectedJobs', []);
-                                                    }
-                                                }}
-                                            />
-                                        </TableCell>
-                                        {tableHeads.map((item, index) => (
-                                            <TableCell key={index}>{item}</TableCell>
-                                        ))}
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {jobs.map((job, index) => {
-                                        const isJobSelected = isSelected(job.job_id);
-                                        return (
-                                            <TableRow
-                                                key={index}
-                                                sx={{
-                                                    backgroundColor: isJobSelected ? '#f0f0f0' : 'inherit',
-                                                    transition: 'background-color 0.3s ease'
-                                                }}
-                                            >
-                                                <TableCell>
+
+                    {/* Mobile View */}
+                    {isMobile ? (
+                        <Grid2 size={12}>
+                            {/* เลือกทั้งหมด สำหรับ Mobile */}
+                            <Card variant='outlined' sx={{ mb: 2, p: 2 }}>
+                                <Stack direction='row' alignItems='center' spacing={1}>
+                                    <Checkbox
+                                        checked={data.selectedJobs.length === jobs.length}
+                                        indeterminate={data.selectedJobs.length > 0 && data.selectedJobs.length < jobs.length}
+                                        onChange={handleSelectAllMobile}
+                                    />
+                                    <Typography variant='body2' fontWeight='bold'>
+                                        เลือกทั้งหมด ({data.selectedJobs.length}/{jobs.length})
+                                    </Typography>
+                                </Stack>
+                            </Card>
+
+                            {/* รายการ Jobs สำหรับ Mobile */}
+                            <Stack spacing={2}>
+                                {jobs.map((job, index) => {
+                                    const isJobSelected = isSelected(job.job_id);
+                                    return (
+                                        <Card
+                                            key={index}
+                                            variant='outlined'
+                                            sx={{
+                                                backgroundColor: isJobSelected ? '#f0f0f0' : 'inherit',
+                                                transition: 'background-color 0.3s ease',
+                                            }}
+                                        >
+                                            <CardContent>
+                                                <Stack direction='row' alignItems='flex-start' spacing={2}>
                                                     <Checkbox
                                                         checked={isJobSelected}
-                                                        onClick={(e) => handleSelectJob(job, index, e)}
+                                                        onChange={(e) => handleSelectJob(job, index, e)}
                                                     />
-                                                </TableCell>
-                                                <TableCell>{job.job_id}</TableCell>
-                                                <TableCell>
-                                                    หมายเลขซีเรียล : {job.serial_id}
-                                                    <br/>
-                                                    รหัสสินค้า : {job.pid}
-                                                    <br/>
-                                                    ชื่อสินค้า : {job.p_name}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <DateFormatTh date={job.created_at}/>
-                                                </TableCell>
-                                            </TableRow>
-                                        )
-                                    })}
-                                </TableBody>
-                            </Table>
-                        </Card>
-                    </Grid2>
+                                                    <Box flex={1}>
+                                                        <Typography variant='h6' fontWeight='bold' color='primary' gutterBottom>
+                                                            JOB: {job.job_id}
+                                                        </Typography>
+
+                                                        <Stack spacing={1}>
+                                                            <Box>
+                                                                <Typography variant='body2' color='text.secondary'>
+                                                                    หมายเลขซีเรียล
+                                                                </Typography>
+                                                                <Typography variant='body1' fontWeight='medium'>
+                                                                    {job.serial_id}
+                                                                </Typography>
+                                                            </Box>
+
+                                                            <Box>
+                                                                <Typography variant='body2' color='text.secondary'>
+                                                                    รหัสสินค้า
+                                                                </Typography>
+                                                                <Typography variant='body1' fontWeight='medium'>
+                                                                    {job.pid}
+                                                                </Typography>
+                                                            </Box>
+
+                                                            <Box>
+                                                                <Typography variant='body2' color='text.secondary'>
+                                                                    ชื่อสินค้า
+                                                                </Typography>
+                                                                <Typography variant='body1' fontWeight='medium'>
+                                                                    {job.p_name}
+                                                                </Typography>
+                                                            </Box>
+
+                                                            <Divider sx={{ my: 1 }} />
+
+                                                            <Box>
+                                                                <Typography variant='body2' color='text.secondary'>
+                                                                    สร้างเมื่อ
+                                                                </Typography>
+                                                                <Typography variant='body1'>
+                                                                    <DateFormatTh date={job.created_at}/>
+                                                                </Typography>
+                                                            </Box>
+                                                        </Stack>
+                                                    </Box>
+                                                </Stack>
+                                            </CardContent>
+                                        </Card>
+                                    )
+                                })}
+                            </Stack>
+                        </Grid2>
+                    ) : (
+                        /* Desktop View */
+                        <Grid2 size={12}>
+                            <Card variant='outlined' sx={{overflow : 'auto'}}>
+                                <Table>
+                                    <TableHead>
+                                        <TableRow sx={TABLE_HEADER_STYLE}>
+                                            <TableCell>
+                                                <Checkbox
+                                                    checked={data.selectedJobs.length === jobs.length}
+                                                    indeterminate={data.selectedJobs.length > 0 && data.selectedJobs.length < jobs.length}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            // เลือกทั้งหมด
+                                                            setData('selectedJobs', jobs);
+                                                        } else {
+                                                            // ยกเลิกการเลือกทั้งหมด
+                                                            setData('selectedJobs', []);
+                                                        }
+                                                    }}
+                                                />
+                                            </TableCell>
+                                            {tableHeads.map((item, index) => (
+                                                <TableCell key={index}>{item}</TableCell>
+                                            ))}
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {jobs.map((job, index) => {
+                                            const isJobSelected = isSelected(job.job_id);
+                                            return (
+                                                <TableRow
+                                                    key={index}
+                                                    sx={{
+                                                        backgroundColor: isJobSelected ? '#f0f0f0' : 'inherit',
+                                                        transition: 'background-color 0.3s ease'
+                                                    }}
+                                                >
+                                                    <TableCell>
+                                                        <Checkbox
+                                                            checked={isJobSelected}
+                                                            onClick={(e) => handleSelectJob(job, index, e)}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>{job.job_id}</TableCell>
+                                                    <TableCell>
+                                                        หมายเลขซีเรียล : {job.serial_id}
+                                                        <br/>
+                                                        รหัสสินค้า : {job.pid}
+                                                        <br/>
+                                                        ชื่อสินค้า : {job.p_name}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <DateFormatTh date={job.created_at}/>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </Card>
+                        </Grid2>
+                    )}
+
                     <Grid2 size={12}>
                         <Stack direction='row-reverse'>
                             <Button

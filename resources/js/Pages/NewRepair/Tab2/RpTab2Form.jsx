@@ -81,17 +81,25 @@ export default function RpTab2Form({productDetail, JOB, setMainStep, MainStep, s
     }
 
 
+    const RecieveSp = () => {
+        window.open(route('genReCieveSpPdf', JOB.job_id), '_blank')
+    }
+
+
     return (
         <>
             {loading ? (<CircularProgress/>) : (
                 <Grid2 container spacing={2} mb={3}>
                     <Grid2 size={12}>
-                        <Stack direction={{sm : 'column', md :'row'}} justifyContent='space-between'>
+                        <Stack direction={{sm: 'column', md: 'row'}} justifyContent='space-between'>
                             <FormControlLabel disabled control={<Checkbox checked={subremark1}/>} label={'ใบเสนอราคา'}/>
                             {/*<button onClick={() => console.log(stepForm)}>stepForm</button>*/}
                             <Stack direction='row' spacing={2}>
                                 <Tooltip title='ปริ้นใบรับงาน'>
-                                    <Button variant='outlined' size='small' color='secondary' startIcon={<Download/>}>
+                                    <Button
+                                        onClick={RecieveSp} variant='outlined' size='small'
+                                        color='secondary' startIcon={<Download/>}
+                                    >
                                         ใบรับงานสินค้า
                                     </Button>
                                 </Tooltip>

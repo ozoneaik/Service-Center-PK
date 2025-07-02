@@ -43,7 +43,7 @@ export default function RpSRA({data, setData,form1Saved}) {
                     value={data.remark_symptom_accessory?.remark || ''}
                     multiline minRows={3} sx={{bgcolor: 'white'}}
                     id='remark' name='remark' size='small'
-                    placeholder='หมายเหตุ เช่น ลูกค้าดัดแปลงสภาพเครื่อง,ลูกค้าเคยส่งซ่อมทั้งหมด ... เครื่อง'
+                    placeholder='หมายเหตุ เช่น ลูกค้าดัดแปลงสภาพเครื่อง,ลูกค้าส่งซ่อมพร้อมกันทั้งหมด ... เครื่อง'
                     onChange={handleChange}
                 />
             </FormControl>

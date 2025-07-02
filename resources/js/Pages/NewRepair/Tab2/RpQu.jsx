@@ -65,7 +65,7 @@ export default function RpQu({JOB, setStepForm}) {
                         variant='contained' startIcon={<Download/>}
                         id='download' color='success' onClick={downloadFile}
                     >
-                        ดาวน์โหลดไฟล์สุด
+                        ดาวน์โหลดใบเสนอราคาล่าสุด
                     </Button>
                 </Stack>
             </Grid2>

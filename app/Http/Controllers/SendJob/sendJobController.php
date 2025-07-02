@@ -53,7 +53,7 @@ class sendJobController extends Controller
             }
             DB::commit();
             logStamp::query()->create(['description' => Auth::user()->user_code . " กดส่งส่งซ่อมพิมคินฯ สำเร็จ $group_job"]);
-            return Redirect::route('sendJobs.list')->with('success', 'ส่งไปยัง PK สำเร็จ');
+            return Redirect::route('sendJobs.docJobList')->with('success', 'ส่งไปยัง PK สำเร็จ');
         } catch (\Exception $exception) {
             DB::rollBack();
             return Redirect::route('sendJobs.list')->with('error', $exception->getMessage());

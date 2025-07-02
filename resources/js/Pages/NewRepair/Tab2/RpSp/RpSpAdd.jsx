@@ -108,7 +108,7 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected, JOB}) {
                             const isSelected = isSpareSelected(sp.spcode);
                             const isOpen = openIndex === index;
                             const GreenHighlight = (sp.warranty === 'Y' && JOB.warranty) ? '#e8f5e8' :
-                                (!sp.price_per_unit || sp.price_per_unit === '-') ? '#ffebee' : 'inherit';
+                                (!sp.price_per_unit || sp.price_per_unit === '-') ? '#ffebee' : 'white';
 
                             return (
                                 <Card
