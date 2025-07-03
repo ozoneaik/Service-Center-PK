@@ -1,5 +1,16 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {Button, Card, Container, Grid2, Paper, Stack, TextField, Badge, CircularProgress} from "@mui/material";
+import {
+    Button,
+    Card,
+    Container,
+    Grid2,
+    Paper,
+    Stack,
+    TextField,
+    Badge,
+    CircularProgress,
+    useMediaQuery
+} from "@mui/material";
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import HistoryIcon from '@mui/icons-material/History';
 import {useRef, useState} from "react";
@@ -9,6 +20,7 @@ import {Head, Link, router, usePage} from "@inertiajs/react";
 import {CartProvider, useCart} from "@/Pages/Orders/CartContext.jsx";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 import DmPreview from "@/Pages/ReportRepair/SpNew/DmPreview.jsx";
+import {Search} from "@mui/icons-material";
 
 export default function OrderList({count_cart}) {
     const [dmPreview, setDmPreview] = useState('');
@@ -84,6 +96,7 @@ function OrderListContent(props) {
     const {product, setProduct} = props;
     const {address, setAddress, phone, setPhone} = props;
     const {clearCart} = useCart();
+    const isMobile = useMediaQuery('(max-width:600px)');
 
     console.log(product)
 
@@ -114,23 +127,24 @@ function OrderListContent(props) {
                         <form onSubmit={handleSearch}>
                             <Stack direction={{xs: 'column', sm: 'row'}} spacing={2}>
                                 <TextField required inputRef={searchSku} fullWidth label='ค้นหารหัสสินค้า' type='text'/>
-                                <Button type='submit' variant='contained'>ค้นหา</Button>
-                                <Badge badgeContent={countCart} color="error">
-                                    <Button
-                                        fullWidth
-                                        // onClick={() => setOpen(true)}
-                                        startIcon={<AddShoppingCartIcon/>}
-                                        component={Link} href={route('orders.carts')}
+                                <Stack direction='row' spacing={1}>
+                                    <Button fullWidth={isMobile} type='submit' startIcon={<Search/>} variant='contained'>ค้นหา</Button>
+                                    <Badge badgeContent={countCart} color="error">
+                                        <Button
+                                            fullWidth={isMobile}
+                                            startIcon={<AddShoppingCartIcon/>}
+                                            component={Link} href={route('orders.carts')}
+                                            color='secondary' variant='contained'
+                                        />
+                                    </Badge>
+                                    <Button fullWidth={isMobile}
+                                        component={Link} href='/orders/history'
+                                        startIcon={<HistoryIcon/>}
                                         color='secondary' variant='contained'
-                                    />
-                                </Badge>
-                                <Button
-                                    component={Link} href='/orders/history'
-                                    startIcon={<HistoryIcon/>}
-                                    color='secondary' variant='contained'
-                                >
-                                    ประวัติการสั่งซื้อ
-                                </Button>
+                                    >
+                                        {!isMobile && 'ประวัติการสั่งซื้อ'}
+                                    </Button>
+                                </Stack>
                             </Stack>
                         </form>
                     </Grid2>

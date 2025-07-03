@@ -13,7 +13,7 @@ import {
     TableHead,
     TableRow,
     TextField,
-    Typography, useMediaQuery, Divider
+    Typography, useMediaQuery, Divider, FormControl, FormLabel
 } from "@mui/material";
 import { Link } from "@inertiajs/react";
 import SearchIcon from '@mui/icons-material/Search';
@@ -44,11 +44,7 @@ export default function HistoryClaim({ history }) {
                     </Grid2>
                     <Grid2 size={12}>
                         {/* ปุ่มเมนู - สำหรับ Mobile จัดเป็นแนวตั้ง */}
-                        <Stack
-                            direction={isMobile ? 'column' : 'row-reverse'}
-                            spacing={1}
-                            mb={2}
-                        >
+                        <Stack direction='row' spacing={1} mb={2}>
                             <Button
                                 component={Link} href={'/spare-claim/index'}
                                 variant={route().current() === 'spareClaim.index' ? 'contained' : 'outlined'}
@@ -82,24 +78,20 @@ export default function HistoryClaim({ history }) {
                                 mb={2}
                                 alignItems={isMobile ? 'stretch' : 'center'}
                             >
-                                <TextField
-                                    size='small'
-                                    type='date'
-                                    fullWidth={isMobile}
-                                    label={isMobile ? 'วันที่เริ่มต้น' : ''}
-                                />
+                                <FormControl>
+                                    <FormLabel>วันที่เริ่มต้น</FormLabel>
+                                    <TextField size='small' type='date' fullWidth={isMobile}/>
+                                </FormControl>
                                 {!isMobile && <Typography>ถึง</Typography>}
                                 {isMobile && (
                                     <Typography variant='body2' textAlign='center' color='text.secondary'>
                                         ถึง
                                     </Typography>
                                 )}
-                                <TextField
-                                    size='small'
-                                    type='date'
-                                    fullWidth={isMobile}
-                                    label={isMobile ? 'วันที่สิ้นสุด' : ''}
-                                />
+                                <FormControl>
+                                    <FormLabel>วันที่สิ้นสุด</FormLabel>
+                                    <TextField size='small' type='date' fullWidth={isMobile}/>
+                                </FormControl>
                                 <Button
                                     onClick={() => console.log(history)}
                                     startIcon={<SearchIcon />}

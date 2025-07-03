@@ -94,7 +94,7 @@ export default function PendingClaim({list}){
 
                     <Grid2 size={12}>
                         <Stack
-                            direction={isMobile ? 'column' : 'row-reverse'}
+                            direction='row'
                             spacing={1}
                             mb={2}
                         >

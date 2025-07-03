@@ -5,12 +5,13 @@ import {
     Container,
     Grid2,
     Stack,
-    Typography
+    Typography, useMediaQuery
 } from "@mui/material";
 import AlreadyClaim from "@/Pages/SpareClaim/AlreadyClaim.jsx";
 import {Link} from "@inertiajs/react";
 
 export default function ClaimMain({spareParts}) {
+    const isMobile = useMediaQuery('(max-width:700px)');
     return (
         <AuthenticatedLayout>
             <Container maxWidth='false'>
@@ -22,22 +23,25 @@ export default function ClaimMain({spareParts}) {
                         </Breadcrumbs>
                     </Grid2>
                     <Grid2 size={12}>
-                        <Stack direction='row-reverse' spacing={1} mb={2}>
-                            <Button
+                        <Stack direction='row' spacing={1} mb={2}>
+                            <Button fullWidth={isMobile}
                                 component={Link} href={'/spare-claim/index'}
-                                variant={route().current() === 'spareClaim.index' ? 'contained' : 'outlined'}>
+                                variant={route().current() === 'spareClaim.index' ? 'contained' : 'outlined'}
+                            >
                                 แจ้งเคลมอะไหล่
                             </Button>
                             <Button
-                                color='warning'
+                                color='warning' fullWidth={isMobile}
                                 component={Link} href={'/spare-claim/history'}
-                                variant={route().current() === 'spareClaim.historyShow' ? 'contained' : 'outlined'}>
+                                variant={route().current() === 'spareClaim.historyShow' ? 'contained' : 'outlined'}
+                            >
                                 ประวัติเคลม
                             </Button>
                             <Button
-                                color='secondary'
+                                color='secondary' fullWidth={isMobile}
                                 component={Link} href={'/spare-claim/pending'}
-                                variant={route().current() === 'spareClaim.pending' ? 'contained' : 'outlined'}>
+                                variant={route().current() === 'spareClaim.pending' ? 'contained' : 'outlined'}
+                            >
                                 ค้างเคลมอะไหล่
                             </Button>
                         </Stack>

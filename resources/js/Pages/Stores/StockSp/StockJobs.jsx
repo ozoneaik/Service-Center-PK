@@ -1,8 +1,8 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {Head, Link, useForm, usePage} from "@inertiajs/react";
 import {
-    Alert, Button, Container, Grid2, InputAdornment, Paper, Stack,
-    Table, TableBody, TableCell, TableHead, TableRow, TextField
+    Alert, Button, Card, CardContent, Container, Grid2, InputAdornment, Paper, Stack,
+    Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, useMediaQuery
 } from "@mui/material";
 import PasswordIcon from "@mui/icons-material/Password";
 import {AlertDialogQuestion} from "@/Components/AlertDialog.js";
@@ -15,6 +15,7 @@ export default function StockJobs({jobs}) {
     const {flash} = usePage().props
     const [alert, setAlert] = useState(false)
     const {post, delete: destroy} = useForm();
+    const isMobile = useMediaQuery('(max-width:600px)');
     const handleStoreJob = () => {
         AlertDialogQuestion({
             text: 'กด ตกลง เพื่อสร้าง job',
@@ -77,48 +78,83 @@ export default function StockJobs({jobs}) {
                     )}
 
                     <Grid2 size={12}>
-                        <Paper variant='outlined' sx={{p: 2, overflowX: 'auto'}}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        {tableHeads.map((head, index) => (
-                                            <TableCell sx={TABLE_HEADER_STYLE} key={index}>{head}</TableCell>
-                                        ))}
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {jobs.length > 0 ? (
-                                        jobs.map((job, index) => (
-                                            <TableRow key={index}>
-                                                <TableCell>{job.stock_job_id}</TableCell>
-                                                <TableCell>
-                                                    <DateFormatTh date={job.created_at}/>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>
+                        {isMobile ? (
+                            <>
+                                {jobs.length > 0 && jobs.map((job, index) => {
+                                    return (
+                                        <Card key={index} variant='outlined'>
+                                            <CardContent>
+                                                <Stack spacing={2}>
+                                                    <Typography>รหัสจ็อบ : {job.stock_job_id}</Typography>
+                                                    <Typography>สร้างเมื่อ : <DateFormatTh
+                                                        date={job.created_at}/></Typography>
+                                                    <Stack direction='row' spacing={2}>
                                                         <Button
+                                                            fullWidth
                                                             variant='contained' component={Link}
                                                             href={route('stockJob.addSp', {stock_job_id: job.stock_job_id})}
                                                             size='small'>
                                                             รายละเอียด
                                                         </Button>
                                                         <Button
+                                                            fullWidth
                                                             variant='contained' size='small' color='error'
                                                             onClick={() => handleDelete(job.stock_job_id)}>
                                                             ลบ
                                                         </Button>
                                                     </Stack>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
+                                                </Stack>
+                                            </CardContent>
+                                        </Card>
+                                    )
+                                })}
+                            </>
+                        ) : (
+
+                            <Paper variant='outlined' sx={{p: 2, overflowX: 'auto'}}>
+                                <Table>
+                                    <TableHead>
                                         <TableRow>
-                                            <TableCell colSpan={3}>ไม่มีรายการ Job</TableCell>
+                                            {tableHeads.map((head, index) => (
+                                                <TableCell sx={TABLE_HEADER_STYLE} key={index}>{head}</TableCell>
+                                            ))}
                                         </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </Paper>
+                                    </TableHead>
+                                    <TableBody>
+                                        {jobs.length > 0 ? (
+                                            jobs.map((job, index) => (
+                                                <TableRow key={index}>
+                                                    <TableCell>{job.stock_job_id}</TableCell>
+                                                    <TableCell>
+                                                        <DateFormatTh date={job.created_at}/>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>
+                                                            <Button
+                                                                variant='contained' component={Link}
+                                                                href={route('stockJob.addSp', {stock_job_id: job.stock_job_id})}
+                                                                size='small'>
+                                                                รายละเอียด
+                                                            </Button>
+                                                            <Button
+                                                                variant='contained' size='small' color='error'
+                                                                onClick={() => handleDelete(job.stock_job_id)}>
+                                                                ลบ
+                                                            </Button>
+                                                        </Stack>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={3}>ไม่มีรายการ Job</TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </Paper>
+                        )}
+
                     </Grid2>
                 </Grid2>
             </Container>
