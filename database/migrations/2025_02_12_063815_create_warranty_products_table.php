@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('user_is_code_id')->comment('รหัส isCode');
             $table->date('expire_date')->nullable()->comment('รับประกันถึง');
             $table->bigInteger('warranty_period')->nullable()->comment('ระยะเวลารับประกัน(เดือน)');
+            $table->string('path_file')->nullable()->comment('ไฟล์หลักฐาน');
             $table->timestamps();
         });
     }
