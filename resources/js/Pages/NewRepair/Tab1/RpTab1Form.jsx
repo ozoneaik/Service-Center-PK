@@ -30,7 +30,6 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMa
         try {
             setLoadingJob(true);
             const {data, status} = await axios.get(route('repair.before.index', {job_id: JOB.job_id}));
-            console.log('ดึงข้อมูล job บันทึกการซ่อม ==> 🔍', data)
             const customer = data.form.customer;
             const remark_symptom_accessory = data.form.remark_symptom_accessory;
             const file_befores = data.form.file_befores;
@@ -164,19 +163,21 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMa
                                     </CardContent>
                                 </Card>
                             </Grid2>
-                            <Grid2 size={12}>
-                                <Card
-                                    variant='outlined'
-                                    sx={(theme) => (
-                                        {backgroundColor: theme.palette.cardFormRpColor.main}
-                                    )}
-                                >
-                                    <CardContent>
-                                        <HeaderTitle headTitle='ใบรับงานสินค้า'/>
-                                        <RpWorkReceipt form1Saved={form1Saved} JOB={JOB}/>
-                                    </CardContent>
-                                </Card>
-                            </Grid2>
+                            {JOB.customer?.name && JOB.customer?.phone && JOB.remark_symptom_accessory?.symptom && (
+                                <Grid2 size={12}>
+                                    <Card
+                                        variant='outlined'
+                                        sx={(theme) => (
+                                            {backgroundColor: theme.palette.cardFormRpColor.main}
+                                        )}
+                                    >
+                                        <CardContent>
+                                            <HeaderTitle headTitle='ใบรับงานสินค้า'/>
+                                            <RpWorkReceipt form1Saved={form1Saved} JOB={JOB}/>
+                                        </CardContent>
+                                    </Card>
+                                </Grid2>
+                            )}
                             <Grid2 size={12}>
                                 <Stack direction='row' spacing={2} justifyContent='end'>
                                     <Button

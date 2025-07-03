@@ -83,8 +83,8 @@ export default function PendingClaim({list}){
 
     return (
         <AuthenticatedLayout>
-            <Container maxWidth='false'>
-                <Grid2 container spacing={2} mt={3}>
+            <Container maxWidth='false' >
+                <Grid2 container spacing={2} mt={3} sx={{bgcolor : 'white', p : isMobile ? 0 : 2}}>
                     <Grid2 size={12}>
                         <Breadcrumbs>
                             <Typography sx={{color: 'text.primary'}}>แจ้งเคลมอะไหล่</Typography>

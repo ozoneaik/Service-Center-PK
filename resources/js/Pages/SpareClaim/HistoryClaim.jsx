@@ -34,7 +34,7 @@ export default function HistoryClaim({ history }) {
     const isMobile = useMediaQuery('(max-width:700px)');
     return (
         <AuthenticatedLayout>
-            <Container maxWidth='false'>
+            <Container maxWidth='false' sx={{bgcolor : 'white', p : isMobile ? 0 : 2}}>
                 <Grid2 container spacing={2} mt={3}>
                     <Grid2 size={12}>
                         <Breadcrumbs>

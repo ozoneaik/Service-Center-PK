@@ -259,7 +259,8 @@ class OrderController extends Controller
                 ->select('sale_information.lark_token')
                 ->first();
             $order->update(['total_price' => $totalOrderPrice]);
-            $text = "ศูนย์ซ่อม : " . Auth::user()->store_info->shop_name . "\nแจ้งเรื่อง : สั่งซื้ออะไหล่\nรายการ :\n\n" . implode("\n", $items);
+            $text_order_id = "รหัสออเดอร์ : $order_id";
+            $text = "ศูนย์ซ่อม : " . Auth::user()->store_info->shop_name ."\n$text_order_id". "\nแจ้งเรื่อง : สั่งซื้ออะไหล่\nรายการ :\n\n" . implode("\n", $items);
             $body = [
                 "receive_id" => $receive_id?->lark_token ?? 'unknown',
                 "msg_type" => "text",

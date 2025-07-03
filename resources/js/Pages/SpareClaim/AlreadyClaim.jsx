@@ -29,6 +29,8 @@ export default function AlreadyClaim({spareParts}) {
         detail: item.detail.map(detailItem => ({...detailItem, checked: false}))
     })));
 
+    const [loading, setLoading] = useState(false);
+
     useEffect(() => {
         console.log(spareParts)
     }, []);
@@ -67,6 +69,7 @@ export default function AlreadyClaim({spareParts}) {
             onPassed: async (confirm) => {
                 if (confirm) {
                     try {
+                        setLoading(true);
                         const {data, status} = await axios.post('/spare-claim/store', {
                             selected: formData
                         });
@@ -83,6 +86,7 @@ export default function AlreadyClaim({spareParts}) {
                                 if (Status === 200) window.location.reload()
                             }
                         })
+                        setLoading(false);
                     }
                 } else console.log('ไม่ได้กด confirm')
             }
@@ -220,7 +224,7 @@ export default function AlreadyClaim({spareParts}) {
             >
                 <form onSubmit={onSubmit}>
                     <Stack direction='row-reverse' spacing={2} m={2}>
-                        <Button variant='contained' type='submit'>
+                        <Button variant='contained' type='submit' loading={loading}>
                             สร้างเอกสารเคลม
                         </Button>
                     </Stack>
