@@ -154,6 +154,9 @@ export default function AlreadyClaim({spareParts}) {
                                                                     จำนวน : {item.qty} ต่อ 1 {item.sp_unit || 'อัน'}
                                                                 </Typography>
                                                             </Box>
+                                                            <Button onClick={() => showModal(item)}>
+                                                                <PreviewIcon/>
+                                                            </Button>
                                                         </Stack>
                                                     </Box>
                                                 </Stack>

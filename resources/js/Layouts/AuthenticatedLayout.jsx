@@ -46,7 +46,7 @@ export default function AuthenticatedLayout({header, children}) {
                         <div className="flex">
                             <div className="flex shrink-0 items-center gap-2 text-white font-bold">
                                 <Avatar src={icon || ''}/>
-                                <Typography>SERVICE CENTER PK</Typography>
+                                <Typography>บริการศูนย์ซ่อม</Typography>
                             </div>
                             {/*<div className="hidden space-x-8 md:-my-px md:ms-10 md:flex">*/}
                             <div className="hidden space-x-8 lg:-my-px lg:ms-10 lg:flex">
