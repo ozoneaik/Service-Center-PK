@@ -136,7 +136,7 @@ Route::get('/test-page',function(){
    return Inertia::render('Test/TestPage');
 });
 
-Route::get('/dom-pdf', [DomPdfController::class,'index'])->name('dom-pdf.index');
+Route::get('/dom-pdf/{group_job_id}', [DomPdfController::class,'index'])->name('dom-pdf.index');
 
 
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="utf-8">
     <style>
@@ -13,7 +14,6 @@
         .container {
             width: 100%;
             font-size: 12px;
-            padding: 20px;
         }
 
         .header {
@@ -77,6 +77,7 @@
         }
 
         .product-description {
+            font-size : 14px;
             color: #7f8c8d;
             line-height: 1.5;
             text-align: justify;
@@ -106,70 +107,59 @@
         }
 
         @page {
-            margin: 15mm;
+            margin: 10mm;
         }
-
     </style>
 </head>
+
 <body>
-<div class="container">
+    <div class="container">
 
-    <div class="header">
-        <div class="main-title">
-            รายงานส่งซ่อมสินค้ามายังศูนย์ Pumpkin Corporation
-        </div>
-        <div class="divider"></div>
-        <div class="sub-title">
-            ศูนย์บริการ {{$shop_name ?? ''}}
-        </div>
-    </div>
-
-    <div class="info-section">
-        <table class="info-table">
-            <tr>
-                <td class="label">กลุ่มงาน: {{ $job_group ?? '' }}</td>
-                <td class="label" style="text-align: right;">วันที่: {{ \Carbon\Carbon::now()->format('d/m/Y') }}</td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="product-item">
-        <div class="product-title">
-            J-series เจียรมือ J-G9612
-        </div>
-        <div class="product-description">
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores consectetur corporis, eligendi hic maiores
-            nesciunt nihil, nobis obcaecati perferendis perspiciatis, quam quasi quia quod rem saepe soluta temporibus unde
-            voluptates.
-        </div>
-    </div>
-
-    <div class="product-item">
-        <div class="product-title">
-            J-series เจียรมือ J-G9612
-        </div>
-        <div class="product-description">
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores consectetur corporis, eligendi hic maiores
-            nesciunt nihil, nobis obcaecati perferendis perspiciatis, quam quasi quia quod rem saepe soluta temporibus unde
-            voluptates.
-        </div>
-    </div>
-
-    <div class="signature-section">
-        <div class="signature-box">
-            <div class="signature-label">
-                ลายเซ็นผู้รับสินค้า
+        <div class="header">
+            <div class="main-title">
+                รายงานส่งซ่อมสินค้ามายังศูนย์ Pumpkin Corporation
             </div>
-            <div class="signature-line"></div>
+            <div class="divider"></div>
+            <div class="sub-title">
+                ศูนย์บริการ {{ $shop_name ?? '' }}
+            </div>
         </div>
-    </div>
 
-</div>
+        <div class="info-section">
+            <table class="info-table">
+                <tr>
+                    <td class="label">กลุ่มงาน: {{ $group_job_id ?? '-' }}</td>
+                    <td class="label" style="text-align: right;">วันที่: {{ \Carbon\Carbon::now()->format('d/m/Y') }}
+                    </td>
+                </tr>
+            </table>
+        </div>
 
-<htmlpagefooter name="footer">
-    <div style="text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 10px;">
-        Pumpkin Corporation Service Center
+
+        @foreach ($group_job as $job)
+            <div class="product-item">
+                <div class="product-title">
+                    {{ $job['p_name'] }}
+                </div>
+                <div class="product-description">
+                    รหัสสินค้า : {{ $job['pid'] }} | ซีเรียล : {{ $job['serial_id'] }} | Job ID : {{ $job['job_id'] }}
+                    <br/>
+                    ประเภท : {{ $job['p_cat_name'] }} | ประเภทย่อย : {{ $job['p_sub_cat_name'] }}
+                </div>
+            </div>
+        @endforeach
+
+
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-label">
+                    ลายเซ็นผู้รับสินค้า
+                </div>
+                <div class="signature-line"></div>
+            </div>
+        </div>
+
     </div>
-</htmlpagefooter>
 </body>
+
 </html>

@@ -1,38 +1,31 @@
 import {
-    Dialog,
-    DialogContent,
-    Grid2,
-    InputAdornment,
-    TextField,
-    Typography,
-    Button,
-    Stack,
-    Table,
-    TableCell,
-    TableHead,
-    TableRow,
-    TableBody,
-    Alert,
-    CircularProgress
+    Dialog, DialogContent, Grid2, InputAdornment, TextField, Typography, Button,
+    Stack, Table, TableCell, TableHead, TableRow, TableBody,
+    Alert, CircularProgress,
+    useMediaQuery, Card,
+    CardContent
 } from "@mui/material";
 import QrCodeIcon from '@mui/icons-material/QrCode';
-import {useEffect, useRef, useState} from "react";
-import {useForm, usePage} from "@inertiajs/react";
+import { useEffect, useRef, useState } from "react";
+import { useForm, usePage } from "@inertiajs/react";
+import { Edit } from "@mui/icons-material";
 
-export default function AddSpWithBill({openAddSpBill, setOpenAddSpBill}) {
+export default function AddSpWithBill({ openAddSpBill, setOpenAddSpBill }) {
     const barCodeRef = useRef(null);
     const [errorSearch, setErrorSearch] = useState('');
     const [loading, setLoading] = useState(false);
     const [spList, setSpList] = useState([]);
     const [barcodeResponse, setBarcodeResponse] = useState('');
     const user = usePage().props.auth.user;
-    const {data, setData, post, processing, error} = useForm({
+    const { data, setData, post, processing, error } = useForm({
         spList: spList,
         is_code_cust_id: user.is_code_cust_id,
         barcode: ''
     });
     const [statusSaved, setStatusSaved] = useState(false);
-    const {flash} = usePage().props
+    const { flash } = usePage().props
+
+    const isMobile = useMediaQuery('(max-width:600px)');
 
 
     useEffect(() => {
@@ -52,7 +45,7 @@ export default function AddSpWithBill({openAddSpBill, setOpenAddSpBill}) {
             setErrorSearch(null)
             setLoading(true);
             setStatusSaved(false);
-            const response = await axios.get(route('getSp', {barcode: barCodeRef.current.value}));
+            const response = await axios.get(route('getSp', { barcode: barCodeRef.current.value }));
             console.log(response.data, response.status);
             setSpList(response.data.listSp);
             setBarcodeResponse(response.data.barcode);
@@ -110,21 +103,21 @@ export default function AddSpWithBill({openAddSpBill, setOpenAddSpBill}) {
                     <Grid2 size={12}>
                         <form onSubmit={handleOnSearch}>
                             <Stack direction='column' spacing={2}>
-                                <Alert severity="warning" sx={{width: '100%'}}>
+                                <Alert severity="warning" sx={{ width: '100%' }}>
                                     หากใช้เครื่องยิงบาร์โค้ด อย่าลืมเปลี่ยนภาษาให้เป็นภาษาอังกฤษ
                                     และโปรดมั่นใจว่าช่องค้นหา อยู่ในสถานะกำลังพิมพ์อยู่
                                 </Alert>
-                                <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>
+                                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
                                     <TextField autoFocus inputRef={barCodeRef} fullWidth label='หมายเลขบิล'
-                                               placeholder="สแกนบิลหรือกรอกหมายเลขบิล" slotProps={{
-                                        input: {
-                                            startAdornment: (
-                                                <InputAdornment position="start">
-                                                    <QrCodeIcon/>
-                                                </InputAdornment>
-                                            )
-                                        }
-                                    }}/>
+                                        placeholder="สแกนบิลหรือกรอกหมายเลขบิล" slotProps={{
+                                            input: {
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <QrCodeIcon />
+                                                    </InputAdornment>
+                                                )
+                                            }
+                                        }} />
                                     <Button variant="contained" disabled={loading} type="submit">
                                         {loading ? 'กำลังค้นหา...' : 'ค้นหา'}
                                     </Button>
@@ -157,17 +150,65 @@ export default function AddSpWithBill({openAddSpBill, setOpenAddSpBill}) {
                                 </Alert>
                             </Grid2>
                         )}
-                        <Grid2 size={12} sx={{maxHeight: 450, overflowY: 'auto'}}>
-                            <Table stickyHeader>
-                                <TableHead>
-                                    <TableRow>
-                                        {['รหัสอะไหล่', 'ชื่ออะไหล่','จำนวนอะไหล่ที่รับเข้ามา', 'จำนวน'].map((item, index) => (
-                                            <TableCell sx={TABLE_HEADER_STYLE} key={index}>{item}</TableCell>
-                                        ))}
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
+                        <Grid2 size={12} sx={{ maxHeight: 450, overflowY: 'auto' }}>
+                            {isMobile ? (
+                                <>
                                     {!loading ? (
+                                        <Stack spacing={2}>
+                                            {spList.length === 0 ? (
+                                                <>ไม่พบรายการอะไหล่</>
+                                            ) : (
+                                                <>
+                                                    {spList.map((item, index) => {
+                                                        return (
+                                                            <Card variant="outlined" key={index}>
+                                                                <CardContent>
+                                                                    <Stack spacing={2}>
+                                                                        <Typography level="title-md" fontWeight="lg">
+                                                                            {item.sp_code} — {item.sp_name}
+                                                                        </Typography>
+                                                                        <Typography level="body-sm" textColor="text.secondary">
+                                                                            จำนวน: {item.default_qty_sp} {item.sp_unit}
+                                                                        </Typography>
+                                                                        <TextField
+                                                                            slotProps={{
+                                                                                input: {
+                                                                                    startAdornment: (
+                                                                                        <InputAdornment position="start">
+                                                                                            <Edit />
+                                                                                        </InputAdornment>
+                                                                                    )
+                                                                                }
+                                                                            }}
+                                                                            label="จํานวนที่ต้องการ"
+                                                                            type="number"
+                                                                            onChange={(e) => handleChangeQty(e, index)}
+                                                                            value={parseInt(item.qty_sp)}
+                                                                        />
+                                                                    </Stack>
+                                                                </CardContent>
+                                                            </Card>
+                                                        )
+                                                    })}
+                                                </>
+                                            )}
+                                        </Stack>
+                                    ) : (
+                                        <CircularProgress />
+                                    )}
+                                </>
+
+                            ) : (
+                                <Table stickyHeader>
+                                    <TableHead>
+                                        <TableRow>
+                                            {['รหัสอะไหล่', 'ชื่ออะไหล่', 'จำนวนอะไหล่ที่รับเข้ามา', 'จำนวน'].map((item, index) => (
+                                                <TableCell sx={TABLE_HEADER_STYLE} key={index}>{item}</TableCell>
+                                            ))}
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {!loading ? (
                                             <>
                                                 {spList.length === 0 ?
                                                     <TableRow>
@@ -192,22 +233,24 @@ export default function AddSpWithBill({openAddSpBill, setOpenAddSpBill}) {
                                                     ))}</>}
                                             </>
                                         ) :
-                                        <TableRow>
-                                            <TableCell colSpan={3}>
-                                                <CircularProgress/>
-                                            </TableCell>
-                                        </TableRow>
-                                    }
-                                </TableBody>
-                            </Table>
+                                            <TableRow>
+                                                <TableCell colSpan={3}>
+                                                    <CircularProgress />
+                                                </TableCell>
+                                            </TableRow>
+                                        }
+                                    </TableBody>
+                                </Table>
+                            )}
+
                         </Grid2>
                         {!loading && <Grid2 size={12}>
-                            <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>
+                            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
                                 <Button variant="outlined" fullWidth onClick={() => setOpenAddSpBill(false)}>
                                     ยกเลิก
                                 </Button>
                                 <Button type="submit" disabled={spList.length === 0 || processing} variant="contained"
-                                        fullWidth>
+                                    fullWidth>
                                     {processing ? 'กำลังบันทึก...' : 'บันทึก'}
                                 </Button>
                             </Stack>

@@ -1,19 +1,8 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {Head, Link, router, useForm, usePage} from "@inertiajs/react";
 import {
-    Alert,
-    Box,
-    Button,
-    Chip,
-    Grid2,
-    Paper,
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Typography
+    Alert,Box,Button,Chip,Grid2,Paper,Stack,Table,
+    TableBody,TableCell,TableHead,TableRow,Typography
 } from "@mui/material";
 import React, {useState} from "react";
 import DeleteIcon from '@mui/icons-material/Delete';

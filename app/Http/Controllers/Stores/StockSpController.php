@@ -36,9 +36,19 @@ class StockSpController extends Controller
         return Inertia::render('Stores/Manage/StoreList', ['shops' => $shops]);
     }
 
-    public function StockSpList($is_code_cust_id): Response
+    public function StockSpList(Request $request,$is_code_cust_id): Response
     {
-        $stocks = StockSparePart::query()->where('is_code_cust_id', $is_code_cust_id)->get();
+        $sp_code = $request->input('sp_code');
+        $sp_name = $request->input('sp_name');
+        $query = StockSparePart::query()->where('is_code_cust_id', $is_code_cust_id);
+        if (isset($sp_code)) {
+            $query->where('sp_code', 'like', "%$sp_code%");
+        }
+        if (isset($sp_name)) {
+            $query->where('sp_name', 'like', "%$sp_name%");
+        }
+
+        $stocks = $query->get();
         $store = StoreInformation::query()->where('is_code_cust_id', $is_code_cust_id)->first();
         return Inertia::render('Stores/StockSp/StockSpList', [
             'stocks' => $stocks,

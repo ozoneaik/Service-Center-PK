@@ -71,7 +71,7 @@ export default function DocSendJobs({groups}) {
                                     component="a"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    href={`/send-job/print/${group.group_job}`}
+                                    href={route('dom-pdf.index', {group_job_id : group.group_job})}
                                 >
                                     พิมพ์
                                 </Button>
@@ -187,7 +187,7 @@ export default function DocSendJobs({groups}) {
                                                             component="a"
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            href={`/send-job/print/${group.group_job}`}
+                                                            href={route('dom-pdf.index', {group_job_id : group.group_job})}
                                                             sx={{ flex: 1 }}
                                                         >
                                                             พิมพ์

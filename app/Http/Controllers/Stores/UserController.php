@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
-use PhpParser\Node\Stmt\TryCatch;
 
 class UserController extends Controller
 {
@@ -44,7 +43,7 @@ class UserController extends Controller
             ]);
             if ($user) {
                 DB::commit();
-                return redirect()->back()->with('success', "บันทึกผู้ใช้สำเร็จ");
+                return redirect()->route('storeUsers.index')->with('success', "บันทึกผู้ใช้สำเร็จ");
             }else throw new \Exception("บันทึกผู้ใช้ไม่สำเร็จ");
         }catch(\Exception $e) {
             DB::rollBack();
