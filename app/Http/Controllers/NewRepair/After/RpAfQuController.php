@@ -41,7 +41,7 @@ class RpAfQuController extends Controller
                 foreach ($spare_parts as $key => $spare_part) {
                     $spare_parts_format[$key]['pid'] = $spare_part['spcode'];
                     $spare_parts_format[$key]['name'] = $spare_part['spname'];
-                    $spare_parts_format[$key]['price'] = $spare_part['price_per_unit'];
+                    $spare_parts_format[$key]['price'] = $spare_part['price_multiple_gp'];
                     $spare_parts_format[$key]['prod_discount'] = 20;
                     $spare_parts_format[$key]['unit'] = $spare_part['sp_unit'] ?? 'อัน';
                     $spare_parts_format[$key]['qty'] = $spare_part['qty'];

@@ -217,8 +217,8 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected, JOB}) {
                                             {sp.spcode}
                                             <br/>
                                             {sp.spname}
-                                            <br/>
-                                            {sp.warranty}
+                                            {/*<br/>*/}
+                                            {/*{sp.warranty}*/}
                                         </TableCell>
                                         <TableCell>{sp.price_per_unit}</TableCell>
                                         <TableCell>{sp.spunit}</TableCell>

@@ -23,6 +23,7 @@ Route::prefix('repair')->group(function () {
 
     Route::prefix('job')->group(function () {
         Route::post('/store', [JobController::class, 'storeJob'])->name('repair.store');
+        Route::post('/store-from-pid', [JobController::class, 'storeJobFromPid'])->name('repair.store.from.pid');
         Route::post('/close-repair',[JobController::class, 'closeJob'])->name('close-repair');
         Route::post('/cancel-repair',[JobController::class, 'cancelJob'])->name('cancel-repair');
 

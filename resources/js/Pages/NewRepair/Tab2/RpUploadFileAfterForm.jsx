@@ -1,21 +1,8 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useDropzone} from "react-dropzone";
 import {
-    Alert,
-    Box,
-    Button,
-    Card,
-    CardActions,
-    CardContent,
-    CardMedia,
-    Chip,
-    Grid2,
-    IconButton,
-    MenuItem,
-    Paper,
-    Select,
-    Stack,
-    Typography
+    Alert,Box,Button,Card,CardActions,CardContent,CardMedia,
+    Chip,FormControl,FormHelperText,Grid2,MenuItem,Paper,Select,Stack,Typography
 } from "@mui/material";
 import {
     CloudUpload as CloudUploadIcon, Delete as DeleteIcon,
@@ -114,7 +101,7 @@ export default function RpUploadFileAfterForm({productDetail, JOB, setStepForm})
             name: file.name,
             size: file.size,
             type: file.type,
-            menu_id: 2
+            menu_id: 0
         }));
 
         setFiles(prev => [...prev, ...filesWithPreview]);
@@ -173,7 +160,16 @@ export default function RpUploadFileAfterForm({productDetail, JOB, setStepForm})
         };
     }, []);
 
+
+
     const handleSave = () => {
+        const fileMenuIsZero = files.some((item) => item.menu_id === 0);
+        if (fileMenuIsZero) {
+            AlertDialog({
+                text : 'กรุณาเลือกประเภทไฟล์สำหรับทุกไฟล์ที่อัปโหลดก่อนบันทึก'
+            });
+            return ;
+        }
         AlertDialogQuestion({
             title: 'สภาพสินค้าหลังซ่อม',
             text: 'กด ตกลง เพื่อ บันทึกรูปภาพหรือวิดีโอ สภาพสินค้าหลังซ่อม',
@@ -320,16 +316,20 @@ export default function RpUploadFileAfterForm({productDetail, JOB, setStepForm})
                                                     color={isImage ? 'primary' : 'secondary'}
                                                 />
                                             </Box>
-                                            <Select
-                                                fullWidth size='small' variant='outlined'
-                                                value={fileObj.menu_id}
-                                                onChange={(e) => handleChangeMenu(fileObj.id, e.target.value)}
-                                            >
-                                                <MenuItem value={2}>สภาพสินค้าหลังซ่อม</MenuItem>
-                                                <MenuItem value={3}>ภาพอะไหล่ที่เสียส่งเคลม</MenuItem>
-                                                <MenuItem value={4}>ภาพอะไหล่ที่เปลี่ยน</MenuItem>
-                                                <MenuItem value={5}>ภาพอะไหล่เสี่ยอื่นๆ</MenuItem>
-                                            </Select>
+                                            <FormControl error={fileObj.menu_id === 0} fullWidth>
+                                                <Select
+                                                    fullWidth size='small' variant='outlined'
+                                                    value={fileObj.menu_id || 0}
+                                                    onChange={(e) => handleChangeMenu(fileObj.id, e.target.value)}
+                                                >
+                                                    <MenuItem value={0} disabled>เลือก</MenuItem>
+                                                    <MenuItem value={2}>สภาพสินค้าหลังซ่อม</MenuItem>
+                                                    <MenuItem value={3}>ภาพอะไหล่ที่เสียส่งเคลม</MenuItem>
+                                                    <MenuItem value={4}>ภาพอะไหล่ที่เปลี่ยน</MenuItem>
+                                                    <MenuItem value={5}>ภาพอะไหล่เสี่ยอื่นๆ</MenuItem>
+                                                </Select>
+                                                <FormHelperText>{fileObj.menu_id === 0 && 'กรุณาเลือกประเภท'}</FormHelperText>
+                                            </FormControl>
                                         </CardContent>
 
                                         <CardActions sx={{pt: 0}}>

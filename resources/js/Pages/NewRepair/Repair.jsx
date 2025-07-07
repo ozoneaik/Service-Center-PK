@@ -48,7 +48,6 @@ export default function Repair({DATA}) {
             const {data, status} = await axios.post(route('repair.search'), {SN, PID});
             const combo_set = data.data.combo_set;
             const addWarranty = data.data.warranty_expire; // เก็บสถานะรับประกัน
-            console.log('Searching Product ==> ',data)
             if (combo_set) {
                 setOpenSelSku(true);
                 let sku_list = data.data.sku_list;
@@ -63,6 +62,7 @@ export default function Repair({DATA}) {
             }
 
             setSN('');
+            setPID('');
         } catch (error) {
             const errorMessage = error.response.data.message;
             const errorStatus = error.status;
@@ -165,7 +165,7 @@ const SearchSnComponent = ({SN, setSn, onPassed, PID, setPID, loading}) => {
                                                     input: {
                                                         startAdornment: (
                                                             <InputAdornment position={'start'}>
-                                                                PID
+                                          Ï                      PID
                                                             </InputAdornment>)
                                                     }
                                                 }}

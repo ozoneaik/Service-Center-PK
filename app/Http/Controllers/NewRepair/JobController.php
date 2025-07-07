@@ -13,6 +13,7 @@ use App\Models\SparePart;
 use App\Models\Symptom;
 use App\Models\WarrantyProduct;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,6 @@ class JobController extends Controller
 {
     public function searchJob(Request $request): JsonResponse
     {
-
         $serial_id = $request->serial_id;
         $pid = $request->pid;
         $job_id = $request->job_id ?? null;
@@ -38,10 +38,20 @@ class JobController extends Controller
             } else {
                 if ($serial_id === '9999') {
                     $found = JobList::query()
-                        ->where('serial_id', 'LIKE' , '9999-%')
-                        ->where('pid', $pid)
-                        ->orderBy('id', 'desc')->first();
-                }else{
+                        ->leftJoin('customer_in_jobs', 'customer_in_jobs.job_id', '=', 'job_lists.job_id')
+                        ->where('job_lists.serial_id', 'LIKE', '9999-%')
+                        ->where('job_lists.pid', $pid)
+                        ->where('job_lists.is_code_key', Auth::user()->is_code_cust_id)
+                        ->where('job_lists.status', 'pending')
+                        ->select('job_lists.*', 'customer_in_jobs.name as cust_name', 'customer_in_jobs.phone as cust_phone')
+                        ->orderBy('job_lists.id', 'desc')->get();
+                    return response()->json([
+                        'search_by' => 'pid',
+                        'message' => 'success',
+                        'found' => count($found) > 0,
+                        'jobs' => $found->toArray()
+                    ]);
+                } else {
                     $found = JobList::query()
                         ->where('serial_id', $serial_id)
                         ->where('pid', $pid)
@@ -51,6 +61,7 @@ class JobController extends Controller
                 if ($found && $found->is_code_key === Auth::user()->is_code_cust_id) {
                     if ($found->status === 'pending') {
                         return response()->json([
+                            'search_by' => 'sn',
                             'message' => 'เจอข้อมูล',
                             'found' => true,
                             'job' => ['job_detail' => $found]
@@ -61,7 +72,6 @@ class JobController extends Controller
                         $status = 404;
                         throw new \Exception('<span>ยืนยันการแจ้งซ่อม</span>');
                     }
-
                 } elseif ($found && $found->is_code_key !== Auth::user()->is_code_cust_id) {
                     throw new \Exception('<span>ถูกซ่อมโดยที่อื่น</span>');
                 } else {
@@ -114,6 +124,52 @@ class JobController extends Controller
             'job_detail' => $store_job,
         ]);
     }
+
+    public function storeJobFromPid(Request $request)
+    {
+        try {
+            $serial_id = '9999-' . time() . rand(0, 99999);
+            $job_id = 'JOB-' . time() . rand(0, 99999);
+            $product_detail = $request->get('productDetail');
+            $store_job = JobList::query()->create([
+                'serial_id' => $serial_id,
+                'job_id' => $job_id,
+                'pid' => $product_detail['pid'],
+                'p_name' => $product_detail['pname'],
+                'p_base_unit' => $product_detail['pbaseunit'],
+                'p_cat_id' => $product_detail['pcatid'],
+                'p_cat_name' => $product_detail['pCatName'],
+                'p_sub_cat_name' => $product_detail['pSubCatName'],
+                'fac_model' => $product_detail['facmodel'],
+                'warranty_condition' => $product_detail['warrantycondition'] ?? null,
+                'warranty_note' => $product_detail['warrantynote'] ?? null,
+                'warranty_period' => $product_detail['warrantyperiod'] ?? null,
+                'image_sku' => $product_detail['imagesku'],
+                'status' => 'pending',
+                'warranty' => $product_detail['warranty'] ?? false,
+                'user_key' => Auth::user()->user_code,
+                'is_code_key' => Auth::user()->is_code_cust_id,
+            ]);
+            return response()->json([
+                'job_id' => $store_job->id,
+                'serial_id' => $store_job->serial_id,
+                'job_detail' => $store_job,
+            ]);
+        } catch (QueryException $e) {
+            Log::error('Error Database: ' . $e->getMessage() . ' in file ' . $e->getFile() . ' on line ' . $e->getLine());
+            return response()->json([
+                'message' => 'ไม่สามารถสร้างงานซ่อมได้ error from database',
+                'error' => $e->getMessage() .'in Line => ' .$e->getLine() . ' in file => ' . $e->getFile(),
+            ], 400);
+        } catch (\Exception $e) {
+            Log::error('Error General: ' . $e->getMessage() . ' in file ' . $e->getFile() . ' on line ' . $e->getLine());
+            return response()->json([
+                'message' => 'ไม่สามารถสร้างงานซ่อมได้ error from database',
+                'error' => $e->getMessage() .'in Line => ' .$e->getLine() . ' in file => ' . $e->getFile(),
+            ], 400);
+        }
+    }
+
 
     public function closeJob(Request $request)
     {
@@ -205,7 +261,7 @@ class JobController extends Controller
             } else {
                 throw new \Exception('ไม่สามารถผิดจ็อบได้');
             }
-//            DB::rollBack();
+            //            DB::rollBack();
             DB::commit();
             return response()->json([
                 'job_id' => $job_id,
