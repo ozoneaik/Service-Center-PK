@@ -1,14 +1,14 @@
 import {
-    Alert, Box, Button, Card, CardActionArea, CardContent, CircularProgress,
+    Accordion, AccordionDetails, AccordionSummary,
+    Alert, Box, Button, CircularProgress,
     Grid2, Stack, Tab, Tabs, Typography, useMediaQuery, useTheme
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import RpTab2Form from "@/Pages/NewRepair/Tab2/RpTab2Form.jsx";
 import RpTab1Form from "@/Pages/NewRepair/Tab1/RpTab1Form.jsx";
 import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
-import { Add, Edit } from "@mui/icons-material";
+import { Add, Edit, ExpandMore } from "@mui/icons-material";
 import axios from "axios";
-
 
 function CustomTabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -37,7 +37,6 @@ export default function RpMain({ productDetail, serial_id }) {
     const isMobile = useMediaQuery('(max-width:600px)');
 
     const { palette } = useTheme();
-    const pumpkinColor = palette.pumpkinColor.main;
 
     const [MainStep, setMainStep] = useState({
         step: 'before',
@@ -84,25 +83,11 @@ export default function RpMain({ productDetail, serial_id }) {
                     onPassed: async (confirm) => {
                         if (confirm) {
                             console.log(productDetail)
-                            const product_format = {
-                                pid: productDetail.pid,
-                                pname: productDetail.pname,
-                                pbaseunit: productDetail.pbaseunit,
-                                pcatid: productDetail.pcatid,
-                                pCatName: productDetail.pCatName,
-                                pSubCatName: productDetail.pSubCatName,
-                                facmodel: productDetail.facmodel,
-                                imagesku: productDetail.imagesku,
-                                warrantyperiod: productDetail.warrantyperiod,
-                                warrantycondition: productDetail.warrantycondition,
-                                warrantynote: productDetail.warrantynote,
-                                warranty: productDetail.warranty || productDetail.warranty_status || productDetail.warrantyexpire || false
-                            }
+                            const product_format = productFormat;
                             try {
                                 await axios.post(route('repair.store', {
                                     serial_id, productDetail: product_format
-                                })
-                                );
+                                }));
                                 fetchData().finally(() => setSearchingJob(false));
                             } catch (error) {
                                 AlertDialog({
@@ -136,6 +121,7 @@ export default function RpMain({ productDetail, serial_id }) {
         }
         // setPropSn(job.serial_id);
         setSelectJobFormPid(job)
+        fetchData(job.serial_id).finally(() => setSearchingJob(false));
     }
 
     const handleSelectedJobFromPid = (sn) => {
@@ -150,32 +136,36 @@ export default function RpMain({ productDetail, serial_id }) {
                 if (!confirm) return;
                 try {
                     setSearchingJob(true);
-                    const product_format = {
-                        pid: productDetail.pid,
-                        pname: productDetail.pname,
-                        pbaseunit: productDetail.pbaseunit,
-                        pcatid: productDetail.pcatid,
-                        pCatName: productDetail.pCatName,
-                        pSubCatName: productDetail.pSubCatName,
-                        facmodel: productDetail.facmodel,
-                        imagesku: productDetail.imagesku,
-                        warrantyperiod: productDetail.warrantyperiod,
-                        warrantycondition: productDetail.warrantycondition,
-                        warrantynote: productDetail.warrantynote,
-                        warranty: productDetail.warranty || productDetail.warranty_status || productDetail.warrantyexpire || false
-                    }
-                    const { data, status } = await axios.post(route('repair.store.from.pid',{
+                    const product_format = productFormat;
+                    const { data, status } = await axios.post(route('repair.store.from.pid', {
                         productDetail: product_format
                     }));
                     fetchData(data.serial_id).finally(() => setSearchingJob(false));
                 } catch (error) {
                     const errorMsg = error.response?.data?.message || error.message;
                     AlertDialog({ text: errorMsg })
-                }finally{
+                } finally {
                     setSearchingJob(false);
                 }
             }
         })
+    }
+
+    const productFormat = (productDetail) => {
+        return {
+            pid: productDetail.pid,
+            pname: productDetail.pname,
+            pbaseunit: productDetail.pbaseunit,
+            pcatid: productDetail.pcatid,
+            pCatName: productDetail.pCatName,
+            pSubCatName: productDetail.pSubCatName,
+            facmodel: productDetail.facmodel,
+            imagesku: productDetail.imagesku,
+            warrantyperiod: productDetail.warrantyperiod,
+            warrantycondition: productDetail.warrantycondition,
+            warrantynote: productDetail.warrantynote,
+            warranty: productDetail.warranty || productDetail.warranty_status || productDetail.warrantyexpire || false
+        }
     }
 
 
@@ -217,49 +207,40 @@ export default function RpMain({ productDetail, serial_id }) {
                                 </Typography>
                             </Grid2>
                             <Grid2 size={12}>
-                                <Grid2 container spacing={2}>
-                                    {jobFromPids.map((job, index) => (
-                                        <Grid2 size={{ sm: 12, md: 6, lg: 3 }} key={index}>
-                                            <Card variant='outlined'>
-                                                <CardActionArea
+                                {jobFromPids.map((job, index) => {
+                                    return (
+                                        <Accordion key={index}>
+                                            <AccordionSummary
+                                                expandIcon={<ExpandMore />}
+                                                aria-controls={`panel${index}-content`}
+                                                id={`panel${index}-header`}
+                                            >
+                                                <Typography>ชื่อลูกค้า : {job.cust_name}</Typography>
+                                                <Typography>เบอร์โทรศัพท์ : {job.cust_phone}</Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                <Typography fontWeight='bold'>รายละเอียด</Typography>
+                                                <Typography>S/N : {job.serial_id}</Typography>
+                                                <Typography>รหัส Job : {job.job_id}</Typography>
+                                                <Typography>สินค้า : {job.pid} {job.p_name}</Typography>
+                                                <br />
+                                                <Button
+                                                    fullWidth variant='contained' startIcon={<Edit />}
                                                     onClick={() => handleOnSelectJob(job)}
-                                                    data-active={selectJobFormPid.job_id === job.job_id ? '' : undefined}
-                                                    sx={{
-                                                        height: '100%',
-                                                        '&[data-active]': {
-                                                            backgroundColor: pumpkinColor,
-                                                        },
-                                                    }}
                                                 >
-                                                    <CardContent>
-                                                        <Typography>S/N : {job.serial_id}</Typography>
-                                                        <Typography>สินค้า : {job.pid} {job.p_name}</Typography>
-                                                        <Typography>ลูกค้า : {job.cust_name} {job.cust_phone}</Typography>
-                                                    </CardContent>
-                                                </CardActionArea>
-                                            </Card>
-                                        </Grid2>
-                                    ))}
-                                    <Grid2 size={12} mb={3}>
-                                        <Stack justifyContent='end' direction={isMobile ? 'column' : 'row'} spacing={2}>
-                                            <Button
-                                                variant='contained' startIcon={<Edit />}
-                                                disabled={!selectJobFormPid.job_id}
-                                                onClick={() => handleSelectedJobFromPid(selectJobFormPid.serial_id)}
-                                            >
-                                                {selectJobFormPid.job_id ? 'บันทึกข้อมูลแจ้งซ่อม job ที่เลือก' : 'กรุณาเลือก job ที่ต้องการกรอกข้อมูล'}
-
-                                            </Button>
-                                            <Button
-                                                startIcon={<Add />} onClick={storeJobFromPid}
-                                                variant='contained' color='secondary'
-                                            >
-                                                สร้าง JOB ใหม่
-                                            </Button>
-                                        </Stack>
-
-                                    </Grid2>
-                                </Grid2>
+                                                    เลือก
+                                                </Button>
+                                            </AccordionDetails>
+                                        </Accordion>
+                                    )
+                                })}
+                            </Grid2>
+                            <Grid2 size={12}>
+                                <Stack direction='row' justifyContent='end'>
+                                    <Button startIcon={<Add />} onClick={storeJobFromPid}>
+                                        สร้าง JOB ใหม่
+                                    </Button>
+                                </Stack>
                             </Grid2>
                         </>
 
