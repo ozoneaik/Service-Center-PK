@@ -26,6 +26,8 @@ function CustomTabPanel(props) {
 }
 
 export default function RpMain({ productDetail, serial_id }) {
+    console.log(productDetail);
+    
     const [message, setMessage] = useState('ไม่สามารถกระทำการใดๆ');
     const [tabValue, setTabValue] = useState(0);
     const [searchingJob, setSearchingJob] = useState(false);
@@ -80,7 +82,7 @@ export default function RpMain({ productDetail, serial_id }) {
                     onPassed: async (confirm) => {
                         if (confirm) {
                             console.log(productDetail)
-                            const product_format = productFormat;
+                            const product_format = productFormat(productDetail);
                             try {
                                 await axios.post(route('repair.store', {
                                     serial_id, productDetail: product_format
@@ -133,7 +135,7 @@ export default function RpMain({ productDetail, serial_id }) {
                 if (!confirm) return;
                 try {
                     setSearchingJob(true);
-                    const product_format = productFormat;
+                    const product_format = productFormat(productDetail);
                     const { data, status } = await axios.post(route('repair.store.from.pid', {
                         productDetail: product_format
                     }));

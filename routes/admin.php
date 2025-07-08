@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\JobFromServiceController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\StartUpCostController;
+use App\Http\Controllers\Admin\WarrantyController;
 use App\Http\Controllers\ScoreMasterController;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +41,10 @@ Route::middleware('adminPermission')->group(function () {
             Route::get('/create',[StartUpCostController::class,'create'])->name('startUpCost.create');
             Route::post('/store',[StartUpCostController::class,'store'])->name('startUpCost.store');
             Route::delete('/delete/{id}',[StartUpCostController::class,'delete'])->name('startUpCost.delete');
+        });
+
+        Route::prefix('warranties')->group(function () {
+            Route::get('/',[WarrantyController::class,'index'])->name('admin.warranties.index');
         });
     });
 });

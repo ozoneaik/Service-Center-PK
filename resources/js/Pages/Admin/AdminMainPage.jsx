@@ -11,6 +11,7 @@ import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
 import StarsIcon from '@mui/icons-material/Stars';
 import HandymanIcon from '@mui/icons-material/Handyman';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import { Grading } from "@mui/icons-material";
 export default function AdminMainPage() {
     const menuItems = [
         {
@@ -38,41 +39,47 @@ export default function AdminMainPage() {
             color: '#f15922'
         },
         {
-            text : "ประวัติซ่อมทุกศูนย์ซ่อม",
-            icon : <HistoryIcon/>,
-            path : route('admin.history-job'),
-            color : '#25347a'
+            text: "ประวัติซ่อมทุกศูนย์ซ่อม",
+            icon: <HistoryIcon />,
+            path: route('admin.history-job'),
+            color: '#25347a'
         },
         {
-            text : "จัดการศูนย์ซ่อม (สต็อกอะไหล่,GP)",
-            icon : <StoreIcon/>,
-            path : route('stockSp.shopList'),
-            color : 'pink'
+            text: "จัดการศูนย์ซ่อม (สต็อกอะไหล่,GP)",
+            icon: <StoreIcon />,
+            path: route('stockSp.shopList'),
+            color: 'pink'
         },
         {
-            text : "จัดการเซลล์",
-            icon : <RecordVoiceOverIcon/>,
-            path : route('Sales.index'),
-            color : '#ffdf33'
+            text: "จัดการเซลล์",
+            icon: <RecordVoiceOverIcon />,
+            path: route('Sales.index'),
+            color: '#ffdf33'
         },
         {
-            text : "จัดการคะแนน",
-            icon : <StarsIcon/>,
-            path : route('ScoreMaster.index'),
-            color : '#000000'
+            text: "จัดการคะแนน",
+            icon: <StarsIcon />,
+            path: route('ScoreMaster.index'),
+            color: '#000000'
         },
         {
-            text : "รายการสินค้าที่ส่งซ่อมมายัง pumpkin",
-            icon : <HandymanIcon/>,
-            path : route('JobFormService.index'),
-            color : '#a200ff'
+            text: "รายการสินค้าที่ส่งซ่อมมายัง pumpkin",
+            icon: <HandymanIcon />,
+            path: route('JobFormService.index'),
+            color: '#a200ff'
         },
         {
-            text : "รายการค่าเปิดเครื่อง",
-            icon : <AttachMoneyIcon/>,
-            path : route('startUpCost.index'),
-            color : '#fe5c8f'
+            text: "รายการค่าเปิดเครื่อง",
+            icon: <AttachMoneyIcon />,
+            path: route('startUpCost.index'),
+            color: '#fe5c8f'
         },
+        {
+            text: "S/N ที่ลงทะเบียนรับประกันในระบบ",
+            icon: <Grading />,
+            path: route('admin.warranties.index'),
+            color: '#6a5238',
+        }
     ];
 
 
@@ -81,7 +88,7 @@ export default function AdminMainPage() {
             <Container >
                 <Grid2 container mt={2} spacing={2}>
                     {menuItems.map((menu, index) => (
-                        <Grid2 size={{xs :12, md : 6,lg : 4}} key={index}>
+                        <Grid2 size={{ xs: 12, md: 6, lg: 4 }} key={index}>
                             <Card variant='outlined'>
                                 <CardActionArea component={Link} href={menu.path}>
                                     <CardHeader
