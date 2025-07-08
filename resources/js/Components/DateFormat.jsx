@@ -10,3 +10,13 @@ export const DateFormatTh = ({date}) => {
     return  new Date(date).toLocaleString('th');
 }
 
+export const DateFormatThNotTime = ({date}) => {
+    // data string
+    if (!date) return 'ไม่มีข้อมูล';
+    return new Date(date).toLocaleDateString('th-TH', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+}
+

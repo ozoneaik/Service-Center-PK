@@ -8,11 +8,8 @@ use App\Models\Behavior;
 use App\Models\CustomerInJob;
 use App\Models\FileUpload;
 use App\Models\JobList;
-use App\Models\Remark;
 use App\Models\SparePart;
 use App\Models\Symptom;
-use App\Models\WarrantyProduct;
-use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 
 class JobController extends Controller
 {
+    // handlePendingRateMessage
     public function searchJob(Request $request): JsonResponse
     {
         $serial_id = $request->serial_id;

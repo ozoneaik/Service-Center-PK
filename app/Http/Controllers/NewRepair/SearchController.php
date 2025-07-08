@@ -25,7 +25,7 @@ class SearchController extends Controller
         return Inertia::render('NewRepair/Repair');
     }
 
-//    function ใข้สำหรับการค้นหา ข้อมูลสินค้า
+    //    function ใข้สำหรับการค้นหา ข้อมูลสินค้า
     public function search(Request $request): JsonResponse
     {
         $request->validate(['SN' => 'required'], ['SN' => 'กรุณากรอกรหัสซีเรียล']);
@@ -57,6 +57,7 @@ class SearchController extends Controller
                     'data' => $response,
                 ]);
             } else {
+                $status = 400;
                 throw new \Exception($response['message']);
             }
         } catch (\Exception $e) {
@@ -75,13 +76,13 @@ class SearchController extends Controller
                 'Content-Type' => 'application/json',
             ])->post($URL, $formData);
             $responseJson = $response->json();
-            if ($response->status() == 200 && $responseJson['status'] === 'SUCCESS') {
+            if ($response->successful() && $response->status() == 200 && $responseJson['status'] === 'SUCCESS') {
                 $response_json = $response->json();
 
 
                 // หาว่าในระบบได้มีการลงทะเบียนรับประกันหรือไม่
                 $warranty_expire = $response_json['warrantyexpire'] ?? false;
-                
+
                 if (isset($formData['sn']) && !$warranty_expire) {
                     $warranty_expire = $this->findWarranty($formData['sn'], $warranty_expire);
                 }
@@ -115,6 +116,13 @@ class SearchController extends Controller
                     ];
                 }
                 // เช็คก่อนว่า เป็น combo set หรือไม่
+            } else if ($response->successful() && $responseJson['status'] === 'Fail') {
+                $m = $responseJson['message'] ?? 'ไม่พบข้อมูลสินค้า';
+                if ($m === 'There is more than 1 row of data.') {
+                    throw new \Exception('มีข้อมูลมากกว่า 1 แถว <br/> ติดต่อ pumpkin ได้ที่เบอร์ 02-8995928 ต่อ 266');
+                }else{
+                    throw new \Exception($m);
+                }
             } else {
                 $m = "<span>เกิดข้อผิดพลาด server กรุณาติดต่อผู้ดูแลระบบ <br/> เบอร์ 02-8995928 ต่อ 266</span>";
                 throw new \Exception($m);
@@ -127,7 +135,6 @@ class SearchController extends Controller
                 'sku_list' => null,
             ];
         }
-
     }
 
     private function searchFromHistory($job_id)
@@ -141,20 +148,20 @@ class SearchController extends Controller
         $listbehavior = [];
 
         try {
-            $search_product_from_api = Http::post(env('VITE_API_ORDER'),[
+            $search_product_from_api = Http::post(env('VITE_API_ORDER'), [
                 'pid' => $findDetail['pid'],
                 'views' => 'single'
             ]);
-            if ($search_product_from_api->successful()){
+            if ($search_product_from_api->successful()) {
                 $search_product_from_api = $search_product_from_api->json();
-                if ($search_product_from_api['status'] == 'SUCCESS'){
+                if ($search_product_from_api['status'] == 'SUCCESS') {
                     $sp = $search_product_from_api['assets'][0]['sp'];
                     $listbehavior = $search_product_from_api['assets'][0]['listbehavior'];
-                }else{
+                } else {
                     throw new \Exception('error');
                 }
             }
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             $sp = [];
             $listbehavior = [];
         }

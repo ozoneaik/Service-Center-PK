@@ -1,6 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import { Container, Grid2, CardHeader, Card, Avatar, CardActionArea, } from "@mui/material";
-import { Link } from "@inertiajs/react";
+import { Head, Link } from "@inertiajs/react";
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import GroupIcon from '@mui/icons-material/Group';
@@ -85,6 +85,7 @@ export default function AdminMainPage() {
 
     return (
         <AuthenticatedLayout>
+            <Head title="ผู้ดูแลระบบ"/>
             <Container >
                 <Grid2 container mt={2} spacing={2}>
                     {menuItems.map((menu, index) => (

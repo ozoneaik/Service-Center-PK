@@ -85,14 +85,12 @@ export default function RpMain({ productDetail, serial_id }) {
                             const product_format = productFormat(productDetail);
                             try {
                                 await axios.post(route('repair.store', {
-                                    serial_id, productDetail: product_format
+                                    serial_id : sn, productDetail: product_format
                                 }));
-                                fetchData().finally(() => setSearchingJob(false));
+                                fetchData(sn).finally(() => setSearchingJob(false));
                             } catch (error) {
-                                AlertDialog({
-                                    text: error.response.data?.message || error.message
-                                })
-                                console.log(error)
+                                const errorMsg = error.response?.data?.message || error.message;
+                                AlertDialog({text: errorMsg});
                             }
                         } else console.log('มีการยกเลิกสร้าง job');
                     }
