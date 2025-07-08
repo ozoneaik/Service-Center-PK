@@ -52,11 +52,8 @@ export default function RpMain({ productDetail, serial_id }) {
     }, [MainStep]);
 
     useEffect(() => {
-        if (form1Saved) {
-            setTabValue(1)
-        }
+        if (form1Saved) setTabValue(1)
     }, [form1Saved]);
-
 
     useEffect(() => {
         fetchData(propSn).finally(() => setSearchingJob(false))
@@ -237,7 +234,10 @@ export default function RpMain({ productDetail, serial_id }) {
                             </Grid2>
                             <Grid2 size={12}>
                                 <Stack direction='row' justifyContent='end'>
-                                    <Button startIcon={<Add />} onClick={storeJobFromPid}>
+                                    <Button
+                                        variant="contained" startIcon={<Add />}
+                                        onClick={storeJobFromPid}
+                                    >
                                         สร้าง JOB ใหม่
                                     </Button>
                                 </Stack>

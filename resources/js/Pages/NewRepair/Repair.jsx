@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import { Head } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import { Box, Button, Container, Grid2, InputAdornment, Stack, TextField } from "@mui/material";
 import { Search } from '@mui/icons-material';
 import { useEffect, useRef, useState } from "react";
@@ -44,37 +44,42 @@ export default function Repair({ DATA }) {
         e.preventDefault();
         setLoading(true);
         setDetail(null);
-        try {
-            const { data, status } = await axios.post(route('repair.search'), { SN, PID });
-            const combo_set = data.data.combo_set;
-            const addWarranty = data.data.warranty_expire; // เก็บสถานะรับประกัน
-            if (combo_set) {
-                setOpenSelSku(true);
-                let sku_list = data.data.sku_list;
-                sku_list = sku_list.map((item) => {
-                    return { ...item, warranty_status: addWarranty }
-                })
-                setComboSets(sku_list)
-            } else {
-                let sku_list = data.data.sku_list[0];
-                sku_list = { ...sku_list, warranty_status: addWarranty }
-                setDetail(sku_list);
-            }
+        if (SN.startsWith('JOB-')) {
+            router.get(route('repair.index',{job_id : SN}));
+        } else {
+            try {
+                const { data, status } = await axios.post(route('repair.search'), { SN, PID });
+                const combo_set = data.data.combo_set;
+                const addWarranty = data.data.warranty_expire; // เก็บสถานะรับประกัน
+                if (combo_set) {
+                    setOpenSelSku(true);
+                    let sku_list = data.data.sku_list;
+                    sku_list = sku_list.map((item) => {
+                        return { ...item, warranty_status: addWarranty }
+                    })
+                    setComboSets(sku_list)
+                } else {
+                    let sku_list = data.data.sku_list[0];
+                    sku_list = { ...sku_list, warranty_status: addWarranty }
+                    setDetail(sku_list);
+                }
 
-            setSN('');
-            setPID('');
-        } catch (error) {
-            const errorMessage = error.response.data.message;
-            const errorStatus = error.status;
-            AlertDialog({
-                title: 'เกิดข้อผิดพลาด',
-                text: ErrorMessage({ status: errorStatus, message: errorMessage })
-            });
-        } finally {
-            setMiniSize(false);
-            setLoading(false);
-            setMenuSel(0);
+                setSN('');
+                setPID('');
+            } catch (error) {
+                const errorMessage = error.response.data.message;
+                const errorStatus = error.status;
+                AlertDialog({
+                    title: 'เกิดข้อผิดพลาด',
+                    text: ErrorMessage({ status: errorStatus, message: errorMessage })
+                });
+            } finally {
+                setMiniSize(false);
+                setLoading(false);
+                setMenuSel(0);
+            }
         }
+
 
     }
 
@@ -157,7 +162,7 @@ const SearchSnComponent = ({ SN, setSn, onPassed, PID, setPID, loading }) => {
                             input: { startAdornment: (<InputAdornment position={'start'}>S/N :</InputAdornment>) }
                         }}
                         value={SN || ''} onChange={(e) => handleChangeSN(e)}
-                        focused placeholder={'ค้นหาหมายเลขซีเรียล หากไม่ทราบกรุณากรอก 9999 เพื่อระบุรหัสสินค้า'}
+                        focused placeholder={'ค้นหาหมายเลขซีเรียล หรือ หมายเลข Job หากไม่ทราบกรุณากรอก 9999 เพื่อระบุรหัสสินค้า'}
                         fullWidth required
                     />
                     {showPidForm && (<TextField disabled={loading}
