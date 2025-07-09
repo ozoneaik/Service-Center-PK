@@ -45,7 +45,7 @@ export default function Repair({ DATA }) {
         setLoading(true);
         setDetail(null);
         if (SN.startsWith('JOB-')) {
-            router.get(route('repair.index',{job_id : SN}));
+            router.get(route('repair.index', { job_id: SN }));
         } else {
             try {
                 const { data, status } = await axios.post(route('repair.search'), { SN, PID });
@@ -170,7 +170,7 @@ const SearchSnComponent = ({ SN, setSn, onPassed, PID, setPID, loading }) => {
                             input: {
                                 startAdornment: (
                                     <InputAdornment position={'start'}>
-                                        Ï                      PID
+                                        PID
                                     </InputAdornment>)
                             }
                         }}

@@ -1,4 +1,4 @@
-import { DateFormatTh, DateFormatThNotTime } from "@/Components/DateFormat";
+import { DateFormatTh, DateFormatThString } from "@/Components/DateFormat";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import {
@@ -53,10 +53,11 @@ export default function WrList({ warranties }) {
                                             </Stack>
                                         </TableCell>
                                         <TableCell>
-                                            {DateFormatThNotTime(warranty.date_warranty)}
-                                            {typeof warranty.date_warranty}
+                                            {DateFormatThString(warranty.date_warranty)}
                                         </TableCell>
-                                        <TableCell>{warranty.expire_date}</TableCell>
+                                        <TableCell>
+                                            {DateFormatThString(warranty.expire_date)}
+                                        </TableCell>
                                         <TableCell>{warranty.shop_name}</TableCell>
                                     </TableRow>
                                 ))}

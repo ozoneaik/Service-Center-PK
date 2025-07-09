@@ -5,18 +5,22 @@ export const DateFormat = (date) => {
 }
 
 
-export const DateFormatTh = ({date}) => {
+export const DateFormatTh = ({ date }) => {
     if (!date) return 'ไม่มีข้อมูล';
-    return  new Date(date).toLocaleString('th');
+    return new Date(date).toLocaleString('th');
 }
 
-export const DateFormatThNotTime = ({date}) => {
+export const DateFormatThString = (_date) => {
     // data string
-    if (!date) return 'ไม่มีข้อมูล';
-    return new Date(date).toLocaleDateString('th-TH', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    });
+    const date = new Date(_date);
+
+    // แปลงปีเป็น พ.ศ.
+    const buddhistYear = date.getFullYear() + 543;
+
+    // เติมเลข 0 หน้าเดือน/วัน ถ้าจำเป็น
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+
+    return `${day}/${month}/${buddhistYear}`;
 }
 

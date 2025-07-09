@@ -42,9 +42,7 @@ const Content = ({
     children,
 }) => {
     const { open, setOpen } = useContext(DropDownContext);
-
     let alignmentClasses = 'origin-top';
-
     if (align === 'left') {
         alignmentClasses = 'ltr:origin-top-left rtl:origin-top-right start-0';
     } else if (align === 'right') {
