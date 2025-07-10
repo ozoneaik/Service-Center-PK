@@ -183,7 +183,9 @@ const MobileDetail = ({jobs, handleShowDetail, url}) => {
                     <Card variant='outlined' key={index}>
                         <CardContent>
                             <Stack spacing={1}>
-                                <TextDetail label='ซีเรียล' value={job.serial_id}/>
+                                <Link href={route('repair.index', {job_id: job.job_id})}>
+                                    <TextDetail label='ซีเรียล' value={job.serial_id}/>
+                                </Link>
                                 <TextDetail label='รหัส job' value={job.job_id}/>
                                 <TextDetail label='ชื่อ/เบอร์โทรลูกค้า' value={job.name + job.phone}/>
                                 {url.startsWith("/admin/history-job") && (

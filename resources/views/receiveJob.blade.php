@@ -119,7 +119,7 @@
 <div class="divider"></div>
 
 <!-- ส่วนที่ 2: สำหรับลูกค้า -->
-<div class="page-break">
+<div class="page-break-disable">
     <div class="center">
         <h2>ศูนย์บริการ PCS</h2>
         <h2 style="margin-top: 0;">สำหรับลูกค้า</h2>
