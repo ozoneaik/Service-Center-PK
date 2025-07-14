@@ -1,5 +1,16 @@
 import {useEffect, useState} from "react";
-import {Button, CircularProgress, Grid2, Stack, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
+import {
+    Button, Card, CardContent, Chip,
+    CircularProgress,
+    Grid2,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow, Typography,
+    useMediaQuery
+} from "@mui/material";
 import {ArrowRight, Assignment, Download} from "@mui/icons-material";
 import {DateFormat, DateFormatTh} from "@/Components/DateFormat.jsx";
 
@@ -8,6 +19,7 @@ export default function RpQu({JOB, setStepForm}) {
     const [loading, setLoading] = useState(false);
     const [pathPdf, setPathPdf] = useState();
     const [qus, setQus] = useState([]);
+    const isMobile = useMediaQuery('(max-width:700px)');
 
 
     useEffect(() => {
@@ -62,6 +74,7 @@ export default function RpQu({JOB, setStepForm}) {
                         {loading ? 'กำลังสร้างใบเสนอราคา' : 'สร้างใบเสนอราคา'}
                     </Button>
                     <Button
+                        disabled={!pathPdf}
                         variant='contained' startIcon={<Download/>}
                         id='download' color='success' onClick={downloadFile}
                     >
@@ -71,40 +84,73 @@ export default function RpQu({JOB, setStepForm}) {
             </Grid2>
             {!loading && (
                 <Grid2 size={12} sx={{bgcolor: 'white'}}>
-                    <Table stickyHeader>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>ชื่อไฟล์ ใบเสนอราคา</TableCell>
-                                <TableCell>สร้างเมื่อ</TableCell>
-                                <TableCell align='right'>จำนวนดาวน์โหลด</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {qus.length > 0 ? (
-                                <>
-                                    {qus.map((qu, index) => (
-                                        <TableRow key={index}>
-                                            <TableCell>
+                    {isMobile ? (
+                        <Stack spacing={2}>
+                            {qus.map((qu, index) => (
+                                <Card key={index}>
+                                    <CardContent>
+                                        <Stack spacing={2}>
+                                            <Typography
+                                                sx={{
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
+                                                }}
+                                            >
+
+                                                ชื่อไฟล์ :
                                                 <a href={qu.full_file_path} target='_blank'>
                                                     {qu.file_name}
                                                 </a>
-                                                {/*<a href={qu.pull_file_path} target='_blank'>*/}
-                                                {/*    {qu.file_name} {qu.path_file}*/}
-                                                {/*</a>*/}
-                                            </TableCell>
-                                            <TableCell>{DateFormatTh({date : qu.created_at})}</TableCell>
-                                            <TableCell align='right'>{qu.counter_print}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </>
-                            ) : (
+                                            </Typography>
+                                            <Typography
+                                                sx={{
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
+                                                }}
+                                            >
+                                                สร้างเมื่อ : {DateFormatTh({date: qu.created_at})}
+                                            </Typography>
+                                            <Chip label={'จำนวนดาวน์โหลด : ' + qu.counter_print}/>
+                                        </Stack>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </Stack>
+                    ) : (
+                        <Table stickyHeader>
+                            <TableHead>
                                 <TableRow>
-                                    <TableCell align='center' colSpan={3}>ไม่พบรายการ</TableCell>
+                                    <TableCell>ชื่อไฟล์ ใบเสนอราคา</TableCell>
+                                    <TableCell>สร้างเมื่อ</TableCell>
+                                    <TableCell align='right'>จำนวนดาวน์โหลด</TableCell>
                                 </TableRow>
-                            )}
+                            </TableHead>
+                            <TableBody>
+                                {qus.length > 0 ? (
+                                    <>
+                                        {qus.map((qu, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>
+                                                    <a href={qu.full_file_path} target='_blank'>
+                                                        {qu.file_name}
+                                                    </a>
+                                                </TableCell>
+                                                <TableCell>{DateFormatTh({date: qu.created_at})}</TableCell>
+                                                <TableCell align='right'>{qu.counter_print}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </>
+                                ) : (
+                                    <TableRow>
+                                        <TableCell align='center' colSpan={3}>ไม่พบรายการ</TableCell>
+                                    </TableRow>
+                                )}
 
-                        </TableBody>
-                    </Table>
+                            </TableBody>
+                        </Table>
+                    )}
                 </Grid2>
             )}
             <Grid2 size={12}>

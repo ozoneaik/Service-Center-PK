@@ -104,7 +104,7 @@ class SpareClaimController extends Controller
     public function store(ClaimRequest $request): JsonResponse
     {
         // dd($request->all());
-        $claim_id = 'C-' . Carbon::now()->timestamp . rand(1000,9999);
+        $claim_id = 'C-' . Carbon::now()->timestamp . rand(1000, 9999);
         logStamp::query()->create(['description' => Auth::user()->user_code . " พยายามสร้างเอกสารเคลม $claim_id"]);
         $selected = $request->input('selected');
         $items = [];
@@ -136,7 +136,7 @@ class SpareClaimController extends Controller
             }
             $store_info = StoreInformation::query()->where('is_code_cust_id', Auth::user()->is_code_cust_id)->first();
             $text_claim_id = "รหัสเอกสารเคลม : $claim_id";
-            $text = "ศูนย์ซ่อม : " . $store_info->shop_name ."\n$text_claim_id". "\nแจ้งเรื่อง : เคลม\nรายการ :\n\n" . implode("\n", $items);
+            $text = "ศูนย์ซ่อม : " . $store_info->shop_name . "\n$text_claim_id" . "\nแจ้งเรื่อง : เคลมอะไหล่\nรายการ :\n\n" . implode("\n", $items);
             $token_lark = StoreInformation::query()
                 ->leftJoin('sale_information', 'sale_information.sale_code', 'store_information.sale_id')
                 ->where('store_information.is_code_cust_id', Auth::user()->is_code_cust_id)

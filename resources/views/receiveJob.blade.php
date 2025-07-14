@@ -77,6 +77,10 @@
                 font-size: 14px;
                 margin: 0;
             }
+
+            .d-print-none {
+                display: none !important;
+            }
             /*.page-break {*/
             /*    page-break-before: always;*/
             /*}*/
@@ -162,6 +166,17 @@
         กรุณาเก็บไว้เพื่อยืนยันตัวตน
     </div>
 </div>
+
+<!-- ปุ่ม Print (จะไม่แสดงตอนสั่งพิมพ์) -->
+<button onclick="window.print()" style="padding: 10px; " class="btn btn-secondary d-print-none">
+    ปริ้น
+</button>
+
+<script>
+    window.onload = function() {
+        window.print();
+    };
+</script>
 
 <script>
     JsBarcode("#barcode", "{{$product['job_id']}}", {

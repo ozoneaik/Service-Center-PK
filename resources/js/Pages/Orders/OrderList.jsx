@@ -1,7 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {
     Button, Card, Container, Grid2, Paper, Stack, TextField,
-    Badge, CircularProgress, useMediaQuery
+    Badge, CircularProgress, useMediaQuery, Box, Fab
 } from "@mui/material";
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import HistoryIcon from '@mui/icons-material/History';
@@ -10,8 +10,8 @@ import RowView from "@/Pages/Orders/RowView.jsx";
 import SumOrder from "@/Pages/Orders/SumOrder.jsx";
 import { Head, Link, router, usePage } from "@inertiajs/react";
 import { CartProvider, useCart } from "@/Pages/Orders/CartContext.jsx";
-import DmPreview from "@/Pages/ReportRepair/SpNew/DmPreview.jsx";
-import { Search } from "@mui/icons-material";
+import DmPreview from "@/Components/DmPreview.jsx";
+import {Add, Search} from "@mui/icons-material";
 
 export default function OrderList({ count_cart }) {
     const [dmPreview, setDmPreview] = useState('');
@@ -118,14 +118,17 @@ function OrderListContent(props) {
                                 <Stack direction='row' spacing={1}>
                                     <Button fullWidth={isMobile} type='submit' startIcon={<Search />} variant='contained'>ค้นหา</Button>
 
-                                    <Button
-                                        fullWidth={isMobile}
-                                        startIcon={<AddShoppingCartIcon />}
-                                        component={Link} href={route('orders.carts')}
-                                        color='secondary' variant='contained'
-                                    >
-                                        {!isMobile && 'ตะกร้าสินค้า'}
-                                    </Button>
+                                    {!isMobile && (
+                                        <Button
+                                            fullWidth={isMobile}
+                                            startIcon={<AddShoppingCartIcon />}
+                                            component={Link} href={route('orders.carts')}
+                                            color='secondary' variant='contained'
+                                        >
+                                            {!isMobile && 'ตะกร้าสินค้า'}
+                                        </Button>
+                                    )}
+
 
                                     <Button
                                         fullWidth={isMobile}
@@ -158,7 +161,21 @@ function OrderListContent(props) {
                             </Grid2>
                         </>
                     ) : loading ? <CircularProgress /> : <>ไม่พบรายการอะไหล่รหัสสินค้านี้ โปรดลองอีกครั้ง</>}
+
                 </Grid2>
+
+                {isMobile && (
+                    <Box
+                        position="fixed" bottom={0} right={0} p={2}
+                        zIndex={1000}
+                    >
+                        <Fab color='secondary' component={Link} href={route('orders.carts')}>
+                            <AddShoppingCartIcon/>
+                        </Fab>
+                    </Box>
+                )}
+
+
             </Container>
         </AuthenticatedLayout>
     );

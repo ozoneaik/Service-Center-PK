@@ -1,7 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {Head, Link, router, usePage} from "@inertiajs/react";
 import {
-    Avatar, Box, Button, Card, CardContent, Divider, Grid2, IconButton, Stack, Typography
+    Avatar, Box, Button, Card, CardContent, Divider, Grid2, IconButton, Stack, Typography, useMediaQuery
 } from "@mui/material";
 import React, {useMemo, useState} from "react";
 import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
@@ -11,6 +11,7 @@ import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 const ListSp = ({sps, sku_code, setGroups, groups}) => {
     const [SpPreview, setSpPreview] = useState(false);
     const [SpImage, setSpImage] = useState('');
+    const isMobile = useMediaQuery('(max-width:600px)');
     const updateQuantity = async (id, condition = 'add') => {
         try {
             const API_URL = `/orders/carts/add-remove/${condition}`;
@@ -64,7 +65,7 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
 
     return (
         <>
-            {SpPreview && <SpPreviewImage open={SpPreview} setOpen={setSpPreview} imagePath={SpImage} />}
+            {SpPreview && <SpPreviewImage open={SpPreview} setOpen={setSpPreview} imagePath={SpImage}/>}
             {sps.map((sp, index) => {
                 const sp_image = `${import.meta.env.VITE_IMAGE_SP}/${sp.sp_code}.jpg`;
                 return (
@@ -72,7 +73,7 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
                         <Stack direction='row' width='100%' justifyContent='space-between' alignItems='center'>
                             <Stack direction='row' spacing={2} alignItems='center'>
                                 <img src={sp_image} alt={'ไม่พบรูปภาพ'} width='100'
-                                     onClick={()=> {
+                                     onClick={() => {
                                          setSpImage(sp_image);
                                          setSpPreview(true)
                                      }}
@@ -89,7 +90,31 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
                                     </Typography>
                                 </Stack>
                             </Stack>
-                            <Stack direction="row" spacing={1} sx={{alignItems: 'center', mt: {xs: 1, sm: 0}}}>
+
+                            {!isMobile && (
+
+                                <Stack direction="row" spacing={1} sx={{alignItems: 'center', mt: {xs: 1, sm: 0}}}>
+                                    <IconButton
+                                        disabled={sp.qty <= 1} size="small"
+                                        onClick={() => updateQuantity(sp.id, 'remove')}
+                                    >
+                                        <Remove/>
+                                    </IconButton>
+                                    <Typography variant="body1" sx={{width: '60px', textAlign: 'center'}}>
+                                        {sp.qty}
+                                    </Typography>
+                                    <IconButton size="small" onClick={() => updateQuantity(sp.id)}>
+                                        <Add/>
+                                    </IconButton>
+                                    <IconButton color="error" size="small" onClick={() => handleRemove(sp)}>
+                                        <Delete/>
+                                    </IconButton>
+                                </Stack>
+
+                            )}
+                        </Stack>
+                        {isMobile && (
+                            <Stack direction="row" justifyContent='center' alignItems='center'>
                                 <IconButton
                                     disabled={sp.qty <= 1} size="small"
                                     onClick={() => updateQuantity(sp.id, 'remove')}
@@ -99,7 +124,6 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
                                 <Typography variant="body1" sx={{width: '60px', textAlign: 'center'}}>
                                     {sp.qty}
                                 </Typography>
-
                                 <IconButton size="small" onClick={() => updateQuantity(sp.id)}>
                                     <Add/>
                                 </IconButton>
@@ -107,7 +131,8 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
                                     <Delete/>
                                 </IconButton>
                             </Stack>
-                        </Stack>
+
+                        )}
                         <Divider/>
                     </React.Fragment>
                 )

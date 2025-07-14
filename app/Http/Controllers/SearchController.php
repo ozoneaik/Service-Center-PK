@@ -27,23 +27,9 @@ use Inertia\Response;
 class SearchController extends Controller
 {
 
-    public function index(Request $request): Response
+    public function index(): Response
     {
-        $check = true;
-        if ($request->SN && $request->JOB_ID) {
-            $search = JobList::query()
-                ->where('serial_id', $request->SN)
-                ->where('job_id', $request->JOB_ID)->first();
-            if ($search) {
-                if ($search->status !== 'pending') {
-                    $check = false;
-                }
-            } else return Inertia::render('Dashboard');
-            return Inertia::render('Dashboard', ['SN' => $request->SN, 'JOB_ID' => $request->JOB_ID, 'check' => $check]);
-        } else if ($request->SN) {
-            return Inertia::render('Dashboard', ['SN' => $request->SN]);
-        }
-        return Inertia::render('Dashboard');
+        return Inertia::render('NewRepair/Repair');
     }
 
     public function detail(SearchRequest $request): JsonResponse

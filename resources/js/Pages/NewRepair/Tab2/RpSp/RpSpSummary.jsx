@@ -252,7 +252,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                     onClick={() => setShowSummary(false)}
                     sx={{mb: 2}}
                 >
-                    กลับไปแก้ไขรายการ
+                    กลับไปหน้าเพิ่ม/ลดอะไหล่
                 </Button>
             </Grid2>
 
@@ -618,7 +618,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                             loading={loading}
                             fullWidth={isMobile}
                             disabled={Object.keys(editingSpares).length !== 0}
-                            variant='contained'
+                            variant='contained' size='large'
                             startIcon={<SaveIcon/>}
                             onClick={handleSubmit}
                         >

@@ -62,9 +62,9 @@ export default function SenJobList({jobs}) {
         }
 
         AlertDialogQuestion({
-           title : 'แน่ใจหรือไม่',
-           text : 'กด ตกลง เพื่อยืนยันการส่งซ่อมไปยัง PK',
-            onPassed : (confirm) => {
+            title: 'แน่ใจหรือไม่',
+            text: 'กด ตกลง เพื่อยืนยันการส่งซ่อมไปยัง PK',
+            onPassed: (confirm) => {
                 if (confirm) {
                     post(route('sendJobs.update'), {
                         onFinish: () => {
@@ -102,7 +102,7 @@ export default function SenJobList({jobs}) {
         <AuthenticatedLayout>
             <Head title='ส่ง job'/>
             <Paper sx={{bgcolor: 'white', p: 3}}>
-                <Grid2 container spacing={2}>
+                <Grid2 container spacing={2} mb={isMobile ? 10 : 0}>
                     <Grid2 size={12}>
                         <Stack direction='row' justifyContent='space-between' alignItems='center'>
                             <Typography variant='h6' fontWeight='bold'>ส่งซ่อมพิมคินฯ</Typography>
@@ -143,7 +143,7 @@ export default function SenJobList({jobs}) {
                     {isMobile ? (
                         <Grid2 size={12}>
                             {/* เลือกทั้งหมด สำหรับ Mobile */}
-                            <Card variant='outlined' sx={{ mb: 2, p: 2 }}>
+                            <Card variant='outlined' sx={{mb: 2, p: 2}}>
                                 <Stack direction='row' alignItems='center' spacing={1}>
                                     <Checkbox
                                         checked={data.selectedJobs.length === jobs.length}
@@ -176,7 +176,8 @@ export default function SenJobList({jobs}) {
                                                         onChange={(e) => handleSelectJob(job, index, e)}
                                                     />
                                                     <Box flex={1}>
-                                                        <Typography variant='h6' fontWeight='bold' color='primary' gutterBottom>
+                                                        <Typography variant='h6' fontWeight='bold' color='primary'
+                                                                    gutterBottom>
                                                             JOB: {job.job_id}
                                                         </Typography>
 
@@ -208,7 +209,7 @@ export default function SenJobList({jobs}) {
                                                                 </Typography>
                                                             </Box>
 
-                                                            <Divider sx={{ my: 1 }} />
+                                                            <Divider sx={{my: 1}}/>
 
                                                             <Box>
                                                                 <Typography variant='body2' color='text.secondary'>
@@ -230,7 +231,7 @@ export default function SenJobList({jobs}) {
                     ) : (
                         /* Desktop View */
                         <Grid2 size={12}>
-                            <Card variant='outlined' sx={{overflow : 'auto'}}>
+                            <Card variant='outlined' sx={{overflow: 'auto'}}>
                                 <Table>
                                     <TableHead>
                                         <TableRow sx={TABLE_HEADER_STYLE}>
@@ -290,20 +291,37 @@ export default function SenJobList({jobs}) {
                             </Card>
                         </Grid2>
                     )}
+                    {!isMobile && (
+                        <Grid2 size={12}>
+                            <Stack direction='row-reverse'>
+                                <Button
+                                    variant='contained'
+                                    color='primary'
+                                    onClick={handleCloseJobs}
+                                    disabled={data.selectedJobs.length === 0 || processing}
+                                >
+                                    ส่งไปยัง PK ({data.selectedJobs.length})
+                                </Button>
+                            </Stack>
+                        </Grid2>
+                    )}
 
-                    <Grid2 size={12}>
-                        <Stack direction='row-reverse'>
-                            <Button
-                                variant='contained'
-                                color='primary'
-                                onClick={handleCloseJobs}
-                                disabled={data.selectedJobs.length === 0 || processing}
-                            >
-                                ส่งไปยัง PK ({data.selectedJobs.length})
-                            </Button>
-                        </Stack>
-                    </Grid2>
                 </Grid2>
+                {isMobile && (
+                    <Box
+                        position="fixed" bottom={0} left={0} p={2}
+                        width="100%" zIndex={1000} bgcolor="white" boxShadow={3}
+                    >
+                        <Button
+                            variant='contained'
+                            color='primary' fullWidth
+                            onClick={handleCloseJobs}
+                            disabled={data.selectedJobs.length === 0 || processing}
+                        >
+                            ส่งไปยัง PK ({data.selectedJobs.length})
+                        </Button>
+                    </Box>
+                )}
             </Paper>
         </AuthenticatedLayout>
     )

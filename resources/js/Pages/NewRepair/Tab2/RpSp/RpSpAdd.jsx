@@ -246,7 +246,7 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected, JOB}) {
                                 <Button
                                     fullWidth={isMobile}
                                     variant="contained"
-                                    color="success"
+                                    color="success" size='large'
                                     startIcon={<SaveIcon />}
                                     onClick={handleSaveSelection}
                                 >

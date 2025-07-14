@@ -1,5 +1,5 @@
 import {Alert, Button, Card, CardContent, CircularProgress, Grid2, Stack} from "@mui/material";
-import DmPreview from "@/Pages/ReportRepair/SpNew/DmPreview.jsx";
+import DmPreview from "@/Components/DmPreview.jsx";
 import RpSpAdd from "@/Pages/NewRepair/Tab2/RpSp/RpSpAdd.jsx";
 import RpSpSelected from "@/Pages/NewRepair/Tab2/RpSp/RpSpSelected.jsx";
 import RpSpSummary from "@/Pages/NewRepair/Tab2/RpSp/RpSpSummary.jsx";
@@ -14,7 +14,6 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
     const [loading, setLoading] = useState(false);
     const [spSelected, setSpSelected] = useState([]);
     const [showSummary, setShowSummary] = useState(false);
-    const [showAddMore, setShowAddMore] = useState(false);
 
     useEffect(() => {
         fetchData().finally(() => setLoading(false));
@@ -28,17 +27,26 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
                 serial_id: JOB.serial_id,
                 job_id: JOB.job_id,
             }))
-            console.log(data, status)
             setSpSelected(data.spare_parts)
+            if (data.spare_parts.length > 0){
+                setShowSummary(true)
+            }
         } catch (error) {
             console.log(error)
         }
     }
 
     const handleAddSpare = (newSpares) => {
-        // เพิ่มอะไหล่ใหม่เข้าไปใน spSelected
-        setSpSelected(prev => [...prev, ...newSpares]);
-    }
+        setSpSelected(prev => {
+            // รวมของเดิมที่ยังมีอยู่กับของใหม่ที่ยังไม่เคยมี
+            const updated = newSpares.filter(
+                (item, index, self) =>
+                    index === self.findIndex(i => i.spcode === item.spcode) // กันของซ้ำใน newSpares เอง
+            );
+            return updated;
+        });
+        setShowSummary(true);
+    };
 
     const handleUpdateSpSelected = (updatedSpares) => {
         setSpSelected(updatedSpares);
@@ -87,30 +95,19 @@ export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB
                                             )}
                                             <Alert icon={<PaletteIcon fontSize="inherit"/>}
                                                    severity="error" sx={{mb: 1,width : '100%'}}>
-                                                แถบสีแดง คือ อะไหล่ที่ยังไม่ถูกตั้งราคา
+                                                แถบสีแดง คือ อะไหล่ที่ยังไม่ถูกตั้งราคา {showSummary && 'show'} {spSelected.length}
                                             </Alert>
                                         </Stack>
                                     </Grid2>
 
 
-
                                     <Grid2 size={12}>
-                                        {spSelected.length === 0 ? (
+                                        {!showSummary && (
                                             <RpSpAdd
                                                 JOB={JOB}
                                                 listSparePart={listSparePart}
                                                 onAddSpare={handleAddSpare}
                                                 spSelected={spSelected}
-                                            />
-                                        ) : (
-                                            <RpSpSelected
-                                                JOB={JOB}
-                                                spSelected={spSelected}
-                                                setSpSelected={setSpSelected}
-                                                listSparePart={listSparePart}
-                                                onUpdateSpSelected={handleUpdateSpSelected}
-                                                onAddSpare={handleAddSpare}
-                                                setShowSummary={setShowSummary}
                                             />
                                         )}
                                     </Grid2>
