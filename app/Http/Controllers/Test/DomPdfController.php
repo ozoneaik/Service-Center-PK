@@ -21,13 +21,16 @@ class DomPdfController extends Controller
 
         // 📌 สร้าง Mpdf instance โดยรวม path ฟอนต์ของเราเข้าไป
         $mpdf = new Mpdf([
-            'fontDir' => array_merge($fontDirs, [storage_path('app/public/fonts')]),
+            'fontDir' => array_merge($fontDirs, [
+                storage_path('fonts/Sarabun')
+            ]),
             'fontdata' => $fontData + [
                 'sarabun' => [
                     'R' => 'Sarabun-Regular.ttf',
                 ]
             ],
             'default_font' => 'sarabun',
+            'tempDir' => storage_path('app/mpdf-temp'),
         ]);
 
         // ดึงข้อมูลจาก DB โดยอ้างอิงจาก JOB_ID
