@@ -13,5 +13,5 @@ Route::get('/test',function(){
     return response()->json(['test' => 'ok']);
 });
 
-Route::get('/get-job', [GeneralController::class,'index'])->name('api.get-job');
+Route::post('/job_detail', [GeneralController::class,'index'])->name('api.get-job');
 
