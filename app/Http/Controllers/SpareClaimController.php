@@ -187,8 +187,19 @@ class SpareClaimController extends Controller
                 ->where('claim_details.claim_id', $h->claim_id)
                 ->get();
         }
-        return Inertia::render('SpareClaim/HistoryClaim', [
+        return Inertia::render('SpareClaim/HistoryClaimNew', [
             'history' => $history
+        ]);
+    }
+
+    public function historyDetail($claim_id): Response
+    {
+        $claim = Claim::query()->where('claim_id', $claim_id)->first();
+        $list = ClaimDetail::query()->where('claim_id', $claim_id)->get();
+        return Inertia::render('SpareClaim/HistoryClaimNewDetail',[
+            'list' => $list,
+            'claim_id' => $claim_id,
+            'claim' => $claim
         ]);
     }
 

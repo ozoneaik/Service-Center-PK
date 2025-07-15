@@ -97,7 +97,6 @@ export default function AlreadyClaim({spareParts}) {
     return (
         <>
             {open && <DialogDetail sparePartsDetail={detail} open={open} setOpen={setOpen} data={[1, 2, 3, 4]}/>}
-            <Paper variant='outlined' sx={{p: 2, overflowX: 'auto', mb: isMobile ? 10 : 0}}>
                 <Grid2 container spacing={2}>
                     {isMobile ? (
                         <Grid2 size={12}>
@@ -169,7 +168,7 @@ export default function AlreadyClaim({spareParts}) {
                     ) : (
                         <Grid2 size={12}>
                             <Table>
-                                <TableHead>
+                                <TableHead sx={TABLE_HEADER_STYLE}>
                                     <TableRow>
                                         <TableCell>
                                             <Checkbox onChange={selectAll}
@@ -218,7 +217,6 @@ export default function AlreadyClaim({spareParts}) {
                 </Grid2>
 
 
-            </Paper>
 
 
             <Box
@@ -237,3 +235,9 @@ export default function AlreadyClaim({spareParts}) {
         </>
     );
 }
+
+const TABLE_HEADER_STYLE = {
+    backgroundColor: '#c7c7c7',
+    fontWeight: 'bold',
+    fontSize: 16
+};

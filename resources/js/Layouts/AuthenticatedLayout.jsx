@@ -60,8 +60,8 @@ export default function AuthenticatedLayout({header, children}) {
                                 <Dropdown>
                                     <Dropdown.Trigger>
                                         <Button size='small' variant='contained' color='primary' endIcon={<Menu/>}>
-                                            <Avatar sx={{color : 'gray' ,width: 28, height: 28,bgcolor : 'white'}}>
-                                                {user.name.split('',1)}
+                                            <Avatar sx={{color: 'gray', width: 28, height: 28, bgcolor: 'white'}}>
+                                                {user.name.split('', 1)}
                                             </Avatar>
                                         </Button>
                                     </Dropdown.Trigger>
@@ -92,8 +92,7 @@ export default function AuthenticatedLayout({header, children}) {
                 </div>
 
                 <div
-                    style={{backgroundColor: '#404040', color: '#fff'}}
-                    // className={(showingNavigationDropdown ? 'block' : 'hidden') + ' md:hidden'}
+                    style={{backgroundColor: '#404040', color: '#fff', maxHeight: '50dvh', overflow: 'auto'}}
                     className={(showingNavigationDropdown ? 'block' : 'hidden') + ' lg:hidden'}
                 >
                     <div className="space-y-1 pb-3 pt-2">
@@ -138,7 +137,7 @@ export default function AuthenticatedLayout({header, children}) {
                     <div className="border-t border-gray-200 pb-1 pt-4">
                         <div className="mt-3 space-y-1">
                             <div className="px-4">
-                                <div className="text-base font-medium text-gray-800">
+                                <div className="text-base font-medium text-gray-500">
                                     {user.name}
                                 </div>
                                 <div className="text-sm font-medium text-gray-500">
@@ -146,7 +145,9 @@ export default function AuthenticatedLayout({header, children}) {
                                 </div>
                             </div>
                             <ResponsiveNavLink method="post" href={route('logout')} as="button">
+                                <span style={{color: 'red'}}>
                                 ออกจากระบบ
+                                </span>
                             </ResponsiveNavLink>
                         </div>
                     </div>
