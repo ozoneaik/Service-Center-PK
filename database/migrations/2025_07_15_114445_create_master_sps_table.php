@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('cat')->nullable()->comment('กลุ่มแคตตาล็อก');
             $table->string('sub_cat')->nullable()->comment('กลุ่มย่อยแคตตาล็อก');
             $table->string('group')->nullable()->comment('กลุ่ม');
+            $table->string('status')->nullable()->comment('สถานะ');
             $table->timestamps();
         });
     }

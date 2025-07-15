@@ -12,6 +12,7 @@ class MasterSp extends Model
         'sp_unit',
         'cat',
         'sub_cat',
-        'group'
+        'group',
+        'status'
     ];
 }
