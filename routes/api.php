@@ -1,4 +1,6 @@
 <?php
+
+use App\Http\Controllers\Api\GeneralController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -10,4 +12,6 @@ Route::get('/user', function (Request $request) {
 Route::get('/test',function(){
     return response()->json(['test' => 'ok']);
 });
+
+Route::get('/get-job', [GeneralController::class,'index'])->name('api.get-job');
 
