@@ -11,7 +11,7 @@ import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
 import StarsIcon from '@mui/icons-material/Stars';
 import HandymanIcon from '@mui/icons-material/Handyman';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { Grading } from "@mui/icons-material";
+import {Grading, PlaylistAdd} from "@mui/icons-material";
 export default function AdminMainPage() {
     const menuItems = [
         {
@@ -79,6 +79,12 @@ export default function AdminMainPage() {
             icon: <Grading />,
             path: route('admin.warranties.index'),
             color: '#6a5238',
+        },
+        {
+            text: "จัดการรายการอะไหล่,ไดอะแกรม",
+            icon: <PlaylistAdd />,
+            path: route('admin.spare-parts.index'),
+            color: '#81a900',
         }
     ];
 
