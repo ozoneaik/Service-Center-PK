@@ -12,7 +12,11 @@ export default function SkuList({skus}) {
         e.preventDefault();
         alert('test');
     }
-    console.log(skus)
+
+    const redirectDetail = (sku_fg,model_fg) => {
+        router.get(route('admin.skus.detail',{sku_fg, model_fg}));
+    }
+    
     return (
         <LayoutSku title='รายการอะไหล่'>
             <Grid2 container spacing={2}>
@@ -69,7 +73,7 @@ export default function SkuList({skus}) {
                                 const imageError = import.meta.env.VITE_IMAGE_DEFAULT;
                                 return (
                                     <TableRow key={index}>
-                                        <TableCell>
+                                        <TableCell sx={TableStyle.TableCellBody}>
                                             <img
                                                 src={skuImage} width={80} height={80}
                                                 onError={(e) => {
@@ -77,12 +81,12 @@ export default function SkuList({skus}) {
                                                 }}
                                             />
                                         </TableCell>
-                                        <TableCell>{sku.skufg}</TableCell>
-                                        <TableCell>{sku.skufgname}</TableCell>
-                                        <TableCell>{sku.modelfg}</TableCell>
-                                        <TableCell align='center'>
+                                        <TableCell sx={TableStyle.TableCellBody}>{sku.skufg}</TableCell>
+                                        <TableCell sx={TableStyle.TableCellBody}>{sku.skufgname}</TableCell>
+                                        <TableCell sx={TableStyle.TableCellBody}>{sku.modelfg}</TableCell>
+                                        <TableCell sx={TableStyle.TableCellBody} align='center'>
                                             <Button
-                                                onClick={()=>router.get(route('admin.skus.detail',{sku_fg : sku.skufg,model_fg : sku.modelfg}))}
+                                                onClick={()=>redirectDetail(sku.skufg,sku.modelfg)}
                                                 size='small'>
                                                 รายละเอียด
                                             </Button>

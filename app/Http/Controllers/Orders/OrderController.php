@@ -22,15 +22,21 @@ use Inertia\Response;
 
 class OrderController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $countCart = Cart::query()->where('is_code_cust_id', Auth::user()->is_code_cust_id)
-            ->where('is_active', false)
-            ->count();
-        return Inertia::render('Orders/OrderList', ['count_cart' => $countCart ?? 0,]);
+        $sku = $request->sku ?? null;
+
+        if (isset($sku)) {
+            return $this->search($sku);
+        }
+        return Inertia::render('Orders/OrderList', [
+            'message' => null,
+            'sku' => null,
+            'result' => null,
+        ]);
     }
 
-    public function search($sku): JsonResponse
+    public function search($sku)
     {
         $Api = env('VITE_API_ORDER');
         $imagePath = env('VITE_IMAGE_PATH');
@@ -71,11 +77,17 @@ class OrderController extends Controller
             $status = 400;
         }
 
-        return response()->json([
-            'message' => $message,
-            'sku' => $sku,
-            'result' => $result,
-        ], $status);
+        return Inertia::render('Orders/OrderList', [
+            'message' => $message ?? '',
+            'sku' => $sku ?? null,
+            'result' => $result ?? [],
+        ]);
+
+        // return response()->json([
+        //     'message' => $message,
+        //     'sku' => $sku,
+        //     'result' => $result,
+        // ], $status);
     }
 
     public function history(): Response

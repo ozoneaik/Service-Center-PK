@@ -5,28 +5,39 @@ import {
 } from "@mui/material";
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import HistoryIcon from '@mui/icons-material/History';
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import RowView from "@/Pages/Orders/RowView.jsx";
 import SumOrder from "@/Pages/Orders/SumOrder.jsx";
 import { Head, Link, router, usePage } from "@inertiajs/react";
 import { CartProvider, useCart } from "@/Pages/Orders/CartContext.jsx";
 import DmPreview from "@/Components/DmPreview.jsx";
-import {Add, Search} from "@mui/icons-material";
+import { Add, Search } from "@mui/icons-material";
 
-export default function OrderList({ count_cart }) {
+export default function OrderList({ count_cart, message, sku, result }) {
+
     const [dmPreview, setDmPreview] = useState('');
     const user = usePage().props.auth.user;
-    const [spList, setSpList] = useState([]);
+    const [spList, setSpList] = useState(result?.sp || []);
     const searchSku = useRef(null);
     const [open, setOpen] = useState(false);
     const [address, setAddress] = useState(user.store_info.address);
     const [phone, setPhone] = useState(user.store_info.phone);
     const [loading, setLoading] = useState(false);
     const [countCart, setCountCart] = useState(count_cart);
-    const [product, setProduct] = useState(null);
+    const [product, setProduct] = useState(result || null);
+
+    useEffect(() => {
+        if (result?.sp?.length > 0) {
+            fetchDm();
+        }
+    }, [result]);
     const handleSearch = async (e) => {
         e.preventDefault();
         setLoading(true);
+        router.get(route('orders.list'), {
+            sku: searchSku.current.value
+        });
+        return;
         try {
             const { data, status } = await axios.get(`/orders/search/${searchSku.current.value}`);
             if (status === 200) {
@@ -50,7 +61,9 @@ export default function OrderList({ count_cart }) {
     };
 
     const fetchDm = async () => {
-        const sku_path = import.meta.env.VITE_DIAGRAMS + `Diagrams-${searchSku.current.value}-DM01.jpg`;
+        const sku_path = import.meta.env.VITE_DIAGRAMS + `Diagrams-${sku}-DM01.jpg`;
+        console.log('sku_path', sku_path);
+
         setDmPreview(sku_path);
     };
 
@@ -102,6 +115,13 @@ function OrderListContent(props) {
         }
     }
 
+    const redirectCart = () => {
+        router.get(route('orders.carts'), {
+            preserveState: true, // ✅ คง state หน้าเดิม
+            preserveScroll: true,
+        });
+    }
+
     return (
         <AuthenticatedLayout>
             <Head title='🛒 สั่งซื้อะไหล่' />
@@ -122,7 +142,7 @@ function OrderListContent(props) {
                                         <Button
                                             fullWidth={isMobile}
                                             startIcon={<AddShoppingCartIcon />}
-                                            component={Link} href={route('orders.carts')}
+                                            onClick={redirectCart}
                                             color='secondary' variant='contained'
                                         >
                                             {!isMobile && 'ตะกร้าสินค้า'}
@@ -170,7 +190,7 @@ function OrderListContent(props) {
                         zIndex={1000}
                     >
                         <Fab color='secondary' component={Link} href={route('orders.carts')}>
-                            <AddShoppingCartIcon/>
+                            <AddShoppingCartIcon />
                         </Fab>
                     </Box>
                 )}
