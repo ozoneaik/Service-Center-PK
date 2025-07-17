@@ -3,5 +3,8 @@ export const TableStyle = {
         backgroundColor: '#c7c7c7',
         fontWeight: 'bold',
         fontSize: 16
+    },
+    TableCellBody : {
+        py : 1
     }
 }

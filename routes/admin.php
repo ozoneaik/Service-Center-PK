@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Admin\JobFromServiceController;
 use App\Http\Controllers\Admin\SaleController;
-use App\Http\Controllers\admin\SparePartController;
+use App\Http\Controllers\Admin\Skus\SkuController;
 use App\Http\Controllers\Admin\StartUpCostController;
 use App\Http\Controllers\Admin\WarrantyController;
 use App\Http\Controllers\ScoreMasterController;
@@ -48,9 +48,9 @@ Route::middleware('adminPermission')->group(function () {
             Route::get('/',[WarrantyController::class,'index'])->name('admin.warranties.index');
         });
 
-        Route::prefix('spare-parts')->group(function () {
-           Route::get('/',[SparePartController::class,'index'])->name('admin.spare-parts.index');
-           Route::get('/detail/{sku_fg}',[SparePartController::class,'detail'])->name('admin.spare-parts.detail');
+        Route::prefix('skus')->group(function () {
+           Route::get('/',[SkuController::class,'productList'])->name('admin.skus.product.list');
+           Route::get('/detail/{sku_fg}/{model_fg}', [SkuController::class,'productDetail'])->name('admin.skus.detail');
         });
     });
 });

@@ -81,9 +81,9 @@ export default function AdminMainPage() {
             color: '#6a5238',
         },
         {
-            text: "จัดการรายการอะไหล่,ไดอะแกรม",
+            text: "จัดการสินค้า",
             icon: <PlaylistAdd />,
-            path: route('admin.spare-parts.index'),
+            path: route('admin.skus.product.list'),
             color: '#81a900',
         }
     ];

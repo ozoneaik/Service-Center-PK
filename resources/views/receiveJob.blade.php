@@ -73,6 +73,7 @@
                 size: A4;
                 margin: 10mm;
             }
+
             body {
                 font-size: 14px;
                 margin: 0;
@@ -81,6 +82,7 @@
             .d-print-none {
                 display: none !important;
             }
+
             /*.page-break {*/
             /*    page-break-before: always;*/
             /*}*/
@@ -155,8 +157,17 @@
     <div class="divider"></div>
 
     <div class="section center">
-        <img class="qc-code" src="{{asset('line_qr_code.jpg')}}" alt="QR Code">
-        <div style="font-size: 14px;">@line : ศูนย์ซ่อม pumpkin</div>
+        <div style="display: flex;justify-content: space-evenly;">
+            <div>
+                <img class="qc-code" src="{{asset('line_qr_code_with_logo.jpg')}}" alt="QR Code">
+                <div style="font-size: 14px;">@line : ศูนย์ซ่อม pumpkin</div>
+            </div>
+            <div>
+                <img class="qc-code" src="{{asset('line_qr_code_with_logo.jpg')}}" alt="QR Code">
+                <div style="font-size: 14px;">@line : ศูนย์ซ่อม pumpkin</div>
+            </div>
+        </div>
+
     </div>
 
     <div class="divider"></div>
@@ -173,7 +184,7 @@
 </button>
 
 <script>
-    window.onload = function() {
+    window.onload = function () {
         window.print();
     };
 </script>

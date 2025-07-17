@@ -104,6 +104,7 @@ export default function NavBar({ user }) {
                     </Menu>
                 </div>
             )}
+            <NavLink target='_blank' href={'#'} active={route().current('orders.list')}>รายงาน</NavLink>
             {user.role === 'admin' && (
                 <NavLink href={route('admin.show')} active={route().current('admin.show')}>ผู้ดูแลระบบ</NavLink>
             )}

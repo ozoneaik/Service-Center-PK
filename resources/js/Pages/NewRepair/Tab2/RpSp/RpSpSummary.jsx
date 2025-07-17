@@ -633,7 +633,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                 <DialogTitle>
                     ระบุข้อมูลการเคลม
                     <Typography variant="body2" color="text.secondary">
-                        เนื่องจากคุณได้กรอกราคาอะไหล่เป็น 0 กรุณากรอกรายละเอียด
+                        เนื่องจากท่านไม่ได้คิดค่าราคาอะไหล่นอกประกัน กรุณากรอกรายละเอียด
                     </Typography>
                 </DialogTitle>
                 <DialogContent>
@@ -650,8 +650,8 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                     }))}
                                 >
                                     <MenuItem value="ไม่เคลม">ไม่เคลม</MenuItem>
-                                    <MenuItem value="เคลมสินค้านี้ซีเรียงหมดประกันตามเงื่อนไขแล้ว">
-                                        เคลมสินค้านี้ซีเรียงหมดประกันตามเงื่อนไขแล้ว
+                                    <MenuItem value="เคลมสินค้านี้ซีเรียลหมดประกันตามเงื่อนไขแล้ว">
+                                        เคลมสินค้านี้ซีเรียลหมดประกันตามเงื่อนไขแล้ว
                                     </MenuItem>
                                     <MenuItem value="เคลมอะไหล่นอกประกันที่เกิดความเสียหายต่อเนื่อง">
                                         เคลมอะไหล่นอกประกันที่เกิดความเสียหายต่อเนื่อง
