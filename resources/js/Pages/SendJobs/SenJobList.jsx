@@ -105,7 +105,7 @@ export default function SenJobList({jobs}) {
                 <Grid2 container spacing={2} mb={isMobile ? 10 : 0}>
                     <Grid2 size={12}>
                         <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                            <Typography variant='h6' fontWeight='bold'>ส่งซ่อมพิมคินฯ</Typography>
+                            <Typography variant='h6' fontWeight='bold'>ส่งซ่อมพัมคินฯ</Typography>
                             <Typography variant='body1'>รายการทั้งหมด {jobs.length} รายการ</Typography>
                         </Stack>
                         <form onSubmit={handleSearch}>

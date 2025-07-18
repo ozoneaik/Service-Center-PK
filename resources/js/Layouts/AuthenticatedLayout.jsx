@@ -103,7 +103,7 @@ export default function AuthenticatedLayout({header, children}) {
                             ประวัติซ่อม
                         </ResponsiveNavLink>
                         <ResponsiveNavLink component={Link} href={route('sendJobs.list')}>
-                            ส่งซ่อมพิมคินฯ
+                            ส่งซ่อมพัมคินฯ
                         </ResponsiveNavLink>
                         <ResponsiveNavLink component={Link} href={route('sendJobs.docJobList')}>
                             ออกเอกสารส่งกลับ
@@ -117,6 +117,9 @@ export default function AuthenticatedLayout({header, children}) {
                         </ResponsiveNavLink>
                         <ResponsiveNavLink href={route('orders.list')} active={route().current('orders.list')}>
                             สั่งซื้ออะไหล่
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={'#'} active={route().current('orders.list')}>
+                            รายงาน
                         </ResponsiveNavLink>
                         <ResponsiveNavLink href={route('profile.edit')}>ข้อมูลส่วนตัว</ResponsiveNavLink>
                         {user.admin_that_branch && (
