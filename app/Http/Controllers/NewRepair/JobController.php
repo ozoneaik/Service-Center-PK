@@ -157,13 +157,13 @@ class JobController extends Controller
             Log::error('Error Database: ' . $e->getMessage() . ' in file ' . $e->getFile() . ' on line ' . $e->getLine());
             return response()->json([
                 'message' => 'ไม่สามารถสร้างงานซ่อมได้ error from database',
-                'error' => $e->getMessage() .'in Line => ' .$e->getLine() . ' in file => ' . $e->getFile(),
+                'error' => $e->getMessage() . 'in Line => ' . $e->getLine() . ' in file => ' . $e->getFile(),
             ], 400);
         } catch (\Exception $e) {
             Log::error('Error General: ' . $e->getMessage() . ' in file ' . $e->getFile() . ' on line ' . $e->getLine());
             return response()->json([
                 'message' => 'ไม่สามารถสร้างงานซ่อมได้ error from database',
-                'error' => $e->getMessage() .'in Line => ' .$e->getLine() . ' in file => ' . $e->getFile(),
+                'error' => $e->getMessage() . 'in Line => ' . $e->getLine() . ' in file => ' . $e->getFile(),
             ], 400);
         }
     }
@@ -196,6 +196,7 @@ class JobController extends Controller
                 if (count($check_file_before) === 0) {
                     throw new \Exception('กรุณาอัปโหลดไฟล์ สภาพสินค้าก่อนซ่อม');
                 }
+
                 $check_behaviour = Behavior::search($job_id);
                 if (!isset($check_behaviour)) {
                     $step = 'after';

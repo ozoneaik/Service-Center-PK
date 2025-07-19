@@ -118,7 +118,7 @@ export default function AuthenticatedLayout({header, children}) {
                         <ResponsiveNavLink href={route('orders.list')} active={route().current('orders.list')}>
                             สั่งซื้ออะไหล่
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink href={'#'} active={route().current('orders.list')}>
+                        <ResponsiveNavLink href={'#'} active={''}>
                             รายงาน
                         </ResponsiveNavLink>
                         <ResponsiveNavLink href={route('profile.edit')}>ข้อมูลส่วนตัว</ResponsiveNavLink>

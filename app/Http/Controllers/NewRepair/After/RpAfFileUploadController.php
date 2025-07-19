@@ -4,6 +4,8 @@ namespace App\Http\Controllers\NewRepair\After;
 
 use App\Http\Controllers\Controller;
 use App\Models\FileUpload;
+use App\Models\JobList;
+use App\Models\SparePart;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -44,12 +46,14 @@ class RpAfFileUploadController extends Controller
 
     public function store(Request $request)
     {
+
         $job_id = $request->get('job_id');
         $serial_id = $request->get('serial_id');
 
         // แก้ไข: รับข้อมูล file_uploads จาก JSON string
         $file_uploads_json = $request->get('file_uploads');
         $file_uploads = json_decode($file_uploads_json, true);
+
 
         if (!$file_uploads) {
             return response()->json([
@@ -62,6 +66,37 @@ class RpAfFileUploadController extends Controller
             DB::beginTransaction();
             $stored_files = [];
             $keep = [];
+
+            $get_job = JobList::query()->where('job_id', $job_id)->first();
+            if ($get_job->warranty) {
+                $sps = SparePart::query()->where('job_id', $job_id)->where('sp_warranty',true)->get();
+                if ($sps->isNotEmpty()) {
+                    $found = false;
+                    foreach ($file_uploads as $file) {
+                        if ($file['menu_id'] == 3) {
+                            $found = true;
+                            break;
+                        }
+                    }
+                    if(!$found){
+                        $msg_err = "<br/>กรุณาอัปโหลดภาพอะไหล่เสียส่งเคลม<br/>เนื่องจากก่อนหน้านี้ท่านได้กรอกรายการอะไหล่ที่อยู่ในประกัน";
+                        throw new \Exception($msg_err);
+                    }
+                }
+            }
+
+            $check_upload = false;
+            $found = false;
+            foreach ($file_uploads as $file) {
+                if ($file['menu_id'] == 2) {
+                    $check_upload = true;
+                    break;
+                }
+            }
+            if(!$check_upload){
+                $msg_err = "<br/>กรุณาอัปโหลดสภาพสินค้าหลังซ่อม";
+                throw new \Exception($msg_err);
+            }
 
             // รวบรวม ID ของไฟล์ที่ต้องการเก็บไว้
             foreach ($file_uploads as $key => $file_data) {
