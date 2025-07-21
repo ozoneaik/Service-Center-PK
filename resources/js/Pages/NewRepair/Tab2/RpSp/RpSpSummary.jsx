@@ -23,6 +23,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
         claim: '', claim_remark: '', remark: ''
     });
 
+    console.log(JOB)
     const [openIndex, setOpenIndex] = useState(null);
     const isMobile = useMediaQuery('(max-width:900px)');
 
