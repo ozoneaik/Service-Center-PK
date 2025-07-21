@@ -1,10 +1,8 @@
 import {Alert, Button, Card, CardContent, CircularProgress, Grid2, Stack} from "@mui/material";
 import DmPreview from "@/Components/DmPreview.jsx";
 import RpSpAdd from "@/Pages/NewRepair/Tab2/RpSp/RpSpAdd.jsx";
-import RpSpSelected from "@/Pages/NewRepair/Tab2/RpSp/RpSpSelected.jsx";
 import RpSpSummary from "@/Pages/NewRepair/Tab2/RpSp/RpSpSummary.jsx";
 import PaletteIcon from "@mui/icons-material/Palette";
-import SummarizeIcon from "@mui/icons-material/Summarize";
 import React, {useEffect, useState} from "react";
 
 export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB,subremark1}) {

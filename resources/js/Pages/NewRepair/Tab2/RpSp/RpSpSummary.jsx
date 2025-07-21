@@ -3,16 +3,16 @@ import {
     IconButton, InputLabel, MenuItem, Select, Stack, Table, TableBody, TableCell, TableHead, TableRow,
     TextField, Typography, useMediaQuery, Collapse, Box, Divider
 } from "@mui/material";
-import React, {useState} from "react";
-import {showDefaultImage} from "@/utils/showImage.js";
+import React, { useState } from "react";
+import { showDefaultImage } from "@/utils/showImage.js";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import {ArrowDownward, ArrowUpward, Check, CheckBox, ExpandLess, ExpandMore} from "@mui/icons-material";
-import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
+import {ExpandLess, ExpandMore } from "@mui/icons-material";
+import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
 
-export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelected, JOB, onSaved,setShowAddMore}) {
+export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSelected, JOB, onSaved, setShowAddMore }) {
     const [previewImage, setPreviewImage] = useState(false);
     const [previewSelected, setPreviewSelected] = useState('');
     const [editingSpares, setEditingSpares] = useState({});
@@ -61,7 +61,6 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
         if (newPrice === 0 && spcode !== 'SV001') {
             const spare = spSelected.find(sp => sp.spcode === spcode);
             if (!(spare.warranty === 'Y' && JOB.warranty)) {
-                console.log('59 => ', spare, claimData)
                 setSelectedSpareForClaim(spare);
                 setClaimData({
                     claim_remark: spare.claim_remark,
@@ -90,7 +89,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
 
         // ลบข้อมูลการแก้ไขออกจาก state
         setEditingSpares(prev => {
-            const newState = {...prev};
+            const newState = { ...prev };
             delete newState[spcode];
             return newState;
         });
@@ -175,13 +174,13 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
 
         // รีเซ็ตข้อมูล
         setEditingSpares(prev => {
-            const newState = {...prev};
+            const newState = { ...prev };
             delete newState[selectedSpareForClaim.spcode];
             return newState;
         });
         setClaimDialog(false);
         setSelectedSpareForClaim(null);
-        setClaimData({claim: '', claim_remark: '', remark: ''});
+        setClaimData({ claim: '', claim_remark: '', remark: '' });
     };
 
     const handleCloseModal = (e, reason) => {
@@ -194,10 +193,11 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
     const handleCloseClaimDialog = () => {
         setClaimDialog(false);
         setSelectedSpareForClaim(null);
-        setClaimData({claim: '', claim_remark: '', remark: ''});
+        setClaimData({ claim: '', claim_remark: '', remark: '' });
     };
 
     const handleSubmit = () => {
+        console.log('spSelected >>> ', spSelected);
         AlertDialogQuestion({
             title: 'ยืนยันการบันทึก',
             text: 'กด ตกลง เพื่อบันทึกรายการอะไหล่',
@@ -205,7 +205,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                 if (confirm) {
                     try {
                         setLoading(true);
-                        const {data, status} = await axios.post(route('repair.after.spare-part.store', {
+                        const { data, status } = await axios.post(route('repair.after.spare-part.store', {
                             job_id: JOB.job_id,
                             serial_id: JOB.serial_id,
                             spare_parts: spSelected
@@ -249,9 +249,9 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                 <Button
                     fullWidth={isMobile} color='inherit'
                     variant="outlined"
-                    startIcon={<ArrowBackIcon/>}
+                    startIcon={<ArrowBackIcon />}
                     onClick={() => setShowSummary(false)}
-                    sx={{mb: 2}}
+                    sx={{ mb: 2 }}
                 >
                     กลับไปหน้าเพิ่ม/ลดอะไหล่
                 </Button>
@@ -259,9 +259,9 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
 
             {/* ตารางสรุปรายการ */}
             <Grid2 size={12}>
-                <Card sx={{overflow: 'auto'}}>
+                <Card sx={{ overflow: 'auto' }}>
                     <CardContent>
-                        <Typography variant="h6" sx={{mb: 2}}>
+                        <Typography variant="h6" sx={{ mb: 2 }}>
                             สรุปรายการอะไหล่และบริการ
                         </Typography>
 
@@ -284,22 +284,19 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                             sx={{
                                                 backgroundColor: GreenHighlight,
                                                 cursor: 'pointer',
-                                                '&:hover': {backgroundColor: '#f5f5f5'}
+                                                '&:hover': { backgroundColor: '#f5f5f5' }
                                             }}
                                         >
                                             <CardContent
                                                 onClick={() => handleRowClick(index)}
-                                                sx={{pb: '8px !important'}}
+                                                sx={{ pb: '8px !important' }}
                                             >
                                                 <Box display="flex" alignItems="center" justifyContent="space-between">
                                                     <Box display="flex" alignItems="center" gap={2}>
                                                         <img
-                                                            width={50}
-                                                            height={50}
-                                                            src={imageSp}
+                                                            width={50} height={50} src={imageSp}
                                                             onError={showDefaultImage}
-                                                            alt=""
-                                                            style={{borderRadius: 4}}
+                                                            style={{ borderRadius: 4 }}
                                                         />
                                                         <Box>
                                                             <Typography variant="body2" fontWeight="bold">
@@ -309,20 +306,20 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                                 จำนวน: {qty}
                                                             </Typography>
                                                             <Typography variant="body2" color="primary"
-                                                                        fontWeight="bold">
+                                                                fontWeight="bold">
                                                                 {totalPrice.toFixed(2)} บาท
                                                             </Typography>
                                                         </Box>
                                                     </Box>
                                                     <IconButton size="small">
-                                                        {isOpen ? <ExpandLess/> : <ExpandMore/>}
+                                                        {isOpen ? <ExpandLess /> : <ExpandMore />}
                                                     </IconButton>
                                                 </Box>
                                             </CardContent>
 
                                             <Collapse in={isOpen} timeout="auto" unmountOnExit>
-                                                <CardContent sx={{pt: 0}}>
-                                                    <Divider sx={{mb: 2}}/>
+                                                <CardContent sx={{ pt: 0 }}>
+                                                    <Divider sx={{ mb: 2 }} />
 
                                                     {/* รายละเอียดสินค้า */}
                                                     <Stack spacing={2}>
@@ -338,7 +335,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                                     size="small"
                                                                     value={isEditing.spname}
                                                                     onChange={(e) => handleEditChange(sp.spcode, 'spname', e.target.value)}
-                                                                    sx={{mt: 1}}
+                                                                    sx={{ mt: 1 }}
                                                                 />
                                                             ) : (
                                                                 <Typography variant="body2" fontWeight="bold">
@@ -366,8 +363,8 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                                         size="small"
                                                                         value={isEditing.qty}
                                                                         onChange={(e) => handleEditChange(sp.spcode, 'qty', e.target.value)}
-                                                                        inputProps={{min: 1}}
-                                                                        sx={{width: '80px'}}
+                                                                        inputProps={{ min: 1 }}
+                                                                        sx={{ width: '80px' }}
                                                                     />
                                                                 ) : (
                                                                     <Typography variant="body2">
@@ -396,8 +393,8 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                                         size="small"
                                                                         value={isEditing.price_multiple_gp}
                                                                         onChange={(e) => handleEditChange(sp.spcode, 'price_multiple_gp', e.target.value)}
-                                                                        inputProps={{min: 0, step: 1}}
-                                                                        sx={{width: '100px'}}
+                                                                        inputProps={{ min: 0, step: 1 }}
+                                                                        sx={{ width: '100px' }}
                                                                     />
                                                                 ) : (
                                                                     <Typography variant="body2">
@@ -430,7 +427,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                                 {sp.remark && (
                                                                     <>
                                                                         <Typography variant="body2"
-                                                                                    color="text.secondary">
+                                                                            color="text.secondary">
                                                                             หมายเหตุ:
                                                                         </Typography>
                                                                         <Typography variant="body2">
@@ -444,7 +441,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                         {(isEditing && JOB.warranty && sp.warranty === 'Y') && (
                                                             <Box>
                                                                 <Typography variant="body2" color="text.secondary"
-                                                                            sx={{mb: 1}}>
+                                                                    sx={{ mb: 1 }}>
                                                                     หมายเหตุของการไม่เคลม (ไม่บังคับ):
                                                                 </Typography>
                                                                 <Select
@@ -468,7 +465,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
 
                                                         {/* ปุ่มจัดการ */}
                                                         <Box display="flex" justifyContent="space-between"
-                                                             alignItems="center">
+                                                            alignItems="center">
                                                             <Typography variant="h6" color="primary">
                                                                 รวม: {totalPrice.toFixed(2)} บาท
                                                             </Typography>
@@ -483,7 +480,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                                     size="small"
                                                                 >
                                                                     <img width={20} src={imageSp}
-                                                                         onError={showDefaultImage} alt=""/>
+                                                                        onError={showDefaultImage} alt="" />
                                                                 </IconButton>
                                                                 {isEditing ? (
                                                                     <IconButton
@@ -494,7 +491,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                                         }}
                                                                         size="small"
                                                                     >
-                                                                        <SaveIcon/>
+                                                                        <SaveIcon />
                                                                     </IconButton>
                                                                 ) : (
                                                                     <IconButton
@@ -505,7 +502,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                                                         }}
                                                                         size="small"
                                                                     >
-                                                                        <EditIcon/>
+                                                                        <EditIcon />
                                                                     </IconButton>
                                                                 )}
                                                             </Box>
@@ -518,7 +515,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                 })}
 
                                 {/* ยอดรวมใน Mobile */}
-                                <Card sx={{backgroundColor: '#f5f5f5'}}>
+                                <Card sx={{ backgroundColor: '#f5f5f5' }}>
                                     <CardContent>
                                         <Box display="flex" justifyContent="space-between" alignItems="center">
                                             <Typography variant="h6">
@@ -585,7 +582,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                                     })}
 
                                     {/* แถวยอดรวม */}
-                                    <TableRow sx={{backgroundColor: '#f5f5f5', fontWeight: 'bold'}}>
+                                    <TableRow sx={{ backgroundColor: '#f5f5f5', fontWeight: 'bold' }}>
                                         <TableCell colSpan={6} align="right">
                                             <Typography>ยอดรวมทั้งหมด: </Typography>
                                         </TableCell>
@@ -603,25 +600,18 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                 </Card>
             </Grid2>
             <Box
-                position="fixed"
-                bottom={0}
-                left={0}
-                width="100%"
-                zIndex={1000}
-                bgcolor="white"
-                boxShadow={3}
-                p={1}
+                position="fixed" bottom={0} left={0}
+                width="100%" zIndex={1000} bgcolor="white"
+                boxShadow={3} p={1}
             >
 
                 <Grid2 size={12}>
                     <Stack direction='row' justifyContent='end'>
                         <Button
-                            loading={loading}
-                            fullWidth={isMobile}
+                            loading={loading} fullWidth={isMobile}
                             disabled={Object.keys(editingSpares).length !== 0}
                             variant='contained' size='large'
-                            startIcon={<SaveIcon/>}
-                            onClick={handleSubmit}
+                            startIcon={<SaveIcon />} onClick={handleSubmit}
                         >
                             บันทึก
                         </Button>
@@ -638,13 +628,12 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                     </Typography>
                 </DialogTitle>
                 <DialogContent>
-                    <Grid2 container spacing={2} sx={{mt: 1}}>
+                    <Grid2 container spacing={2} sx={{ mt: 1 }}>
                         <Grid2 size={12}>
                             <FormControl fullWidth required>
                                 <InputLabel>ประเภทการเคลม</InputLabel>
                                 <Select
-                                    value={claimData.claim_remark}
-                                    label="ประเภทการเคลม"
+                                    value={claimData.claim_remark} label="ประเภทการเคลม"
                                     onChange={(e) => setClaimData(prev => ({
                                         ...prev,
                                         claim_remark: e.target.value
@@ -662,12 +651,9 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                         </Grid2>
                         <Grid2 size={12}>
                             <TextField
-                                fullWidth
-                                multiline
-                                rows={3}
-                                label="หมายเหตุการเคลม"
+                                fullWidth multiline rows={3} label="หมายเหตุการเคลม"
                                 value={claimData.remark}
-                                onChange={(e) => setClaimData(prev => ({...prev, remark: e.target.value}))}
+                                onChange={(e) => setClaimData(prev => ({ ...prev, remark: e.target.value }))}
                                 required={claimData.claimType !== 'ไม่เคลม'}
                                 helperText={claimData.claimType === 'ไม่เคลม' ? 'ไม่บังคับกรอก' : 'บังคับกรอก'}
                             />
@@ -677,8 +663,7 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
                 <DialogActions>
                     <Button onClick={handleCloseClaimDialog}>ยกเลิก</Button>
                     <Button
-                        onClick={handleSaveClaimData}
-                        variant="contained"
+                        onClick={handleSaveClaimData} variant="contained"
                         disabled={(claimData.claim_remark !== 'ไม่เคลม' && !claimData.remark?.trim())}
                     >
                         บันทึก
@@ -690,34 +675,30 @@ export default function RpSpSummary({spSelected, setShowSummary, onUpdateSpSelec
 }
 
 const RowTable = (props) => {
-    const {editingSpares, spSelected, JOB, handleEditChange, handleEditSpare, handleSaveEdit, sp} = props;
-    const {setPreviewImage, setPreviewSelected} = props;
-    const {isMobile} = props;
-    const {isEditing, imageSp, GreenHighlight, price_per_unit, price_multiple_gp, qty, totalPrice} = props;
-    const {isOpen, setOpenIndex, openIndex, index} = props;
+    const { editingSpares, spSelected, JOB, handleEditChange, handleEditSpare, handleSaveEdit, sp } = props;
+    const { setPreviewImage, setPreviewSelected } = props;
+    const { isMobile } = props;
+    const { isEditing, imageSp, GreenHighlight, price_per_unit, price_multiple_gp, qty, totalPrice } = props;
+    const { isOpen, setOpenIndex, openIndex, index } = props;
 
     return (
-        <TableRow sx={{backgroundColor: GreenHighlight}}>
+        <TableRow sx={{ backgroundColor: GreenHighlight }}>
             <TableCell
                 onClick={() => {
                     setPreviewImage(true);
                     setPreviewSelected(imageSp);
                 }}
-                sx={{cursor: 'pointer'}}
+                sx={{ cursor: 'pointer' }}
             >
-                <img width={50} src={imageSp} onError={showDefaultImage} alt=""/>
+                <img width={50} src={imageSp} onError={showDefaultImage} alt="" />
             </TableCell>
             <TableCell>
                 {(isEditing && sp.spcode === 'SV001') ? (
                     <>
                         <TextField
-                            type="text"
-                            multiline
-                            minRows={2}
-                            size="small"
-                            value={isEditing.spname}
+                            type="text" multiline minRows={2} size="small"
+                            value={isEditing.spname} sx={{ width: '250px' }}
                             onChange={(e) => handleEditChange(sp.spcode, 'spname', e.target.value)}
-                            sx={{width: '250px'}}
                         />
                     </>
                 ) : (
@@ -726,21 +707,13 @@ const RowTable = (props) => {
                     </>
                 )}
                 {JOB.warranty && sp.warranty === 'Y' && !sp.claim && sp.remark_noclaim && (
-                    <div style={{
-                        fontSize: '0.8em',
-                        color: '#666',
-                        marginTop: '4px'
-                    }}>
+                    <div style={{ fontSize: '0.8em', color: '#666', marginTop: '4px' }}>
                         หมายเหตุของการไม่เคลม: {sp.remark_noclaim}
                     </div>
                 )}
 
                 {(sp.claim_remark && parseFloat(sp.price_multiple_gp) === 0) && (
-                    <div style={{
-                        fontSize: '0.8em',
-                        color: '#666',
-                        marginTop: '4px'
-                    }}>
+                    <div style={{ fontSize: '0.8em', color: '#666', marginTop: '4px' }}>
                         เคลม: {sp.claim_remark}
                         {sp.remark && (
                             <div>หมายเหตุ: {sp.remark}</div>
@@ -749,9 +722,9 @@ const RowTable = (props) => {
                 )}
                 {(isEditing && JOB.warranty && sp.warranty === 'Y') && (
                     <>
-                        <br/>
+                        <br />
                         <>หมายเหตุของการไม่เคลม (ไม่บังคับ)</>
-                        <br/>
+                        <br />
                         <Select
                             onChange={(e) => handleEditChange(sp.spcode, 'remark_noclaim', e.target.value)}
                             size='small' name="remark_noclaim"
@@ -774,12 +747,9 @@ const RowTable = (props) => {
             <TableCell>
                 {isEditing && sp.spcode !== 'SV001' ? (
                     <TextField
-                        type="number"
-                        size="small"
-                        value={isEditing.qty}
+                        type="number" size="small" value={isEditing.qty}
                         onChange={(e) => handleEditChange(sp.spcode, 'qty', e.target.value)}
-                        inputProps={{min: 1}}
-                        sx={{width: '80px'}}
+                        inputProps={{ min: 1 }} sx={{ width: '80px' }}
                     />
                 ) : (
                     qty
@@ -791,12 +761,9 @@ const RowTable = (props) => {
             <TableCell onClick={() => console.log(spSelected)}>
                 {isEditing ? (
                     <TextField
-                        type="number"
-                        size="small"
-                        value={isEditing.price_multiple_gp}
+                        type="number" size="small" value={isEditing.price_multiple_gp}
                         onChange={(e) => handleEditChange(sp.spcode, 'price_multiple_gp', e.target.value)}
-                        inputProps={{min: 0, step: 1}}
-                        sx={{width: '100px'}}
+                        inputProps={{ min: 0, step: 1 }} sx={{ width: '100px' }}
                     />
                 ) : (
                     <>
@@ -810,26 +777,20 @@ const RowTable = (props) => {
             <TableCell>
                 {isEditing ? (
                     <IconButton
-                        color="success"
+                        color="success" size="small"
                         onClick={() => handleSaveEdit(sp.spcode)}
-                        size="small"
                     >
-                        <SaveIcon/>
+                        <SaveIcon />
                     </IconButton>
                 ) : (
                     <IconButton
-                        color="primary"
+                        color="primary" size="small"
                         onClick={() => handleEditSpare(sp.spcode)}
-                        size="small"
                     >
-                        <EditIcon/>
+                        <EditIcon />
                     </IconButton>
                 )}
             </TableCell>
         </TableRow>
     )
-}
-
-const breakWord = {
-    wordBreak: 'break-word', whiteSpace: 'normal'
 }

@@ -1,23 +1,15 @@
 import {
-    Box,
-    Button, Card, CardContent,
-    Checkbox, Divider,
-    Grid2,
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow, Typography,
+    Box, Button, Card, CardContent, Checkbox, Divider, Grid2, Stack,
+    Table, TableBody, TableCell, TableHead, TableRow, Typography,
     useMediaQuery
 } from "@mui/material";
-import {showDefaultImage} from "@/utils/showImage.js";
-import {useState, useEffect} from "react";
+import { showDefaultImage } from "@/utils/showImage.js";
+import { useState, useEffect } from "react";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 import SaveIcon from "@mui/icons-material/Save";
 import Collapse from "@mui/material/Collapse";
 
-export default function RpSpAdd({listSparePart, onAddSpare, spSelected, JOB}) {
+export default function RpSpAdd({ listSparePart, onAddSpare, spSelected, JOB }) {
     const [previewImage, setPreviewImage] = useState(false);
     const [previewSelected, setPreviewSelected] = useState('');
     const [selectedSpares, setSelectedSpares] = useState([]);
@@ -70,16 +62,18 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected, JOB}) {
         }
     };
 
-    const handleServiceCheck = (checked) => {
+    const handleServiceCheck = (e) => {
+        const {checked} = e.target;
         setSelectedService(checked);
     };
 
     const handleSaveSelection = () => {
+        console.log(selectedService);
         const sparesToAdd = [];
-
+        
         // เพิ่มบริการถ้าถูกเลือก
         if (selectedService) {
-            sparesToAdd.push({...serviceData, qty: 1});
+            sparesToAdd.push({ ...serviceData, qty: 1 });
         }
 
         // เพิ่มอะไหล่ที่เลือก
@@ -100,9 +94,46 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected, JOB}) {
 
     return (
         <>
+            {previewImage && <SpPreviewImage open={previewImage} setOpen={setPreviewImage} imagePath={previewSelected} />}
             {isMobile ? (
                 <Grid2 size={12} maxHeight={400} overflow='auto'>
                     <Stack spacing={2}>
+                        <Card
+                            sx={{
+                                cursor: 'pointer',
+                                '&:hover': { backgroundColor: '#f5f5f5' }
+                            }}
+                        >
+                            <CardContent
+                                onClick={() => { }}
+                                sx={{ pb: '8px !important' }}
+                            >
+                                <Box display="flex" alignItems="center" justifyContent="space-between">
+                                    <Box display="flex" alignItems="center" gap={2}>
+                                        <img
+                                            width={50} height={50}
+                                            src={import.meta.env.VITE_IMAGE_DEFAULT}
+                                            style={{ borderRadius: 4 }}
+                                        />
+                                        <Box>
+                                            <Typography variant="body2" fontWeight="bold">
+                                                {serviceData.spcode}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {serviceData.spname}
+                                            </Typography>
+                                            <Typography variant="body2" color="primary" fontWeight="bold">
+                                                {serviceData.price_per_unit} บาท
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                    <Checkbox
+                                        checked={selectedService}
+                                        onChange={handleServiceCheck}
+                                    />
+                                </Box>
+                            </CardContent>
+                        </Card>
                         {listSparePart.map((sp, index) => {
                             const imageSp = import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
                             const isSelected = isSpareSelected(sp.spcode);
@@ -116,22 +147,19 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected, JOB}) {
                                     sx={{
                                         backgroundColor: GreenHighlight,
                                         cursor: 'pointer',
-                                        '&:hover': {backgroundColor: '#f5f5f5'}
+                                        '&:hover': { backgroundColor: '#f5f5f5' }
                                     }}
                                 >
                                     <CardContent
                                         onClick={() => setOpenIndex(isOpen ? null : index)}
-                                        sx={{pb: '8px !important'}}
+                                        sx={{ pb: '8px !important' }}
                                     >
                                         <Box display="flex" alignItems="center" justifyContent="space-between">
                                             <Box display="flex" alignItems="center" gap={2}>
                                                 <img
-                                                    width={50}
-                                                    height={50}
-                                                    src={imageSp}
+                                                    width={50} height={50} src={imageSp}
                                                     onError={showDefaultImage}
-                                                    alt=""
-                                                    style={{borderRadius: 4}}
+                                                    style={{ borderRadius: 4 }}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setPreviewImage(true);
@@ -160,8 +188,8 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected, JOB}) {
                                     </CardContent>
 
                                     <Collapse in={isOpen} timeout="auto" unmountOnExit>
-                                        <CardContent sx={{pt: 0}}>
-                                            <Divider sx={{mb: 2}}/>
+                                        <CardContent sx={{ pt: 0 }}>
+                                            <Divider sx={{ mb: 2 }} />
                                             <Typography variant="body2">หน่วย: {sp.spunit}</Typography>
                                             <Typography variant="body2">การรับประกัน: {sp.warranty}</Typography>
                                         </CardContent>
@@ -173,11 +201,11 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected, JOB}) {
                 </Grid2>
             ) : (
                 // *** แสดงตารางเดิมใน Desktop view (ไม่ต้องเปลี่ยน) ***
-                <Grid2 size={12} bgcolor='white' maxHeight={400} sx={{overflowY: 'auto'}}>
+                <Grid2 size={12} bgcolor='white' maxHeight={400} sx={{ overflowY: 'auto' }}>
                     <Table stickyHeader>
                         <TableHead>
                             <TableRow>
-                                <TableCell colSpan={5} sx={{fontWeight: 'bold', fontSize: 20}}>อะไหล่</TableCell>
+                                <TableCell colSpan={5} sx={{ fontWeight: 'bold', fontSize: 20 }}>อะไหล่</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell>เลือก</TableCell>
@@ -211,11 +239,11 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected, JOB}) {
                                             setPreviewImage(true);
                                             setPreviewSelected(imageSp)
                                         }}>
-                                            <img width={50} src={imageSp} onError={showDefaultImage} alt=""/>
+                                            <img width={50} src={imageSp} onError={showDefaultImage} alt="" />
                                         </TableCell>
                                         <TableCell>
                                             {sp.spcode}
-                                            <br/>
+                                            <br />
                                             {sp.spname}
                                             {/*<br/>*/}
                                             {/*{sp.warranty}*/}
@@ -231,23 +259,15 @@ export default function RpSpAdd({listSparePart, onAddSpare, spSelected, JOB}) {
             )}
             {totalSelectedItems > 0 && (
                 <Box
-                    position="fixed"
-                    bottom={0}
-                    left={0}
-                    width="100%"
-                    zIndex={1000}
-                    bgcolor="white"
-                    boxShadow={3}
-                    p={1}
+                    position="fixed" bottom={0} left={0} width="100%"
+                    zIndex={1000} bgcolor="white" boxShadow={3} p={1}
                 >
                     <Grid2 container>
                         <Grid2 size={12}>
-                            <Stack  direction='row' justifyContent='end'>
+                            <Stack direction='row' justifyContent='end'>
                                 <Button
-                                    fullWidth={isMobile}
-                                    variant="contained"
-                                    color="success" size='large'
-                                    startIcon={<SaveIcon />}
+                                    fullWidth={isMobile} variant="contained"
+                                    color="success" size='large' startIcon={<SaveIcon />}
                                     onClick={handleSaveSelection}
                                 >
                                     บันทึกการเลือกอะไหล่ ({totalSelectedItems} รายการ)

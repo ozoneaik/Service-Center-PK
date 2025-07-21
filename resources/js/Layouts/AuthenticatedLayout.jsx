@@ -92,7 +92,7 @@ export default function AuthenticatedLayout({header, children}) {
                 </div>
 
                 <div
-                    style={{backgroundColor: '#404040', color: '#fff', maxHeight: '50dvh', overflow: 'auto'}}
+                    style={{backgroundColor: '#404040', color: '#fff', maxHeight: '80dvh', overflow: 'auto'}}
                     className={(showingNavigationDropdown ? 'block' : 'hidden') + ' lg:hidden'}
                 >
                     <div className="space-y-1 pb-3 pt-2">

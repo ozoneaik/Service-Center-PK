@@ -61,6 +61,7 @@ class RpAfSpSparePartController extends Controller
                     'sp_code' => $spare_part['spcode'],
                     'sp_name' => $spare_part['spname'],
                     'price_per_unit' => floatval($spare_part['price_per_unit'] ?? 0),
+                    'stdprice_per_unit' => floatval($spare_part['stdprice_per_unit'] ?? 0),
                     'gp' => $spare_part['gp'] ?? 0,
 //                    'sp_warranty' => $spare_part['sp_warranty'],
                     'sp_warranty' => $warranty,

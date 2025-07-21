@@ -12,6 +12,7 @@ class SparePart extends Model
         'sp_code',
         'sp_name',
         'price_per_unit',
+        'stdprice_per_unit',
         'qty',
         'sp_warranty',
         'sp_unit',
