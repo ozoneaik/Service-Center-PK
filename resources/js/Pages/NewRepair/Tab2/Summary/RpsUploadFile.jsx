@@ -75,7 +75,7 @@ const ShowMediaAfterFile = ({list}) => {
             )}
             {menu5.length > 0 && (
                 <>
-                    <Typography>ภาพอะไหล่เสี่ยอื่นๆ</Typography>
+                    <Typography>ภาพอะไหล่เสียอื่นๆ</Typography>
                     <ShowMedia list={menu5}/>
                 </>
             )}
