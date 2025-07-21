@@ -59,23 +59,25 @@ export default function NavBar({ user }) {
                         'aria-labelledby': 'menu-button-1',
                     }}
                 >
-                    <MenuItem component={Link} href={route('sendJobs.list')} onClick={handleClose1}>ส่งซ่อมพัมคินฯ</MenuItem>
-                    <MenuItem component={Link} href={route('sendJobs.docJobList')} onClick={handleClose1}>ออกเอกสารส่งกลับ</MenuItem>
+                    <MenuItem component={Link} href={route('sendJobs.list')} onClick={handleClose1}>ส่งต่อเคสซ่อมไปยังพัมคินฯ</MenuItem>
+                    <MenuItem component={Link} href={route('sendJobs.docJobList')} onClick={handleClose1}>ออกเอกสารส่งกลับ พัมคินฯ</MenuItem>
                 </Menu>
             </div>
             <NavLink
                 href={route('warranty.index')}
                 active={route().current('warranty.index')}
             >
-                ลงทะเบียนรับประกัน
+                ลงทะเบียนรับประกันสินค้า
             </NavLink>
             <NavLink
                 href={route('spareClaim.index')}
                 active={route().current('spareClaim.index') || route().current('spareClaim.history') || route().current('spareClaim.pending')}
             >
-                แจ้งเคลมอะไหล่
+                แจ้งเคลมอะไหล่และตรวจสอบสถานะเคลม
             </NavLink>
-            <NavLink href={route('orders.list')} active={route().current('orders.list')}>สั่งซื้ออะไหล่</NavLink>
+            <NavLink href={route('orders.list')} active={route().current('orders.list')}>
+                สั่งซื้ออะไหล่และตรวจสอบไดอะแกรม
+            </NavLink>
             {user.admin_that_branch && (
 
                 <div
@@ -104,9 +106,13 @@ export default function NavBar({ user }) {
                     </Menu>
                 </div>
             )}
-            <NavLink target='_blank' href={'#'} active={route().current('orders.list')}>รายงาน</NavLink>
+            <NavLink target='_blank' href={'#'} active={route().current('orders.list')}>
+                รายงานศูนย์บริการ
+            </NavLink>
             {user.role === 'admin' && (
-                <NavLink href={route('admin.show')} active={route().current('admin.show')}>ผู้ดูแลระบบ</NavLink>
+                <NavLink href={route('admin.show')} active={route().current('admin.show')}>
+                    ผู้ดูแลระบบ
+                </NavLink>
             )}
         </>
     )

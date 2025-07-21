@@ -41,7 +41,7 @@ export default function RpSummary({JOB,setMainStep,setJOB}) {
     const handleCloseJob = () => {
         AlertDialogQuestion({
             title: 'ปิดงานซ่อม',
-            text: '<p style="color: darkorange;margin-bottom: 10px;">กรุณาเช็คให้ถี่ถ้วนก่อนปิดงานซ่อม</p><p>กด ตกลง เพื่อปิดงานซ่อม</p>',
+            text: '<p style="color: darkorange;margin-bottom: 10px;">กรุณาเช็ครายละเอียดให้ครบถ้วน ก่อนปิดงาน</p><p>กด ตกลง เพื่อปิดงานซ่อม</p>',
             onPassed: async (confirm) => {
                 if (confirm) {
                     try {

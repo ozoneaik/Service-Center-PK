@@ -326,7 +326,7 @@ export default function RpUploadFileAfterForm({productDetail, JOB, setStepForm})
                                                     <MenuItem value={2}>สภาพสินค้าหลังซ่อม</MenuItem>
                                                     <MenuItem value={3}>ภาพอะไหล่ที่เสียส่งเคลม</MenuItem>
                                                     <MenuItem value={4}>ภาพอะไหล่ที่เปลี่ยน</MenuItem>
-                                                    <MenuItem value={5}>ภาพอะไหล่เสี่ยอื่นๆ</MenuItem>
+                                                    <MenuItem value={5}>ภาพอะไหล่เสียอื่นๆ</MenuItem>
                                                 </Select>
                                                 <FormHelperText>{fileObj.menu_id === 0 && 'กรุณาเลือกประเภท'}</FormHelperText>
                                             </FormControl>

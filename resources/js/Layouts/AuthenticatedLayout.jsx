@@ -49,7 +49,7 @@ export default function AuthenticatedLayout({header, children}) {
                                 <Typography>บริการศูนย์ซ่อม</Typography>
                             </div>
                             {/*<div className="hidden space-x-8 md:-my-px md:ms-10 md:flex">*/}
-                            <div className="hidden space-x-8 lg:-my-px lg:ms-10 lg:flex">
+                            <div className="hidden space-x-2 lg:-my-px lg:ms-5 lg:flex">
                                 <NavBar user={user}/>
                             </div>
                         </div>
@@ -103,35 +103,35 @@ export default function AuthenticatedLayout({header, children}) {
                             ประวัติซ่อม
                         </ResponsiveNavLink>
                         <ResponsiveNavLink component={Link} href={route('sendJobs.list')}>
-                            ส่งซ่อมพัมคินฯ
+                            ส่งต่อเคสซ่อมไปยังพัมคินฯ
                         </ResponsiveNavLink>
                         <ResponsiveNavLink component={Link} href={route('sendJobs.docJobList')}>
-                            ออกเอกสารส่งกลับ
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('warranty.index')} active={route().current('warranty.index')}>
-                            ลงทะเบียนรับประกัน
+                            ออกเอกสารส่งกลับ พัมคินฯ
                         </ResponsiveNavLink>
                         <ResponsiveNavLink href={route('spareClaim.index')}
                                            active={route().current('spareClaim.index')}>
-                            แจ้งเคลมอะไหล่
+                            แจ้งเคลมอะไหล่และตรวจสอบสถานะเคลม
                         </ResponsiveNavLink>
                         <ResponsiveNavLink href={route('orders.list')} active={route().current('orders.list')}>
-                            สั่งซื้ออะไหล่
+                            สั่งซื้ออะไหล่และตรวจสอบไดอะแกรม
+                        </ResponsiveNavLink>
+                        {user.admin_that_branch && (
+                            <ResponsiveNavLink
+                                href={route('stockSp.list', {is_code_cust_id: user.is_code_cust_id})}>
+                                จัดการสต็อกอะไหล่
+                            </ResponsiveNavLink>
+                        )}
+                        <ResponsiveNavLink href={route('warranty.index')} active={route().current('warranty.index')}>
+                            ลงทะเบียนรับประกันสินค้า
                         </ResponsiveNavLink>
                         <ResponsiveNavLink href={'#'} active={''}>
-                            รายงาน
+                            รายงานศูนย์บริการ
                         </ResponsiveNavLink>
                         <ResponsiveNavLink href={route('profile.edit')}>ข้อมูลส่วนตัว</ResponsiveNavLink>
                         {user.admin_that_branch && (
-                            <>
-                                <ResponsiveNavLink
-                                    href={route('stockSp.list', {is_code_cust_id: user.is_code_cust_id})}>
-                                    จัดการสต็อกอะไหล่
-                                </ResponsiveNavLink>
-                                <ResponsiveNavLink href={route('storeUsers.index')}>
-                                    ข้อมูลผู้ใช้
-                                </ResponsiveNavLink>
-                            </>
+                            <ResponsiveNavLink href={route('storeUsers.index')}>
+                                ข้อมูลศูนย์บริการ
+                            </ResponsiveNavLink>
                         )}
                         {user.role === 'admin' && (
                             <ResponsiveNavLink href={route('admin.show')}>ผู้ดูแลระบบ</ResponsiveNavLink>
