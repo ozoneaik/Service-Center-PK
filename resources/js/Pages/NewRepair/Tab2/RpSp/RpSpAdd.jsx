@@ -70,7 +70,7 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected, JOB }) 
     const handleSaveSelection = () => {
         console.log(selectedService);
         const sparesToAdd = [];
-        
+
         // เพิ่มบริการถ้าถูกเลือก
         if (selectedService) {
             sparesToAdd.push({ ...serviceData, qty: 1 });
@@ -216,6 +216,21 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected, JOB }) 
                             </TableRow>
                         </TableHead>
                         <TableBody>
+                            <TableRow>
+                                <TableCell>
+                                    <Checkbox checked={selectedService} onChange={handleServiceCheck}/>
+                                </TableCell>
+                                <TableCell>
+                                    <img width={50} src={import.meta.env.VITE_IMAGE_DEFAULT}/>
+                                </TableCell>
+                                <TableCell>
+                                    {serviceData.spcode}
+                                    <br />
+                                    {serviceData.spname}
+                                </TableCell>
+                                <TableCell>{serviceData.price_multiple_gp}</TableCell>
+                                <TableCell>{serviceData.spunit}</TableCell>
+                            </TableRow>
                             {listSparePart.map((sp, index) => {
                                 const imageSp = import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
                                 const isSelected = isSpareSelected(sp.spcode);

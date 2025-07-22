@@ -1,6 +1,6 @@
 import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import {Link, usePage} from '@inertiajs/react';
+import {Link, router, usePage} from '@inertiajs/react';
 import {useState} from 'react';
 import icon from '../assets/images/logo.png'
 import {Avatar, Button, Typography} from "@mui/material";
@@ -124,7 +124,7 @@ export default function AuthenticatedLayout({header, children}) {
                         <ResponsiveNavLink href={route('warranty.index')} active={route().current('warranty.index')}>
                             ลงทะเบียนรับประกันสินค้า
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink href={'#'} active={''}>
+                        <ResponsiveNavLink href={route('report.menu')} active={route().current('report.menu')}>
                             รายงานศูนย์บริการ
                         </ResponsiveNavLink>
                         <ResponsiveNavLink href={route('profile.edit')}>ข้อมูลส่วนตัว</ResponsiveNavLink>

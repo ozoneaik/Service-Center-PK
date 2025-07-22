@@ -106,7 +106,7 @@ export default function NavBar({ user }) {
                     </Menu>
                 </div>
             )}
-            <NavLink target='_blank' href={'#'} active={route().current('orders.list')}>
+            <NavLink target='_blank' href={route('report.menu')} active={route().current('report.menu')}>
                 รายงานศูนย์บริการ
             </NavLink>
             {user.role === 'admin' && (

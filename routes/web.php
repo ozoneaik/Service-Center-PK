@@ -7,7 +7,6 @@ use App\Http\Controllers\Admin\OrderManageController;
 use App\Http\Controllers\Admin\UserManageController;
 use App\Http\Controllers\ApprovalSpController;
 use App\Http\Controllers\DmImageController;
-use App\Http\Controllers\genQuPdfController;
 use App\Http\Controllers\HistoryRepairController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\ManageBranchController;
@@ -16,9 +15,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Stores\UserController;
 use App\Http\Controllers\Test\DomPdfController;
 use App\Http\Controllers\WarrantyProductController;
-use App\Models\User;
 use Illuminate\Foundation\Application;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -42,6 +39,9 @@ Route::middleware('auth')->group(function () {
 
     // จัดการเอกสารการเคลมอะไหล่
     require __DIR__.'/spareClaim.php';
+
+    //จัดการรายงาน
+    require __DIR__.'/report.php';
 
     // Admin Only
     Route::middleware('adminPermission')->group(function () {

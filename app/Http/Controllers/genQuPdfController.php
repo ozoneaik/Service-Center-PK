@@ -6,15 +6,15 @@ use App\Models\AccessoriesNote;
 use App\Models\Behavior;
 use App\Models\CustomerInJob;
 use App\Models\JobList;
-use App\Models\logStamp;
 use App\Models\Remark;
 use App\Models\StoreInformation;
 use App\Models\Symptom;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
-use Inertia\Inertia;
+use Mike42\Escpos\Printer;
+use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
 
 class genQuPdfController extends Controller
 {
@@ -85,11 +85,106 @@ class genQuPdfController extends Controller
         $accessory = AccessoriesNote::findByJobId($job_id);
         $behavior = Behavior::query()->where('job_id', $job_id)->first();
 
-        $user_key = User::query()->where('user_code',$product->user_key)->first();
+        $user_key = User::query()->where('user_code', $product->user_key)->first();
 
-        $store = StoreInformation::query()->where('is_code_cust_id',$product['is_code_key'])->first();
+        $store = StoreInformation::query()->where('is_code_cust_id', $product['is_code_key'])->first();
 
-        return view('receiveJob',[
+
+        // เข้าสู่การปริ้น
+        $connector = new NetworkPrintConnector(env('VITE_PRINTER_IP'), env('VITE_PRINTER_PORT'));
+        $printer = new Printer($connector);
+        //ใช้ Raw ESC/POS Command สำหรับภาษาไทย
+        $printer->getPrintConnector()->write("\x1b\x74\x12");
+        // ตั้งค่าจัดกึ่งกลาง
+        $printer->setJustification(Printer::JUSTIFY_CENTER);
+        $printer->setEmphasis(true);
+        $printer->setTextSize(2, 2);
+        $printer->text("ศูนย์บริการ PCS\n");
+        $printer->setEmphasis(false);
+        //barCode
+        // เนื้อหา
+        $printer->setTextSize(1, 1);
+        $printer->text("\n\n");
+        $printer->setBarcodeHeight(60);
+        $printer->setBarcodeWidth(2);
+        // $printer->setBarcodeTextPosition(Printer::BARCODE_TEXT_BELOW);
+        $barcode_text = "{B" . $job_id;
+//        $new_code = '001'. substr($job_id, -4);
+//        $barcode_text = "{B" . $new_code;
+        $printer->barcode($barcode_text, Printer::BARCODE_CODE128);
+        $printer->text("\n\n");
+        // เนื้อหา
+        $indent = "\n    ";
+        $printer->setJustification(Printer::JUSTIFY_CENTER);
+        $printer->setTextSize(2, 2);
+        $printer->text($job_id . "\n");
+        $printer->setJustification(Printer::JUSTIFY_LEFT);
+        $printer->setTextSize(1, 1);
+        $printer->text($indent . "ชื่อร้าน: " . $store['shop_name']);
+        $printer->text($indent . "เบอร์โทร: " . $store['phone']);
+        $printer->text($indent . str_repeat("-", 32));
+        $printer->text($indent . "วันที่: " . Carbon::now()->format('d/m/y'));
+        $printer->text($indent . "ชื่อลูกค้า: " . $customer['name']);
+        $printer->text($indent . "เบอร์โทรติดต่อ: " . $customer['phone']);
+        $printer->text($indent . "S/N: " . $product['serial_id']);
+        $printer->text($indent . "สินค้า: " . $product['pid'] . $product['p_name']);
+        $printer->text($indent . "อาการ: " . $symptom ?? '-');
+        $printer->text($indent . "ผู้รับงาน: " . $user_key['name']);
+        $printer->text($indent . "อุปกรณ์เสริม: " . $accessory ?? '-');
+        $printer->text($indent . "หมายเหตุลูกค้า: " . $customer['remark'] ?? '-');
+        $printer->text($indent . "หมายเหตุภายในศูนย์ซ่อม: " . $remark);
+        $printer->text($indent . str_repeat("-", 32));
+        $printer->feed(1);
+
+        // ตัดกระดาษ
+        $printer->cut();
+
+
+        // ตั้งค่าจัดกึ่งกลาง
+        $printer->setJustification(Printer::JUSTIFY_CENTER);
+        $printer->setEmphasis(true);
+        $printer->setTextSize(2, 2);
+        $printer->text("ศูนย์บริการ PCS\n");
+        $printer->text("สำหรับลูกค้า\n");
+        $printer->setEmphasis(false);
+        // เนื้อหา
+        $printer->setTextSize(1, 1);
+        $printer->text("\n\n");
+        $printer->setBarcodeHeight(60);
+        $printer->setBarcodeWidth(2);
+//        $printer->setBarcodeTextPosition(Printer::BARCODE_TEXT_BELOW);
+        $barcode_text = "{B" . $job_id;
+        $printer->barcode($barcode_text, Printer::BARCODE_CODE128);
+        $printer->text("\n\n");
+        $indent = "\n    ";
+        $printer->setTextSize(2, 2);
+        $printer->setJustification(Printer::JUSTIFY_CENTER);
+        $printer->text($job_id . "\n");
+        $printer->setTextSize(1, 1);
+        $printer->setJustification(Printer::JUSTIFY_LEFT);
+        $printer->text($indent . "ชื่อร้าน: " . $store['shop_name']);
+        $printer->text($indent . "เบอร์โทร: " . $store['phone']);
+        $printer->text($indent . str_repeat("-", 32));
+        $printer->text($indent . "วันที่: " . Carbon::now()->format('d/m/y'));
+        $printer->text($indent . "S/N: " . $product['serial_id']);
+        $printer->text($indent . "สินค้า: " . $product['pid'] . $product['p_name']);
+        $printer->text($indent . "อาการ: " . $symptom ?? '-');
+        $printer->text($indent . "ผู้รับงาน: " . $user_key['name']);
+        $printer->text($indent . "อุปกรณ์เสริม: " . $accessory ?? '-');
+        $printer->text($indent . "หมายเหตุลูกค้า: " . $customer['remark'] ?? '-');
+        $printer->text($indent . str_repeat("-", 32));
+        $printer->setJustification(Printer::JUSTIFY_CENTER);
+        // พิมพ์ QR Code LINE
+        $printer->qrCode("https://page.line.me/pumpkintools", Printer::QR_ECLEVEL_L, 6);
+        $printer->feed(1);
+        $printer->text("@line : pumpkinTools\n");
+        // ตัดกระดาษ
+        $printer->cut();
+
+        $printer->close();
+
+
+        return view('receiveJob', [
             'customer' => $customer,
             'remark' => $remark,
             'product' => $product,
@@ -99,28 +194,5 @@ class genQuPdfController extends Controller
             'user_key' => $user_key,
             'store' => $store,
         ]);
-//        return Inertia::render('ReportRepair/ReceiveSpPdf', ['job' => $job, 'behaviors' => $behaviorToString]);
     }
 }
-
-//        logStamp::query()->create(['description' => Auth::user()->user_code . " ได้ดูใบรับสินค้า $job_id"]);
-//        $job = JobList::query()->where('job_id', $job_id)
-//            ->leftJoin('users', 'users.user_code', '=', 'job_lists.user_key')
-//            ->leftJoin('store_information as store', 'store.is_code_cust_id', '=', 'users.is_code_cust_id')
-//            ->select(
-//                'job_lists.*', 'users.name as username', 'users.user_code', 'store.*',
-//            )
-//            ->first();
-////        dd($job['address']);
-//        $job['address'] = htmlspecialchars_decode($job['address']);
-//        $behaviors = Behavior::query()->where('job_id', $job_id)->get();
-//        $symptom = Symptom::query()->where('job_id', $job_id)->first();
-//        $job['symptom'] = $symptom->symptom;
-//        $behaviorToString = '';
-//        foreach ($behaviors as $key => $behavior) {
-//            if ($key === 0) {
-//                $behaviorToStr
-////                $behaviorToing = $behaviorToString . $behavior->cause_name;
-//            } else {String = $behaviorToString . ' / ' . $behavior->cause_name;
-//            }
-//        }

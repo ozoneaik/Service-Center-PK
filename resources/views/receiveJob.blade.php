@@ -96,6 +96,7 @@
     <h2>ศูนย์บริการ PCS</h2>
 </div>
 
+
 <div class="compact-section">
     <div><span class="label">ชื่อร้าน:</span> {{$store['shop_name']}}</div>
     <div><span class="label">เบอร์โทรศัพท์:</span> {{$store['phone']}}</div>
@@ -183,11 +184,17 @@
     ปริ้น
 </button>
 
-<script>
-    window.onload = function () {
-        window.print();
-    };
-</script>
+<a href="{{route('genReCieveSpPdf',['job_id'=>$product['job_id']])}}">
+    <button style="padding: 10px; " class="btn btn-secondary d-print-none">
+        ปริ้นผ่าน Barigan PR-01W
+    </button>
+</a>
+
+{{--<script>--}}
+{{--    window.onload = function () {--}}
+{{--        window.print();--}}
+{{--    };--}}
+{{--</script>--}}
 
 <script>
     JsBarcode("#barcode", "{{$product['job_id']}}", {
