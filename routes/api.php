@@ -15,3 +15,5 @@ Route::get('/test',function(){
 
 Route::post('/job_detail', [GeneralController::class,'index'])->name('api.get-job');
 
+
+

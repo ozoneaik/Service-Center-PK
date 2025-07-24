@@ -1,15 +1,15 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import { Head, router } from "@inertiajs/react";
-import { Box, Button, Container, Grid2, InputAdornment, Stack, TextField } from "@mui/material";
-import { Search } from '@mui/icons-material';
-import { useEffect, useRef, useState } from "react";
-import { AlertDialog } from "@/Components/AlertDialog.js";
-import { ErrorMessage } from "@/assets/ErrorMessage.js";
+import {Head, router} from "@inertiajs/react";
+import {Box, Button, Container, Grid2, InputAdornment, Stack, TextField} from "@mui/material";
+import {Search} from '@mui/icons-material';
+import {useEffect, useRef, useState} from "react";
+import {AlertDialog} from "@/Components/AlertDialog.js";
+import {ErrorMessage} from "@/assets/ErrorMessage.js";
 import ProductDetail from "@/Components/ProductDetail.jsx";
 import ButtonList from "@/Pages/NewRepair/ButtonList.jsx";
-import { PathDetail } from "@/Components/PathDetail.jsx";
+import {PathDetail} from "@/Components/PathDetail.jsx";
 import RpMain from "@/Pages/NewRepair/RpMain.jsx";
-import { SelectSku } from "@/Pages/NewRepair/SelectSku.jsx";
+import {SelectSku} from "@/Pages/NewRepair/SelectSku.jsx";
 import ListHistoryRepair from "@/Pages/HistoryRepair/ListHistoryRepair.jsx";
 
 const menuNames = {
@@ -19,12 +19,13 @@ const menuNames = {
     4: 'วิดีโอที่เกี่ยวข้อง'
 };
 
-export default function Repair({ DATA }) {
+export default function Repair({DATA}) {
     const [SN, setSN] = useState('');
     const [PID, setPID] = useState('');
     const [loading, setLoading] = useState(false);
     const [detail, setDetail] = useState(DATA);
     const [menuSel, setMenuSel] = useState(0);
+    const [showPidForm, setShowPidForm] = useState(false);
 
     const [miniSize, setMiniSize] = useState(false);
 
@@ -36,7 +37,7 @@ export default function Repair({ DATA }) {
 
     useEffect(() => {
         if (menuSel !== 0) {
-            scrollRef.current.scrollIntoView({ behavior: 'smooth' });
+            scrollRef.current.scrollIntoView({behavior: 'smooth'});
         }
     }, [menuSel]);
 
@@ -45,22 +46,22 @@ export default function Repair({ DATA }) {
         setLoading(true);
         setDetail(null);
         if (SN.startsWith('JOB-')) {
-            router.get(route('repair.index', { job_id: SN }));
+            router.get(route('repair.index', {job_id: SN}));
         } else {
             try {
-                const { data, status } = await axios.post(route('repair.search'), { SN, PID });
+                const {data, status} = await axios.post(route('repair.search'), {SN, PID});
                 const combo_set = data.data.combo_set;
                 const addWarranty = data.data.warranty_expire; // เก็บสถานะรับประกัน
                 if (combo_set) {
                     setOpenSelSku(true);
                     let sku_list = data.data.sku_list;
                     sku_list = sku_list.map((item) => {
-                        return { ...item, warranty_status: addWarranty }
+                        return {...item, warranty_status: addWarranty}
                     })
                     setComboSets(sku_list)
                 } else {
                     let sku_list = data.data.sku_list[0];
-                    sku_list = { ...sku_list, warranty_status: addWarranty }
+                    sku_list = {...sku_list, warranty_status: addWarranty}
                     setDetail(sku_list);
                 }
 
@@ -71,12 +72,13 @@ export default function Repair({ DATA }) {
                 const errorStatus = error.status;
                 AlertDialog({
                     title: 'เกิดข้อผิดพลาด',
-                    text: ErrorMessage({ status: errorStatus, message: errorMessage })
+                    text: ErrorMessage({status: errorStatus, message: errorMessage})
                 });
             } finally {
                 setMiniSize(false);
                 setLoading(false);
                 setMenuSel(0);
+                setShowPidForm(false);
             }
         }
 
@@ -85,19 +87,19 @@ export default function Repair({ DATA }) {
 
     return (
         <AuthenticatedLayout>
-            <Head title={'แจ้งซ่อม'} />
+            <Head title={'แจ้งซ่อม'}/>
             {openSelSku &&
                 <SelectSku
                     sku_list={comboSets} open={openSelSku} setOpen={setOpenSelSku}
                     onSelect={(sku) => setDetail(sku)}
                 />
             }
-            <Container sx={{ mt: 3 }}>
+            <Container sx={{mt: 3}}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
                         <Box bgcolor={'white'}>
                             <SearchSnComponent
-                                {...{ SN, setSn: setSN, PID, setPID, loading }}
+                                {...{SN, setSn: setSN, PID, setPID, loading, showPidForm, setShowPidForm}}
                                 onPassed={(e) => handleSearch(e)}
                             />
                         </Box>
@@ -123,7 +125,7 @@ export default function Repair({ DATA }) {
                             </Grid2>
                             <span ref={scrollRef}></span>
                             <Grid2 size={12}>
-                                <ButtonList {...{ menuSel, setMenuSel }} />
+                                <ButtonList {...{menuSel, setMenuSel}} />
                             </Grid2>
                             {menuSel !== 0 && (
                                 <Grid2 size={12}>
@@ -133,8 +135,9 @@ export default function Repair({ DATA }) {
                                         job_id={detail.job_id} jobStatus={detail.status}
                                     />
                                     {menuSel === 1 &&
-                                        <RpMain productDetail={detail} serial_id={detail.serial_id || detail.serial} />}
-                                    {menuSel === 2 && <ListHistoryRepair serial_id={detail.serial || detail.serial_id} />}
+                                        <RpMain productDetail={detail} serial_id={detail.serial_id || detail.serial}/>}
+                                    {menuSel === 2 &&
+                                        <ListHistoryRepair serial_id={detail.serial || detail.serial_id}/>}
                                 </Grid2>
                             )}
                         </>
@@ -145,8 +148,8 @@ export default function Repair({ DATA }) {
     )
 }
 
-const SearchSnComponent = ({ SN, setSn, onPassed, PID, setPID, loading }) => {
-    const [showPidForm, setShowPidForm] = useState(false);
+const SearchSnComponent = ({SN, setSn, onPassed, PID, setPID, loading, showPidForm, setShowPidForm}) => {
+
     const handleChangeSN = (e) => {
         const value = e.target.value;
         setSn(value);
@@ -155,30 +158,38 @@ const SearchSnComponent = ({ SN, setSn, onPassed, PID, setPID, loading }) => {
     }
     return (
         <form onSubmit={(e) => onPassed(e)}>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>
                 <Stack direction="column" spacing={2} width='100%'>
                     <TextField disabled={loading}
-                        slotProps={{
-                            input: { startAdornment: (<InputAdornment position={'start'}>S/N :</InputAdornment>) }
-                        }}
-                        value={SN || ''} onChange={(e) => handleChangeSN(e)}
-                        focused placeholder={'ค้นหาหมายเลขซีเรียล หรือ หมายเลข Job หากไม่ทราบกรุณากรอก 9999 เพื่อระบุรหัสสินค้า'}
-                        fullWidth required
+                               slotProps={{
+                                   input: {
+                                       startAdornment: (
+                                           <InputAdornment position={'start'}>
+                                               S/N :
+                                           </InputAdornment>
+                                       )
+                                   }
+                               }}
+                               value={SN || ''} onChange={(e) => handleChangeSN(e)}
+                               focused
+                               placeholder={'ค้นหาหมายเลขซีเรียล หรือ หมายเลข Job หากไม่ทราบกรุณากรอก 9999 เพื่อระบุรหัสสินค้า'}
+                               fullWidth required
                     />
-                    {showPidForm && (<TextField disabled={loading}
-                        slotProps={{
-                            input: {
-                                startAdornment: (
-                                    <InputAdornment position={'start'}>
-                                        PID
-                                    </InputAdornment>)
-                            }
-                        }}
-                        value={PID || ''} onChange={(e) => setPID(e.target.value)}
-                        placeholder={'กรอกรหัสสินค้า'} fullWidth required
-                    />)}
+                    {showPidForm && (
+                        <TextField disabled={loading}
+                                   slotProps={{
+                                       input: {
+                                           startAdornment: (
+                                               <InputAdornment position={'start'}>
+                                                   PID
+                                               </InputAdornment>)
+                                       }
+                                   }}
+                                   value={PID || ''} onChange={(e) => setPID(e.target.value)}
+                                   placeholder={'กรอกรหัสสินค้า'} fullWidth required
+                        />)}
                 </Stack>
-                <Button loading={loading} type={"submit"} startIcon={<Search />} variant='contained'>
+                <Button loading={loading} type={"submit"} startIcon={<Search/>} variant='contained'>
                     ค้นหา
                 </Button>
             </Stack>

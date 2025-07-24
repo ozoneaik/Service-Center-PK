@@ -24,8 +24,8 @@ class RpAfQuController extends Controller
         $job_id = $request->get('job_id');
         $qus = Qu::findByJobId($job_id);
         return response()->json([
-           'message' => 'success',
-           'list' => $qus,
+            'message' => 'success',
+            'list' => $qus,
         ]);
     }
 
@@ -42,7 +42,11 @@ class RpAfQuController extends Controller
                     $spare_parts_format[$key]['pid'] = $spare_part['spcode'];
                     $spare_parts_format[$key]['name'] = $spare_part['spname'];
                     $spare_parts_format[$key]['price'] = $spare_part['price_multiple_gp'];
-                    $spare_parts_format[$key]['prod_discount'] = 0;
+                    if ($spare_part['spcode'] === 'SV001' || $spare_part['price_multiple_gp'] == 0) {
+                        $spare_parts_format[$key]['prod_discount'] = 0;
+                    } else {
+                        $spare_parts_format[$key]['prod_discount'] = 20;
+                    }
                     $spare_parts_format[$key]['unit'] = $spare_part['sp_unit'] ?? 'อัน';
                     $spare_parts_format[$key]['qty'] = $spare_part['qty'];
                 }
@@ -93,8 +97,8 @@ class RpAfQuController extends Controller
 
             $file = file_get_contents($cleanUrl);
             $file_name = basename($cleanUrl);
-            $path_file = 'qu_file/'.$file_name;
-            Storage::disk('public')->put('qu_file/'.$file_name, $file);
+            $path_file = 'qu_file/' . $file_name;
+            Storage::disk('public')->put('qu_file/' . $file_name, $file);
 
             DB::beginTransaction();
 

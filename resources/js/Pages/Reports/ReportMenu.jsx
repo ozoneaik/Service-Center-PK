@@ -1,14 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {
-    Card,
-    CardContent,
-    Container,
-    Grid2,
-    Typography,
-    Box,
-    IconButton,
-    Fade,
-    Paper
+    Card, CardContent, Container, Grid2, Typography,
+    Box, IconButton, Fade, Paper
 } from "@mui/material";
 import {
     Assessment as AssessmentIcon,
@@ -19,6 +12,7 @@ import {
     Settings as SettingsIcon,
     TrendingUp as TrendingUpIcon
 } from "@mui/icons-material";
+import {Head, router} from "@inertiajs/react";
 
 const listMenu = [
     {
@@ -33,7 +27,8 @@ const listMenu = [
         icon: <PieChartIcon sx={{ fontSize: 40 }} />,
         color: '#2196F3',
         bgGradient: 'linear-gradient(135deg, #2196F3 0%, #64B5F6 100%)',
-        description: 'สรุปรายรับทั้งหมดแยกตามประเภทค่าใช้จ่าย'
+        description: 'สรุปรายรับทั้งหมดแยกตามประเภทค่าใช้จ่าย',
+        routeUrl: 'report.summary-income.index'
     },
     {
         name: 'รายงานสรุปยอดอะไหล่ ที่ใช้ไป',
@@ -61,21 +56,25 @@ const listMenu = [
         icon: <SettingsIcon sx={{ fontSize: 40 }} />,
         color: '#607D8B',
         bgGradient: 'linear-gradient(135deg, #607D8B 0%, #90A4AE 100%)',
-        description: 'จัดการและตรวจสอบรายการค่าเปิดเครื่อง'
+        description: 'จัดการและตรวจสอบรายการค่าเปิดเครื่อง',
+        routeUrl : 'report.start-up-cost.index'
     }
 ];
 
 export default function ReportMenu() {
+
+    const handleRedirect = (routeUrl = null) => {
+        if(routeUrl === null) return;
+        router.get(route(routeUrl));
+    }
     return (
         <AuthenticatedLayout>
-            {/* Header Section */}
-
-
+            <Head title='เมนูรายงาน'/>
             <Container maxWidth="xl" sx={{ py: 4 }}>
                 <Grid2 container spacing={3}>
                     {listMenu.map((item, index) => (
                         <Grid2 size={{ xs: 12, sm: 6, lg: 4 }} key={index}>
-                            <Fade in={true} timeout={500 + (index * 100)}>
+                            <Fade onClick={()=>handleRedirect(item.routeUrl)} in={true} timeout={500 + (index * 100)}>
                                 <Card
                                     variant="outlined"
                                     sx={{

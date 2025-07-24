@@ -1,6 +1,6 @@
 import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import {Link, router, usePage} from '@inertiajs/react';
+import {Link, usePage} from '@inertiajs/react';
 import {useState} from 'react';
 import icon from '../assets/images/logo.png'
 import {Avatar, Button, Typography} from "@mui/material";

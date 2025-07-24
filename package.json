@@ -25,6 +25,7 @@
         "@emotion/styled": "^11.14.0",
         "@mui/icons-material": "^6.4.1",
         "@mui/material": "^6.4.1",
+        "@mui/x-charts": "^8.9.0",
         "@react-pdf/renderer": "^4.3.0",
         "bwip-js": "^4.5.3",
         "flowbite-react": "^0.10.2",
