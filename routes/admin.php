@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\Admin\DiagramController;
 use App\Http\Controllers\Admin\JobFromServiceController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\Skus\SkuController;
+use App\Http\Controllers\Admin\SpController;
 use App\Http\Controllers\Admin\StartUpCostController;
 use App\Http\Controllers\Admin\WarrantyController;
 use App\Http\Controllers\ScoreMasterController;
@@ -51,6 +53,28 @@ Route::middleware('adminPermission')->group(function () {
         Route::prefix('skus')->group(function () {
            Route::get('/',[SkuController::class,'productList'])->name('admin.skus.product.list');
            Route::get('/detail/{sku_fg}/{model_fg}', [SkuController::class,'productDetail'])->name('admin.skus.detail');
+        });
+
+        Route::prefix('diagrams')->group(function(){
+            Route::get('/',[SpController::class,'index'])->name('admin.diagrams.index');
+            Route::get('/create',[SpController::class,'create'])->name('admin.diagrams.create');
+            Route::post('/store',[SpController::class,'store'])->name('admin.diagrams.store');
+            Route::get('/edit/{id}',[SpController::class,'edit'])->name('admin.diagrams.edit');
+            Route::put('/update/{id}',[SpController::class,'update'])->name('admin.diagrams.update');
+            Route::delete('/delete/{id}',[SpController::class,'softDelete'])->name('admin.diagrams.delete');
+            Route::delete('/destroy/{id}',[SpController::class,'destroy'])->name('admin.diagrams.destroy');
+            Route::post('/restore',[SpController::class,'restore'])->name('admin.diagrams.restore');
+        });
+
+        Route::prefix('diagrams')->group(function(){
+            Route::get('/', [DiagramController::class,'index'])->name('admin.diagram.index');
+            Route::get('/create', [DiagramController::class,'create'])->name('admin.diagram.create');
+            Route::post('/store', [DiagramController::class,'store'])->name('admin.diagram.store');
+            Route::get('/edit/{id}', [DiagramController::class,'edit'])->name('admin.diagram.edit');
+            Route::put('/update/{id}', [DiagramController::class,'update'])->name('admin.diagram.update');
+            Route::delete('/delete/{id}', [DiagramController::class,'softDelete'])->name('admin.diagram.delete');
+            Route::delete('/destroy/{id}', [DiagramController::class,'destroy'])->name('admin.diagram.destroy');
+            Route::post('/restore', [DiagramController::class,'restore'])->name('admin.diagram.restore');
         });
     });
 });

@@ -14,8 +14,6 @@ use Carbon\Carbon;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Mike42\Escpos\Printer;
 use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
 
