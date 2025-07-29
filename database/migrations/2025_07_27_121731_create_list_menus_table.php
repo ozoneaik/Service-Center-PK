@@ -17,8 +17,10 @@ return new class extends Migration
             $table->id();
             $table->string('menu_name')->comment('ชื่อเมนู');
             $table->string('group')->nullable()->comment('กลุ่ม');
+            $table->boolean('main_menu')->default(true)->comment('เป็นเมนูหลัก');
             $table->string('redirect_route')->nullable()->comment('เส้นทาง');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

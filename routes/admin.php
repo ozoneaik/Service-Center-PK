@@ -77,5 +77,10 @@ Route::middleware('adminPermission')->group(function () {
             Route::delete('/destroy/{id}', [DiagramController::class,'destroy'])->name('admin.diagram.destroy');
             Route::post('/restore', [DiagramController::class,'restore'])->name('admin.diagram.restore');
         });
+
+        // จัดการเมนู navbar
+        Route::prefix('system-menu')->group(function(){
+            
+        });
     });
 });

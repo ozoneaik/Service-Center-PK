@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Stores;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EmpRequest;
+use App\Models\ListMenu;
 use App\Models\User;
+use App\Models\UserAccessMenu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +27,10 @@ class UserController extends Controller
     }
 
     public function create() {
-        return Inertia::render('Stores/Users/UserStore');
+        $list_menu = ListMenu::all();
+        return Inertia::render('Stores/Users/UserStore',[
+            'list_menu' => $list_menu
+        ]);
     }
 
     public function store(EmpRequest $request){
@@ -42,6 +47,20 @@ class UserController extends Controller
                 'password' => Hash::make($data['password'])
             ]);
             if ($user) {
+                $access_menu = $data['access_menu'];
+                UserAccessMenu::query()->where('user_code', $data['user_code'])->delete();
+                foreach ($access_menu as $key => $value) {
+                    if ($value['is_checked']) {
+                        $found = UserAccessMenu::query()->where('user_code', $data['user_code'])->where('menu_code', $value['menu_id'])->first();
+                        if ($found) {
+                            $found->delete();
+                        }
+                        UserAccessMenu::query()->create([
+                            'user_code' => $data['user_code'],
+                            'menu_code' => $value['menu_id']
+                        ]);
+                    }
+                }
                 DB::commit();
                 return redirect()->route('storeUsers.index')->with('success', "บันทึกผู้ใช้สำเร็จ");
             }else throw new \Exception("บันทึกผู้ใช้ไม่สำเร็จ");

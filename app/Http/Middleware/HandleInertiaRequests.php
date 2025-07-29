@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\SaleInformation;
+use App\Models\UserAccessMenu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
@@ -34,6 +35,7 @@ class HandleInertiaRequests extends Middleware
         $user = Auth::user();
         $store = $user->store_info ?? null;
         $saleInfo = null;
+        $access_menu = $user->access_menu ?? [];
         if ($store && $store->sale_id) {
             $saleInfo = SaleInformation::query()
                 ->where('sale_code', $store->sale_id)
@@ -53,6 +55,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $user,
                 'store_info' => $store,
                 'sale_info' => $saleInfo,
+                'access_menu' => $access_menu
             ],
         ];
     }

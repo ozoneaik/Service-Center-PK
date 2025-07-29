@@ -35,6 +35,10 @@ const WatermarkStyle = {
 export default function AuthenticatedLayout({header, children}) {
     const user = usePage().props.auth.user;
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const props = usePage().props.auth
+    console.log(props);
+    
+    
     return (
         <div className="min-h-screen relative" style={HeaderImageStyle}>
             {/* Watermark Layer */}
