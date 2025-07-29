@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client';
 import {ProductTargetProvider} from "./Context/ProductContext.jsx";
 import {ThemeProvider} from "@mui/material";
 import {Theme} from "@/Layouts/themeCustom.jsx";
+import '@fortawesome/fontawesome-svg-core/styles.css'
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,

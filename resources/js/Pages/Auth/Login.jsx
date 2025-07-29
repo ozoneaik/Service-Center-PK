@@ -73,7 +73,10 @@ export default function Login({ status }) {
     const submit = (e) => {
         e.preventDefault();
         post(route('login'), {
-            onFinish: () => reset('password'),
+            onFinish: () =>{
+                reset('password');
+                console.log('hell0 world')
+            },
         });
     };
 

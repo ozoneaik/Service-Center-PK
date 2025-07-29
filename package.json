@@ -23,6 +23,9 @@
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.0",
+        "@fortawesome/fontawesome-svg-core": "^7.0.0",
+        "@fortawesome/free-solid-svg-icons": "^7.0.0",
+        "@fortawesome/react-fontawesome": "^0.2.3",
         "@mui/icons-material": "^6.4.1",
         "@mui/material": "^6.4.1",
         "@mui/x-charts": "^8.9.0",
@@ -34,6 +37,7 @@
         "prop-types": "^15.8.1",
         "react-barcode": "^1.6.1",
         "react-dropzone": "^14.3.8",
-        "sweetalert2": "^11.15.10"
+        "sweetalert2": "^11.15.10",
+        "xlsx": "^0.18.5"
     }
 }

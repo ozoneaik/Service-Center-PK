@@ -55,20 +55,21 @@ Route::middleware('adminPermission')->group(function () {
            Route::get('/detail/{sku_fg}/{model_fg}', [SkuController::class,'productDetail'])->name('admin.skus.detail');
         });
 
-        Route::prefix('diagrams')->group(function(){
-            Route::get('/',[SpController::class,'index'])->name('admin.diagrams.index');
-            Route::get('/create',[SpController::class,'create'])->name('admin.diagrams.create');
-            Route::post('/store',[SpController::class,'store'])->name('admin.diagrams.store');
-            Route::get('/edit/{id}',[SpController::class,'edit'])->name('admin.diagrams.edit');
-            Route::put('/update/{id}',[SpController::class,'update'])->name('admin.diagrams.update');
-            Route::delete('/delete/{id}',[SpController::class,'softDelete'])->name('admin.diagrams.delete');
-            Route::delete('/destroy/{id}',[SpController::class,'destroy'])->name('admin.diagrams.destroy');
-            Route::post('/restore',[SpController::class,'restore'])->name('admin.diagrams.restore');
+        Route::prefix('spare-parts')->group(function(){
+            Route::get('/',[SpController::class,'index'])->name('admin.spare-parts.index');
+            Route::get('/create',[SpController::class,'create'])->name('admin.spare-parts.create');
+            Route::post('/store',[SpController::class,'store'])->name('admin.spare-parts.store');
+            Route::get('/edit/{id}',[SpController::class,'edit'])->name('admin.spare-parts.edit');
+            Route::put('/update/{id}',[SpController::class,'update'])->name('admin.spare-parts.update');
+            Route::delete('/delete/{id}',[SpController::class,'softDelete'])->name('admin.spare-parts.delete');
+            Route::delete('/destroy/{id}',[SpController::class,'destroy'])->name('admin.spare-parts.destroy');
+            Route::post('/restore',[SpController::class,'restore'])->name('admin.spare-parts.restore');
         });
 
         Route::prefix('diagrams')->group(function(){
             Route::get('/', [DiagramController::class,'index'])->name('admin.diagram.index');
             Route::get('/create', [DiagramController::class,'create'])->name('admin.diagram.create');
+            Route::get('/create-exel', [DiagramController::class,'createFromExel'])->name('admin.diagram.create.excel');
             Route::post('/store', [DiagramController::class,'store'])->name('admin.diagram.store');
             Route::get('/edit/{id}', [DiagramController::class,'edit'])->name('admin.diagram.edit');
             Route::put('/update/{id}', [DiagramController::class,'update'])->name('admin.diagram.update');
