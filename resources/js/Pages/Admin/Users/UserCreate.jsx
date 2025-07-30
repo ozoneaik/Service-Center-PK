@@ -1,44 +1,44 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import { Head, useForm } from "@inertiajs/react";
+import {Head, useForm} from "@inertiajs/react";
 import {
     Box, Container, Grid2, Stack, Paper, Card, CardContent,
     Button, Divider, Switch, Tooltip, Typography, Alert, CircularProgress, Snackbar,
     FormControl, FormControlLabel, FormHelperText, TextField, Select,
-    IconButton, InputAdornment, InputLabel, MenuItem,
+    IconButton, InputAdornment, InputLabel, MenuItem, Checkbox,
 } from "@mui/material";
 import {
-    AccountCircle, AdminPanelSettings, AlternateEmail,
+    AccountCircle, AddModerator, AdminPanelSettings, AlternateEmail,
     Badge, HelpOutline, Key, Search, Store as StoreIcon, Visibility,
     VisibilityOff, Warning
 } from "@mui/icons-material";
 import axios from "axios";
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import LoginIcon from '@mui/icons-material/Login';
 
-export default function UserCreate() {
-    const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
-        user_code: "",
-        name: "",
-        email: "",
-        role: "service",
-        password: "",
-        password_confirmation: "",
-        is_code_cust_id: "",
-        admin_that_branch: false,
+export default function UserCreate({menu_list}) {
+    const {data, setData, post, processing, errors, reset, clearErrors} = useForm({
+        user_code: "", name: "", email: "", role: "service", password: "", password_confirmation: "",
+        is_code_cust_id: "", admin_that_branch: false, menu_access: []
     });
 
     const [storeInfo, setStoreInfo] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
-    const [notification, setNotification] = useState({
-        open: false,
-        message: "",
-        severity: "success"
-    });
+    const [notification, setNotification] = useState({open: false, message: "", severity: "success"});
+
+    useEffect(() => {
+        if (menu_list && menu_list.length > 0) {
+            const initializedMenuAccess = menu_list.map(item => ({
+                menu_id: item.id,
+                is_checked: true
+            }));
+            setData("menu_access", initializedMenuAccess);
+        }
+    }, [menu_list]);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setData(name, value);
     };
 
@@ -54,7 +54,7 @@ export default function UserCreate() {
 
         setIsSearching(true);
         try {
-            const response = await axios.get(route('shop.search', { is_code_cust_id: data.is_code_cust_id }));
+            const response = await axios.get(route('shop.search', {is_code_cust_id: data.is_code_cust_id}));
             if (response.status === 200) {
                 if (response.data.store) {
                     setStoreInfo(response.data.store);
@@ -121,7 +121,7 @@ export default function UserCreate() {
     };
 
     const handleCloseNotification = () => {
-        setNotification({ ...notification, open: false });
+        setNotification({...notification, open: false});
     };
 
     // ตรวจสอบความซับซ้อนของรหัสผ่าน
@@ -144,15 +144,28 @@ export default function UserCreate() {
         // มีอักขระพิเศษ
         if (/[^A-Za-z0-9]/.test(password)) strength += 1;
         else messages.push("ควรมีอักขระพิเศษอย่างน้อย 1 ตัว");
-        if (strength < 3) return { color: 'error', message: messages[0] || 'รหัสผ่านไม่ปลอดภัย' };
-        if (strength < 4) return { color: 'warning', message: 'รหัสผ่านปลอดภัยปานกลาง' };
-        return { color: 'success', message: 'รหัสผ่านปลอดภัย' };
+        if (strength < 3) return {color: 'error', message: messages[0] || 'รหัสผ่านไม่ปลอดภัย'};
+        if (strength < 4) return {color: 'warning', message: 'รหัสผ่านปลอดภัยปานกลาง'};
+        return {color: 'success', message: 'รหัสผ่านปลอดภัย'};
     };
     const passwordStrength = checkPasswordStrength(data.password);
+
+
+    const handleSelectMenu = (e) => {
+        const {name, checked} = e.target;
+        const menuId = parseInt(name);
+
+        const updatedAccess = data.menu_access.map(item =>
+            item.menu_id === menuId ? {...item, is_checked: checked} : item
+        );
+        setData('menu_access', updatedAccess);
+    };
+
+
     return (
         <AuthenticatedLayout>
-            <Head title="สร้างผู้ใช้" />
-            <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Head title="สร้างผู้ใช้"/>
+            <Container maxWidth="lg" sx={{py: 4}}>
                 <Paper
                     elevation={0}
                     sx={{
@@ -171,10 +184,10 @@ export default function UserCreate() {
                             alignItems: 'center',
                         }}
                     >
-                        <Badge sx={{ fontSize: 28 }} />
+                        <Badge sx={{fontSize: 28}}/>
                         สร้างผู้ใช้งานใหม่
                     </Typography>
-                    <Divider sx={{ mb: 4 }} />
+                    <Divider sx={{mb: 4}}/>
                     <form onSubmit={handleSubmit}>
                         <Stack spacing={3}>
                             {/* ส่วนข้อมูลผู้ใช้ */}
@@ -190,14 +203,14 @@ export default function UserCreate() {
                                     py: 1, px: 2, gap: 1,
                                     display: 'flex', alignItems: 'center',
                                 }}>
-                                    <AccountCircle />
+                                    <AccountCircle/>
                                     <Typography variant="subtitle1" fontWeight="medium">
                                         ข้อมูลผู้ใช้
                                     </Typography>
                                 </Box>
                                 <CardContent>
                                     <Grid2 container spacing={3}>
-                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                        <Grid2 size={{xs: 12, md: 6}}>
                                             <TextField
                                                 size="small" required fullWidth
                                                 label="ชื่อ-สกุล" name="name" value={data.name}
@@ -207,14 +220,14 @@ export default function UserCreate() {
                                                     input: {
                                                         startAdornment: (
                                                             <InputAdornment position="start">
-                                                                <AccountCircle color="primary" />
+                                                                <AccountCircle color="primary"/>
                                                             </InputAdornment>
                                                         )
                                                     }
                                                 }}
                                             />
                                         </Grid2>
-                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                        <Grid2 size={{xs: 12, md: 6}}>
                                             <TextField
                                                 size="small" required fullWidth
                                                 label="อีเมล" name="email" type="email" value={data.email}
@@ -224,32 +237,33 @@ export default function UserCreate() {
                                                     input: {
                                                         startAdornment: (
                                                             <InputAdornment position="start">
-                                                                <AlternateEmail color="primary" />
+                                                                <AlternateEmail color="primary"/>
                                                             </InputAdornment>
                                                         )
                                                     }
                                                 }}
                                             />
                                         </Grid2>
-                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                        <Grid2 size={{xs: 12, md: 6}}>
                                             <TextField
                                                 size="small" required fullWidth
-                                                label="ชื่อผู้ใช้ (สำหรับเข้าสู่ระบบ)" name="user_code" type="text" value={data.user_code}
+                                                label="ชื่อผู้ใช้ (สำหรับเข้าสู่ระบบ)" name="user_code" type="text"
+                                                value={data.user_code}
                                                 onChange={handleChange} error={!!errors.user_code}
                                                 helperText={errors.user_code}
                                                 slotProps={{
                                                     input: {
                                                         startAdornment: (
                                                             <InputAdornment position="start">
-                                                                <LoginIcon color="primary" />
+                                                                <LoginIcon color="primary"/>
                                                             </InputAdornment>
                                                         )
                                                     }
                                                 }}
                                             />
                                         </Grid2>
-                                        
-                                        <Grid2 size={{ xs: 12, md: 6 }}>
+
+                                        <Grid2 size={{xs: 12, md: 6}}>
                                             <FormControl fullWidth size="small" error={!!errors.role}>
                                                 <InputLabel>บทบาท</InputLabel>
                                                 <Select
@@ -257,7 +271,7 @@ export default function UserCreate() {
                                                     value={data.role} onChange={handleChange}
                                                     startAdornment={
                                                         <InputAdornment position="start">
-                                                            <AdminPanelSettings color="primary" />
+                                                            <AdminPanelSettings color="primary"/>
                                                         </InputAdornment>
                                                     }
                                                 >
@@ -273,22 +287,24 @@ export default function UserCreate() {
                             </Card>
 
                             {/* ส่วนตั้งค่ารหัสผ่าน */}
-                            <Card variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden', borderColor: 'primary.light' }} >
+                            <Card variant="outlined"
+                                  sx={{borderRadius: 2, overflow: 'hidden', borderColor: 'primary.light'}}>
                                 <Box sx={{
                                     bgcolor: 'primary.main', color: 'primary.contrastText',
                                     py: 1, px: 2, display: 'flex', alignItems: 'center', gap: 1
                                 }}>
-                                    <Key />
+                                    <Key/>
                                     <Typography variant="subtitle1" fontWeight="medium">
                                         ตั้งค่ารหัสผ่าน
                                     </Typography>
                                 </Box>
                                 <CardContent>
                                     <Grid2 container spacing={3}>
-                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                        <Grid2 size={{xs: 12, md: 6}}>
                                             <TextField
                                                 size="small" required fullWidth
-                                                label="รหัสผ่าน" name="password" type={showPassword ? "text" : "password"}
+                                                label="รหัสผ่าน" name="password"
+                                                type={showPassword ? "text" : "password"}
                                                 value={data.password} onChange={handleChange} error={!!errors.password}
                                                 helperText={errors.password || (data.password && passwordStrength.message)}
                                                 color={data.password ? passwordStrength.color : undefined}
@@ -296,7 +312,8 @@ export default function UserCreate() {
                                                     input: {
                                                         startAdornment: (
                                                             <InputAdornment position="start">
-                                                                <Key color={data.password ? passwordStrength.color : "primary"} />
+                                                                <Key
+                                                                    color={data.password ? passwordStrength.color : "primary"}/>
                                                             </InputAdornment>
                                                         ),
                                                         endAdornment: (
@@ -305,7 +322,7 @@ export default function UserCreate() {
                                                                     aria-label="toggle password visibility" edge="end"
                                                                     onClick={() => setShowPassword(!showPassword)}
                                                                 >
-                                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                                    {showPassword ? <VisibilityOff/> : <Visibility/>}
                                                                 </IconButton>
                                                             </InputAdornment>
                                                         )
@@ -313,7 +330,7 @@ export default function UserCreate() {
                                                 }}
                                             />
                                         </Grid2>
-                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                        <Grid2 size={{xs: 12, md: 6}}>
                                             <TextField
                                                 size="small" required fullWidth
                                                 label="ยืนยันรหัสผ่าน" name="password_confirmation"
@@ -334,7 +351,7 @@ export default function UserCreate() {
                                                                     data.password_confirmation
                                                                         ? (data.password === data.password_confirmation ? "success" : "error")
                                                                         : "primary"
-                                                                } />
+                                                                }/>
                                                             </InputAdornment>
                                                         ),
                                                         endAdornment: (
@@ -344,7 +361,8 @@ export default function UserCreate() {
                                                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                                                     edge="end"
                                                                 >
-                                                                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                                                    {showConfirmPassword ? <VisibilityOff/> :
+                                                                        <Visibility/>}
                                                                 </IconButton>
                                                             </InputAdornment>
                                                         )
@@ -356,16 +374,51 @@ export default function UserCreate() {
                                 </CardContent>
                             </Card>
 
-                            {/* ส่วนข้อมูลร้านค้า */}
+                            {/* ส่วนของ การเข้าถึงเมนู */}
                             <Card
-                                variant="outlined"
-                                sx={{ borderRadius: 2, overflow: 'hidden', borderColor: 'primary.light' }}
+                                variant='outlined'
+                                sx={{borderRadius: 2, overflow: 'hidden', borderColor: 'primary.light'}}
                             >
                                 <Box sx={{
                                     bgcolor: 'primary.main', color: 'primary.contrastText',
                                     py: 1, px: 2, display: 'flex', alignItems: 'center', gap: 1
                                 }}>
-                                    <StoreIcon />
+                                    <AddModerator/>
+                                    <Typography variant="subtitle1" fontWeight="medium">
+                                        การเข้าถึงเมนู
+                                    </Typography>
+                                </Box>
+                                <CardContent>
+                                    <Box display='flex' flexWrap='wrap'>
+                                        {menu_list.map((item, index) => {
+                                            const current = data.menu_access.find(i => i.menu_id === item.id)
+                                            return (
+                                                <FormControlLabel
+                                                    key={index} label={item.menu_name} name={item.id.toString()}
+                                                    control={
+                                                        <Checkbox
+                                                            checked={current ? current.is_checked : false}
+                                                            onChange={handleSelectMenu}
+                                                            disabled={data.admin_that_branch}
+                                                        />
+                                                    }
+                                                />
+                                            )
+                                        })}
+                                    </Box>
+                                </CardContent>
+                            </Card>
+
+                            {/* ส่วนข้อมูลร้านค้า */}
+                            <Card
+                                variant="outlined"
+                                sx={{borderRadius: 2, overflow: 'hidden', borderColor: 'primary.light'}}
+                            >
+                                <Box sx={{
+                                    bgcolor: 'primary.main', color: 'primary.contrastText',
+                                    py: 1, px: 2, display: 'flex', alignItems: 'center', gap: 1
+                                }}>
+                                    <StoreIcon/>
                                     <Typography variant="subtitle1" fontWeight="medium">
                                         ข้อมูลร้านค้า
                                     </Typography>
@@ -373,9 +426,10 @@ export default function UserCreate() {
                                 <CardContent>
                                     <Grid2 container spacing={3}>
                                         <Grid2 size={12}>
-                                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                            <Box sx={{display: 'flex', gap: 2}}>
                                                 <TextField
-                                                    size="small" required fullWidth label="รหัสร้านค้า" name="is_code_cust_id"
+                                                    size="small" required fullWidth label="รหัสร้านค้า"
+                                                    name="is_code_cust_id"
                                                     value={data.is_code_cust_id} onChange={handleChange}
                                                     error={!!errors.is_code_cust_id}
                                                     helperText={errors.is_code_cust_id}
@@ -383,7 +437,7 @@ export default function UserCreate() {
                                                         input: {
                                                             startAdornment: (
                                                                 <InputAdornment position="start">
-                                                                    <StoreIcon color="primary" />
+                                                                    <StoreIcon color="primary"/>
                                                                 </InputAdornment>
                                                             )
                                                         }
@@ -391,7 +445,8 @@ export default function UserCreate() {
                                                 />
                                                 <Button
                                                     variant="contained" onClick={handleSearch}
-                                                    startIcon={isSearching ? <CircularProgress size={20} color="inherit" /> : <Search />}
+                                                    startIcon={isSearching ?
+                                                        <CircularProgress size={20} color="inherit"/> : <Search/>}
                                                     disabled={isSearching || !data.is_code_cust_id}
                                                 >
                                                     ค้นหา
@@ -400,7 +455,7 @@ export default function UserCreate() {
                                         </Grid2>
 
                                         <Grid2 size={12}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
@@ -411,7 +466,7 @@ export default function UserCreate() {
                                                     label="ผู้ดูแลระบบในร้าน"
                                                 />
                                                 <Tooltip title="ผู้ใช้จะมีสิทธิ์เป็นแอดมินสำหรับร้านค้านี้เท่านั้น">
-                                                    <HelpOutline color="primary" fontSize="medium" />
+                                                    <HelpOutline color="primary" fontSize="medium"/>
                                                 </Tooltip>
                                             </Box>
                                         </Grid2>
@@ -422,16 +477,16 @@ export default function UserCreate() {
                                                     border: '1px solid', borderColor: 'success.light', borderRadius: 2,
                                                     p: 2, bgcolor: 'success.light', opacity: 0.8
                                                 }}>
-                                                    <Typography variant="subtitle2" color="success.dark" sx={{ mb: 1 }}>
+                                                    <Typography variant="subtitle2" color="success.dark" sx={{mb: 1}}>
                                                         ข้อมูลร้านค้า
                                                     </Typography>
                                                     <Grid2 container spacing={2}>
-                                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                                        <Grid2 size={{xs: 12, md: 6}}>
                                                             <Typography variant="body2">
                                                                 <strong>ชื่อร้าน:</strong> {storeInfo.shop_name}
                                                             </Typography>
                                                         </Grid2>
-                                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                                        <Grid2 size={{xs: 12, md: 6}}>
                                                             <Typography variant="body2">
                                                                 <strong>เบอร์โทรศัพท์:</strong> {storeInfo.phone || '-'}
                                                             </Typography>
@@ -444,7 +499,7 @@ export default function UserCreate() {
                                                     </Grid2>
                                                 </Box>
                                             ) : data.is_code_cust_id ? (
-                                                <Alert severity="warning" icon={<Warning />} sx={{ borderRadius: 2 }}>
+                                                <Alert severity="warning" icon={<Warning/>} sx={{borderRadius: 2}}>
                                                     กรุณาค้นหาร้านค้าก่อนทำการบันทึก
                                                 </Alert>
                                             ) : null}
@@ -454,7 +509,7 @@ export default function UserCreate() {
                             </Card>
 
                             {/* ปุ่มดำเนินการ */}
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
+                            <Box sx={{display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2}}>
                                 <Button
                                     color="inherit" variant="outlined"
                                     onClick={() => {
@@ -467,7 +522,7 @@ export default function UserCreate() {
                                 </Button>
                                 <Button
                                     type="submit" variant="contained" disabled={processing || isSearching}
-                                    startIcon={processing && <CircularProgress size={20} color="inherit" />}
+                                    startIcon={processing && <CircularProgress size={20} color="inherit"/>}
                                 >
                                     บันทึก
                                 </Button>
@@ -481,12 +536,12 @@ export default function UserCreate() {
             <Snackbar
                 open={notification.open} autoHideDuration={6000}
                 onClose={handleCloseNotification}
-                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+                anchorOrigin={{vertical: "bottom", horizontal: "center"}}
             >
                 <Alert
                     onClose={handleCloseNotification}
                     severity={notification.severity}
-                    sx={{ width: '100%' }} variant="filled"
+                    sx={{width: '100%'}} variant="filled"
                 >
                     {notification.message}
                 </Alert>

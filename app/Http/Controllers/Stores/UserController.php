@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Stores;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EmpRequest;
+use App\Models\AccessoriesNote;
 use App\Models\ListMenu;
 use App\Models\User;
 use App\Models\UserAccessMenu;
@@ -23,18 +24,28 @@ class UserController extends Controller
             ->select('users.*', 'store_information.shop_name')
             ->orderBy('users.id', 'desc')
             ->get();
-        return Inertia::render('Stores/Users/UserList', ['users' => $users]);
+        $users_formatted = $users->toArray();
+
+        foreach ($users_formatted as $key => $user) {
+            $users_formatted[$key]['access_menu'] = UserAccessMenu::query()
+                ->where('user_code', $user['user_code'])->get()->toArray();
+        }
+
+        $list_menu = ListMenu::all();
+        return Inertia::render('Stores/Users/UserList', ['users' => $users_formatted, 'list_menu' => $list_menu]);
     }
 
-    public function create() {
+    public function create()
+    {
         $list_menu = ListMenu::all();
-        return Inertia::render('Stores/Users/UserStore',[
+        return Inertia::render('Stores/Users/UserStore', [
             'list_menu' => $list_menu
         ]);
     }
 
-    public function store(EmpRequest $request){
-        try{
+    public function store(EmpRequest $request)
+    {
+        try {
             DB::beginTransaction();
             $data = $request;
             $user = User::query()->create([
@@ -63,17 +74,19 @@ class UserController extends Controller
                 }
                 DB::commit();
                 return redirect()->route('storeUsers.index')->with('success', "บันทึกผู้ใช้สำเร็จ");
-            }else throw new \Exception("บันทึกผู้ใช้ไม่สำเร็จ");
-        }catch(\Exception $e) {
+            } else throw new \Exception("บันทึกผู้ใช้ไม่สำเร็จ");
+        } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error',$e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
         }
-        
+
     }
 
 
-    public function update(Request $request) {
-        try{
+    public function update(Request $request)
+    {
+        try {
+            DB::beginTransaction();
             $user = User::query()->where('user_code', $request->user_code)->first();
             if ($user) {
                 $user->update([
@@ -84,12 +97,21 @@ class UserController extends Controller
                 if ($request->password) {
                     $user->update(['password' => Hash::make($request->password)]);
                 }
+                UserAccessMenu::query()->where('user_code', $request->user_code)->delete();
+                foreach ($request->access_menu as $key => $value) {
+                    UserAccessMenu::query()->create([
+                        'user_code' => $request->user_code,
+                        'menu_code' => $value['menu_code']
+                    ]);
+                }
+                DB::commit();
                 return redirect()->back()->with('success', "อัพเดทข้อมูลผู้ใช้ $user->name สำเร็จ");
             } else {
                 return redirect()->back()->with('error', "ไม่พบข้อมูลผู้ใช้ $request->user_code");
             }
-        }catch(\Exception $e) {
-            return redirect()->back()->with('error',$e->getMessage());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 

@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, useForm } from "@inertiajs/react";
+import {Head, Link, useForm} from "@inertiajs/react";
 import {
     Container,
     Grid2,
@@ -13,14 +13,15 @@ import {
     Box,
     Divider,
     Alert,
-    Snackbar
+    Snackbar, Checkbox
 } from "@mui/material";
-import { useState } from "react";
+import {useState} from "react";
 
-export default function UserEdit({ user }) {
+export default function UserEdit({user, menu_access, list_all_menu}) {
     const [openSnackbar, setOpenSnackbar] = useState(false);
+    console.log(user, menu_access, list_all_menu)
 
-    const { data, setData, put, processing, errors } = useForm({
+    const {data, setData, put, processing, errors} = useForm({
         id: user.id,
         user_code: user.user_code,
         name: user.name,
@@ -32,7 +33,8 @@ export default function UserEdit({ user }) {
         shop_name: user.store_info.shop_name,
         phone: user.store_info.phone,
         admin_that_branch: user.admin_that_branch,
-        address: user.store_info.address
+        address: user.store_info.address,
+        menu_access: menu_access || []
     });
 
     const handleSubmit = (e) => {
@@ -48,20 +50,43 @@ export default function UserEdit({ user }) {
         setOpenSnackbar(false);
     };
 
+    // ตรวจสอบว่า menu นั้นๆ ถูกเลือกหรือไม่
+    const isMenuChecked = (menuId) => {
+        return data.menu_access.some(access => access.menu_code === menuId);
+    }
+
+    // จัดการการเปลี่ยนแปลง checkbox ของ menu
+    const handleMenuChange = (menuId, checked) => {
+        let newAccessMenu = [...data.menu_access];
+
+        if (checked) {
+            // เพิ่ม menu ใหม่
+            newAccessMenu.push({
+                user_code: data.user_code,
+                menu_code: menuId
+            });
+        } else {
+            // ลบ menu ออก
+            newAccessMenu = newAccessMenu.filter(access => access.menu_code !== menuId);
+        }
+
+        setData('menu_access', newAccessMenu);
+    };
+
     return (
         <AuthenticatedLayout>
-            <Head title="แก้ไขผู้ใช้" />
-            <Container maxWidth="md" sx={{ py: 3 }} >
+            <Head title="แก้ไขผู้ใช้"/>
+            <Container maxWidth="md" sx={{py: 3}}>
                 <Card elevation={3}>
-                    <CardContent >
+                    <CardContent>
                         <Typography variant="h5" component="h1" gutterBottom>
                             แก้ไขข้อมูลผู้ใช้
                         </Typography>
-                        <Divider sx={{ mb: 3 }} />
+                        <Divider sx={{mb: 3}}/>
 
                         <Box component="form" onSubmit={handleSubmit} noValidate>
                             <Grid2 container spacing={3}>
-                                <Grid2 size={{ xs: 12, sm: 6 }}>
+                                <Grid2 size={{xs: 12, sm: 6}}>
                                     <TextField
                                         label="รหัสผู้ใช้"
                                         fullWidth
@@ -72,7 +97,7 @@ export default function UserEdit({ user }) {
                                         disabled
                                     />
                                 </Grid2>
-                                <Grid2 size={{ xs: 12, sm: 6 }}>
+                                <Grid2 size={{xs: 12, sm: 6}}>
                                     <TextField
                                         label="รหัสลูกค้า"
                                         fullWidth
@@ -105,7 +130,7 @@ export default function UserEdit({ user }) {
                                         required
                                     />
                                 </Grid2>
-                                <Grid2 size={{ xs: 12, md: 6 }}>
+                                <Grid2 size={{xs: 12, md: 6}}>
                                     <TextField
                                         label="รหัสผ่านใหม่"
                                         fullWidth
@@ -116,7 +141,7 @@ export default function UserEdit({ user }) {
                                         helperText={errors.password}
                                     />
                                 </Grid2>
-                                <Grid2 size={{ xs: 12, md: 6 }}>
+                                <Grid2 size={{xs: 12, md: 6}}>
                                     <TextField
                                         required={data.password ? true : false}
                                         label="ยืนยันรหัสผ่านใหม่อีกครั้ง"
@@ -163,7 +188,28 @@ export default function UserEdit({ user }) {
                                         label="แอดมินประจำสาขา"
                                     />
                                 </Grid2>
-                                <Grid2 size={12} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
+                                {!data.admin_that_branch && (
+                                    <Grid2 size={12}>
+                                        <Box display='flex' flexWrap='wrap'>
+                                            {list_all_menu.map((item, index) => {
+                                                return (
+                                                    <FormControlLabel
+                                                        key={index}
+                                                        control={
+                                                            <Checkbox
+                                                                checked={isMenuChecked(item.id)}
+                                                                onChange={(e) => handleMenuChange(item.id, e.target.checked)}
+                                                            />
+                                                        }
+                                                        label={item.menu_name}
+                                                    />
+                                                )
+                                            })}
+                                        </Box>
+                                    </Grid2>
+                                )}
+
+                                <Grid2 size={12} sx={{display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2}}>
                                     <Button
                                         variant="outlined"
                                         component={Link}
@@ -187,7 +233,7 @@ export default function UserEdit({ user }) {
             </Container>
 
             <Snackbar
-                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                anchorOrigin={{vertical: 'top', horizontal: 'center'}}
                 open={openSnackbar}
                 autoHideDuration={3000}
                 onClose={handleCloseSnackbar}

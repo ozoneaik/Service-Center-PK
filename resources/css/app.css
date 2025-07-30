@@ -75,3 +75,7 @@ textarea,select {
         transform: rotate(360deg);
     }
 }
+
+.MuiInputLabel-asterisk{
+    color: red;
+}

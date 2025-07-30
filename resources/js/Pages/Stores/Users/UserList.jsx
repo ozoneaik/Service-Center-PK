@@ -1,8 +1,8 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {Head, Link, router, useForm, usePage} from "@inertiajs/react";
 import {
-    Alert,Box,Button,Chip,Grid2,Paper,Stack,Table,
-    TableBody,TableCell,TableHead,TableRow,Typography
+    Alert, Box, Button, Chip, Grid2, Paper, Stack, Table,
+    TableBody, TableCell, TableHead, TableRow, Typography
 } from "@mui/material";
 import React, {useState} from "react";
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -11,7 +11,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import {AlertDialogQuestion} from "@/Components/AlertDialog";
 import ModalEditUser from "./ModalEditUser";
 
-export default function UserList({users}) {
+export default function UserList({users, list_menu}) {
     const auth = usePage().props.auth.user;
     const {flash} = usePage().props;
     const [progress, setProgress] = useState(false);
@@ -41,9 +41,14 @@ export default function UserList({users}) {
     }
     return (
         <>
-            {open && <ModalEditUser open={open} setOpen={setOpen} user={userSelected} onSave={(text) => {
-                setShowAlert(true);
-            }}/>}
+            {
+                open && <ModalEditUser
+                    open={open} setOpen={setOpen} user={userSelected} listMenu={list_menu}
+                    onSave={() => {
+                        setShowAlert(true)
+                    }}
+                />
+            }
             <AuthenticatedLayout>
                 <Head title={'จัดการผู้ใช้'}/>
                 <Paper elevation={3} sx={{p: 3}}>

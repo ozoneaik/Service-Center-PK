@@ -10,25 +10,15 @@ import NavBar from "@/Layouts/NavBar.jsx";
 import {ArrowDownward, ArrowUpward, Menu} from "@mui/icons-material";
 
 const HeaderImageStyle = {
-    backgroundImage: `url(${HeaderImage})`,
-    backgroundRepeat: 'no-repeat',
-    backgroundSize: '100% auto',
-    backgroundPosition: 'top'
+    backgroundImage: `url(${HeaderImage})`, backgroundRepeat: 'no-repeat',
+    backgroundSize: '100% auto', backgroundPosition: 'top'
 }
 
 const WatermarkStyle = {
-    backgroundImage: `url(${watermark})`,
-    backgroundRepeat: 'repeat',
-    backgroundSize: '300px auto',
-    backgroundPosition: 'center',
+    backgroundImage: `url(${watermark})`, backgroundRepeat: 'repeat', backgroundSize: '300px auto',
+    backgroundPosition: 'center', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+    zIndex: -1, pointerEvents: 'none',
     // opacity: 0.1,
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    zIndex: -1,
-    pointerEvents: 'none'
 }
 
 
@@ -61,7 +51,6 @@ export default function AuthenticatedLayout({header, children}) {
 
     return (
         <div className="min-h-screen relative" style={HeaderImageStyle}>
-            {/* Watermark Layer */}
             <div style={WatermarkStyle}></div>
 
             <nav className="fixed w-full z-50 border-b border-gray-100 bg-orange/75 backdrop-blur-sm">
@@ -74,13 +63,10 @@ export default function AuthenticatedLayout({header, children}) {
                                 <Avatar src={icon || ''}/>
                                 <Typography>บริการศูนย์ซ่อม</Typography>
                             </div>
-                            {/*<div className="hidden space-x-8 md:-my-px md:ms-10 md:flex">*/}
                             <div className="hidden space-x-2 lg:-my-px lg:ms-5 lg:flex">
                                 <NavBar user={user} accessMenu={formatedMenu}/>
                             </div>
                         </div>
-
-                        {/*<div className="hidden md:ms-6 md:flex md:items-center">*/}
                         <div className="hidden lg:ms-6 lg:flex lg:items-center">
                             <div className="relative ms-3">
                                 <Dropdown>
@@ -103,8 +89,6 @@ export default function AuthenticatedLayout({header, children}) {
                                 </Dropdown>
                             </div>
                         </div>
-
-                        {/*<div className="-me-2 flex items-center md:hidden">*/}
                         <div className="-me-2 flex items-center lg:hidden">
                             <Button
                                 onClick={() => setShowingNavigationDropdown((previousState) => !previousState,)}

@@ -1,33 +1,27 @@
 import {useState, useEffect} from "react";
 import {
     Dialog, DialogContent, DialogTitle, TextField, Button,
-    FormControlLabel, Checkbox, Box, Grid2, Typography, InputAdornment, Stack
+    FormControlLabel, Checkbox, Box, Grid2, Typography, InputAdornment, Stack, Divider
 } from "@mui/material";
 import {router} from '@inertiajs/react';
 import LoginIcon from "@mui/icons-material/Login";
 import {AccountCircle, AlternateEmail, Password, Edit} from "@mui/icons-material";
 
-export default function ModalEditUser({
-                                          open, setOpen, user, onSave = () => {
-    }
-                                      }) {
+export default function ModalEditUser({open, setOpen, user, onSave, listMenu}) {
     const [userData, setUserData] = useState({
-        user_code: '',
-        name: '',
-        email: '',
-        role: '',
-        admin_that_branch: false,
-        password: '',
-        password_confirmation: '',
+        user_code: '', name: '', email: '', role: '', admin_that_branch: false,
+        password: '', password_confirmation: '', access_menu: []
     });
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+
     useEffect(() => {
         if (user) {
             setUserData({
                 ...user,
                 password: '',
                 password_confirmation: '',
+                access_menu: user.access_menu || []
             });
         }
     }, [user]);
@@ -54,6 +48,32 @@ export default function ModalEditUser({
                 onSave('error');
                 setLoading(false);
             },
+        });
+    };
+
+    // ตรวจสอบว่า menu นั้นๆ ถูกเลือกหรือไม่
+    const isMenuChecked = (menuId) => {
+        return userData.access_menu.some(access => access.menu_code === menuId);
+    }
+
+    // จัดการการเปลี่ยนแปลง checkbox ของ menu
+    const handleMenuChange = (menuId, checked) => {
+        let newAccessMenu = [...userData.access_menu];
+
+        if (checked) {
+            // เพิ่ม menu ใหม่
+            newAccessMenu.push({
+                user_code: userData.user_code,
+                menu_code: menuId
+            });
+        } else {
+            // ลบ menu ออก
+            newAccessMenu = newAccessMenu.filter(access => access.menu_code !== menuId);
+        }
+
+        setUserData({
+            ...userData,
+            access_menu: newAccessMenu
         });
     };
 
@@ -119,7 +139,6 @@ export default function ModalEditUser({
                             />
                         </Grid2>
 
-
                         <Grid2 size={{xs: 12}}>
                             <FormControlLabel
                                 control={
@@ -177,6 +196,26 @@ export default function ModalEditUser({
                                 error={!!errors.password_confirmation} helperText={errors.password_confirmation}
                             />
                         </Grid2>
+
+                        {!userData.admin_that_branch && (
+                            <Grid2 size={12}>
+                                <Typography variant="subtitle2" sx={{mb: 1}}>สิทธิ์การเข้าถึงเมนู</Typography>
+                                <Box display='flex' flexWrap='wrap'>
+                                    {listMenu.map((item, index) => (
+                                        <FormControlLabel
+                                            key={index}
+                                            label={item.menu_name}
+                                            control={
+                                                <Checkbox
+                                                    checked={isMenuChecked(item.id)}
+                                                    onChange={(e) => handleMenuChange(item.id, e.target.checked)}
+                                                />
+                                            }
+                                        />
+                                    ))}
+                                </Box>
+                            </Grid2>
+                        )}
 
                         <Grid2 size={{xs: 12}} sx={{mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 1}}>
                             <Button variant="outlined" onClick={() => setOpen(false)}>

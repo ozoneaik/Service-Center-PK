@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\Skus\SkuController;
 use App\Http\Controllers\Admin\SpController;
 use App\Http\Controllers\Admin\StartUpCostController;
+use App\Http\Controllers\Admin\UserManageController;
 use App\Http\Controllers\Admin\WarrantyController;
 use App\Http\Controllers\ScoreMasterController;
 use Illuminate\Support\Facades\Route;
@@ -80,7 +81,17 @@ Route::middleware('adminPermission')->group(function () {
 
         // จัดการเมนู navbar
         Route::prefix('system-menu')->group(function(){
-            
+
+        });
+
+        // จัดการผู้ใช้
+        Route::prefix('users-manage')->group(function () {
+            Route::get('/create', [UserManageController::class, 'create'])->name('userManage.create');
+            Route::get('/list', [UserManageController::class, 'list'])->name('userManage.list');
+            Route::post('/store',[UserManageController::class,'store'])->name('userManage.store');
+            Route::get('/edit/{user_code}',[UserManageController::class,'edit'])->name('userManage.edit');
+            Route::put('/update',[UserManageController::class,'update'])->name('userManage.update');
+            Route::delete('/delete/{user_code}',[UserManageController::class,'delete'])->name('userManage.delete');
         });
     });
 });
