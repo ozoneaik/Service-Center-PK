@@ -65,9 +65,10 @@ class User extends Authenticatable
 
     public function sale_info()
     {
-        $user = $this->hasOne(StoreInformation::class, 'is_code_cust_id', 'is_code_cust_id')->where('id', Auth::user()->id)->first();
-        $sale = SaleInformation::query()->where('sale_code', $user->sale_id)->select('sale_code', 'name as sale_name')->first();
-        $access_menu = UserAccessMenu::query()->where('user_code', Auth::user()->user_code)->get();
         return $this->hasOne(SaleInformation::class, 'is_code_cust_id', 'is_code_cust_id');
+    }
+
+    public function access_menu(){
+        return $this->hasMany(UserAccessMenu::class, 'user_code', 'user_code');
     }
 }

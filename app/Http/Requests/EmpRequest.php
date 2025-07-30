@@ -29,7 +29,7 @@ class EmpRequest extends FormRequest
             'password' => ['required', 'confirmed'],
             'password_confirmation' => 'required',
             'role' => 'required',
-            'access_menu' => ['required', 'array','min:1'],
+//            'access_menu' => ['required', 'array','min:1'],
         ];
     }
 
@@ -45,7 +45,7 @@ class EmpRequest extends FormRequest
             'role.required' => 'กรุณาเลือกสิทธิ์การใช้งาน',
             'email.unique' => 'อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่น',
             'password.confirmed' => 'รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน',
-            'access_menu.required' => 'กรุณาเลือกเมนู',
+//            'access_menu.required' => 'กรุณาเลือกเมนู',
         ];
     }
 

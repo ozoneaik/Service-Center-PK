@@ -2,21 +2,14 @@ import NavLink from "@/Components/NavLink.jsx";
 import {Button, Menu, MenuItem} from "@mui/material";
 import React, {useState} from "react";
 import {Link} from "@inertiajs/react";
-import {
-    getMenuHeaders,
-    getMenuHeadersAdminBranch,
-    getMenuHeadersAdmin
-} from "@/Layouts/menuHeader.js";
+import {getMenuHeadersAdmin} from "@/Layouts/menuHeader.js";
 
 
 
-export default function NavBar({user}) {
+export default function NavBar({user,accessMenu}) {
     const [anchorEls, setAnchorEls] = useState({});
 
-    const menuHeaders = getMenuHeaders(user);
-    const menuHeadersAdminBranch = getMenuHeadersAdminBranch(user);
-    const menuHeadersAdmin = getMenuHeadersAdmin(user);
-
+    const adminMenu = getMenuHeadersAdmin(user)
     const handleClick = (index) => (event) => {
         setAnchorEls((prev) => ({...prev, [index]: event.currentTarget}));
     };
@@ -52,7 +45,7 @@ export default function NavBar({user}) {
                             <MenuItem
                                 key={childIndex}
                                 component={Link}
-                                href={route(child.routeUrl, child.is_code_cust_id ? {is_code_cust_id: user.is_code_cust_id} : {})}
+                                href={route(child.routerUrl, {is_code_cust_id : user.is_code_cust_id})}
                                 onClick={handleClose(index)}
                             >
                                 {child.name}
@@ -66,8 +59,8 @@ export default function NavBar({user}) {
         return (
             <NavLink
                 key={index}
-                href={route(menu.routeUrl)}
-                active={route().current(menu.routeUrl)}
+                href={route(menu.routerUrl)}
+                active={route().current(menu.routerUrl)}
                 target={menu.target || '_self'}
             >
                 {menu.name}
@@ -77,15 +70,8 @@ export default function NavBar({user}) {
 
     return (
         <>
-            {menuHeaders.map((menu, index) => renderMenuItem(menu, index))}
-
-            {user.admin_that_branch && menuHeadersAdminBranch.map((menu, index) =>
-                renderMenuItem(menu, `branch-${index}`)
-            )}
-
-            {user.role === 'admin' && menuHeadersAdmin.map((menu, index) =>
-                renderMenuItem(menu, `admin-${index}`)
-            )}
+            {accessMenu.map((menu, index) => renderMenuItem(menu, index))}
+            {adminMenu.map((menu, index) => renderMenuItem(menu, index))}
         </>
     );
 }

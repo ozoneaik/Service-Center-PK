@@ -29,7 +29,7 @@ class SearchController extends Controller
 
     public function index(): Response
     {
-        return Inertia::render('NewRepair/Repair');
+        return Inertia::render('Dashboard');
     }
 
     public function detail(SearchRequest $request): JsonResponse

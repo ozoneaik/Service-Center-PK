@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('user_access_menus', function (Blueprint $table) {
             $table->id();
             $table->string('user_code')->comment('รหัสผู้ใช้');
-            $table->string('menu_code')->comment('รหัสเมนู');
+            $table->integer('menu_code')->comment('รหัสเมนู');
             $table->timestamps();
         });
     }

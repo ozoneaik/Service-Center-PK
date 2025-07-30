@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AdminBranchAccess;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\MenuAccess;
 use App\Http\Middleware\UserAccess;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,7 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'adminPermission' => UserAccess::class,
-            'AdminBranchAccess' => AdminBranchAccess::class
+            'AdminBranchAccess' => AdminBranchAccess::class,
+            'menuAccess' => MenuAccess::class,
         ]);
 
         //

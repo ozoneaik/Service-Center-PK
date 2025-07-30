@@ -68,7 +68,8 @@ export function getMenuHeadersAdmin(user) {
     return [
         {
             name: 'ผู้ดูแลระบบ',
-            routeUrl: 'admin.show'
+            routerUrl: 'admin.show',
+            childs : []
         }
     ];
 }

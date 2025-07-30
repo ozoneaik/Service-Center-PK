@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ListMenu;
 use App\Models\SaleInformation;
 use App\Models\UserAccessMenu;
 use Illuminate\Http\Request;
@@ -32,31 +33,43 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $user = Auth::user();
-        $store = $user->store_info ?? null;
-        $saleInfo = null;
-        $access_menu = $user->access_menu ?? [];
-        if ($store && $store->sale_id) {
-            $saleInfo = SaleInformation::query()
-                ->where('sale_code', $store->sale_id)
-                ->select('sale_code', 'name as sale_name')
-                ->first();
+        $user = $request->user();
+        if (!$user) {
+            return ['user' => $request->user()];
+        }else{
+            $store = $user->store_info ?? null;
+            $saleInfo = null;
+
+            if ($store && $store->sale_id) {
+                $saleInfo = SaleInformation::query()
+                    ->where('sale_code', $store->sale_id)
+                    ->select('sale_code', 'name as sale_name')
+                    ->first();
+            }
+
+            if ($user->role === 'admin' || $user->admin_that_branch) {
+                $access_menu = ListMenu::all();
+            } else {
+                $menu_formatted = [];
+                foreach ($user->access_menu as $key=>$item) {
+                    $menu_formatted[$key] = ListMenu::query()->where('id', $item['menu_code'])->first();
+                }
+                $access_menu = $menu_formatted ?? [];
+            }
+            return [
+                ...parent::share($request),
+                'flash' => [
+                    'message' => fn() => $request->session()->get('message'),
+                    'success' => fn() => $request->session()->get('success'),
+                    'error' => fn() => $request->session()->get('error'),
+                ],
+                'auth' => [
+                    // 'user' => $request->user(),
+                    'user' => $user,
+                    'sale_info' => $saleInfo,
+                    'access_menu' => $access_menu
+                ],
+            ];
         }
-        return [
-            ...parent::share($request),
-            'flash' => [
-                'message' => fn() => $request->session()->get('message'),
-                'success' => fn() => $request->session()->get('success'),
-                'error' => fn() => $request->session()->get('error'),
-            ],
-            'auth' => [
-                // 'user' => $request->user(),
-//                'user' => Auth::user() ? Auth::user()->load('store_info') : null,
-                'user' => $user,
-                'store_info' => $store,
-                'sale_info' => $saleInfo,
-                'access_menu' => $access_menu
-            ],
-        ];
     }
 }

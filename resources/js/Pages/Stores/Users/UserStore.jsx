@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import { Head, useForm, usePage } from "@inertiajs/react";
+import {Head, useForm, usePage} from "@inertiajs/react";
 import {
     Box, Container, Grid2, Stack, Paper, Card, CardContent,
     Button, Divider, Switch, Tooltip, Typography, Alert, CircularProgress, Snackbar,
@@ -13,26 +13,20 @@ import {
     Badge, HelpOutline, Key, Security, Store as StoreIcon, Visibility,
     VisibilityOff
 } from "@mui/icons-material";
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import LoginIcon from '@mui/icons-material/Login';
 
-export default function UserStore({ list_menu }) {
+export default function UserStore({list_menu}) {
 
-    const { flash } = usePage().props;
-    const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
-        user_code: "",
-        name: "",
-        email: "",
-        role: "service",
-        password: "",
-        password_confirmation: "",
-        admin_that_branch: false,
-        access_menu: []
+    const {flash} = usePage().props;
+    const {data, setData, post, processing, errors, reset, clearErrors} = useForm({
+        user_code: "", name: "", email: "", role: "service",
+        password: "", password_confirmation: "", admin_that_branch: false, access_menu: []
     });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setData(name, value);
     };
 
@@ -51,7 +45,7 @@ export default function UserStore({ list_menu }) {
 
     // ตรวจสอบความซับซ้อนของรหัสผ่าน
     const checkPasswordStrength = (password) => {
-        if (!password) return { color: 'danger', message: 'กรุณากรอกรหัสผ่าน' };
+        if (!password) return {color: 'danger', message: 'กรุณากรอกรหัสผ่าน'};
         let messages = [];
         if (password.length < 8) {
             messages.push("รหัสผ่านควรมีความยาวอย่างน้อย 8 ตัวอักษร");
@@ -60,19 +54,19 @@ export default function UserStore({ list_menu }) {
             messages.push("ควรมีตัวเลขอย่างน้อย 1 ตัว");
         }
         if (messages.length > 0) {
-            return { color: 'warning', message: messages.join(' ') };
+            return {color: 'warning', message: messages.join(' ')};
         }
-        return { color: 'success', message: 'รหัสผ่านปลอดภัย' };
+        return {color: 'success', message: 'รหัสผ่านปลอดภัย'};
     };
 
     const passwordStrength = checkPasswordStrength(data.password);
 
     const handleSelectMenu = (e) => {
-        const { name, checked } = e.target;
+        const {name, checked} = e.target;
         const menuId = parseInt(name);
 
         const updatedAccess = data.access_menu.map(item =>
-            item.menu_id === menuId ? { ...item, is_checked: checked } : item
+            item.menu_id === menuId ? {...item, is_checked: checked} : item
         );
         setData('access_menu', updatedAccess);
     };
@@ -96,20 +90,20 @@ export default function UserStore({ list_menu }) {
 
     return (
         <AuthenticatedLayout>
-            <Head title="สร้างผู้ใช้" />
-            <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Head title="สร้างผู้ใช้"/>
+            <Container maxWidth="lg" sx={{py: 4}}>
                 <Paper
                     elevation={0}
-                    sx={{ p: 3, borderRadius: 2, bgcolor: "background.paper", boxShadow: "0 0 20px rgba(0,0,0,0.05)" }}
+                    sx={{p: 3, borderRadius: 2, bgcolor: "background.paper", boxShadow: "0 0 20px rgba(0,0,0,0.05)"}}
                 >
                     <Typography
                         variant="h5" component="h1" color="primary.main" fontWeight="500"
-                        sx={{ mb: 3, display: 'flex', gap: 1, alignItems: 'center', }}
+                        sx={{mb: 3, display: 'flex', gap: 1, alignItems: 'center',}}
                     >
-                        <Badge sx={{ fontSize: 28 }} />
+                        <Badge sx={{fontSize: 28}}/>
                         สร้างผู้ใช้งานใหม่
                     </Typography>
-                    <Divider sx={{ mb: 4 }} />
+                    <Divider sx={{mb: 4}}/>
                     <form onSubmit={handleSubmit}>
                         {showAlert && flash.success && (
                             <Grid2 container>
@@ -135,20 +129,20 @@ export default function UserStore({ list_menu }) {
                             {/* ส่วนข้อมูลผู้ใช้ */}
                             <Card
                                 variant="outlined"
-                                sx={{ borderRadius: 2, overflow: 'hidden', borderColor: 'primary.light' }}
+                                sx={{borderRadius: 2, overflow: 'hidden', borderColor: 'primary.light'}}
                             >
                                 <Box sx={{
                                     bgcolor: 'primary.main', color: 'primary.contrastText',
                                     py: 1, px: 2, gap: 1, display: 'flex', alignItems: 'center',
                                 }}>
-                                    <AccountCircle />
+                                    <AccountCircle/>
                                     <Typography variant="subtitle1" fontWeight="medium">
                                         ข้อมูลผู้ใช้
                                     </Typography>
                                 </Box>
                                 <CardContent>
                                     <Grid2 container spacing={3}>
-                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                        <Grid2 size={{xs: 12, md: 6}}>
                                             <TextField
                                                 size="small" required fullWidth
                                                 label="ชื่อ-สกุล" name="name" value={data.name}
@@ -158,14 +152,14 @@ export default function UserStore({ list_menu }) {
                                                     input: {
                                                         startAdornment: (
                                                             <InputAdornment position="start">
-                                                                <AccountCircle color="primary" />
+                                                                <AccountCircle color="primary"/>
                                                             </InputAdornment>
                                                         )
                                                     }
                                                 }}
                                             />
                                         </Grid2>
-                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                        <Grid2 size={{xs: 12, md: 6}}>
                                             <TextField
                                                 size="small" required fullWidth
                                                 label="อีเมล" name="email" type="email" value={data.email}
@@ -175,14 +169,14 @@ export default function UserStore({ list_menu }) {
                                                     input: {
                                                         startAdornment: (
                                                             <InputAdornment position="start">
-                                                                <AlternateEmail color="primary" />
+                                                                <AlternateEmail color="primary"/>
                                                             </InputAdornment>
                                                         )
                                                     }
                                                 }}
                                             />
                                         </Grid2>
-                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                        <Grid2 size={{xs: 12, md: 6}}>
                                             <TextField
                                                 size="small" required fullWidth
                                                 label="ชื่อผู้ใช้ (สำหรับเข้าสู่ระบบ)" name="user_code" type="text"
@@ -193,7 +187,7 @@ export default function UserStore({ list_menu }) {
                                                     input: {
                                                         startAdornment: (
                                                             <InputAdornment position="start">
-                                                                <LoginIcon color="primary" />
+                                                                <LoginIcon color="primary"/>
                                                             </InputAdornment>
                                                         )
                                                     }
@@ -201,7 +195,7 @@ export default function UserStore({ list_menu }) {
                                             />
                                         </Grid2>
 
-                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                        <Grid2 size={{xs: 12, md: 6}}>
                                             <FormControl fullWidth size="small" error={!!errors.role}>
                                                 <InputLabel>บทบาท</InputLabel>
                                                 <Select
@@ -209,7 +203,7 @@ export default function UserStore({ list_menu }) {
                                                     value={data.role} onChange={handleChange}
                                                     startAdornment={
                                                         <InputAdornment position="start">
-                                                            <AdminPanelSettings color="primary" />
+                                                            <AdminPanelSettings color="primary"/>
                                                         </InputAdornment>
                                                     }
                                                     variant='outlined'>
@@ -224,19 +218,19 @@ export default function UserStore({ list_menu }) {
 
                             {/* ส่วนตั้งค่ารหัสผ่าน */}
                             <Card variant="outlined"
-                                sx={{ borderRadius: 2, overflow: 'hidden', borderColor: 'primary.light' }}>
+                                  sx={{borderRadius: 2, overflow: 'hidden', borderColor: 'primary.light'}}>
                                 <Box sx={{
                                     bgcolor: 'primary.main', color: 'primary.contrastText',
                                     py: 1, px: 2, display: 'flex', alignItems: 'center', gap: 1
                                 }}>
-                                    <Key />
+                                    <Key/>
                                     <Typography variant="subtitle1" fontWeight="medium">
                                         ตั้งค่ารหัสผ่าน
                                     </Typography>
                                 </Box>
                                 <CardContent>
                                     <Grid2 container spacing={3}>
-                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                        <Grid2 size={{xs: 12, md: 6}}>
                                             <TextField
                                                 size="small" required fullWidth
                                                 label="รหัสผ่าน" name="password"
@@ -249,7 +243,7 @@ export default function UserStore({ list_menu }) {
                                                         startAdornment: (
                                                             <InputAdornment position="start">
                                                                 <Key
-                                                                    color={data.password ? passwordStrength.color : "primary"} />
+                                                                    color={data.password ? passwordStrength.color : "primary"}/>
                                                             </InputAdornment>
                                                         ),
                                                         endAdornment: (
@@ -258,7 +252,7 @@ export default function UserStore({ list_menu }) {
                                                                     aria-label="toggle password visibility" edge="end"
                                                                     onClick={() => setShowPassword(!showPassword)}
                                                                 >
-                                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                                    {showPassword ? <VisibilityOff/> : <Visibility/>}
                                                                 </IconButton>
                                                             </InputAdornment>
                                                         )
@@ -266,7 +260,7 @@ export default function UserStore({ list_menu }) {
                                                 }}
                                             />
                                         </Grid2>
-                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                        <Grid2 size={{xs: 12, md: 6}}>
                                             <TextField
                                                 size="small" required fullWidth
                                                 label="ยืนยันรหัสผ่าน" name="password_confirmation"
@@ -287,7 +281,7 @@ export default function UserStore({ list_menu }) {
                                                                     data.password_confirmation
                                                                         ? (data.password === data.password_confirmation ? "success" : "error")
                                                                         : "primary"
-                                                                } />
+                                                                }/>
                                                             </InputAdornment>
                                                         ),
                                                         endAdornment: (
@@ -297,8 +291,8 @@ export default function UserStore({ list_menu }) {
                                                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                                                     edge="end"
                                                                 >
-                                                                    {showConfirmPassword ? <VisibilityOff /> :
-                                                                        <Visibility />}
+                                                                    {showConfirmPassword ? <VisibilityOff/> :
+                                                                        <Visibility/>}
                                                                 </IconButton>
                                                             </InputAdornment>
                                                         )
@@ -313,13 +307,13 @@ export default function UserStore({ list_menu }) {
                             {/* ส่วนข้อมูลร้านค้า */}
                             <Card
                                 variant="outlined"
-                                sx={{ borderRadius: 2, overflow: 'hidden', borderColor: 'primary.light' }}
+                                sx={{borderRadius: 2, overflow: 'hidden', borderColor: 'primary.light'}}
                             >
                                 <Box sx={{
                                     bgcolor: 'primary.main', color: 'primary.contrastText',
                                     py: 1, px: 2, display: 'flex', alignItems: 'center', gap: 1
                                 }}>
-                                    <StoreIcon />
+                                    <StoreIcon/>
                                     <Typography variant="subtitle1" fontWeight="medium">
                                         ข้อมูลร้านค้า
                                     </Typography>
@@ -328,7 +322,7 @@ export default function UserStore({ list_menu }) {
                                     <Grid2 container spacing={3}>
 
                                         <Grid2 size={12}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
@@ -339,7 +333,7 @@ export default function UserStore({ list_menu }) {
                                                     label="ผู้ดูแลระบบในร้าน"
                                                 />
                                                 <Tooltip title="ผู้ใช้จะมีสิทธิ์เป็นแอดมินสำหรับร้านค้านี้เท่านั้น">
-                                                    <HelpOutline color="primary" fontSize="medium" />
+                                                    <HelpOutline color="primary" fontSize="medium"/>
                                                 </Tooltip>
                                             </Box>
                                         </Grid2>
@@ -350,51 +344,64 @@ export default function UserStore({ list_menu }) {
                             {/* การเข้าถึงแต่ละเมนู */}
                             <Card
                                 variant="outlined"
-                                sx={{ borderRadius: 2, overflow: 'hidden', borderColor: 'primary.light' }}
+                                sx={{borderRadius: 2, overflow: 'hidden', borderColor: 'primary.light'}}
                             >
                                 <Box sx={{
                                     bgcolor: 'primary.main', color: 'primary.contrastText',
                                     py: 1, px: 2, display: 'flex', alignItems: 'center', gap: 1
                                 }}>
-                                    <Security />
+                                    <Security/>
                                     <Typography variant="subtitle1" fontWeight="medium">
                                         การเข้าถึงแต่ละเมนู
+
                                     </Typography>
                                 </Box>
                                 <CardContent>
                                     <Grid2 container spacing={3}>
                                         <Grid2 size={12}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                                                {list_menu.map((item) => {
-                                                    const current = data.access_menu.find(i => i.menu_id === item.id);
-                                                    return (
-                                                        <FormControlLabel
-                                                            key={item.id}
-                                                            name={item.id.toString()}
-                                                            control={
-                                                                <Checkbox
-                                                                    checked={current ? current.is_checked : false}
-                                                                    onChange={handleSelectMenu}
-                                                                />
-                                                            }
-                                                            label={`${item.menu_name} (${item.id})`}
-                                                        />
-                                                    );
-                                                })}
-                                            </Box>
+                                            {data.admin_that_branch ? (
+                                                <span style={{color: "red", backgroundColor: 'white'}}>
+                                                    หากเลือกผู้ดูแลระบบในร้านจะไม่สามารถกรอกได้
+                                                </span>
+                                            ) : (
+                                                <Box sx={{
+                                                    display: 'flex', alignItems: 'center',
+                                                    gap: 1, flexWrap: 'wrap'
+                                                }}>
+                                                    {list_menu.map((item) => {
+                                                        const current = data.access_menu.find(i => i.menu_id === item.id);
+                                                        return (
+                                                            <FormControlLabel
+                                                                key={item.id}
+
+                                                                name={item.id.toString()}
+                                                                control={
+                                                                    <Checkbox
+                                                                        checked={current ? current.is_checked : false}
+                                                                        onChange={handleSelectMenu}
+                                                                        disabled={data.admin_that_branch}
+                                                                    />
+                                                                }
+                                                                label={`${item.menu_name} (${item.id})`}
+                                                            />
+                                                        );
+                                                    })}
+                                                </Box>
+                                            )}
+
                                         </Grid2>
                                     </Grid2>
                                 </CardContent>
                             </Card>
 
                             {/* ปุ่มดำเนินการ */}
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
+                            <Box sx={{display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2}}>
                                 <Button color="inherit" variant="outlined" onClick={() => reset()}>
                                     ยกเลิก
                                 </Button>
                                 <Button
                                     type="submit" variant="contained"
-                                    startIcon={processing && <CircularProgress size={20} color="inherit" />}
+                                    startIcon={processing && <CircularProgress size={20} color="inherit"/>}
                                 >
                                     บันทึก
                                 </Button>
@@ -404,5 +411,6 @@ export default function UserStore({ list_menu }) {
                 </Paper>
             </Container>
         </AuthenticatedLayout>
-    );
+    )
+        ;
 }
