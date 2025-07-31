@@ -78,7 +78,6 @@ export default function DmCreateUpdate({dm_data, action}) {
                                     <FormLabel htmlFor='dm_type'>ประเภทไดอะแกรม</FormLabel>
                                     <Select
                                         value={data.dm_type}
-                                        value={data.dm_type}
                                         onChange={handleOnChange} size='small'
                                         name='dm_type' id='dm_type' variant='outlined'
                                     >

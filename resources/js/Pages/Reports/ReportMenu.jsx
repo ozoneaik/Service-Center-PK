@@ -1,18 +1,11 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
+import {Card, CardContent, Container, Grid2, Typography, Box, IconButton, Fade, Paper} from "@mui/material";
 import {
-    Card, CardContent, Container, Grid2, Typography,
-    Box, IconButton, Fade, Paper
-} from "@mui/material";
-import {
-    Assessment as AssessmentIcon,
-    PieChart as PieChartIcon,
-    Inventory as InventoryIcon,
-    Dashboard as DashboardIcon,
-    BugReport as BugReportIcon,
-    Settings as SettingsIcon,
-    TrendingUp as TrendingUpIcon
+    Assessment as AssessmentIcon, PieChart as PieChartIcon, Inventory as InventoryIcon, Dashboard as DashboardIcon,
+    BugReport as BugReportIcon, Settings as SettingsIcon, TrendingUp as TrendingUpIcon
 } from "@mui/icons-material";
 import {Head, router} from "@inertiajs/react";
+import {AlertDialog} from "@/Components/AlertDialog.js";
 
 const listMenu = [
     {
@@ -20,7 +13,8 @@ const listMenu = [
         icon: <AssessmentIcon sx={{ fontSize: 40 }} />,
         color: '#4CAF50',
         bgGradient: 'linear-gradient(135deg, #4CAF50 0%, #81C784 100%)',
-        description: 'ตรวจสอบค่าตอบแทนและค่าเปิดเครื่องในประกัน'
+        description: 'ตรวจสอบค่าตอบแทนและค่าเปิดเครื่องในประกัน',
+        routeUrl: 'report.start-up-cost-shop.index'
     },
     {
         name: 'รายสรุปยอดรายรับ ศูนย์ซ่อม แยก เป็น ค่าบริการ ค่าอะไหล่ ค่าตอบแทน',
@@ -61,10 +55,76 @@ const listMenu = [
     }
 ];
 
+function IconContainer({item}){
+    return (
+        <Box
+            sx={{
+                display: 'flex', justifyContent: 'center', mb: 2,
+                transition: 'transform 0.3s ease', color: item.color
+            }} className="icon-container"
+        >
+            <Paper
+                sx={{
+                    p: 2, borderRadius: '50%', backgroundColor: `${item.color}15`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }} elevation={0}
+            >
+                {item.icon}
+            </Paper>
+        </Box>
+    )
+}
+
+function TitleAndDescriptionContainer({item}){
+    return (
+        <>
+            <Typography
+                variant="h6" fontWeight="bold" textAlign="center"
+                sx={{mb: 1, color: '#2c3e50', lineHeight: 1.3, minHeight: 48}}
+            >
+                {item.name}
+            </Typography>
+
+            {/* Description */}
+            <Typography
+                variant="body2" color="text.secondary" textAlign="center"
+                sx={{
+                    flexGrow: 1, display: 'flex', alignItems: 'center',
+                    fontSize: '0.9rem', lineHeight: 1.4
+                }}
+            >
+                {item.description}
+            </Typography>
+        </>
+    )
+}
+
+function ActionsButton({item}){
+    return (
+        <Box display="flex" justifyContent="center" mt={2}>
+            <IconButton
+                sx={{
+                    backgroundColor: item.color, color: 'white', width: 36, height: 36,
+                    '&:hover': {backgroundColor: item.color, transform: 'scale(1.1)'}
+                }} size="small"
+            >
+                <TrendingUpIcon fontSize="small" />
+            </IconButton>
+        </Box>
+    )
+}
+
+
 export default function ReportMenu() {
 
     const handleRedirect = (routeUrl = null) => {
-        if(routeUrl === null) return;
+        if(routeUrl === null) {
+            AlertDialog({
+                icon : 'error',
+                text : 'กำลังพัฒนา'
+            })
+            return ;
+        }
         router.get(route(routeUrl));
     }
     return (
@@ -78,23 +138,13 @@ export default function ReportMenu() {
                                 <Card
                                     variant="outlined"
                                     sx={{
-                                        minHeight: 200,
-                                        borderRadius: 3,
-                                        transition: 'all 0.3s ease-in-out',
-                                        cursor: 'pointer',
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                        border: 'none',
+                                        minHeight: 200, borderRadius: 3, transition: 'all 0.3s ease-in-out',
+                                        cursor: 'pointer', position: 'relative', overflow: 'hidden', border: 'none',
                                         boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                                         '&:hover': {
-                                            transform: 'translateY(-8px)',
-                                            boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                                            '& .icon-container': {
-                                                transform: 'scale(1.1) rotate(5deg)',
-                                            },
-                                            '& .gradient-overlay': {
-                                                opacity: 0.1
-                                            }
+                                            transform: 'translateY(-8px)', boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                                            '& .icon-container': {transform: 'scale(1.1) rotate(5deg)',},
+                                            '& .gradient-overlay': {opacity: 0.1}
                                         }
                                     }}
                                 >
@@ -102,100 +152,23 @@ export default function ReportMenu() {
                                     <Box
                                         className="gradient-overlay"
                                         sx={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            left: 0,
-                                            right: 0,
-                                            bottom: 0,
-                                            background: item.bgGradient,
-                                            opacity: 0,
-                                            transition: 'opacity 0.3s ease'
+                                            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                                            background: item.bgGradient, opacity: 0, transition: 'opacity 0.3s ease'
                                         }}
                                     />
 
                                     <CardContent sx={{
-                                        height: '100%',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        position: 'relative',
-                                        zIndex: 1,
-                                        p: 3
+                                        height: '100%', display: 'flex', flexDirection: 'column',
+                                        position: 'relative', zIndex: 1, p: 3
                                     }}>
-                                        {/* Icon Container */}
-                                        <Box
-                                            className="icon-container"
-                                            sx={{
-                                                display: 'flex',
-                                                justifyContent: 'center',
-                                                mb: 2,
-                                                transition: 'transform 0.3s ease',
-                                                color: item.color
-                                            }}
-                                        >
-                                            <Paper
-                                                elevation={0}
-                                                sx={{
-                                                    p: 2,
-                                                    borderRadius: '50%',
-                                                    backgroundColor: `${item.color}15`,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}
-                                            >
-                                                {item.icon}
-                                            </Paper>
-                                        </Box>
+                                        {/* ไอคอน */}
+                                        <IconContainer item={item}/>
 
-                                        {/* Title */}
-                                        <Typography
-                                            variant="h6"
-                                            fontWeight="bold"
-                                            textAlign="center"
-                                            sx={{
-                                                mb: 1,
-                                                color: '#2c3e50',
-                                                lineHeight: 1.3,
-                                                minHeight: 48
-                                            }}
-                                        >
-                                            {item.name}
-                                        </Typography>
+                                        {/* หัวเรื่อง และ คำอธิบาย */}
+                                        <TitleAndDescriptionContainer item={item}/>
 
-                                        {/* Description */}
-                                        <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                            textAlign="center"
-                                            sx={{
-                                                flexGrow: 1,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                fontSize: '0.9rem',
-                                                lineHeight: 1.4
-                                            }}
-                                        >
-                                            {item.description}
-                                        </Typography>
-
-                                        {/* Action Button */}
-                                        <Box display="flex" justifyContent="center" mt={2}>
-                                            <IconButton
-                                                size="small"
-                                                sx={{
-                                                    backgroundColor: item.color,
-                                                    color: 'white',
-                                                    width: 36,
-                                                    height: 36,
-                                                    '&:hover': {
-                                                        backgroundColor: item.color,
-                                                        transform: 'scale(1.1)'
-                                                    }
-                                                }}
-                                            >
-                                                <TrendingUpIcon fontSize="small" />
-                                            </IconButton>
-                                        </Box>
+                                        {/* ไอคอนข้างล่าง */}
+                                        <ActionsButton item={item}/>
                                     </CardContent>
                                 </Card>
                             </Fade>
