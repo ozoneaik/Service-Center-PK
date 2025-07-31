@@ -1,19 +1,17 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {
-    Button, Container, Table, TableBody, TableCell, TableHead, TableRow,
-    TextField, MenuItem, Select, FormControl, InputLabel, Box, Pagination,
-    InputAdornment, Paper, Typography,
-    Stack
+    Button, Container, Table, TableBody, TableCell, TableHead, TableRow, Stack,
+    TextField, MenuItem, Select, FormControl, InputLabel, Box, Pagination, InputAdornment, Paper, Typography,
 } from "@mui/material";
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect} from "react";
 import SearchIcon from '@mui/icons-material/Search';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { Head, Link, usePage } from "@inertiajs/react";
-import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog";
+import {Head, Link, usePage} from "@inertiajs/react";
+import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog";
 import axios from "axios";
 
-export default function UserList({ list }) {
+export default function UserList({list}) {
     const auth = usePage().props.auth.user;
     // สถานะสำหรับค้นหาและกรอง
     const [searchTerm, setSearchTerm] = useState("");
@@ -108,10 +106,10 @@ export default function UserList({ list }) {
         const endIndex = startIndex + rowsPerPage;
         const currentPageUsers = allUsers.slice(startIndex, endIndex);
 
-        return { currentPageUsers, shopMapping };
+        return {currentPageUsers, shopMapping};
     };
 
-    const { currentPageUsers, shopMapping } = getCurrentPageData();
+    const {currentPageUsers, shopMapping} = getCurrentPageData();
 
     // จัดการการเปลี่ยนหน้า
     const handleChangePage = (event, newPage) => {
@@ -138,7 +136,7 @@ export default function UserList({ list }) {
         let message = '';
         let Status = '';
         try {
-            const { data, status } = await axios.delete(`/admin/users-manage/delete/${userSel.user_code}`);
+            const {data, status} = await axios.delete(`/admin/users-manage/delete/${userSel.user_code}`);
             Status = status;
             message = data.message;
         } catch (error) {
@@ -157,12 +155,12 @@ export default function UserList({ list }) {
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="จัดการผู้ใช้" />
+                <Head title="จัดการผู้ใช้"/>
                 <Container maxWidth="false">
-                    <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
-                        <Typography variant="h5" sx={{ mb: 2 }}>รายการผู้ใช้งาน</Typography>
+                    <Paper elevation={3} sx={{p: 3, mt: 3}}>
+                        <Typography variant="h5" sx={{mb: 2}}>รายการผู้ใช้งาน</Typography>
                         {/* ส่วนของตัวกรองและค้นหา */}
-                        <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                        <Box sx={{mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2}}>
                             {/* ช่องค้นหา */}
                             <TextField
                                 label="ค้นหา"
@@ -170,18 +168,18 @@ export default function UserList({ list }) {
                                 size="small"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                sx={{ minWidth: 200 }}
+                                sx={{minWidth: 200}}
                                 InputProps={{
                                     startAdornment: (
                                         <InputAdornment position="start">
-                                            <SearchIcon />
+                                            <SearchIcon/>
                                         </InputAdornment>
                                     ),
                                 }}
                             />
 
                             {/* ตัวกรองตามสิทธิ์ */}
-                            <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
+                            <FormControl variant="outlined" size="small" sx={{minWidth: 150}}>
                                 <InputLabel>สิทธิ์</InputLabel>
                                 <Select
                                     variant='outlined'
@@ -197,7 +195,7 @@ export default function UserList({ list }) {
                             </FormControl>
 
                             {/* ตัวกรองตามสถานะเจ้าของร้าน */}
-                            <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
+                            <FormControl variant="outlined" size="small" sx={{minWidth: 150}}>
                                 <InputLabel>สถานะเจ้าของ</InputLabel>
                                 <Select
                                     variant='outlined'
@@ -212,7 +210,7 @@ export default function UserList({ list }) {
                             </FormControl>
 
                             {/* ตัวเลือกจำนวนแถวต่อหน้า */}
-                            <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
+                            <FormControl variant="outlined" size="small" sx={{minWidth: 150}}>
                                 <InputLabel>แถวต่อหน้า</InputLabel>
                                 <Select
                                     value={rowsPerPage}
@@ -232,10 +230,10 @@ export default function UserList({ list }) {
                         </Box>
 
                         {/* ส่วนแสดงข้อมูลผู้ใช้ */}
-                        <Box sx={{ overflowX: 'auto' }}>
+                        <Box sx={{overflowX: 'auto'}}>
                             <Table>
                                 <TableHead>
-                                    <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                                    <TableRow sx={{backgroundColor: '#f5f5f5'}}>
                                         <TableCell>ชื่อร้าน</TableCell>
                                         <TableCell>ชื่อผู้ใช้</TableCell>
                                         <TableCell>อีเมล</TableCell>
@@ -258,14 +256,14 @@ export default function UserList({ list }) {
 
                                         return (
                                             <TableRow key={`user-${index}`}
-                                                sx={index % 2 ? { backgroundColor: '#fafafa' } : {}}>
+                                                      sx={index % 2 ? {backgroundColor: '#fafafa'} : {}}>
                                                 {isFirstUserOfShop && (
                                                     <TableCell rowSpan={rowSpan}>
                                                         <Typography>ชื่อร้าน : <span
-                                                            style={{ color: '#f15922' }}>{user.shop_name}</span></Typography>
-                                                        <br />
+                                                            style={{color: '#f15922'}}>{user.shop_name}</span></Typography>
+                                                        <br/>
                                                         <Typography>รหัส : <span
-                                                            style={{ color: '#f15922' }}>{user.is_code_cust_id}</span></Typography>
+                                                            style={{color: '#f15922'}}>{user.is_code_cust_id}</span></Typography>
                                                     </TableCell>
                                                 )}
                                                 <TableCell>{user.name}</TableCell>
@@ -277,9 +275,9 @@ export default function UserList({ list }) {
                                                 <TableCell>
                                                     <Stack direction='row' spacing={2}>
                                                         <Button
-                                                        component={Link}
-                                                        href={route('userManage.edit',{user_code : user.user_code})}
-                                                            variant='contained' startIcon={<EditIcon />}
+                                                            component={Link}
+                                                            href={route('userManage.edit', {user_code: user.user_code})}
+                                                            variant='contained' startIcon={<EditIcon/>}
                                                         >
                                                             แก้ไข
                                                         </Button>
@@ -287,7 +285,7 @@ export default function UserList({ list }) {
                                                             onClick={() => handleDeleteUser(user)}
                                                             disabled={auth.id === user.id}
                                                             variant='contained' color='error'
-                                                            startIcon={<DeleteIcon />}
+                                                            startIcon={<DeleteIcon/>}
                                                         >
                                                             ลบ
                                                         </Button>
@@ -300,7 +298,7 @@ export default function UserList({ list }) {
 
                                     {currentPageUsers.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                                            <TableCell colSpan={6} align="center" sx={{py: 3}}>
                                                 ไม่พบข้อมูลที่ตรงกับเงื่อนไขการค้นหา
                                             </TableCell>
                                         </TableRow>
@@ -310,7 +308,7 @@ export default function UserList({ list }) {
                         </Box>
 
                         {/* ส่วนแสดงการแบ่งหน้า */}
-                        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                        <Box sx={{display: 'flex', justifyContent: 'center', mt: 3}}>
                             <Pagination
                                 count={totalPages}
                                 page={page}
@@ -322,7 +320,7 @@ export default function UserList({ list }) {
                         </Box>
 
                         {/* แสดงข้อมูลสรุป */}
-                        <Box sx={{ mt: 2, textAlign: 'right' }}>
+                        <Box sx={{mt: 2, textAlign: 'right'}}>
                             <Typography variant="body2" color="text.secondary">
                                 แสดง {Math.min((page - 1) * rowsPerPage + 1, totalUsers)} - {Math.min(page * rowsPerPage, totalUsers)} จากทั้งหมด {totalUsers} รายการ
                             </Typography>
