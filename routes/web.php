@@ -35,7 +35,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
 
-    Route::middleware('menuAccess')->group(function (){
+//    Route::middleware('menuAccess')->group(function (){
         // จัดการ Jobs
         require __DIR__ . '/jobs.php';
 
@@ -84,7 +84,7 @@ Route::middleware('auth')->group(function () {
                 Route::delete('/delete/{user_code}',[UserController::class,'delete'])->name('storeUsers.delete');
             });
         });
-    });
+//    });
 
 
     // Admin Only
