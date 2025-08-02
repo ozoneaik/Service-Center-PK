@@ -20,7 +20,7 @@ export default function Dashboard() {
             >
                 <Container maxWidth="lg">
                     <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
-                        🎃 ศูนย์บริการซ่อม Pumpkin
+                        ศูนย์บริการซ่อม Pumpkin
                     </Typography>
                     <Typography variant="h5" sx={{opacity: 0.9}}>
                         บริการครบวงจร สำหรับการซ่อมบำรุง สั่งซื้ออะไหล่ และเช็คสต็อก
@@ -87,7 +87,7 @@ export default function Dashboard() {
                         </Card>
                     </Grid2>
 
-                    {/* Service 3: เช็คสต็อก */}
+                    {/* Service 3: เคลมอะไหล่ */}
                     <Grid2 size={{xs: 12, md: 4}}>
                         <Card
                             elevation={3}
@@ -116,68 +116,68 @@ export default function Dashboard() {
                 </Grid2>
 
                 {/* Features Section */}
-                <Paper elevation={1} sx={{bgcolor: 'grey.50', p: 4, mb: 4}}>
-                    <Typography
-                        variant="h4" component="h2" fontWeight="semibold"
-                        textAlign="center" gutterBottom sx={{mb: 4}}
-                    >
-                        จุดเด่นของบริการ
-                    </Typography>
-                    <Grid2 container spacing={3}>
-                        <Grid2 size={{xs : 12, md : 6}}>
-                            <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 2}}>
-                                <CheckCircleIcon color="success" sx={{fontSize: 32, mt: 0.5}}/>
-                                <Box>
-                                    <Typography variant="h6" fontWeight="semibold" gutterBottom>
-                                        บริการครบวงจร
-                                    </Typography>
-                                    <Typography variant="body1" color="text.secondary">
-                                        ตั้งแต่แจ้งซ่อม สั่งซื้ออะไหล่ ไปจนถึงเช็คสต็อก
-                                    </Typography>
-                                </Box>
-                            </Box>
-                        </Grid2>
-                        <Grid2 size={{xs : 12, md : 6}}>
-                            <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 2}}>
-                                <AttachMoneyIcon color="success" sx={{fontSize: 32, mt: 0.5}}/>
-                                <Box>
-                                    <Typography variant="h6" fontWeight="semibold" gutterBottom>
-                                        ราคาประหยัด
-                                    </Typography>
-                                    <Typography variant="body1" color="text.secondary">
-                                        อะไหล่ราคาถูกกว่าข้างนอก พร้อมค่าเปิดเครื่องพิเศษ
-                                    </Typography>
-                                </Box>
-                            </Box>
-                        </Grid2>
-                        <Grid2 size={{xs : 12, md : 6}}>
-                            <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 2}}>
-                                <SpeedIcon color="primary" sx={{fontSize: 32, mt: 0.5}}/>
-                                <Box>
-                                    <Typography variant="h6" fontWeight="semibold" gutterBottom>
-                                        รวดเร็ว สะดวก
-                                    </Typography>
-                                    <Typography variant="body1" color="text.secondary">
-                                        ระบบใช้งานง่าย ประมวลผลรวดเร็ว
-                                    </Typography>
-                                </Box>
-                            </Box>
-                        </Grid2>
-                        <Grid2 size={{xs : 12, md : 6}}>
-                            <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 2}}>
-                                <AdsClick color="warning" sx={{fontSize: 32, mt: 0.5}}/>
-                                <Box>
-                                    <Typography variant="h6" fontWeight="semibold" gutterBottom>
-                                        เฉพาะสินค้า Pumpkin
-                                    </Typography>
-                                    <Typography variant="body1" color="text.secondary">
-                                        เชี่ยวชาญเฉพาะสินค้า Pumpkin ทุกรุ่น
-                                    </Typography>
-                                </Box>
-                            </Box>
-                        </Grid2>
-                    </Grid2>
-                </Paper>
+                {/*<Paper elevation={1} sx={{bgcolor: 'grey.50', p: 4, mb: 4}}>*/}
+                {/*    <Typography*/}
+                {/*        variant="h4" component="h2" fontWeight="semibold"*/}
+                {/*        textAlign="center" gutterBottom sx={{mb: 4}}*/}
+                {/*    >*/}
+                {/*        จุดเด่นของบริการ*/}
+                {/*    </Typography>*/}
+                {/*    <Grid2 container spacing={3}>*/}
+                {/*        <Grid2 size={{xs : 12, md : 6}}>*/}
+                {/*            <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 2}}>*/}
+                {/*                <CheckCircleIcon color="success" sx={{fontSize: 32, mt: 0.5}}/>*/}
+                {/*                <Box>*/}
+                {/*                    <Typography variant="h6" fontWeight="semibold" gutterBottom>*/}
+                {/*                        บริการครบวงจร*/}
+                {/*                    </Typography>*/}
+                {/*                    <Typography variant="body1" color="text.secondary">*/}
+                {/*                        ตั้งแต่แจ้งซ่อม สั่งซื้ออะไหล่ ไปจนถึงเช็คสต็อก*/}
+                {/*                    </Typography>*/}
+                {/*                </Box>*/}
+                {/*            </Box>*/}
+                {/*        </Grid2>*/}
+                {/*        <Grid2 size={{xs : 12, md : 6}}>*/}
+                {/*            <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 2}}>*/}
+                {/*                <AttachMoneyIcon color="success" sx={{fontSize: 32, mt: 0.5}}/>*/}
+                {/*                <Box>*/}
+                {/*                    <Typography variant="h6" fontWeight="semibold" gutterBottom>*/}
+                {/*                        ราคาประหยัด*/}
+                {/*                    </Typography>*/}
+                {/*                    <Typography variant="body1" color="text.secondary">*/}
+                {/*                        อะไหล่ราคาถูกกว่าข้างนอก พร้อมค่าเปิดเครื่องพิเศษ*/}
+                {/*                    </Typography>*/}
+                {/*                </Box>*/}
+                {/*            </Box>*/}
+                {/*        </Grid2>*/}
+                {/*        <Grid2 size={{xs : 12, md : 6}}>*/}
+                {/*            <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 2}}>*/}
+                {/*                <SpeedIcon color="primary" sx={{fontSize: 32, mt: 0.5}}/>*/}
+                {/*                <Box>*/}
+                {/*                    <Typography variant="h6" fontWeight="semibold" gutterBottom>*/}
+                {/*                        รวดเร็ว สะดวก*/}
+                {/*                    </Typography>*/}
+                {/*                    <Typography variant="body1" color="text.secondary">*/}
+                {/*                        ระบบใช้งานง่าย ประมวลผลรวดเร็ว*/}
+                {/*                    </Typography>*/}
+                {/*                </Box>*/}
+                {/*            </Box>*/}
+                {/*        </Grid2>*/}
+                {/*        <Grid2 size={{xs : 12, md : 6}}>*/}
+                {/*            <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 2}}>*/}
+                {/*                <AdsClick color="warning" sx={{fontSize: 32, mt: 0.5}}/>*/}
+                {/*                <Box>*/}
+                {/*                    <Typography variant="h6" fontWeight="semibold" gutterBottom>*/}
+                {/*                        เฉพาะสินค้า Pumpkin*/}
+                {/*                    </Typography>*/}
+                {/*                    <Typography variant="body1" color="text.secondary">*/}
+                {/*                        เชี่ยวชาญเฉพาะสินค้า Pumpkin ทุกรุ่น*/}
+                {/*                    </Typography>*/}
+                {/*                </Box>*/}
+                {/*            </Box>*/}
+                {/*        </Grid2>*/}
+                {/*    </Grid2>*/}
+                {/*</Paper>*/}
 
                 {/* About Section */}
                 <Paper elevation={2} sx={{p: 4, mb: 4}}>
