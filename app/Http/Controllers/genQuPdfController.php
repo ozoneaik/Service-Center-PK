@@ -35,12 +35,7 @@ class genQuPdfController extends Controller
 
 
             // เข้าสู่การปริ้น
-            $context = stream_context_create([
-                'socket' => [
-                    'connect_timeout' => 5
-                ],
-            ]);
-            $connector = new NetworkPrintConnector(env('VITE_PRINTER_IP'), env('VITE_PRINTER_PORT'), 9100, false, $context);
+            $connector = new NetworkPrintConnector(env('VITE_PRINTER_IP'), env('VITE_PRINTER_PORT'), 5);
             $printer = new Printer($connector);
             //ใช้ Raw ESC/POS Command สำหรับภาษาไทย
             $printer->getPrintConnector()->write("\x1b\x74\x12");
@@ -131,26 +126,27 @@ class genQuPdfController extends Controller
             $printer->cut();
 
             $printer->close();
-
-
-            return view('receiveJob', [
-                'customer' => $customer,
-                'remark' => $remark,
-                'product' => $product,
-                'accessory' => $accessory,
-                'behavior' => $behavior,
-                'symptom' => $symptom,
-                'user_key' => $user_key,
-                'store' => $store,
-            ]);
         } catch (\Exception $e) {
-            return view('errorPage', [
-                'message' => 'Printer connection failed.',
-                'error_msg' => $e->getMessage(),
-                'error_code' => $e->getCode(),
-                'error_file' => $e->getFile(),
-                'error_line' => $e->getLine()
+            return view('receiveJob', [
+                'customer' => $customer ?? null,
+                'remark' => $remark ?? null,
+                'product' => $product ?? null,
+                'accessory' => $accessory ?? null,
+                'behavior' =>$behavior ?? null,
+                'symptom' =>$symptom ?? null,
+                'user_key' => $user_key ?? null,
+                'store' => $store ?? null,
             ]);
         }
+        return view('receiveJob', [
+            'customer' => $customer,
+            'remark' => $remark,
+            'product' => $product,
+            'accessory' => $accessory,
+            'behavior' => $behavior,
+            'symptom' => $symptom,
+            'user_key' => $user_key,
+            'store' => $store,
+        ]);
     }
 }
