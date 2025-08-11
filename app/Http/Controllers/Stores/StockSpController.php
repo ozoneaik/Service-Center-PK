@@ -71,7 +71,7 @@ class StockSpController extends Controller
             'stocks' => $stocks,
             'store' => $store,
             'status' => session('status'),
-            'job_pending' => [$job_pending, $sp_rp],
+            'job_pending' => [$job_pending, $rp_sp],
         ]);
     }
 
