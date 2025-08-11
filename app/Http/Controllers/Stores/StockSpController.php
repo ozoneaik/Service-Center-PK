@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Stores;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StockSpRequest;
 use App\Models\Bill;
+use App\Models\JobList;
+use App\Models\SparePart;
+use App\Models\StockJob;
 use App\Models\StockJobDetail;
 use App\Models\StockSparePart;
 use App\Models\StoreInformation;
@@ -36,24 +39,39 @@ class StockSpController extends Controller
         return Inertia::render('Stores/Manage/StoreList', ['shops' => $shops]);
     }
 
-    public function StockSpList(Request $request,$is_code_cust_id): Response
+    // หน้าแสดงสต็อกรายการอะไหล่
+    public function StockSpList(Request $request, $is_code_cust_id): Response
     {
         $sp_code = $request->input('sp_code');
         $sp_name = $request->input('sp_name');
-        $query = StockSparePart::query()->where('is_code_cust_id', $is_code_cust_id);
+        $query = StockSparePart::query();
         if (isset($sp_code)) {
             $query->where('sp_code', 'like', "%$sp_code%");
         }
         if (isset($sp_name)) {
             $query->where('sp_name', 'like', "%$sp_name%");
         }
-
+        $query->where('is_code_cust_id', $is_code_cust_id);
         $stocks = $query->get();
+
+        $job_pending = JobList::query()
+            ->where('is_code_key', $is_code_cust_id)
+            ->where('status', 'pending')
+            ->select('job_id', 'pid')
+            ->get();
+
+        $rp_sp = SparePart::query()
+            ->whereIn('job_id', $job_pending->pluck('job_id')->toArray())
+            ->select('sp_code', \DB::raw('SUM(qty) as total_qty'))
+            ->groupBy('sp_code')
+            ->get();
+
         $store = StoreInformation::query()->where('is_code_cust_id', $is_code_cust_id)->first();
         return Inertia::render('Stores/StockSp/StockSpList', [
             'stocks' => $stocks,
             'store' => $store,
-            'status' => session('status')
+            'status' => session('status'),
+            'job_pending' => [$job_pending, $sp_rp],
         ]);
     }
 

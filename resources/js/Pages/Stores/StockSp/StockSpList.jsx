@@ -13,7 +13,7 @@ import {
     Build, DriveFileRenameOutline
 } from "@mui/icons-material";
 
-const tableHeaders = ['รูปภาพอะไหล่', 'รหัสอะไหล่', 'ชื่ออะไหล่', 'จำนวน', 'สต็อกยกมา', 'แจ้งซ่อม', 'แจ้งปรับปรุง', 'สต็อกคงเหลือ'];
+const tableHeaders = ['รูปภาพอะไหล่', 'รหัสอะไหล่', 'ชื่ออะไหล่', 'สต็อกรวม', 'แจ้งซ่อม', 'แจ้งปรับปรุง', 'สต็อกคงเหลือ'];
 
 const TableDetail = ({ stocks }) => {
     return (
@@ -38,7 +38,6 @@ const TableDetail = ({ stocks }) => {
                         </TableCell>
                         <TableCell>{stock.sp_code}</TableCell>
                         <TableCell>{stock.sp_name}</TableCell>
-                        <TableCell>{stock.qty_sp}</TableCell>
                         <TableCell>{stock.qty_sp}</TableCell>
                         <TableCell>{stock.qty_sp}</TableCell>
                         <TableCell>{stock.qty_sp}</TableCell>
@@ -188,7 +187,8 @@ const MobileDetail = ({ stocks }) => {
     )
 }
 
-export default function StockSpList({ stocks, store }) {
+export default function StockSpList({ stocks, store,job_pending }) {
+    console.log(stocks, store,job_pending);
     const isMobile = useMediaQuery('(max-width:600px)');
     const [openAddSpBill, setOpenAddSpBill] = useState(false);
     const [openAddSpBasic, setOpenAddSpBasic] = useState(false);
