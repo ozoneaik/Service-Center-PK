@@ -31,6 +31,7 @@ return new class extends Migration
             $table->string('user_key')->comment('ผู้สร้าง job');
             $table->string('is_code_key')->comment('ร้านที่รับผิดชอบ');
             $table->string('close_job_by')->nullable()->comment('ปิด job โดย');
+            $table->dateTime('close_job_at')->nullable()->comment('ปิด job เมื่อ');
             $table->string('group_job')->nullable()->comment('กลุ่ม job');
             $table->dateTime('print_at')->nullable()->comment('ปริ้นเมื่อ');
             $table->dateTime('print_updated_at')->nullable()->comment('ปริ้นล่าสุดเมื่อ');

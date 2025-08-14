@@ -26,6 +26,7 @@ class JobList extends Model
         'is_code_key',
         'user_key',
         'close_job_by',
+        'close_job_at',
         'group_job',
         'print_at',
         'print_updated_at',

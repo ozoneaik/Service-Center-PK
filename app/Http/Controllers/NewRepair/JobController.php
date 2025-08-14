@@ -10,6 +10,7 @@ use App\Models\FileUpload;
 use App\Models\JobList;
 use App\Models\SparePart;
 use App\Models\Symptom;
+use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -216,6 +217,7 @@ class JobController extends Controller
                 }
                 // อัพเดทสถานะ job เป็น ปิดงานซ่อม
                 $check_job_status->status = 'success';
+                $check_job_status->close_job_at = Carbon::now();
                 $check_job_status->close_job_by = Auth::user()->user_code;
                 $check_job_status->save();
             } else {

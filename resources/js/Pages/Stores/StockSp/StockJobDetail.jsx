@@ -2,7 +2,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {useRef, useState} from "react";
 import {
     Box, TextField, Button, Typography, Grid2, Paper, Container,
-    List, ListItem, ListItemText, ListItemButton, Divider, IconButton, Alert, InputAdornment, Stack
+    List, ListItem, ListItemText, ListItemButton, Divider, IconButton, Alert, InputAdornment, Stack, Chip, useMediaQuery
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -13,8 +13,10 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import {router, useForm, usePage} from "@inertiajs/react";
 import {AlertDialogQuestion} from "@/Components/AlertDialog.js";
 import axios from "axios";
+import {Done} from "@mui/icons-material";
 
-export default function StockJobDetail({stock_job_id, jobDetail,stockJob}) {
+export default function StockJobDetail({stock_job_id, jobDetail, stockJob}) {
+    const isMobile = useMediaQuery('(max-width:600px)');
     const {flash} = usePage().props
     const [alert, setAlert] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(null);
@@ -69,23 +71,23 @@ export default function StockJobDetail({stock_job_id, jobDetail,stockJob}) {
         const {name, value} = e.target;
         setData(name, value);
         if (name === 'sp_code') {
-            if(delaySearch.current){
+            if (delaySearch.current) {
                 clearTimeout(delaySearch.current)
             }
             delaySearch.current = setTimeout(() => {
-                searchSpName(value).finally(()=> setSearchingSpName(false))
-            },[1000])
-            
+                searchSpName(value).finally(() => setSearchingSpName(false))
+            }, [1000])
+
         }
     };
 
-     const searchSpName = async (sp_code) => {
+    const searchSpName = async (sp_code) => {
         try {
             setSearchingSpName(true)
-            const { data, status } = await axios.post(route('search-sp', { sp_code }))
+            const {data, status} = await axios.post(route('search-sp', {sp_code}))
             console.log(data, status);
             setData('sp_name', data.sp_name)
-              
+
         } catch (error) {
             setData('sp_name', null);
         }
@@ -105,7 +107,7 @@ export default function StockJobDetail({stock_job_id, jobDetail,stockJob}) {
     const handleEndJob = () => {
         router.post(route('stockJob.endSpInJob', {
             stock_job_id: stock_job_id,
-        }), {},{
+        }), {}, {
             onFinish: (e) => {
                 console.log(e)
                 setAlert(true);
@@ -119,8 +121,19 @@ export default function StockJobDetail({stock_job_id, jobDetail,stockJob}) {
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
                         <Typography variant="h5" fontWeight='bold'>
-                            <Paper variant='outlined' sx={{bgcolor: 'white', p: 1}}>
-                                รายละเอียดงานสต็อก #{stock_job_id} {jobDetail.job_staus}
+                            <Paper variant='outlined' sx={{bgcolor: 'white', py: 2, px: 1}}>
+                                <Stack
+                                    spacing={2} direction={isMobile ? 'column' : 'row'}
+                                    justifyContent='space-between'
+                                >
+                                    <Typography fontSize={20} fontWeight='bold'>
+                                        รายละเอียดงานสต็อก #{stock_job_id}
+                                    </Typography>
+                                    <Chip
+                                        label={stockJob.job_status}
+                                        color={stockJob.job_status === 'success' ? 'success' : 'primary'}
+                                    />
+                                </Stack>
                             </Paper>
                         </Typography>
                     </Grid2>
@@ -142,7 +155,8 @@ export default function StockJobDetail({stock_job_id, jobDetail,stockJob}) {
                         <Paper variant='outlined' sx={{height: "100%", minHeight: 400}}>
                             <Box sx={{px: 2, display: "flex", justifyContent: "space-between", alignItems: "center"}}>
                                 <Typography variant="body1" fontWeight='bold'>รายการอะไหล่</Typography>
-                                <IconButton disabled={stockJob.job_status === 'success'} color="primary" onClick={handleNewItem} title="เพิ่มรายการใหม่">
+                                <IconButton disabled={stockJob.job_status === 'success'} color="primary"
+                                            onClick={handleNewItem} title="เพิ่มรายการใหม่">
                                     <AddIcon/>
                                 </IconButton>
                             </Box>
@@ -155,10 +169,12 @@ export default function StockJobDetail({stock_job_id, jobDetail,stockJob}) {
                                             key={index} disablePadding
                                             secondaryAction={
                                                 <Stack direction='row' spacing={2}>
-                                                    <IconButton disabled={stockJob.job_status === 'success'} edge="end" onClick={() => handleSelectItem(index)}>
+                                                    <IconButton disabled={stockJob.job_status === 'success'} edge="end"
+                                                                onClick={() => handleSelectItem(index)}>
                                                         <EditIcon fontSize="small"/>
                                                     </IconButton>
-                                                    <IconButton disabled={stockJob.job_status === 'success'} edge="end" onClick={() => handleDeleteItem(item)}>
+                                                    <IconButton disabled={stockJob.job_status === 'success'} edge="end"
+                                                                onClick={() => handleDeleteItem(item)}>
                                                         ลบ
                                                     </IconButton>
                                                 </Stack>
@@ -275,7 +291,8 @@ export default function StockJobDetail({stock_job_id, jobDetail,stockJob}) {
                     <Grid2 size={12}>
                         <Button
                             disabled={!jobDetail.length > 0 || stockJob.job_status === 'success'} variant='contained'
-                            onClick={()=>handleEndJob()}>
+                            onClick={() => handleEndJob()} startIcon={<Done/>} color='success'
+                        >
                             ปิดจ็อบ{stockJob.job_status === 'success' && 'แล้ว'}
                         </Button>
                     </Grid2>

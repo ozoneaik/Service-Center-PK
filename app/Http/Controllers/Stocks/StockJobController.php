@@ -7,6 +7,7 @@ use App\Http\Requests\StockJobRequest;
 use App\Models\StockJob;
 use App\Models\StockJobDetail;
 use App\Models\StockSparePart;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
@@ -18,19 +19,45 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
+use function PHPUnit\Framework\isEmpty;
 
 class StockJobController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $jobs = StockJob::query()->where('is_code_cust_id', Auth::user()->is_code_cust_id)->get();
-        return Inertia::render('Stores/StockSp/StockJobs', ['jobs' => $jobs]);
+        $query = StockJob::query();
+
+        if ($request->filled('searchJob')) {
+            $query->where('stock_job_id', $request->searchJob);
+        }
+
+        if ($request->filled('searchJobStatus')) {
+            $query->where('job_status', $request->searchJobStatus);
+        }
+
+        $jobs = $query
+            ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        foreach ($jobs as $job) {
+            $total = StockJobDetail::query()
+                ->where('stock_job_id', $job->stock_job_id)
+                ->sum('sp_qty'); // ใช้ sum แทน raw
+            $job->total_qty = intval($total) ?? 0;
+        }
+        return Inertia::render('Stores/StockSp/StockJobs', [
+            'jobs' => $jobs,
+            'filters' => [
+                'searchJob' => $request->searchJob,
+                'searchJobStatus' => $request->searchJobStatus
+            ]
+        ]);
     }
 
     public function addSp($stock_job_id): Response
     {
         $jobDetail = StockJobDetail::query()->where('stock_job_id', $stock_job_id)->orderBy('id', 'desc')->get();
-        $stockJob = StockJob::query()->where('stock_job_id',$stock_job_id)->first();
+        $stockJob = StockJob::query()->where('stock_job_id', $stock_job_id)->first();
         return Inertia::render('Stores/StockSp/StockJobDetail', [
             'jobDetail' => $jobDetail,
             'stock_job_id' => $stock_job_id,
@@ -49,7 +76,7 @@ class StockJobController extends Controller
                 'user_code_key' => Auth::user()->user_code
             ]);
             DB::commit();
-            return Redirect::route('stockJob.index')->with('success', 'สร้าง job สำเร็จ');
+            return Redirect::route('stockJob.addSp', ['stock_job_id' => $stock_job_id])->with('success', 'สร้าง job สำเร็จ');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()->withErrors(['error' => 'มีข้อผิดพลาดในการสร้าง job']);
@@ -130,29 +157,9 @@ class StockJobController extends Controller
     {
         try {
             $spInJob = StockJobDetail::query()->where('stock_job_id', $stock_job_id)->get();
-            foreach ($spInJob as $sp) {
-                $findSp = StockSparePart::query()
-                    ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
-                    ->where('sp_code', $sp->sp_code)
-                    ->first();
-                if ($findSp) {
-                    $findSp->old_qty_sp = $findSp->qty_sp;
-                    $findSp->qty_sp = $findSp->qty_sp + $sp->sp_qty;
-                    $findSp->update();
-                } else {
-                    $newSp = StockSparePart::query()->create([
-                        'sp_code' => $sp->sp_code,
-                        'sku_code' => 'ไม่พบรหัสสินค้า',
-                        'sku_name' => 'ไม่พบชื่อสินค้า',
-                        'sp_name' => $sp->sp_name,
-                        'qty_sp' => $sp->sp_qty,
-                        'old_qty_sp' => $sp->sp_qty,
-                        'is_code_cust_id' => Auth::user()->is_code_cust_id,
-                    ]);
-                }
-            }
             $updateStockJob = StockJob::query()->where('stock_job_id', $stock_job_id)->update([
-                'job_status' => 'success'
+                'job_status' => 'success',
+                'closeJobAt' => Carbon::now()
             ]);
             DB::commit();
             return Redirect::route('stockJob.addSp', [$stock_job_id])->with('success', 'สำเร็จ');
@@ -222,37 +229,38 @@ class StockJobController extends Controller
         }
     }
 
-    public function searchSp($sp_code){
-        try{
-            $response = Http::post(env('VITE_API_ORDER'),[
+    public function searchSp($sp_code)
+    {
+        try {
+            $response = Http::post(env('VITE_API_ORDER'), [
                 'pid' => $sp_code,
                 'view' => 'single'
             ]);
 
-            if($response->successful() && $response->status() === 200){
-                
+            if ($response->successful() && $response->status() === 200) {
+
                 $res_json = $response->json();
                 if ($res_json['status'] === 'SUCCESS') {
                     $p_name = $res_json['assets'][0]['pname'];
-                }else{
+                } else {
                     throw new \Exception('ไม่พบผลการค้นหา');
                 }
 
                 return response()->json([
-                'message' => 'ดึงข้อมูลสำเร็จ',
-                'sp_code' => $sp_code,
-                'sp_name' => $p_name,
-                'error' => null
-            ]);
+                    'message' => 'ดึงข้อมูลสำเร็จ',
+                    'sp_code' => $sp_code,
+                    'sp_name' => $p_name,
+                    'error' => null
+                ]);
             }
-        }catch(\Exception $e) {
+        } catch (\Exception $e) {
             $sp_name = null;
             return response()->json([
                 'message' => 'เกิดข้อผิดพลาด',
                 'sp_code' => $sp_code,
                 'sp_name' => $sp_name,
-                'error' => $e->getMessage() . " บรรทัดที่=>".$e->getLine(). " ไฟล์=>" .$e->getFile()
-            ],400);
+                'error' => $e->getMessage() . " บรรทัดที่=>" . $e->getLine() . " ไฟล์=>" . $e->getFile()
+            ], 400);
         }
     }
 }

@@ -60,13 +60,41 @@ class StockSpController extends Controller
             ->select('job_id', 'pid')
             ->get();
 
+        // ผลรวมของอะไหล่แจ้งซ่อม
         $rp_sp = SparePart::query()
             ->whereIn('job_id', $job_pending->pluck('job_id')->toArray())
-            ->select('sp_code', \DB::raw('SUM(qty) as total_qty'))
+            ->select('sp_code', DB::raw('SUM(qty) as total_qty'))
             ->groupBy('sp_code')
             ->get();
-
         $store = StoreInformation::query()->where('is_code_cust_id', $is_code_cust_id)->first();
+        foreach ($stocks as $stock) {
+            $stock->rp_qty = 0;
+            foreach ($rp_sp as $rp) {
+                if ($stock->sp_code === $rp->sp_code) {
+                    $stock->rp_qty = intval($rp->total_qty);
+                    break;
+                }
+            }
+        }
+
+        // ผลรวมของอะไหล่ปรับปรุง
+        $stj_sp = StockJob::query()
+            ->leftJoin('stock_job_details', 'stock_job_details.stock_job_id', '=', 'stock_jobs.stock_job_id')
+            ->where('stock_jobs.job_status', 'processing')
+            ->select('stock_job_details.sp_code', 'stock_job_details.sp_name', DB::raw('SUM(stock_job_details.sp_qty)'))
+            ->groupBy('stock_job_details.sp_code', 'stock_job_details.sp_name')->get();
+        foreach ($stocks as $stock) {
+            $stock->stj_qty = 0;
+            foreach ($stj_sp as $stj) {
+                if ($stock->sp_code === $stj->sp_code) {
+                    $stock->stj_qty = intval($stj->sum);
+                    break;
+                }
+            }
+        }
+
+
+//        dd($stocks->toArray(), $store->toArray(), $job_pending->toArray(), $rp_sp->toArray(),$stj_sp->toArray());
         return Inertia::render('Stores/StockSp/StockSpList', [
             'stocks' => $stocks,
             'store' => $store,
@@ -80,7 +108,8 @@ class StockSpController extends Controller
         $data = $request;
         DB::beginTransaction();
         try {
-            $stockSp = StockSparePart::where('is_code_cust_id', $data['is_code_cust_id'])
+            $stockSp = StockSparePart::query()
+                ->where('is_code_cust_id', $data['is_code_cust_id'])
                 ->where('sp_code', $data['sp_code'])
                 ->first();
             if ($stockSp) {
