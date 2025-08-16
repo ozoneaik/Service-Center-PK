@@ -117,11 +117,11 @@ class WarrantyProductController extends Controller
         }
 
         // เช็คว่าย้อนหลังเกิน 14 วัน
-        if ($dateWarranty->lt($dateLimit)) {
-            return response()->json([
-                'message' => "วันที่ลงทะเบียนรับประกัน ({$dateWarranty->format('Y-m-d')}) ไม่สามารถย้อนหลังเกิน 14 วัน (ก่อนวันที่ {$dateLimit->format('Y-m-d')}) ได้"
-            ], 422);
-        }
+        // if ($dateWarranty->lt($dateLimit)) {
+        //     return response()->json([
+        //         'message' => "วันที่ลงทะเบียนรับประกัน ({$dateWarranty->format('Y-m-d')}) ไม่สามารถย้อนหลังเกิน 14 วัน (ก่อนวันที่ {$dateLimit->format('Y-m-d')}) ได้"
+        //     ], 422);
+        // }
 
         // ดึงข้อมูลจากฟอร์ม
         $serial_id = $request->input('serial_id');
