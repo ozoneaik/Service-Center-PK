@@ -12,6 +12,7 @@ use App\Http\Controllers\LogController;
 use App\Http\Controllers\ManageBranchController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\Stores\PrinterIpController;
 use App\Http\Controllers\Stores\UserController;
 use App\Http\Controllers\Test\DomPdfController;
 use App\Http\Controllers\WarrantyProductController;
@@ -82,6 +83,9 @@ Route::middleware('auth')->group(function () {
                 Route::get('/create',[UserController::class,'create'])->name('storeUsers.create');
                 Route::post('/store',[UserController::class,'store'])->name('storeUsers.store');
                 Route::delete('/delete/{user_code}',[UserController::class,'delete'])->name('storeUsers.delete');
+            });
+            Route::prefix('printer-ip')->group(function(){
+                Route::get('/{is_code_cust_id}', [PrinterIpController::class,'index'])->name('printerIp.index');
             });
         });
 //    });

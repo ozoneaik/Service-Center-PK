@@ -170,8 +170,8 @@ class WarrantyProductController extends Controller
                 'pid' => $pid,
                 'p_name' => $p_name,
                 'date_warranty' => $dateWarranty->toDateString(),
-                'user_id' => auth()->id(),
-                'user_is_code_id' => auth()->user()->is_code_cust_id,
+                'user_id' => Auth::user()->id,
+                'user_is_code_id' => Auth::user()->is_code_cust_id,
                 'warranty_period' => $warranty_period,
                 'expire_date' => $expire_date->toDateString(),
                 'path_file' => $full_file_path ?? null, // เพิ่มฟิลด์นี้ในฐานข้อมูล
