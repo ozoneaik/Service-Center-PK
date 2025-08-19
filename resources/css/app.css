@@ -79,3 +79,7 @@ textarea,select {
 .MuiInputLabel-asterisk{
     color: red;
 }
+
+.MuiFormLabel-asterisk{
+    color: red !important;
+}
