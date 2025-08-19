@@ -12,11 +12,11 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 
-export default function PrinterIp({ printer_ip }) {
+export default function PrinterIp({ printer_ip = null }) {
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
-        printer_ip: printer_ip.printer_ip,
-        updated_by: printer_ip.updated_by,
+        printer_ip: printer_ip?.printer_ip || null,
+        updated_by: printer_ip?.updated_by || null,
     });
 
     // handle change value ในฟอร์ม
@@ -94,17 +94,17 @@ export default function PrinterIp({ printer_ip }) {
                                 ) : (
                                     <>
                                         <Typography variant="h6" gutterBottom>
-                                            รหัสร้าน: {printer_ip.is_code_cust_id}
+                                            รหัสร้าน: {printer_ip?.is_code_cust_id}
                                         </Typography>
                                         <Typography variant="body1">
                                             <b>IP เครื่องปริ้นต์:</b>{" "}
-                                            {printer_ip.printer_ip}
+                                            {printer_ip?.printer_ip}
                                         </Typography>
                                         <Typography variant="body2" sx={{ mt: 1 }}>
-                                            <b>สร้างโดย:</b> {printer_ip.created_by}
+                                            <b>สร้างโดย:</b> {printer_ip?.created_by}
                                         </Typography>
                                         <Typography variant="body2">
-                                            <b>แก้ไขโดย:</b> {printer_ip.updated_by}
+                                            <b>แก้ไขโดย:</b> {printer_ip?.updated_by}
                                         </Typography>
                                         <Typography
                                             variant="caption"
@@ -114,7 +114,7 @@ export default function PrinterIp({ printer_ip }) {
                                         >
                                             สร้างเมื่อ:{" "}
                                             {new Date(
-                                                printer_ip.created_at
+                                                printer_ip?.created_at
                                             ).toLocaleString()}
                                         </Typography>
                                         <Typography
@@ -123,7 +123,7 @@ export default function PrinterIp({ printer_ip }) {
                                         >
                                             อัพเดทเมื่อ:{" "}
                                             {new Date(
-                                                printer_ip.updated_at
+                                                printer_ip?.updated_at
                                             ).toLocaleString()}
                                         </Typography>
 
