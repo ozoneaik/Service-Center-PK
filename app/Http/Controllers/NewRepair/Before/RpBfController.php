@@ -100,6 +100,9 @@ class RpBfController extends Controller
                 $store_customer = new CustomerInJob();
             }
             if (isset($customer['name']) || isset($customer['phone'])) {
+                if (!is_numeric($customer['phone']) || strlen($customer['phone']) != 10) {
+                    throw new \Exception('กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง (เบอร์ต้องเป็นตัวเลข 10 หลัก)');
+                }
                 $store_customer->job_id = $job_id;
                 $store_customer->serial_id = $serial_id;
                 $store_customer->name = $customer['name'];

@@ -3,11 +3,11 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import {router, usePage} from '@inertiajs/react';
 import React, {useState} from 'react';
 import icon from '../assets/images/logo.png'
-import {Avatar, Button, Typography} from "@mui/material";
+import {Avatar, Button, Fab, Typography} from "@mui/material";
 import watermark from '../assets/images/coverMini.jpg'
 import HeaderImage from '../assets/images/cover.png'
 import NavBar from "@/Layouts/NavBar.jsx";
-import {ArrowDownward, ArrowUpward, Menu} from "@mui/icons-material";
+import {ArrowDownward, ArrowUpward, Menu, MessageOutlined} from "@mui/icons-material";
 
 const HeaderImageStyle = {
     backgroundImage: `url(${HeaderImage})`, backgroundRepeat: 'no-repeat',
@@ -52,7 +52,6 @@ export default function AuthenticatedLayout({header, children}) {
     return (
         <div className="min-h-screen relative" style={HeaderImageStyle}>
             <div style={WatermarkStyle}></div>
-
             <nav className="fixed w-full z-50 border-b border-gray-100 bg-orange/75 backdrop-blur-sm">
                 <div className="px-3 bg-black/75">
                     <div className="flex h-16 justify-between">

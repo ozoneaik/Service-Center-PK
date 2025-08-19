@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\WarrantyProductRequest;
 use App\Models\logStamp;
 use App\Models\WarrantyProduct;
 use Carbon\Carbon;

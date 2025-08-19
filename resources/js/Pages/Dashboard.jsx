@@ -1,15 +1,34 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {Head} from "@inertiajs/react";
-import {Box, Container, Typography, Grid2, Card, CardContent, Chip, Paper, Avatar} from '@mui/material';
+import { Head, router, usePage } from "@inertiajs/react";
+import { Box, Container, Typography, Grid2, Card, CardContent, Chip, Paper, Avatar, CardActionArea } from '@mui/material';
 import {
     Build as BuildIcon, ShoppingCart as ShoppingCartIcon, Inventory as InventoryIcon,
     CheckCircle as CheckCircleIcon, AttachMoney as AttachMoneyIcon, Speed as SpeedIcon, AdsClick,
 } from '@mui/icons-material';
+import { AlertDialog } from "@/Components/AlertDialog";
 
 export default function Dashboard() {
+    const user = usePage().props.auth;
+    const userAccessMenu = usePage().props.auth.access_menu;
+
+
+    function redirectPage(routeName = null) {
+        console.log(routeName);
+        if (routeName === null) return;
+        const hasAccess = userAccessMenu.some(element => {
+            if (element.redirect_route === routeName) {
+                router.get(route(routeName, { is_code_cust_id: user.is_code_cust_id }));
+                return true;
+            }
+            return false;
+        });
+        if (!hasAccess) {
+            AlertDialog({ text: 'ไม่มีสิทธิ์ในการเข้าถึงหน้านี้' });
+        }
+    }
     return (
         <AuthenticatedLayout>
-            <Head title={'Dashboard - Pumpkin Service Center'}/>
+            <Head title={'Dashboard - Pumpkin Service Center'} />
 
             {/* Hero Section */}
             <Box
@@ -22,95 +41,103 @@ export default function Dashboard() {
                     <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
                         ศูนย์บริการซ่อม Pumpkin
                     </Typography>
-                    <Typography variant="h5" sx={{opacity: 0.9}}>
+                    <Typography variant="h5" sx={{ opacity: 0.9 }}>
                         บริการครบวงจร สำหรับการซ่อมบำรุง สั่งซื้ออะไหล่ และเช็คสต็อก
                     </Typography>
                 </Container>
             </Box>
 
-            <Container maxWidth="false" sx={{py: 4}}>
+            <Container maxWidth="false" sx={{ py: 4 }}>
 
                 {/* Services Grid2 */}
-                <Grid2 container spacing={3} sx={{mb: 4}}>
+                <Grid2 container spacing={3} sx={{ mb: 4 }}>
 
                     {/* Service 1: แจ้งซ่อม */}
-                    <Grid2 size={{xs: 12, md: 4}}>
+                    <Grid2 size={{ xs: 12, md: 4 }}>
                         <Card
                             elevation={3}
                             sx={{
                                 height: '100%', textAlign: 'center', transition: '0.3s',
-                                '&:hover': {transform: 'translateY(-4px)', boxShadow: 6}
+                                '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 }
                             }}
                         >
-                            <CardContent sx={{p: 3}}>
-                                <Avatar sx={{bgcolor: 'primary.light', width: 64, height: 64, mx: 'auto', mb: 2}}>
-                                    <BuildIcon sx={{fontSize: 32}}/>
-                                </Avatar>
-                                <Typography variant="h5" component="h3" fontWeight="semibold" gutterBottom>
-                                    แจ้งซ่อมสินค้า
-                                </Typography>
-                                <Typography variant="body1" color="text.secondary" sx={{mb: 2}}>
-                                    แจ้งซ่อมสินค้า Pumpkin ได้อย่างง่ายดาย พร้อมรับค่าเปิดเครื่องพิเศษ
-                                </Typography>
-                                <Chip
-                                    icon={<AttachMoneyIcon/>} label="พิเศษ! รับค่าเปิดเครื่องเมื่อแจ้งซ่อม"
-                                    color="success" variant="outlined" sx={{fontWeight: 'medium'}}
-                                />
-                            </CardContent>
+                            <CardActionArea onClick={() => redirectPage('repair.index')}>
+                                <CardContent sx={{ p: 3 }}>
+                                    <Avatar sx={{ bgcolor: 'primary.light', width: 64, height: 64, mx: 'auto', mb: 2 }}>
+                                        <BuildIcon sx={{ fontSize: 32 }} />
+                                    </Avatar>
+                                    <Typography variant="h5" component="h3" fontWeight="semibold" gutterBottom>
+                                        แจ้งซ่อมสินค้า
+                                    </Typography>
+                                    <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                                        แจ้งซ่อมสินค้า Pumpkin ได้อย่างง่ายดาย พร้อมรับค่าเปิดเครื่องพิเศษ
+                                    </Typography>
+                                    <Chip
+                                        icon={<AttachMoneyIcon />} label="พิเศษ! รับค่าเปิดเครื่องเมื่อแจ้งซ่อม"
+                                        color="success" variant="outlined" sx={{ fontWeight: 'medium' }}
+                                    />
+                                </CardContent>
+                            </CardActionArea>
                         </Card>
                     </Grid2>
 
                     {/* Service 2: สั่งซื้ออะไหล่ */}
-                    <Grid2 size={{xs: 12, md: 4}}>
+                    <Grid2 size={{ xs: 12, md: 4 }}>
                         <Card
                             elevation={3}
                             sx={{
                                 height: '100%', textAlign: 'center', transition: '0.3s',
-                                '&:hover': {transform: 'translateY(-4px)', boxShadow: 6}
+                                '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 }
                             }}
                         >
-                            <CardContent sx={{p: 3}}>
-                                <Avatar sx={{bgcolor: 'success.light', width: 64, height: 64, mx: 'auto', mb: 2}}>
-                                    <ShoppingCartIcon sx={{fontSize: 32}}/>
-                                </Avatar>
-                                <Typography variant="h5" component="h3" fontWeight="semibold" gutterBottom>
-                                    สั่งซื้ออะไหล่
-                                </Typography>
-                                <Typography variant="body1" color="text.secondary" sx={{mb: 2}}>
-                                    สั่งซื้ออะไหล่ Pumpkin ต้นฉบับ ได้ราคาพิเศษจากเรา
-                                </Typography>
-                                <Chip
-                                    label="ราคาถูกกว่าข้างนอก!" color="error"
-                                    variant="outlined" sx={{fontWeight: 'medium'}}
-                                />
-                            </CardContent>
+                            <CardActionArea onClick={() => redirectPage('orders.list')}>
+                                <CardContent sx={{ p: 3 }}>
+                                    <Avatar sx={{ bgcolor: 'success.light', width: 64, height: 64, mx: 'auto', mb: 2 }}>
+                                        <ShoppingCartIcon sx={{ fontSize: 32 }} />
+                                    </Avatar>
+                                    <Typography variant="h5" component="h3" fontWeight="semibold" gutterBottom>
+                                        สั่งซื้ออะไหล่
+                                    </Typography>
+                                    <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                                        สั่งซื้ออะไหล่ Pumpkin ต้นฉบับ ได้ราคาพิเศษจากเรา
+                                    </Typography>
+                                    <Chip
+                                        label="ราคาถูกกว่าข้างนอก!" color="error"
+                                        variant="outlined" sx={{ fontWeight: 'medium' }}
+                                    />
+                                </CardContent>
+                            </CardActionArea>
+
                         </Card>
                     </Grid2>
 
                     {/* Service 3: เคลมอะไหล่ */}
-                    <Grid2 size={{xs: 12, md: 4}}>
+                    <Grid2 size={{ xs: 12, md: 4 }}>
                         <Card
                             elevation={3}
                             sx={{
                                 height: '100%', textAlign: 'center', transition: '0.3s',
-                                '&:hover': {transform: 'translateY(-4px)', boxShadow: 6}
+                                '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 }
                             }}
                         >
-                            <CardContent sx={{p: 3}}>
-                                <Avatar sx={{bgcolor: 'secondary.light', width: 64, height: 64, mx: 'auto', mb: 2}}>
-                                    <InventoryIcon sx={{fontSize: 32}}/>
-                                </Avatar>
-                                <Typography variant="h5" component="h3" fontWeight="semibold" gutterBottom>
-                                    เคลมอะไหล่
-                                </Typography>
-                                <Typography variant="body1" color="text.secondary" sx={{mb: 2}}>
-                                    ตรวจสอบอะไหล่ที่สามารถเคลมกับ Pumpkin ได้ ไม่มีเสียค่าอะไหล่
-                                </Typography>
-                                <Chip
-                                    label="ข้อมูลสต็อกแบบเรียลไทม์" color="info"
-                                    variant="outlined" sx={{fontWeight: 'medium'}}
-                                />
-                            </CardContent>
+                            <CardActionArea onClick={() => redirectPage('orders.list')}>
+                                <CardContent sx={{ p: 3 }}>
+                                    <Avatar sx={{ bgcolor: 'secondary.light', width: 64, height: 64, mx: 'auto', mb: 2 }}>
+                                        <InventoryIcon sx={{ fontSize: 32 }} />
+                                    </Avatar>
+                                    <Typography variant="h5" component="h3" fontWeight="semibold" gutterBottom>
+                                        เคลมอะไหล่
+                                    </Typography>
+                                    <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                                        ตรวจสอบอะไหล่ที่สามารถเคลมกับ Pumpkin ได้ ไม่มีเสียค่าอะไหล่
+                                    </Typography>
+                                    <Chip
+                                        label="ข้อมูลสต็อกแบบเรียลไทม์" color="info"
+                                        variant="outlined" sx={{ fontWeight: 'medium' }}
+                                    />
+                                </CardContent>
+                            </CardActionArea>
+
                         </Card>
                     </Grid2>
                 </Grid2>
@@ -180,11 +207,11 @@ export default function Dashboard() {
                 {/*</Paper>*/}
 
                 {/* About Section */}
-                <Paper elevation={2} sx={{p: 4, mb: 4}}>
+                <Paper elevation={2} sx={{ p: 4, mb: 4 }}>
                     <Typography variant="h5" fontWeight="bold" color="text.primary" gutterBottom>
                         เกี่ยวกับบริการของเรา
                     </Typography>
-                    <Typography color="text.secondary" sx={{lineHeight: 1.7}}>
+                    <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
                         ศูนย์บริการซ่อม Pumpkin เป็นแพลตฟอร์มที่ออกแบบมาเพื่อให้บริการศูนย์ซ่อมต่างๆ
                         สามารถใช้งานในการแจ้งซ่อมสินค้า Pumpkin ได้อย่างสะดวกและรวดเร็ว
                         พร้อมด้วยระบบการจัดการที่ครบครันและมีประสิทธิภาพ
