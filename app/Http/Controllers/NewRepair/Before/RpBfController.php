@@ -117,11 +117,17 @@ class RpBfController extends Controller
 
 
             // บันทึกหมายเหตุสำหรับสื่อสารภายในศูนย์ซ่อม
-            $store_remark = new Remark();
-            $store_remark->job_id = $job_id;
-            $store_remark->serial_id = $serial_id;
-            $store_remark->remark = $remark_symptom_accessory['remark'];
-            $store_remark->save();
+            $check_remark = Remark::query()->where('job_id', $job_id)->first();
+            if ($check_remark) {
+                $check_remark->remark = $remark_symptom_accessory['remark'] ?? null;
+                $check_remark->save();
+            }else{
+                $store_remark = new Remark();
+                $store_remark->job_id = $job_id;
+                $store_remark->serial_id = $serial_id;
+                $store_remark->remark = $remark_symptom_accessory['remark'] ?? null;
+                $store_remark->save();
+            }
 
             // บันทึกอาการเบื้องต้น หากกรอกเข้ามา
             if (isset($remark_symptom_accessory['symptom'])) {

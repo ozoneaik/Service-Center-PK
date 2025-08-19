@@ -102,7 +102,7 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMa
                                 onPassed : () => {
                                     resMessage.success && fetchData().finally(() => {
                                         setLoadingJob(false)
-                                        window.open(route('genReCieveSpPdf',JOB.job_id),'_blank')
+                                        // window.open(route('genReCieveSpPdf',JOB.job_id),'_blank')
                                     })
                                 }
                             });

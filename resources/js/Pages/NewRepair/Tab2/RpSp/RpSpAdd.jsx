@@ -9,7 +9,7 @@ import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 import SaveIcon from "@mui/icons-material/Save";
 import Collapse from "@mui/material/Collapse";
 
-export default function RpSpAdd({ listSparePart, onAddSpare, spSelected, JOB }) {
+export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JOB }) {
     const [previewImage, setPreviewImage] = useState(false);
     const [previewSelected, setPreviewSelected] = useState('');
     const [selectedSpares, setSelectedSpares] = useState([]);
@@ -19,16 +19,19 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected, JOB }) 
 
     const isMobile = useMediaQuery('(max-width:600px)');
 
+    console.log(spSelected);
+
     // ข้อมูลบริการ SV001
     const serviceData = {
         spcode: 'SV001',
-        spname: 'ค่าบริการ',
-        spunit: 'ครั้ง',
-        stdprice_per_unit: '0',
-        price_per_unit: '0',
+        // spname: 'ค่าบริการ',
+        spname: spSelected?.find(sp => sp.spcode === 'SV001')?.spname || 'ค่าบริการ',
+        spunit: 'บาท',
+        stdprice_per_unit: spSelected?.find(sp => sp.spcode === 'SV001')?.price_multiple_gp || 0,
+        price_per_unit: spSelected?.find(sp => sp.spcode === 'SV001')?.price_multiple_gp || 0,
         warranty: 'N',
         sp_warranty: false,
-        price_multiple_gp: 0
+        price_multiple_gp: spSelected?.find(sp => sp.spcode === 'SV001')?.price_multiple_gp || 0,
     };
 
     // ตั้งค่า state เริ่มต้นตาม spSelected ที่ส่งมา

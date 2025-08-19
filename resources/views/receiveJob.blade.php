@@ -118,7 +118,7 @@
     <div><span class="label">รหัสและชื่อสินค้า:</span> ({{$product['pid']}}) {{$product['p_name']}}</div>
     <div><span class="label">อาการ:</span> {{$symptom ?? '-'}}</div>
     <div><span class="label">พนักงานผู้รับงานซ่อม:</span> {{$user_key['name']}}</div>
-    <div><span class="label">อุปกรณ์เสริม:</span> {{$accessory['note'] ?? '-'}}</div>
+    <div><span class="label">อุปกรณ์เสริม:</span> {{$accessory ?? '-'}}</div>
     <div><span class="label">หมายเหตุลูกค้า:</span> {{$customer['remark'] ?? '-'}}</div>
     <div><span class="label">หมายเหตุในศูนย์ซ่อม:</span> {{$remark}}</div>
 </div>
@@ -152,7 +152,7 @@
         <div><span class="label">รหัสและชื่อสินค้า:</span> ({{$product['pid']}}) {{$product['p_name']}}</div>
         <div><span class="label">อาการ:</span> {{$symptom ?? '-'}}</div>
         <div><span class="label">พนักงานผู้รับงานซ่อม:</span> {{$user_key['name']}}</div>
-        <div><span class="label">อุปกรณ์เสริม:</span> {{$accessory['note'] ?? '-'}}</div>
+        <div><span class="label">อุปกรณ์เสริม:</span> {{$accessory ?? '-'}}</div>
         <div><span class="label">หมายเหตุลูกค้า:</span> {{$customer['remark'] ?? '-'}}</div>
     </div>
 
@@ -185,17 +185,17 @@
     ปริ้น
 </button>
 
-<a href="{{route('genReCieveSpPdf',['job_id'=>$product['job_id']])}}">
+<a href="{{route('genReCieveSpPdf',['job_id'=>$product['job_id'],'print_barigan' => 'on'])}}">
     <button style="padding: 10px; " class="btn btn-secondary d-print-none">
         ปริ้นผ่าน Barigan PR-01W
     </button>
 </a>
 
-{{--<script>--}}
-{{--    window.onload = function () {--}}
-{{--        window.print();--}}
-{{--    };--}}
-{{--</script>--}}
+<script>
+    window.onload = function () {
+        window.print();
+    };
+</script>
 
 <script>
     JsBarcode("#barcode", "{{$product['job_id']}}", {
