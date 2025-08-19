@@ -124,6 +124,7 @@
 </div>
 
 <div class="divider"></div>
+<div class="page-break"></div>
 
 <!-- ส่วนที่ 2: สำหรับลูกค้า -->
 <div class="page-break-disable">
