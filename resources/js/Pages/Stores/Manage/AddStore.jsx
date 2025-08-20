@@ -13,6 +13,7 @@ const fields = [
     { key: "is_code_cust_id", label: "รหัสร้าน", type: 'text' },
     { key: "shop_name", label: "ชื่อร้าน", type: 'text' },
     { key: "phone", label: "เบอร์โทรศัพท์", type: 'tel' },
+    {key: 'line_id' , label : 'ไอดีไลน์' , type : 'text'},
 
 ];
 

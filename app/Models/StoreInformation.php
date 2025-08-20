@@ -17,6 +17,8 @@ class StoreInformation extends Model
         'district',
         'sub_district',
         'sale_id',
+        'digit_code',
+        'line_id'
     ];
 
     public function gp () : HasOne {

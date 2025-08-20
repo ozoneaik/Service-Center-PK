@@ -19,6 +19,15 @@ class ShopController extends Controller
         $data = $request;
         try {
             DB::beginTransaction();
+            $store_all = StoreInformation::all();
+            $random_digit = 0000;
+            foreach ($store_all as $key => $store) {
+                $random_digit = rand(1000, 9999);
+                // เช็คว่า มี digit นี้ใน database รึยัง
+                if (!StoreInformation::query()->where('digit_code', $random_digit)->exists()) {
+                    break;
+                }
+            }
             $store = StoreInformation::query()->create([
                 'is_code_cust_id' => $data['is_code_cust_id'],
                 'shop_name' => $data['shop_name'],
@@ -29,6 +38,8 @@ class ShopController extends Controller
                 'district' => $data['district'],
                 'sub_district' => $data['subdistrict'],
                 'sale_id' => $data['sale_id'],
+                'line_id' => $data['line_id'] ?? null,
+                'digit_code' => $random_digit
             ]);
             DB::commit();
             return Redirect::route('stockSp.shopList', [
@@ -38,7 +49,7 @@ class ShopController extends Controller
             DB::rollback();
             return Redirect::route('stockSp.shopList', [
                 'store' => []
-            ])->with('error', 'บันทึกข้อมูลไม่สำเร็จ');
+            ])->with('error', $e->getMessage());
         }
     }
 

@@ -3,13 +3,14 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { Head, Link, usePage, router } from "@inertiajs/react";
 import {
     Box, Button, Card, CardContent, Chip, Container, Divider, Drawer, Grid2, MenuItem, Pagination, Paper, Select,
-    Stack, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, useMediaQuery, useTheme
+    Stack, Table, TableBody, TableCell, TableRow,TableHead, TextField, Typography, useMediaQuery, useTheme
 } from "@mui/material";
 import { useState } from "react";
 import { ListDetailModal } from "@/Pages/HistoryPage/ListDetailModal.jsx";
 import { ChevronLeft, FilterList, ManageHistory, LocalPhone, Person, Search, Print } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import { styled } from "@mui/material/styles";
+import {TableStyle} from "../../../css/TableStyle"
 
 const statusLabels = {
     pending: 'กำลังดำเนินการซ่อม', success: 'ปิดการซ่อมแล้ว',
@@ -29,14 +30,14 @@ export const TableDetail = ({ jobs, handleShowDetail, url }) => {
         window.open(route('genReCieveSpPdf', job_id), '_blank')
     }
     return (
-        <Table>
+        <Table stickyHeader>
             <TableHead>
-                <TableRow sx={TABLE_HEADER_STYLE}>
+                <TableRow>
                     {(url.startsWith("/admin/history-job")
                         ? ["รูปภาพ", "ซีเรียล", "รหัส job", "ศูนย์บริการ", "ข้อมูลลูกค้า", "สถานะ", "รายละเอียด"]
                         : ["รูปภาพ", "ซีเรียล", "รหัส job", "ข้อมูลลูกค้า", "สถานะ", "รายละเอียด"]
                     ).map((head, i) => (
-                        <TableCell key={i}>{head}</TableCell>
+                        <TableCell sx={TableStyle.TableHead} key={i}>{head}</TableCell>
                     ))}
                 </TableRow>
             </TableHead>
@@ -324,8 +325,3 @@ export default function HistoryMain({ jobs }) {
         </>
     )
 }
-const TABLE_HEADER_STYLE = {
-    backgroundColor: '#c7c7c7',
-    fontWeight: 'bold',
-    fontSize: 16
-};

@@ -41,8 +41,8 @@ const TableDetail = ({shops}) => {
                     {shops.map((shop, index) => (
                         <TableRow key={index}>
                             <TableCell>{shop.is_code_cust_id}</TableCell>
-                            <TableCell>
-                                {shop.shop_name}
+                        <TableCell>
+                                {shop.shop_name} (ID: {shop.digit_code})
                                 <br/>
                                 {shop.phone}
                             </TableCell>
