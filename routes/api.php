@@ -13,7 +13,7 @@ Route::get('/test',function(){
     return response()->json(['test' => 'ok']);
 });
 
-Route::post('/job_detail', [GeneralController::class,'index'])->name('api.get-job');
+Route::post('/job-send-pk', [GeneralController::class,'index'])->name('api.get-job');
 
 
 
