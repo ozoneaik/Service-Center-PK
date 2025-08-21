@@ -182,7 +182,7 @@ export default function RpMain({ productDetail, serial_id }) {
 
                             <CustomTabPanel index={0} value={tabValue}>
                                 <RpTab1Form
-                                    setMainStep={setMainStep}
+                                    setMainStep={setMainStep} setTabValue={setTabValue}
                                     JOB={JOB} setJOB={setJOB} form1Saved={form1Saved} setForm1Saved={setForm1Saved}
                                 />
                             </CustomTabPanel>

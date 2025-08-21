@@ -74,7 +74,6 @@ class RpBfController extends Controller
 
     public function store(Request $request)
     {
-
         try {
             $request->validate([
                 'job_id' => 'required',
@@ -84,6 +83,7 @@ class RpBfController extends Controller
             ], [
                 'file_befores.required' => '<span>จำเป็นต้องอัปโหลดรูปหรือวิดีโอ<br/>🗃️สภาพสินค้าก่อนซ่อม🗃️<br/>อย่างน้อย 1 รายการ</span>'
             ]);
+
             $job_id = $request->job_id;
             $serial_id = $request->serial_id;
             $customer = $request->customer;
@@ -92,75 +92,71 @@ class RpBfController extends Controller
 
             DB::beginTransaction();
 
-            // บันทึกข้อมูลลูกค้า
-            $check_customer = CustomerInJob::query()->where('job_id', $job_id)->first();
-            if ($check_customer) {
-                $store_customer = $check_customer;
-            } else {
-                $store_customer = new CustomerInJob();
-            }
+            // ✅ บันทึกข้อมูลลูกค้า
             if (isset($customer['name']) || isset($customer['phone'])) {
                 if (!is_numeric($customer['phone']) || strlen($customer['phone']) != 10) {
                     throw new \Exception('กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง (เบอร์ต้องเป็นตัวเลข 10 หลัก)');
                 }
-                $store_customer->job_id = $job_id;
-                $store_customer->serial_id = $serial_id;
-                $store_customer->name = $customer['name'];
-                $store_customer->phone = $customer['phone'];
-                $store_customer->address = $customer['address'] ?? null;
-                $store_customer->remark = $customer['remark'] ?? null;
-                $store_customer->subremark1 = $customer['subremark1'] ?? false;
-                $store_customer->subremark2 = $customer['subremark2'] ?? false;
-                if (isset($customer['subremark3']) && $customer['subremark3'] !== '0') {
-                    $store_customer->subremark3 = $customer['subremark3'];
-                    $store_customer->remark = $customer['remark'];
-                }
-                $store_customer->save();
-            } else throw new \Exception('กรุณากรอกชื่อ และ นามสกุล');
 
-
-            // บันทึกหมายเหตุสำหรับสื่อสารภายในศูนย์ซ่อม
-            $check_remark = Remark::query()->where('job_id', $job_id)->first();
-            if ($check_remark) {
-                $check_remark->remark = $remark_symptom_accessory['remark'] ?? null;
-                $check_remark->save();
-            }else{
-                $store_remark = new Remark();
-                $store_remark->job_id = $job_id;
-                $store_remark->serial_id = $serial_id;
-                $store_remark->remark = $remark_symptom_accessory['remark'] ?? null;
-                $store_remark->save();
+                CustomerInJob::updateOrCreate(
+                    ['job_id' => $job_id],
+                    [
+                        'serial_id' => $serial_id,
+                        'name' => $customer['name'],
+                        'phone' => $customer['phone'],
+                        'address' => $customer['address'] ?? null,
+                        'remark' => (!empty($customer['subremark3']) && $customer['subremark3'] !== false)
+                            ? ($customer['remark'] ?? null)
+                            : null,
+                        'subremark1' => $customer['subremark1'] ?? false,
+                        'subremark2' => $customer['subremark2'] ?? false,
+                        'subremark3' => (isset($customer['subremark3']) && $customer['subremark3'] !== '0') ? $customer['subremark3'] : false,
+                    ]
+                );
+            } else {
+                throw new \Exception('กรุณากรอกชื่อ และ นามสกุล');
             }
 
-            // บันทึกอาการเบื้องต้น หากกรอกเข้ามา
+            // ✅ หมายเหตุภายในศูนย์ซ่อม
+            if (isset($remark_symptom_accessory['remark'])) {
+                Remark::updateOrCreate(
+                    ['job_id' => $job_id],
+                    [
+                        'serial_id' => $serial_id,
+                        'remark' => $remark_symptom_accessory['remark'] ?? null,
+                    ]
+                );
+            } else {
+                Remark::where('job_id', $job_id)->delete();
+            }
+
+            // ✅ อาการเบื้องต้น
             if (isset($remark_symptom_accessory['symptom'])) {
-                $check_symptom = Symptom::query()->where('job_id', $job_id)->first();
-                if ($check_symptom) {
-                    $store_symptom = $check_symptom;
-                } else {
-                    $store_symptom = new Symptom();
-                }
-                $store_symptom->job_id = $job_id;
-                $store_symptom->serial_id = $serial_id;
-                $store_symptom->symptom = $remark_symptom_accessory['symptom'];
-                $store_symptom->save();
-            } else Symptom::query()->where('job_id', $job_id)->delete();
+                Symptom::updateOrCreate(
+                    ['job_id' => $job_id],
+                    [
+                        'serial_id' => $serial_id,
+                        'symptom' => $remark_symptom_accessory['symptom'],
+                    ]
+                );
+            } else {
+                Symptom::where('job_id', $job_id)->delete();
+            }
 
-            // บันทึกหมายเหตุอุปกรณ์เสริม หากกรอกเข้ามา
+            // ✅ อุปกรณ์เสริม
             if (isset($remark_symptom_accessory['accessory'])) {
-                $check_accessory = AccessoriesNote::query()->where('job_id', $job_id)->first();
-                if ($check_accessory) {
-                    $store_accessory = $check_accessory;
-                } else {
-                    $store_accessory = new AccessoriesNote();
-                }
-                $store_accessory->job_id = $job_id;
-                $store_accessory->serial_id = $serial_id;
-                $store_accessory->note = $remark_symptom_accessory['accessory'];
-                $store_accessory->save();
-            } else AccessoriesNote::query()->where('job_id', $job_id)->delete();
+                AccessoriesNote::updateOrCreate(
+                    ['job_id' => $job_id],
+                    [
+                        'serial_id' => $serial_id,
+                        'note' => $remark_symptom_accessory['accessory'],
+                    ]
+                );
+            } else {
+                AccessoriesNote::where('job_id', $job_id)->delete();
+            }
 
-            // บันทึก file
+            // ✅ บันทึกไฟล์
             $this->store_file($file_befores, $serial_id, $job_id);
 
             DB::commit();
@@ -222,7 +218,7 @@ class RpBfController extends Controller
             return;
         }
 
-//        FileUpload::query()->where('job_id', $job_id)->whereNotIn('id', $keep)->delete();
+        //        FileUpload::query()->where('job_id', $job_id)->whereNotIn('id', $keep)->delete();
 
         $files_to_delete = FileUpload::where('job_id', $job_id)
             ->where('menu_id', 1)
@@ -249,20 +245,20 @@ class RpBfController extends Controller
     {
         $job_id = $request->get('job_id');
         $find_symptom = Symptom::findByJobId($job_id);
-        if ($find_symptom){
+        if ($find_symptom) {
             return response()->json([
                 'job_id' => $job_id,
                 'find_symptom' => true,
                 'message' => 'รับใบรับสินค้า',
-                'path' => route('genReCieveSpPdf',['job_id' => $job_id])
+                'path' => route('genReCieveSpPdf', ['job_id' => $job_id])
             ]);
-        }else{
+        } else {
             return response()->json([
                 'job_id' => $job_id,
                 'find_symptom' => false,
                 'message' => 'กรุณากรอกอาการเบื้องต้นก่อน',
                 'path' => null
-            ],400);
+            ], 400);
         }
     }
 }

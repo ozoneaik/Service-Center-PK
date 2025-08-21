@@ -1,151 +1,123 @@
+import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, router } from "@inertiajs/react";
-import { Edit, Save } from "@mui/icons-material";
+import { Head, useForm } from "@inertiajs/react";
+import {LocalPrintshop, Save, TextSnippet } from "@mui/icons-material";
 import {
-    Container,
-    Typography,
-    Card,
-    CardContent,
-    Button,
-    Grid2,
-    TextField,
+    Container, Typography, Card, CardContent,
+    Button, Grid2, TextField, FormControl, FormLabel, Stack
 } from "@mui/material";
-import { useState } from "react";
 
-export default function PrinterIp({ printer_ip = null }) {
-    const [isEditing, setIsEditing] = useState(false);
-    const [formData, setFormData] = useState({
-        printer_ip: printer_ip?.printer_ip || null,
-        updated_by: printer_ip?.updated_by || null,
+export default function PrinterIp({ ip_address_store }) {
+
+    const { data, setData, post, errors, processing } = useForm({
+        printer_ip: ip_address_store.printer_ip || '',
+        pc_ip: ip_address_store.pc_ip || '',
+        is_code_cust_id: ip_address_store.is_code_cust_id || '',
     });
 
-    // handle change value ในฟอร์ม
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+    const handleOnChange = (e) => {
+        const { name, value } = e.target;
+        setData(name, value);
+    }
 
-    // handle save
-    const handleSave = () => {
-        // ส่งข้อมูลไป backend ด้วย inertia
-        router.put(`/printer-ip/${printer_ip.id}`, formData, {
-            onSuccess: () => {
-                setIsEditing(false); // ปิดโหมดแก้ไข
-            },
-        });
-    };
+    const handleOnSubmit = (e) => {
+        e.preventDefault();
+        AlertDialogQuestion({
+            text: 'กดตกลงเพื่อบันทึกข้อมูล',
+            onPassed: (confirm) => {
+                if (confirm) {
+                    post(route('printerIp.storeOrUpdate'), {
+                        onSuccess: (e) => {
+                            AlertDialog({
+                                icon: 'success',
+                                text: 'บันทึกสําเร็จ',
+                            })
+                        }
+                    });
+                } else console.log('ยกเลิกการบันทึก');
+            }
+        })
+
+    }
 
     return (
         <AuthenticatedLayout>
             <Head title="จัดการเครื่องปริ้นต์" />
             <Container maxWidth="false" sx={{ bgcolor: "white", p: 3 }}>
-                <Grid2 container spacing={2} sx={{ p: 3 }}>
-                    <Grid2 size={12}>
-                        <Typography variant="h5" sx={{ mb: 2 }}>
-                            ข้อมูลเครื่องปริ้นต์
-                        </Typography>
-                    </Grid2>
+                <form onSubmit={handleOnSubmit}>
+                    <Grid2 container spacing={2}>
+                        <Grid2 size={12}>
+                            <Typography fontWeight='bold' fontSize={20}>
+                                ข้อมูลเครื่องปริ้นต์
+                            </Typography>
+                        </Grid2>
 
-                    <Grid2 size={{xs : 12, md : 6}}>
-                        <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
-                            <CardContent>
-                                {isEditing ? (
-                                    <>
+                        <Grid2 size={{ xs: 12, md: 6 }}>
+                            <Card variant="outlined">
+                                <CardContent>
+                                    <Typography fontWeight='bold' fontSize={16}>
+                                        ip เครื่องคอมพิวเดอร์
+                                    </Typography>
+                                    <FormControl fullWidth>
+                                        <FormLabel htmlFor="pc_ip">
+                                            ip address
+                                        </FormLabel>
                                         <TextField
-                                            label="IP เครื่องปริ้นต์"
-                                            name="printer_ip"
-                                            value={formData.printer_ip}
-                                            onChange={handleChange}
-                                            fullWidth
-                                            sx={{ mb: 2 }}
+                                            size="small" value={data.pc_ip}
+                                            name='pc_ip' type="text" onChange={handleOnChange}
                                         />
+                                    </FormControl>
+                                </CardContent>
+                            </Card>
+                        </Grid2>
+                        <Grid2 size={{ xs: 12, md: 6 }}>
+                            <Card variant="outlined">
+                                <CardContent>
+                                    <Typography fontWeight='bold' fontSize={16}>
+                                        ip เครื่องปริ้นต์
+                                    </Typography>
+                                    <FormControl fullWidth>
+                                        <FormLabel htmlFor="printer_ip">
+                                            ip address
+                                        </FormLabel>
                                         <TextField
-                                            label="แก้ไขโดย"
-                                            name="updated_by"
-                                            value={formData.updated_by}
-                                            onChange={handleChange}
-                                            fullWidth
-                                            sx={{ mb: 2 }}
+                                            size="small" value={data.printer_ip}
+                                            name='printer_ip' type="text" onChange={handleOnChange}
                                         />
-
-                                        <Grid2 container spacing={2}>
-                                            <Grid2>
-                                                <Button
-                                                    variant="contained"
-                                                    color="success"
-                                                    onClick={handleSave}
-                                                    startIcon={<Save/>}
-                                                >
-                                                    บันทึก
-                                                </Button>
-                                            </Grid2>
-                                            <Grid2>
-                                                <Button
-                                                    variant="outlined"
-                                                    color="inherit"
-                                                    onClick={() =>
-                                                        setIsEditing(false)
-                                                    }
-                                                >
-                                                    ยกเลิก
-                                                </Button>
-                                            </Grid2>
-                                        </Grid2>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Typography variant="h6" gutterBottom>
-                                            รหัสร้าน: {printer_ip?.is_code_cust_id}
-                                        </Typography>
-                                        <Typography variant="body1">
-                                            <b>IP เครื่องปริ้นต์:</b>{" "}
-                                            {printer_ip?.printer_ip}
-                                        </Typography>
-                                        <Typography variant="body2" sx={{ mt: 1 }}>
-                                            <b>สร้างโดย:</b> {printer_ip?.created_by}
-                                        </Typography>
-                                        <Typography variant="body2">
-                                            <b>แก้ไขโดย:</b> {printer_ip?.updated_by}
-                                        </Typography>
-                                        <Typography
-                                            variant="caption"
-                                            color="text.secondary"
-                                            display="block"
-                                            sx={{ mt: 2 }}
-                                        >
-                                            สร้างเมื่อ:{" "}
-                                            {new Date(
-                                                printer_ip?.created_at
-                                            ).toLocaleString()}
-                                        </Typography>
-                                        <Typography
-                                            variant="caption"
-                                            color="text.secondary"
-                                        >
-                                            อัพเดทเมื่อ:{" "}
-                                            {new Date(
-                                                printer_ip?.updated_at
-                                            ).toLocaleString()}
-                                        </Typography>
-
-                                        {/* ปุ่ม action */}
-                                        <Grid2 container spacing={2} sx={{ mt: 3 }}>
-                                            <Grid2>
-                                                <Button
-                                                    variant="contained"
-                                                    color="primary"
-                                                    onClick={() => setIsEditing(true)}
-                                                    startIcon={<Edit/>}
-                                                >
-                                                    แก้ไข
-                                                </Button>
-                                            </Grid2>
-                                        </Grid2>
-                                    </>
-                                )}
-                            </CardContent>
-                        </Card>
+                                    </FormControl>
+                                </CardContent>
+                            </Card>
+                        </Grid2>
+                        <Grid2 size={12}>
+                            <Stack direction='row' justifyContent='center' spacing={2}>
+                                <Button
+                                    loading={processing} startIcon={<Save />}
+                                    variant="contained" type="submit"
+                                >
+                                    บันทึก / อัพเดท
+                                </Button>
+                                <Button
+                                    loading={processing} startIcon={<TextSnippet />}
+                                    variant="contained" color="warning"
+                                >
+                                    ทดสอบการ print
+                                </Button>
+                                <Button
+                                    loading={processing} startIcon={<LocalPrintshop />}
+                                    variant="contained" color="secondary"
+                                >
+                                    เปิดโปรแกรม printer
+                                </Button>
+                            </Stack>
+                        </Grid2>
+                        <Grid2 size={12}>
+                            <iframe
+                                src="https://maze-journey-c18.notion.site/ebd/256be7c3c04680a3b771ec01614c85b3"
+                                width="100%" height="600" frameborder="0"
+                            />
+                        </Grid2>
                     </Grid2>
-                </Grid2>
+                </form>
             </Container>
         </AuthenticatedLayout>
     );

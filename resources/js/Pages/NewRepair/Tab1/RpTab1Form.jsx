@@ -1,12 +1,12 @@
-import {Button, Card, CardContent, CircularProgress, Grid2, Stack} from "@mui/material";
-import {HeaderTitle} from "@/Pages/NewRepair/HeaderCardTitle.jsx";
+import { Button, Card, CardContent, CircularProgress, Grid2, Stack } from "@mui/material";
+import { HeaderTitle } from "@/Pages/NewRepair/HeaderCardTitle.jsx";
 import RpCustomerForm from "@/Pages/NewRepair/Tab1/RpCustomerForm.jsx";
 import RpSRA from "@/Pages/NewRepair/Tab1/RpSRA.jsx";
 import RpUploadFileBeforeForm from "@/Pages/NewRepair/Tab1/RpUploadFileBeforeForm.jsx";
-import {Save} from "@mui/icons-material";
-import {useEffect, useState} from "react";
-import {useForm} from "@inertiajs/react";
-import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
+import { Save } from "@mui/icons-material";
+import { useEffect, useState } from "react";
+import { useForm } from "@inertiajs/react";
+import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
 import RpWorkReceipt from "@/Pages/NewRepair/Tab1/RpWorkReceipt.jsx";
 
 const textQuestion = `
@@ -15,11 +15,11 @@ const textQuestion = `
 <span style="color: red">⚠️ เมื่อบันทึกแล้ว จะไม่สามารถย้อนกลับมาแก้ไขในหน้านี้ได้</span>
 `
 
-export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMainStep}) {
+export default function RpTab1Form({ JOB, setJOB, form1Saved, setForm1Saved, setMainStep,setTabValue }) {
     const [loadingJob, setLoadingJob] = useState(false);
-    const {data, setData, processing, post} = useForm({
-        job_id : JOB.job_id,
-        serial_id : JOB.serial_id,
+    const { data, setData, processing, post } = useForm({
+        job_id: JOB.job_id,
+        serial_id: JOB.serial_id,
     });
 
     useEffect(() => {
@@ -29,14 +29,14 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMa
     const fetchData = async () => {
         try {
             setLoadingJob(true);
-            const {data, status} = await axios.get(route('repair.before.index', {job_id: JOB.job_id}));
+            const { data, status } = await axios.get(route('repair.before.index', { job_id: JOB.job_id }));
             const customer = data.form.customer;
             const remark_symptom_accessory = data.form.remark_symptom_accessory;
             const file_befores = data.form.file_befores;
             const saved = data.saved || false;
             if (saved) {
                 setForm1Saved(true);
-            }else{
+            } else {
                 setForm1Saved(false);
             }
             setData('customer', customer)
@@ -56,7 +56,7 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMa
                     post(route('repair.before.store'), {
                         preserveState: true,
                         preserveScroll: true,
-                        forceFormData : true,
+                        forceFormData: true,
                         transform: (data) => {
                             const formData = new FormData();
 
@@ -83,7 +83,7 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMa
 
                             return formData;
                         },
-                        onError : (res) => {
+                        onError: (res) => {
                             let error_message = '';
                             console.log(res)
                             if (res.file_befores) {
@@ -91,24 +91,26 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMa
                             }
 
                             AlertDialog({
-                                text : error_message
+                                text: error_message
                             })
                         },
                         onSuccess: (res) => {
                             const resMessage = res.props.flash;
                             AlertDialog({
-                                icon : resMessage.error ? 'error' :'success',
-                                text : resMessage.message || resMessage.error || resMessage.success,
-                                onPassed : () => {
+                                icon: resMessage.error ? 'error' : 'success',
+                                text: resMessage.message || resMessage.error || resMessage.success,
+                                onPassed: () => {
+                                    // setForm1Saved(true);
+                                    setTabValue(1);
                                     resMessage.success && fetchData().finally(() => {
                                         setLoadingJob(false)
                                         // window.open(route('genReCieveSpPdf',JOB.job_id),'_blank')
                                     })
                                 }
                             });
-                            if (resMessage.success) {
-                                setForm1Saved(true);
-                            }
+
+                            
+
                         },
                     });
 
@@ -119,7 +121,7 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMa
     }
     return (
         <>
-            {loadingJob ? (<CircularProgress/>) : (
+            {loadingJob ? (<CircularProgress />) : (
                 <>
                     {/*<button onClick={() => console.log(data)}>click</button>*/}
                     <form onSubmit={handleSubmit}>
@@ -128,12 +130,12 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMa
                                 <Card
                                     variant='outlined'
                                     sx={(theme) => (
-                                        {backgroundColor: theme.palette.cardFormRpColor.main}
+                                        { backgroundColor: theme.palette.cardFormRpColor.main }
                                     )}
                                 >
                                     <CardContent>
-                                        <HeaderTitle headTitle='ข้อมูลลูกค้า'/>
-                                        <RpCustomerForm form1Saved={form1Saved} data={data} setData={setData}/>
+                                        <HeaderTitle headTitle='ข้อมูลลูกค้า' />
+                                        <RpCustomerForm form1Saved={form1Saved} data={data} setData={setData} />
                                     </CardContent>
                                 </Card>
                             </Grid2>
@@ -141,12 +143,12 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMa
                                 <Card
                                     variant='outlined'
                                     sx={(theme) => (
-                                        {backgroundColor: theme.palette.cardFormRpColor.main}
+                                        { backgroundColor: theme.palette.cardFormRpColor.main }
                                     )}
                                 >
                                     <CardContent>
-                                        <HeaderTitle headTitle='อาการเบื้องต้น'/>
-                                        <RpSRA form1Saved={form1Saved} data={data} setData={setData}/>
+                                        <HeaderTitle headTitle='อาการเบื้องต้น' />
+                                        <RpSRA form1Saved={form1Saved} data={data} setData={setData} />
                                     </CardContent>
                                 </Card>
                             </Grid2>
@@ -154,12 +156,12 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMa
                                 <Card
                                     variant='outlined'
                                     sx={(theme) => (
-                                        {backgroundColor: theme.palette.cardFormRpColor.main}
+                                        { backgroundColor: theme.palette.cardFormRpColor.main }
                                     )}
                                 >
                                     <CardContent>
-                                        <HeaderTitle headTitle='สภาพสินค้าก่อนซ่อม'/>
-                                        <RpUploadFileBeforeForm form1Saved={form1Saved} data={data} setData={setData}/>
+                                        <HeaderTitle headTitle='สภาพสินค้าก่อนซ่อม' />
+                                        <RpUploadFileBeforeForm form1Saved={form1Saved} data={data} setData={setData} />
                                     </CardContent>
                                 </Card>
                             </Grid2>
@@ -168,12 +170,12 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMa
                                     <Card
                                         variant='outlined'
                                         sx={(theme) => (
-                                            {backgroundColor: theme.palette.cardFormRpColor.main}
+                                            { backgroundColor: theme.palette.cardFormRpColor.main }
                                         )}
                                     >
                                         <CardContent>
-                                            <HeaderTitle headTitle='ใบรับงานสินค้า'/>
-                                            <RpWorkReceipt form1Saved={form1Saved} JOB={JOB}/>
+                                            <HeaderTitle headTitle='ใบรับงานสินค้า' />
+                                            <RpWorkReceipt form1Saved={form1Saved} JOB={JOB} />
                                         </CardContent>
                                     </Card>
                                 </Grid2>
@@ -183,7 +185,7 @@ export default function RpTab1Form({JOB, setJOB, form1Saved, setForm1Saved,setMa
                                     <Button
                                         disabled={JOB.status !== 'pending'}
                                         // disabled={form1Saved}
-                                        loading={processing} variant='contained' startIcon={<Save/>}
+                                        loading={processing} variant='contained' startIcon={<Save />}
                                         type='submit'
                                     >
                                         {form1Saved ? 'บันทึกฟอร์มเรียบร้อยแล้ว' : 'บันทึก'}

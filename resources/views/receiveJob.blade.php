@@ -119,7 +119,27 @@
     <div><span class="label">อาการ:</span> {{$symptom ?? '-'}}</div>
     <div><span class="label">พนักงานผู้รับงานซ่อม:</span> {{$user_key['name']}}</div>
     <div><span class="label">อุปกรณ์เสริม:</span> {{$accessory ?? '-'}}</div>
-    <div><span class="label">หมายเหตุลูกค้า:</span> {{$customer['remark'] ?? '-'}}</div>
+@php
+    $remarks = [];
+
+    if (!empty($customer['subremark1'])) {
+        $remarks[] = 'เสนอราคาก่อนซ่อม';
+    }
+
+    if (!empty($customer['subremark2'])) {
+        $remarks[] = 'ซ่อมเสร็จส่งกลับทางไปรษณีย์';
+    }
+
+    if (!empty($customer['subremark3']) && !empty($customer['remark'])) {
+        $remarks[] = $customer['remark'];
+    }
+
+    $remarkText = count($remarks) > 0 ? implode(' , ', $remarks) : '-';
+@endphp
+
+<div>
+    <span class="label">หมายเหตุลูกค้า:</span> {{ $remarkText }}
+</div>
     <div><span class="label">หมายเหตุในศูนย์ซ่อม:</span> {{$remark}}</div>
 </div>
 

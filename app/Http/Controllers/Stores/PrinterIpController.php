@@ -19,6 +19,35 @@ class PrinterIpController extends Controller
 
         $printer_ip = PrinterIp::query()->where('is_code_cust_id', $is_code_cust_id)->first();
         // dd($printer_ip);
-        return Inertia::render('Stores/Printer/PrinterIp', ['printer_ip' => $printer_ip]);
+        return Inertia::render('Stores/Printer/PrinterIp', ['ip_address_store' => $printer_ip]);
+    }
+
+    public function store_or_update(Request $request){
+        $validated = $request->validate([
+            'printer_ip' => 'required',
+            'pc_ip' => 'required',
+            'is_code_cust_id' => 'required',
+        ],[
+            'printer_ip.required' => 'กรุณากรอก Printer IP',
+            'pc_ip.required' => 'กรุณากรอก PC IP',
+            'is_code_cust_id' => 'กรุณากรอก รหัสร้านค้า'
+        ]);
+        $data_saved = PrinterIp::query()->where('is_code_cust_id', $validated['is_code_cust_id'])->first();
+        if ($data_saved) {
+            $data_saved->printer_ip = $validated['printer_ip'];
+            $data_saved->pc_ip = $validated['pc_ip'];
+            $data_saved->updated_by = Auth::user()->user_code;
+            $data_saved->save();
+        } else {
+            $data_saved = new PrinterIp();
+            $data_saved->is_code_cust_id = $validated['is_code_cust_id'];
+            $data_saved->printer_ip = $validated['printer_ip'];
+            $data_saved->pc_ip = $validated['pc_ip'];
+            $data_saved->created_by = Auth::user()->user_code;
+            $data_saved->save();
+        }
+
+        return back()->with('success', 'บันทึกข้อมูลสําเร็จ');
+        
     }
 }

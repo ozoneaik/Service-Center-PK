@@ -86,6 +86,7 @@ Route::middleware('auth')->group(function () {
             });
             Route::prefix('printer-ip')->group(function(){
                 Route::get('/{is_code_cust_id}', [PrinterIpController::class,'index'])->name('printerIp.index');
+                Route::post('/store-update',[PrinterIpController::class,'store_or_update'])->name('printerIp.storeOrUpdate');
             });
         });
 //    });
