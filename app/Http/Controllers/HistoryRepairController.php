@@ -23,10 +23,9 @@ class HistoryRepairController extends Controller
 
         $query = JobList::query()
             ->leftJoin('customer_in_jobs', 'customer_in_jobs.job_id', '=', 'job_lists.job_id')
+            ->leftJoin('repair_men', 'job_lists.repair_man_id', '=', 'repair_men.id')
             ->where('is_code_key', Auth::user()->is_code_cust_id)
-//            ->whereMonth('job_lists.created_at', now()->month)
-//            ->whereYear('job_lists.created_at', now()->year)
-            ->select('job_lists.*', 'customer_in_jobs.name', 'customer_in_jobs.phone');
+            ->select('job_lists.*', 'customer_in_jobs.name', 'customer_in_jobs.phone', 'repair_men.technician_name', 'repair_men.technician_phone');
 
         // ค้นหาตาม serial_id
         if ($request->filled('serial_id')) {
@@ -85,7 +84,7 @@ class HistoryRepairController extends Controller
         $hisSystem = $this->historyInSystem($serial_id);
         // dd($hisSystem);
         $data['history'] = $hisSystem;
-//        $data['detail'] = $searchResults['assets'][0] ?? [];
+        //        $data['detail'] = $searchResults['assets'][0] ?? [];
         // $data['history'] = array_merge($hisSystem, $searchResults['assets'][0]['history']);
         return response()->json([
             'message' => 'success',

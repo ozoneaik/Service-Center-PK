@@ -66,6 +66,8 @@ class DatabaseSeeder extends Seeder
             ['menu_name' => 'จัดการร้านค้า', 'group' => 8, 'main_menu' => true, 'redirect_route' => null],
             ['menu_name' => 'จัดการสต็อกอะไหล่', 'group' => 8, 'main_menu' => false, 'redirect_route' => 'stockSp.list'],
             ['menu_name' => 'ข้อมูลผู้ใช้', 'group' => 8, 'main_menu' => false, 'redirect_route' => 'storeUsers.index'],
+            ['menu_name' => 'จัดการเครื่องปริ้นต์', 'group' => 8, 'main_menu' => false, 'redirect_route' => 'printerIp.index'],
+            ['menu_name' => 'จัดการช่างซ่อม', 'group' => 8, 'main_menu' => false, 'redirect_route' => 'repairMan.index']
         ];
 
         foreach ($menu_system as $menu) {

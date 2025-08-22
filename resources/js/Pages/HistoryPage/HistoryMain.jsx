@@ -3,14 +3,14 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { Head, Link, usePage, router } from "@inertiajs/react";
 import {
     Box, Button, Card, CardContent, Chip, Container, Divider, Drawer, Grid2, MenuItem, Pagination, Paper, Select,
-    Stack, Table, TableBody, TableCell, TableRow,TableHead, TextField, Typography, useMediaQuery, useTheme
+    Stack, Table, TableBody, TableCell, TableRow, TableHead, TextField, Typography, useMediaQuery, useTheme
 } from "@mui/material";
 import { useState } from "react";
 import { ListDetailModal } from "@/Pages/HistoryPage/ListDetailModal.jsx";
 import { ChevronLeft, FilterList, ManageHistory, LocalPhone, Person, Search, Print } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import { styled } from "@mui/material/styles";
-import {TableStyle} from "../../../css/TableStyle"
+import { TableStyle } from "../../../css/TableStyle"
 
 const statusLabels = {
     pending: 'กำลังดำเนินการซ่อม', success: 'ปิดการซ่อมแล้ว',
@@ -34,8 +34,8 @@ export const TableDetail = ({ jobs, handleShowDetail, url }) => {
             <TableHead>
                 <TableRow>
                     {(url.startsWith("/admin/history-job")
-                        ? ["รูปภาพ", "ซีเรียล", "รหัส job", "ศูนย์บริการ", "ข้อมูลลูกค้า", "สถานะ", "รายละเอียด"]
-                        : ["รูปภาพ", "ซีเรียล", "รหัส job", "ข้อมูลลูกค้า", "สถานะ", "รายละเอียด"]
+                        ? ["รูปภาพ", "ซีเรียล", "รหัส job", "ศูนย์บริการ", "ข้อมูลลูกค้า", "ช่างที่ซ่อม", "สถานะ", "รายละเอียด"]
+                        : ["รูปภาพ", "ซีเรียล", "รหัส job", "ข้อมูลลูกค้า", "ช่างที่ซ่อม", "สถานะ", "รายละเอียด"]
                     ).map((head, i) => (
                         <TableCell sx={TableStyle.TableHead} key={i}>{head}</TableCell>
                     ))}
@@ -63,6 +63,10 @@ export const TableDetail = ({ jobs, handleShowDetail, url }) => {
                         <TableCell>
                             <b>ชื่อ :</b> <span style={{ color: pumpkinColor }}>{job.name}</span><br />
                             <b>เบอร์โทร :</b> <span style={{ color: pumpkinColor }}>{job.phone}</span>
+                        </TableCell>
+                        <TableCell>
+                            <b>ชื่อ :</b> <span style={{ color: pumpkinColor }}>{job.technician_name}</span><br />
+                            <b>เบอร์โทร :</b> <span style={{ color: pumpkinColor }}>{job.technician_phone}</span>
                         </TableCell>
                         <TableCell>
                             <Chip label={statusLabels[job.status] || 'ไม่สามารถระบุสถานะได้'}
@@ -209,6 +213,7 @@ const MobileDetail = ({ jobs, handleShowDetail, url }) => {
                                     <TextDetail label='ศูนย์บริการ' value={`(${job.is_code_key}) ` + job.shop_name} />
                                 )}
                                 <TextDetail label='สถานะ' value={job.status} />
+                                <TextDetail label='ช่างที่ซ่อม' value={job.technician_name + `(${job.technician_phone})`} />
                                 <Divider />
                                 <Stack direction='row' justifyContent='space-between'>
                                     <Button
@@ -235,6 +240,8 @@ const MobileDetail = ({ jobs, handleShowDetail, url }) => {
 }
 
 export default function HistoryMain({ jobs }) {
+    console.log(jobs);
+    
     const { url } = usePage();
     const isMobile = useMediaQuery('(max-width:700px)');
     const [filters, setFilters] = useState({
@@ -305,7 +312,7 @@ export default function HistoryMain({ jobs }) {
                             {isMobile ? (
                                 <MobileDetail url={url} jobs={jobs.data} handleShowDetail={handleShowDetail} />
                             ) : (
-                                <Paper variant='outlined' sx={{ p: 2, height: 'calc(100vh - 350px)', overflowX: 'auto' }}>
+                                <Paper variant='outlined' sx={{ height: 'calc(100vh - 350px)', overflowX: 'auto' }}>
                                     <TableDetail url={url} jobs={jobs.data} handleShowDetail={handleShowDetail} />
                                 </Paper>
                             )}

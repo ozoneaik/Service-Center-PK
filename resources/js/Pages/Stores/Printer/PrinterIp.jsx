@@ -10,9 +10,9 @@ import {
 export default function PrinterIp({ ip_address_store }) {
 
     const { data, setData, post, errors, processing } = useForm({
-        printer_ip: ip_address_store.printer_ip || '',
-        pc_ip: ip_address_store.pc_ip || '',
-        is_code_cust_id: ip_address_store.is_code_cust_id || '',
+        printer_ip: ip_address_store?.printer_ip || '',
+        pc_ip: ip_address_store?.pc_ip || '',
+        is_code_cust_id: ip_address_store?.is_code_cust_id || '',
     });
 
     const handleOnChange = (e) => {
@@ -113,7 +113,7 @@ export default function PrinterIp({ ip_address_store }) {
                         <Grid2 size={12}>
                             <iframe
                                 src="https://maze-journey-c18.notion.site/ebd/256be7c3c04680a3b771ec01614c85b3"
-                                width="100%" height="600" frameborder="0"
+                                width="100%" height="600" style={{border : 'none'}}
                             />
                         </Grid2>
                     </Grid2>

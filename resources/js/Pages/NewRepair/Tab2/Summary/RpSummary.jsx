@@ -1,20 +1,23 @@
-import {Box, Button, Grid2, Stack} from "@mui/material";
-import {useEffect, useState} from "react";
+import { Box, Button, Grid2, Stack } from "@mui/material";
+import { useEffect, useState } from "react";
 import RpsCustomer from "@/Pages/NewRepair/Tab2/Summary/RpsCustomer.jsx";
 import RpsBehavior from "@/Pages/NewRepair/Tab2/Summary/RpsBehavior.jsx";
 import RpsUploadFile from "@/Pages/NewRepair/Tab2/Summary/RpsUploadFile.jsx";
 import RpsRemarkCustomer from "@/Pages/NewRepair/Tab2/Summary/RpsRemarkCustomer.jsx";
 import RpsSymptomRemarkAccessory from "@/Pages/NewRepair/Tab2/Summary/RpsSymptomRemarkAccessory.jsx";
-import {Cancel, Save} from "@mui/icons-material";
-import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
+import { Cancel, Save } from "@mui/icons-material";
+import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
 import RpsSparePart from "@/Pages/NewRepair/Tab2/Summary/RpsSparePart.jsx";
 import SkeletonLoading from "@/Components/SkeletonLoading.jsx";
-import {CardComponent} from "@/Components/CardComponent.jsx";
-import {router} from "@inertiajs/react";
+import { CardComponent } from "@/Components/CardComponent.jsx";
+import { router } from "@inertiajs/react";
+import RpsSelectRepairMain from "./RpsSelectRepairMain";
 
-export default function RpSummary({JOB,setMainStep,setJOB}) {
+export default function RpSummary({ JOB, setMainStep, setJOB }) {
     const [loading, setLoading] = useState(false);
     const [loadingSave, setLoadingSave] = useState(false);
+    const [repairManList, setRepairManList] = useState([]);
+    const [repairManSelected, setRepairManSelected] = useState();
     const [result, setResult] = useState({});
 
     useEffect(() => {
@@ -24,10 +27,14 @@ export default function RpSummary({JOB,setMainStep,setJOB}) {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const {data, status} = await axios.get(route('repair.after.summary.index', {
+            const { data, status } = await axios.get(route('repair.after.summary.index', {
                 serial_id: JOB.serial_id,
                 job_id: JOB.job_id
             }))
+            console.log(data);
+            setRepairManList(data.repair_man_list);
+            setRepairManSelected(data.repair_man_selected);
+
             setResult(data)
         } catch (error) {
             const validation_errors = error.response?.data?.message || error.message;
@@ -46,12 +53,12 @@ export default function RpSummary({JOB,setMainStep,setJOB}) {
                 if (confirm) {
                     try {
                         setLoadingSave(true);
-                        const {data, status} = await axios.post(route('close-repair', {job_id: JOB.job_id}));
+                        const { data, status } = await axios.post(route('close-repair', { job_id: JOB.job_id, repair_man_id: repairManSelected }));
                         AlertDialog({
                             icon: 'success',
                             text: data.message,
-                            onPassed : () => {
-                                setJOB({...JOB, status: 'success'});
+                            onPassed: () => {
+                                setJOB({ ...JOB, status: 'success' });
                                 router.get(route('repair.index'));
                             }
                         })
@@ -59,25 +66,25 @@ export default function RpSummary({JOB,setMainStep,setJOB}) {
                         const validation_errors = error.response?.data?.message || error.message;
                         AlertDialog({
                             text: validation_errors,
-                            onPassed :(confirm) => {
+                            onPassed: (confirm) => {
                                 if (confirm) {
                                     if (validation_errors === 'กรุณาบันทึกข้อมูลลูกค้าที่จำเป็นก่อน') {
-                                        setMainStep({step: 'before', sub_step: 0})
-                                    }else if(validation_errors === 'กรุณากรอกอาการเบื้องต้น'){
-                                        setMainStep({step: 'before', sub_step: 0})
-                                    }else if(validation_errors === 'กรุณาอัปโหลดไฟล์ สภาพสินค้าก่อนซ่อม'){
-                                        setMainStep({step: 'before', sub_step: 0})
-                                    }else if(validation_errors === 'กรุณากรอกอาการสาเหตุ'){
-                                        setMainStep({step: 'after', sub_step: 0})
-                                    }else if(validation_errors === 'กรุณากรอกอะไหล่'){
-                                        setMainStep({step: 'after', sub_step: 1})
-                                    }else if(validation_errors === 'สภาพสินค้าหลังซ่อม'){
-                                        setMainStep({step: 'after', sub_step: 3})
+                                        setMainStep({ step: 'before', sub_step: 0 })
+                                    } else if (validation_errors === 'กรุณากรอกอาการเบื้องต้น') {
+                                        setMainStep({ step: 'before', sub_step: 0 })
+                                    } else if (validation_errors === 'กรุณาอัปโหลดไฟล์ สภาพสินค้าก่อนซ่อม') {
+                                        setMainStep({ step: 'before', sub_step: 0 })
+                                    } else if (validation_errors === 'กรุณากรอกอาการสาเหตุ') {
+                                        setMainStep({ step: 'after', sub_step: 0 })
+                                    } else if (validation_errors === 'กรุณากรอกอะไหล่') {
+                                        setMainStep({ step: 'after', sub_step: 1 })
+                                    } else if (validation_errors === 'สภาพสินค้าหลังซ่อม') {
+                                        setMainStep({ step: 'after', sub_step: 3 })
                                     }
                                 }
                             }
                         })
-                    }finally {
+                    } finally {
                         setLoadingSave(false)
                     }
                 } else console.log('ไม่ได้กดตกลงในการปิดงานซ่อม')
@@ -92,13 +99,13 @@ export default function RpSummary({JOB,setMainStep,setJOB}) {
             onPassed: async (confirm) => {
                 if (confirm) {
                     try {
-                        const {data, status} = await axios.post(route('cancel-repair',{
-                            job_id : JOB.job_id
+                        const { data, status } = await axios.post(route('cancel-repair', {
+                            job_id: JOB.job_id
                         }))
                         AlertDialog({
-                            icon : 'success',
-                            text : data.message,
-                            onPassed : () => router.get(route('repair.index'))
+                            icon: 'success',
+                            text: data.message,
+                            onPassed: () => router.get(route('repair.index'))
                         })
                     } catch (error) {
                         AlertDialog({
@@ -112,31 +119,42 @@ export default function RpSummary({JOB,setMainStep,setJOB}) {
 
     return (
         <>
-            {loading ? (<SkeletonLoading/>) : (
+            {loading ? (<SkeletonLoading />) : (
                 <Grid2 container spacing={2} mb={3}>
+
+                    <Grid2 size={12}>
+                        <CardComponent headTitle='ข้อมูลช่างซ่อม'>
+                            <RpsSelectRepairMain
+                                JOB={JOB}
+                                repairMainList={repairManList}
+                                repairManSelected={repairManSelected}
+                                setRepairManSelected={setRepairManSelected}
+                            />
+                        </CardComponent>
+                    </Grid2>
                     <Grid2 size={12}>
                         <CardComponent headTitle='ข้อมูลลูกค้า'>
-                            <RpsCustomer customer={result.customer}/>
+                            <RpsCustomer customer={result.customer} />
                         </CardComponent>
                     </Grid2>
                     <Grid2 size={12}>
                         {/*<CardComponent headTitle='รูปภาพ/วิดีโอสำหรับเคลมสินค้า'>*/}
-                        <RpsUploadFile file_uploads={result.file_uploads}/>
+                        <RpsUploadFile file_uploads={result.file_uploads} />
                         {/*</CardComponent>*/}
                     </Grid2>
                     <Grid2 size={12}>
                         <CardComponent headTitle='อาการ / สาเหตุ'>
-                            <RpsBehavior behaviours={result.behaviours}/>
+                            <RpsBehavior behaviours={result.behaviours} />
                         </CardComponent>
                     </Grid2>
                     <Grid2 size={12} >
                         <CardComponent headTitle='บันทึกอะไหล่'>
-                            <RpsSparePart JOB={JOB} spare_parts={result.spare_parts}/>
+                            <RpsSparePart JOB={JOB} spare_parts={result.spare_parts} />
                         </CardComponent>
                     </Grid2>
                     <Grid2 size={12}>
                         <CardComponent headTitle={'หมายเหตุสำหรับลูกค้า'}>
-                            <RpsRemarkCustomer customer={result.customer}/>
+                            <RpsRemarkCustomer customer={result.customer} />
                         </CardComponent>
                     </Grid2>
                     <Grid2 size={12}>
@@ -161,26 +179,26 @@ export default function RpSummary({JOB,setMainStep,setJOB}) {
                         p={1}
                     >
 
-                    <Grid2 size={12}>
-                        <Stack direction='row' justifyContent='end' spacing={2}>
-                            <Button
-                                loading={loadingSave}
-                                variant='contained' color='error' startIcon={<Cancel/>}
-                                onClick={handleCancelJob}
-                                disabled={JOB.status !== 'pending'}
-                            >
-                                ยกเลิกงานซ่อม
-                            </Button>
-                            <Button
-                                loading={loadingSave}
-                                variant='contained' startIcon={<Save/>}
-                                onClick={handleCloseJob}
-                                disabled={JOB.status !== 'pending'}
-                            >
-                                {JOB.status === 'success' ? 'ปิดงานซ่อมแล้ว' : 'ปิดงานซ่อม'}
-                            </Button>
-                        </Stack>
-                    </Grid2>
+                        <Grid2 size={12}>
+                            <Stack direction='row' justifyContent='end' spacing={2}>
+                                <Button
+                                    loading={loadingSave}
+                                    variant='contained' color='error' startIcon={<Cancel />}
+                                    onClick={handleCancelJob}
+                                    disabled={JOB.status !== 'pending'}
+                                >
+                                    ยกเลิกงานซ่อม
+                                </Button>
+                                <Button
+                                    loading={loadingSave}
+                                    variant='contained' startIcon={<Save />}
+                                    onClick={handleCloseJob}
+                                    disabled={JOB.status !== 'pending'}
+                                >
+                                    {JOB.status === 'success' ? 'ปิดงานซ่อมแล้ว' : 'ปิดงานซ่อม'}
+                                </Button>
+                            </Stack>
+                        </Grid2>
                     </Box>
                 </Grid2>
             )}

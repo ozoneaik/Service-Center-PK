@@ -36,6 +36,7 @@ return new class extends Migration
             $table->dateTime('print_at')->nullable()->comment('ปริ้นเมื่อ');
             $table->dateTime('print_updated_at')->nullable()->comment('ปริ้นล่าสุดเมื่อ');
             $table->bigInteger('counter_print')->nullable()->default(0)->comment('จำนวนที่ปริ้น');
+            $table->bigInteger('repair_man_id')->nullable()->comment('รหัสช่างซ่อม');
             $table->timestamps();
         });
     }

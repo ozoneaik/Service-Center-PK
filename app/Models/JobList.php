@@ -30,6 +30,7 @@ class JobList extends Model
         'group_job',
         'print_at',
         'print_updated_at',
-        'counter_print'
+        'counter_print',
+        'repair_man_id'
     ];
 }

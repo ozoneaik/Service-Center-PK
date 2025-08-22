@@ -185,6 +185,11 @@ class JobController extends Controller
             $check_job_status = JobList::query()->where('job_id', $job_id)->first();
             if (isset($check_job_status) && $check_job_status->status === 'pending') {
 
+                $check_repair_man_id = $request['repair_man_id'] ?? null;
+                if (!isset($check_repair_man_id)) {
+                    throw new \Exception('กรุณาระบุข้อมูลช่างผู้ซ่อม');
+                }
+
                 $check_customer = CustomerInJob::query()->where('job_id', $job_id)->first();
                 if (!isset($check_customer->name) || !isset($check_customer->phone)) {
                     throw new \Exception('กรุณาบันทึกข้อมูลลูกค้าที่จำเป็นก่อน');
@@ -217,11 +222,12 @@ class JobController extends Controller
                 }
                 // อัพเดทสถานะ job เป็น ปิดงานซ่อม
                 $check_job_status->status = 'success';
+                $check_job_status->repair_man_id = $check_repair_man_id;
                 $check_job_status->close_job_at = Carbon::now();
                 $check_job_status->close_job_by = Auth::user()->user_code;
                 $check_job_status->save();
             } else {
-                throw new \Exception('ไม่สามารถผิดจ็อบได้');
+                throw new \Exception('ไม่สามารถปิดจ็อบได้');
             }
             DB::commit();
             return response()->json([
