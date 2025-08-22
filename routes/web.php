@@ -13,6 +13,7 @@ use App\Http\Controllers\ManageBranchController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Stores\PrinterIpController;
+use App\Http\Controllers\Stores\RepairManController;
 use App\Http\Controllers\Stores\UserController;
 use App\Http\Controllers\Test\DomPdfController;
 use App\Http\Controllers\WarrantyProductController;
@@ -87,6 +88,14 @@ Route::middleware('auth')->group(function () {
             Route::prefix('printer-ip')->group(function(){
                 Route::get('/{is_code_cust_id}', [PrinterIpController::class,'index'])->name('printerIp.index');
                 Route::post('/store-update',[PrinterIpController::class,'store_or_update'])->name('printerIp.storeOrUpdate');
+            });
+            Route::prefix('repair-man')->group(function(){
+                Route::get('/create/{is_code_cust_id}', [RepairManController::class, 'create'])->name('repairMan.create');
+                Route::get('/{is_code_cust_id}', [RepairManController::class, 'index'])->name('repairMan.index');
+                Route::post('/store', [RepairManController::class, 'store'])->name('repairMan.store');
+                Route::put('/update/{id}', [RepairManController::class, 'update'])->name('repairMan.update');
+                Route::delete('/delete/{id}', [RepairManController::class, 'delete'])->name('repairMan.delete');
+                Route::delete('/force-delete/{id}', [RepairManController::class, 'destroy'])->name('repairMan.forceDelete');
             });
         });
 //    });
