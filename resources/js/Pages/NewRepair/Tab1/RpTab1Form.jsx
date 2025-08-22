@@ -101,7 +101,9 @@ export default function RpTab1Form({ JOB, setJOB, form1Saved, setForm1Saved, set
                                 text: resMessage.message || resMessage.error || resMessage.success,
                                 onPassed: () => {
                                     // setForm1Saved(true);
-                                    setTabValue(1);
+                                    if (resMessage.success) {
+                                        setTabValue(1);
+                                    }
                                     resMessage.success && fetchData().finally(() => {
                                         setLoadingJob(false)
                                         // window.open(route('genReCieveSpPdf',JOB.job_id),'_blank')
