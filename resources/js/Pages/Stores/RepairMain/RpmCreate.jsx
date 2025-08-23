@@ -4,12 +4,13 @@ import { Save } from "@mui/icons-material";
 import { Button, Container, FormControl, FormLabel, Grid2, Stack, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 
-export default function RpmCreate({ store }) {
+export default function RpmCreate({ store, repair_man }) {    
     const [form, setForm] = useState({
-        technician_name: "",
-        technician_nickname: "",
-        technician_phone: "",
-        is_code_cust_id: store.is_code_cust_id,
+        id: repair_man?.id || null,
+        technician_name: repair_man?.technician_name || '',
+        technician_nickname: repair_man?.technician_nickname || '',
+        technician_phone: repair_man?.technician_phone || '',
+        is_code_cust_id: store.is_code_cust_id || null,
     });
 
     const handleChange = (e) => {
@@ -21,25 +22,31 @@ export default function RpmCreate({ store }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        router.post(route("repairMan.store"), form);
+        if (repair_man.id) {
+            router.put(route('repairMan.update', { id: repair_man.id }), form);
+        } else {
+            router.post(route("repairMan.store"), form);
+        }
     };
 
-    
+
 
     return (
         <AuthenticatedLayout>
-            <Head title="สร้างช่างซ่อม" />
+            <Head title="สร้างหรือแก้ไขช่างซ่อม" />
             <Container maxWidth="md" sx={{ mt: 3, p: 3, bgcolor: "white" }}>
                 <form onSubmit={handleSubmit}>
                     <Grid2 container spacing={2}>
                         <Grid2 size={12}>
                             <Typography fontSize={20} fontWeight='bold'>
-                                สร้างช่างซ่อม ของร้าน {store.shop_name}
+                                สร้างหรือแก้ไขช่างซ่อม ของร้าน {store.shop_name}
                             </Typography>
                         </Grid2>
                         <Grid2 size={{ sm: 12, md: 6 }}>
                             <FormControl fullWidth>
-                                <FormLabel>ชื่อช่าง</FormLabel>
+                                <FormLabel htmlFor="technician_name" required>
+                                    ชื่อช่าง
+                                </FormLabel>
                                 <TextField
                                     required
                                     size="small"
@@ -53,7 +60,9 @@ export default function RpmCreate({ store }) {
 
                         <Grid2 size={{ sm: 12, md: 6 }}>
                             <FormControl fullWidth>
-                                <FormLabel>ชื่อเล่น</FormLabel>
+                                <FormLabel htmlFor="technician_nickname" required>
+                                    ชื่อเล่น
+                                </FormLabel>
                                 <TextField
                                     required
                                     size="small"
@@ -67,9 +76,8 @@ export default function RpmCreate({ store }) {
 
                         <Grid2 size={{ sm: 12, md: 6 }}>
                             <FormControl fullWidth>
-                                <FormLabel>เบอร์โทร</FormLabel>
+                                <FormLabel htmlFor="technician_phone">เบอร์โทร (ไม่บังคับ)</FormLabel>
                                 <TextField
-                                    required
                                     size="small"
                                     name="technician_phone"
                                     value={form.technician_phone}
@@ -89,7 +97,7 @@ export default function RpmCreate({ store }) {
                                 </Button>
                                 <Button
                                     type="submit" variant="contained"
-                                    color="primary" startIcon={<Save/>}
+                                    color="primary" startIcon={<Save />}
                                 >
                                     บันทึก
                                 </Button>

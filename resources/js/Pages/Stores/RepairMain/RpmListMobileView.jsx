@@ -1,7 +1,7 @@
 import { Delete, Edit } from "@mui/icons-material";
 import { Stack, Button, Typography, CardContent, Card, CardActions } from "@mui/material";
 
-export default function RpmListMobileView({ repair_mans }) {
+export default function RpmListMobileView({ repair_mans, onSoftDelete, handleOnUpdate }) {
     return (
         <Stack spacing={2}>
             {repair_mans.map((repair_man) => (
@@ -18,14 +18,24 @@ export default function RpmListMobileView({ repair_mans }) {
                         </Typography>
                     </CardContent>
                     <CardActions>
-                        <Button fullWidth variant="outlined" size="small" color="warning" startIcon={<Edit />}>
+                        <Button
+                            onClick={() => handleOnUpdate(repair_man.id)}
+                            fullWidth variant="outlined"
+                            size="small"
+                            color="warning"
+                            startIcon={<Edit />}
+                        >
                             แก้ไข
                         </Button>
-                        <Button fullWidth variant="outlined" size="small" color="error" startIcon={<Delete />}>
+                        <Button
+                            onClick={() => onSoftDelete(repair_man)}
+                            fullWidth
+                            variant="outlined"
+                            size="small"
+                            color="error"
+                            startIcon={<Delete />}
+                        >
                             ลบ
-                        </Button>
-                        <Button fullWidth variant="outlined" size="small">
-                            รายละเอียด
                         </Button>
                     </CardActions>
                 </Card>

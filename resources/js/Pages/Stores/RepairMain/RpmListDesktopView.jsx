@@ -1,8 +1,9 @@
 import { Table, TableHead, TableBody, TableRow, TableCell, Button, Typography, Stack, Box } from "@mui/material";
 import { TableStyle } from "../../../../css/TableStyle";
 import { Delete, Edit } from "@mui/icons-material";
+import { router } from "@inertiajs/react";
 
-export default function RpmListDesktopView({ repair_mans, onSoftDelete }) {
+export default function RpmListDesktopView({ repair_mans, onSoftDelete, handleOnUpdate }) {
     return (
         <Table stickyHeader>
             <TableHead>
@@ -28,6 +29,7 @@ export default function RpmListDesktopView({ repair_mans, onSoftDelete }) {
                         <TableCell>
                             <Box display='flex' flexWrap='nowrap' gap={2} justifyContent='center'>
                                 <Button
+                                    onClick={() => handleOnUpdate(repair_man.id)}
                                     variant="outlined" size="small"
                                     color="warning" startIcon={<Edit />}
                                 >
@@ -39,9 +41,6 @@ export default function RpmListDesktopView({ repair_mans, onSoftDelete }) {
                                     color="error" startIcon={<Delete />}
                                 >
                                     ลบ
-                                </Button>
-                                <Button variant="outlined" size="small">
-                                    รายละเอียด
                                 </Button>
                             </Box>
                         </TableCell>

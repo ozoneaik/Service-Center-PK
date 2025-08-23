@@ -21,7 +21,8 @@ class RepairManController extends Controller
         return Inertia::render('Stores/RepairMain/RpmList', ['repair_mans' => $repair_mans, 'is_code_cust_id' => $is_code_cust_id]);
     }
 
-    public function create($is_code_cust_id){
+    public function create($is_code_cust_id)
+    {
         $store = StoreInformation::query()->where('is_code_cust_id', $is_code_cust_id)->first();
         return Inertia::render('Stores/RepairMain/RpmCreate', ['store' => $store]);
     }
@@ -34,6 +35,17 @@ class RepairManController extends Controller
         return redirect()
             ->route('repairMan.index', ['is_code_cust_id' => $validated['is_code_cust_id']])
             ->with('success', 'เพิ่มช่างซ่อมสำเร็จ');
+    }
+
+    public function edit($id)
+    {
+        $repair_man = RepairMan::query()->where('id', $id)->first();
+        if ($repair_man) {
+            $store = StoreInformation::query()->where('is_code_cust_id', $repair_man['is_code_cust_id'])->select('is_code_cust_id', 'shop_name')->first();
+            return Inertia::render('Stores/RepairMain/RpmCreate', ['store' => $store, 'repair_man' => $repair_man]);
+        } else {
+            return abort(404);
+        }
     }
 
     // แก้ไขช่าง

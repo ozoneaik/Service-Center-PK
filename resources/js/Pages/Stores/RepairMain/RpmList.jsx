@@ -19,6 +19,10 @@ export default function RpmList({ repair_mans, is_code_cust_id }) {
             }
         })
     }
+
+    const handleOnUpdate = (id) => {
+        router.get(route('repairMan.edit', { id }))
+    }
     return (
         <AuthenticatedLayout>
             <Head title="รายการช่างซ่อม" />
@@ -44,12 +48,14 @@ export default function RpmList({ repair_mans, is_code_cust_id }) {
                         {isMobile ?
                             <RpmListMobileView
                                 repair_mans={repair_mans}
-                                onSoftDelete={handleSoftDelete}
+                                onSoftDelete={(repair_man) => handleSoftDelete(repair_man)}
+                                handleOnUpdate={(id) => handleOnUpdate(id)}
                             />
                             :
                             <RpmListDesktopView
                                 repair_mans={repair_mans}
                                 onSoftDelete={(repair_man) => handleSoftDelete(repair_man)}
+                                handleOnUpdate={(id) => handleOnUpdate(id)}
                             />
                         }
                     </Grid2>
