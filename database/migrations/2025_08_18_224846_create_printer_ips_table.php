@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('is_code_cust_id')->comment('รหัสร้านค้า');
             $table->string('printer_ip')->comment('ip เครื่องปริ้น');
             $table->string('pc_ip')->comment('ip เครื่องคอมพิวเตอร์');
+            $table->tinyInteger('pc_port')->default(3002)->comment('port เครื่องคอมพิวเตอร์');
             $table->string('created_by')->comment('ผู้สร้าง');
             $table->string('updated_by')->comment('ผู้อัพเดท');
             $table->string('deleted_by')->comment('ผู้ลบ');

@@ -26,16 +26,19 @@ class PrinterIpController extends Controller
         $validated = $request->validate([
             'printer_ip' => 'required',
             'pc_ip' => 'required',
+            'pc_port' => 'required',
             'is_code_cust_id' => 'required',
         ],[
-            'printer_ip.required' => 'กรุณากรอก Printer IP',
-            'pc_ip.required' => 'กรุณากรอก PC IP',
+            'printer_ip.required' => 'กรุณากรอก ip address เครื่องปริ้นต์',
+            'pc_ip.required' => 'กรุณากรอก ip address เครื่องคอมพิวเดอร์',
+            'pc_port.required' => 'กรุณากรอก port เครื่องคอมพิวเดอร์',
             'is_code_cust_id' => 'กรุณากรอก รหัสร้านค้า'
         ]);
         $data_saved = PrinterIp::query()->where('is_code_cust_id', $validated['is_code_cust_id'])->first();
         if ($data_saved) {
             $data_saved->printer_ip = $validated['printer_ip'];
             $data_saved->pc_ip = $validated['pc_ip'];
+            $data_saved->pc_port = $validated['pc_port'];
             $data_saved->updated_by = Auth::user()->user_code;
             $data_saved->save();
         } else {
@@ -43,6 +46,7 @@ class PrinterIpController extends Controller
             $data_saved->is_code_cust_id = $validated['is_code_cust_id'];
             $data_saved->printer_ip = $validated['printer_ip'];
             $data_saved->pc_ip = $validated['pc_ip'];
+            $data_saved->pc_port = $validated['pc_port'];
             $data_saved->created_by = Auth::user()->user_code;
             $data_saved->save();
         }
