@@ -1,0 +1,28 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('notifications_new', function (Blueprint $table) {
+            $table->id();
+            $table->string('title'); // หัวข้อ
+            $table->text('message'); // รายละเอียด
+            $table->enum('status', ['new', 'in_progress', 'done', 'off'])->default('new');
+            $table->timestamp('start_at'); // วันเวลาเริ่ม
+            $table->timestamp('end_at')->nullable(); // วันเวลาสิ้นสุด
+            $table->foreignId('created_by')->constrained('users'); // ผู้สร้าง
+            $table->foreignId('updated_by')->nullable()->constrained('users'); // ผู้แก้ไขล่าสุด
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('notifications_new');
+    }
+};
