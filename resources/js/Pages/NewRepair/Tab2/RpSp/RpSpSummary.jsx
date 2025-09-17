@@ -1,5 +1,5 @@
 import {
-    Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, Grid2,
+    Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, Grid2,
     IconButton, InputLabel, MenuItem, Select, Stack, Table, TableBody, TableCell, TableHead, TableRow,
     TextField, Typography, useMediaQuery, Collapse, Box, Divider
 } from "@mui/material";
@@ -640,6 +640,9 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                                     }))}
                                 >
                                     <MenuItem value="ไม่เคลม">ไม่เคลม</MenuItem>
+                                    <MenuItem value="เคลมด่วน">
+                                        เคลมด่วน
+                                    </MenuItem>
                                     <MenuItem value="เคลมสินค้านี้ซีเรียลหมดประกันตามเงื่อนไขแล้ว">
                                         เคลมสินค้านี้ซีเรียลหมดประกันตามเงื่อนไขแล้ว
                                     </MenuItem>
