@@ -1,27 +1,27 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {Head, Link, router, usePage} from "@inertiajs/react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
 import {
     Avatar, Box, Button, Card, CardContent, Divider, Grid2, IconButton, Stack, Typography, useMediaQuery
 } from "@mui/material";
-import React, {useMemo, useState} from "react";
-import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
-import {ArrowBack, Check, Delete, Add, Remove} from "@mui/icons-material";
+import React, { useMemo, useState } from "react";
+import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
+import { ArrowBack, Check, Delete, Add, Remove, FileUpload } from "@mui/icons-material";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 
-const ListSp = ({sps, sku_code, setGroups, groups}) => {
+const ListSp = ({ sps, sku_code, setGroups, groups }) => {
     const [SpPreview, setSpPreview] = useState(false);
     const [SpImage, setSpImage] = useState('');
     const isMobile = useMediaQuery('(max-width:600px)');
     const updateQuantity = async (id, condition = 'add') => {
         try {
             const API_URL = `/orders/carts/add-remove/${condition}`;
-            const {data, status} = await axios.post(API_URL, {id: id});
+            const { data, status } = await axios.post(API_URL, { id: id });
             if (status === 200) {
                 const updatedGroups = groups.map(group => {
                     return {
                         ...group,
                         list: group.list.map(sp =>
-                            sp.id === id ? {...sp, qty: data.sp.qty} : sp
+                            sp.id === id ? { ...sp, qty: data.sp.qty } : sp
                         )
                     };
                 });
@@ -46,7 +46,7 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
 
     const onRemoveSp = async (id) => {
         try {
-            const {status} = await axios.delete(`/orders/carts/delete/${id}`);
+            const { status } = await axios.delete(`/orders/carts/delete/${id}`);
             const updatedGroups = groups.map(group => {
                 return {
                     ...group,
@@ -65,7 +65,7 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
 
     return (
         <>
-            {SpPreview && <SpPreviewImage open={SpPreview} setOpen={setSpPreview} imagePath={SpImage}/>}
+            {SpPreview && <SpPreviewImage open={SpPreview} setOpen={setSpPreview} imagePath={SpImage} />}
             {sps.map((sp, index) => {
                 const sp_image = `${import.meta.env.VITE_IMAGE_SP}/${sp.sp_code}.jpg`;
                 return (
@@ -73,13 +73,13 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
                         <Stack direction='row' width='100%' justifyContent='space-between' alignItems='center'>
                             <Stack direction='row' spacing={2} alignItems='center'>
                                 <img src={sp_image} alt={'ไม่พบรูปภาพ'} width='100'
-                                     onClick={() => {
-                                         setSpImage(sp_image);
-                                         setSpPreview(true)
-                                     }}
-                                     onError={(e) => {
-                                         e.target.src = import.meta.env.VITE_IMAGE_DEFAULT
-                                     }}
+                                    onClick={() => {
+                                        setSpImage(sp_image);
+                                        setSpPreview(true)
+                                    }}
+                                    onError={(e) => {
+                                        e.target.src = import.meta.env.VITE_IMAGE_DEFAULT
+                                    }}
                                 />
                                 <Stack direction='column' spacing={1}>
                                     <Typography fontWeight='bold'>{sp.sp_code}</Typography>
@@ -93,21 +93,21 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
 
                             {!isMobile && (
 
-                                <Stack direction="row" spacing={1} sx={{alignItems: 'center', mt: {xs: 1, sm: 0}}}>
+                                <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mt: { xs: 1, sm: 0 } }}>
                                     <IconButton
                                         disabled={sp.qty <= 1} size="small"
                                         onClick={() => updateQuantity(sp.id, 'remove')}
                                     >
-                                        <Remove/>
+                                        <Remove />
                                     </IconButton>
-                                    <Typography variant="body1" sx={{width: '60px', textAlign: 'center'}}>
+                                    <Typography variant="body1" sx={{ width: '60px', textAlign: 'center' }}>
                                         {sp.qty}
                                     </Typography>
                                     <IconButton size="small" onClick={() => updateQuantity(sp.id)}>
-                                        <Add/>
+                                        <Add />
                                     </IconButton>
                                     <IconButton color="error" size="small" onClick={() => handleRemove(sp)}>
-                                        <Delete/>
+                                        <Delete />
                                     </IconButton>
                                 </Stack>
 
@@ -119,21 +119,21 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
                                     disabled={sp.qty <= 1} size="small"
                                     onClick={() => updateQuantity(sp.id, 'remove')}
                                 >
-                                    <Remove/>
+                                    <Remove />
                                 </IconButton>
-                                <Typography variant="body1" sx={{width: '60px', textAlign: 'center'}}>
+                                <Typography variant="body1" sx={{ width: '60px', textAlign: 'center' }}>
                                     {sp.qty}
                                 </Typography>
                                 <IconButton size="small" onClick={() => updateQuantity(sp.id)}>
-                                    <Add/>
+                                    <Add />
                                 </IconButton>
                                 <IconButton color="error" size="small" onClick={() => handleRemove(sp)}>
-                                    <Delete/>
+                                    <Delete />
                                 </IconButton>
                             </Stack>
 
                         )}
-                        <Divider/>
+                        <Divider />
                     </React.Fragment>
                 )
             })}
@@ -141,7 +141,7 @@ const ListSp = ({sps, sku_code, setGroups, groups}) => {
     )
 }
 
-export default function CartList({groupSku, totalSp}) {
+export default function CartList({ groupSku, totalSp }) {
     const [groups, setGroups] = useState(groupSku);
     const user = usePage().props.auth.user;
     const [address, setAddress] = useState(user.store_info.address);
@@ -171,13 +171,13 @@ export default function CartList({groupSku, totalSp}) {
         try {
             setProcessing(true);
             const URL = '/orders/carts/store'
-            const {data, status} = await axios.post(URL, {
+            const { data, status } = await axios.post(URL, {
                 groups: groups,
                 address: address,
                 phone: phone
             });
             console.log(data, status);
-            router.visit(route('orders.success', {message: data.message}));
+            router.visit(route('orders.success', { message: data.message }));
         } catch (error) {
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
@@ -191,14 +191,14 @@ export default function CartList({groupSku, totalSp}) {
 
     return (
         <AuthenticatedLayout>
-            <Head title='ตะกร้าสินค้า'/>
-            <Box sx={{p: 2, height: '90%', display: 'flex', flexDirection: 'column', bgcolor: 'white'}}>
-                <Box sx={{flexGrow: 1, overflow: 'auto', mb: 2}}>
+            <Head title='ตะกร้าสินค้า' />
+            <Box sx={{ p: 2, height: '90%', display: 'flex', flexDirection: 'column', bgcolor: 'white' }}>
+                <Box sx={{ flexGrow: 1, overflow: 'auto', mb: 2 }}>
                     <Grid2 container spacing={2}>
                         <Grid2 size={12}>
                             <Stack direction='row' spacing={2} justifyContent='space-between'>
                                 <Button
-                                    startIcon={<ArrowBack/>}
+                                    startIcon={<ArrowBack />}
                                     size='small' variant='contained'
                                     component={Link} href={route('orders.list')}
                                 >
@@ -210,13 +210,13 @@ export default function CartList({groupSku, totalSp}) {
                         {groups.map((group, index) => {
                             return (
                                 <Grid2 key={index} size={12}>
-                                    <Card variant="outlined" sx={{mb: 2}}>
+                                    <Card variant="outlined" sx={{ mb: 2 }}>
                                         <CardContent>
                                             <Stack direction="row" alignItems="center" spacing={2}
-                                                   sx={{mb: 2, backgroundColor: '#0000000D', p: 1}}>
+                                                sx={{ mb: 2, backgroundColor: '#0000000D', p: 1 }}>
                                                 <Avatar
                                                     src={group.sku_image_path} variant="square"
-                                                    sx={{width: 48, height: 48}}
+                                                    sx={{ width: 48, height: 48 }}
                                                 />
                                                 <Typography
                                                     variant="h6">กลุ่มสินค้า: {group.sku_code} | {group.sku_name}</Typography>
@@ -238,9 +238,9 @@ export default function CartList({groupSku, totalSp}) {
                         })}
                     </Grid2>
                 </Box>
-                <Box sx={{p: 2, borderTop: '1px solid', borderColor: 'divider'}}>
+                <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
                     <Grid2 container spacing={2} alignItems="center">
-                        <Grid2 size={{xs: 12, sm: 6}}>
+                        <Grid2 size={{ xs: 12, sm: 6 }}>
                             <Typography variant="h6">
                                 จำนวนรายการทั้งหมด: {parseInt(totalSp)} รายการ
                             </Typography>
@@ -248,11 +248,21 @@ export default function CartList({groupSku, totalSp}) {
                                 ยอดรวมทั้งสิ้น: ฿{totalPrice.toFixed(2)}
                             </Typography>
                         </Grid2>
-                        <Grid2 size={{xs: 12, sm: 6}} sx={{textAlign: 'right'}}>
+                        <Grid2 size={{ xs: 12, sm: 6 }} sx={{ textAlign: 'right' }}>
                             <Button
                                 loading={processing}
                                 loadingPosition='start'
-                                startIcon={<Check/>} variant="contained" color="success" size="large"
+                                startIcon={<FileUpload />} variant="contained"
+                                color="secondary"
+                                size="large"
+                                onClick={() => alert('เร็วๆนี้')}>
+                                ส่งออก PDF
+                            </Button>
+                            &nbsp;&nbsp;
+                            <Button
+                                loading={processing}
+                                loadingPosition='start'
+                                startIcon={<Check />} variant="contained" color="success" size="large"
                                 onClick={handleConfirmOrder}>
                                 ยืนยันการสั่งซื้อ
                             </Button>

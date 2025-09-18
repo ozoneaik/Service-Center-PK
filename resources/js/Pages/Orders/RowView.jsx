@@ -1,10 +1,10 @@
-import {Button, Card, CardContent, Grid2, Stack, Typography} from "@mui/material";
-import {Box, useMediaQuery, useTheme} from "@mui/material";
-import {AlertDialog} from "@/Components/AlertDialog.js";
-import {useState} from "react";
+import { Button, Card, CardContent, Grid2, Stack, Typography } from "@mui/material";
+import { Box, useMediaQuery, useTheme } from "@mui/material";
+import { AlertDialog } from "@/Components/AlertDialog.js";
+import { useState } from "react";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 
-export default function RowView({spList,setSpList}) {
+export default function RowView({ spList, setSpList }) {
     const [loading, setLoading] = useState(false);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -14,25 +14,25 @@ export default function RowView({spList,setSpList}) {
     const handleAddToCart = async (item) => {
         try {
             setLoading(true);
-            const {data, status} = await axios.post('/orders/carts/add-cart',{
+            const { data, status } = await axios.post('/orders/carts/add-cart', {
                 ...item
             });
-            if(status === 200) {
+            if (status === 200) {
                 setSpList(spList.map(sp => {
-                    if((sp.spcode === item.spcode) &&( item.remark === 'มาจากการสั่งซื้อ')) {
-                        return {...sp, added: true}
+                    if ((sp.spcode === item.spcode) && (item.remark === 'มาจากการสั่งซื้อ')) {
+                        return { ...sp, added: true }
                     }
                     return sp;
                 }));
-            }else{
+            } else {
 
             }
-        }catch (error) {
+        } catch (error) {
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
                 text: error.response.data.message
             });
-        }finally {
+        } finally {
             setLoading(false);
         }
 
@@ -58,7 +58,7 @@ export default function RowView({spList,setSpList}) {
                         >
                             <img
                                 width={isMobile ? 120 : 151} height={isMobile ? 120 : 'auto'}
-                                style={{objectFit: 'contain'}} src={item.path_file} alt="ไม่มีรูป"
+                                style={{ objectFit: 'contain' }} src={item.path_file} alt="ไม่มีรูป"
                                 onClick={() => {
                                     setOpenSpImage(true);
                                     setSpImage(item.path_file)
@@ -69,7 +69,7 @@ export default function RowView({spList,setSpList}) {
                                 }}
                             />
                         </Box>
-                        <CardContent sx={{width: '100%'}}>
+                        <CardContent sx={{ width: '100%' }}>
                             <Stack
                                 direction={isMobile ? 'column' : 'row'}
                                 justifyContent='space-between'
@@ -85,19 +85,27 @@ export default function RowView({spList,setSpList}) {
                                     >
                                         {item.spcode}
                                     </Typography>
-                                    <Typography variant="body2" sx={{color: 'text.secondary'}}>
+                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                                         {item.spname}
                                     </Typography>
 
                                     {
                                         isNaN(parseFloat(item.price_per_unit)) ? (
-                                            <Typography variant="body2" sx={{color: 'red'}}>
+                                            <Typography variant="body2" sx={{ color: 'red' }}>
                                                 ไม่สามารถเพิ่มใส่ตะกร้าได้ เนื่องจากไม่พบราคา
                                             </Typography>
                                         ) : (
-                                            <Typography color='green'>
-                                                ฿{parseFloat(item.price_per_unit).toFixed(3) ?? 0}
-                                            </Typography>
+                                            <Stack direction='row' spacing={2} alignItems='center'>
+                                                <Typography color='green'>
+                                                    ราคาขาย ฿{parseFloat(item.price_per_unit).toFixed(3) ?? 0}
+                                                </Typography>
+                                                <Typography color='gray' fontSize={12}>
+                                                    ราคาทุน  เร็วๆนี้
+                                                </Typography>
+                                                <Typography color='gray' fontSize={12}>
+                                                    ราคาตั้ง เร็วๆนี้
+                                                </Typography>
+                                            </Stack>
                                         )
                                     }
                                 </Stack>

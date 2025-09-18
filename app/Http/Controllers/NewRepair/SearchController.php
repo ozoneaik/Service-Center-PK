@@ -91,12 +91,14 @@ class SearchController extends Controller
                 if ($api_label === 'P') {
                     $sku_list = $response_json['assets'][0];
                     $sku_list['serial_id'] = '9999';
+                    $checkWarranty = WarrantyProduct::query()->select('expire_date', 'warranty_period')->where('serial_id', $formData['sn'])->first();
                     return [
                         'status' => true,
                         'data_from_api' => $responseJson,
                         'combo_set' => false,
                         'sku_list' => [$sku_list],
                         'warranty_expire' => $warranty_expire,
+                        'expire_date' => $checkWarranty->expire_date ?? ''
                     ];
                 } else {
                     $sku_arr = $response_json['skuset'];
@@ -106,6 +108,7 @@ class SearchController extends Controller
                     $combo_set = false;
                     if (count($assets_new_format) > 1) $combo_set = true;
 
+                    $checkWarranty = WarrantyProduct::query()->select('expire_date', 'warranty_period')->where('serial_id', $formData['sn'])->first();
 
                     return [
                         'status' => true,
@@ -113,6 +116,7 @@ class SearchController extends Controller
                         'combo_set' => $combo_set,
                         'sku_list' => $assets_new_format,
                         'warranty_expire' => $warranty_expire,
+                        'expire_date' => $checkWarranty->expire_date ?? ''
                     ];
                 }
                 // เช็คก่อนว่า เป็น combo set หรือไม่
@@ -120,7 +124,7 @@ class SearchController extends Controller
                 $m = $responseJson['message'] ?? 'ไม่พบข้อมูลสินค้า';
                 if ($m === 'There is more than 1 row of data.') {
                     throw new \Exception('มีข้อมูลมากกว่า 1 แถว <br/> ติดต่อ pumpkin ได้ที่เบอร์ 02-8995928 ต่อ 266');
-                }else{
+                } else {
                     throw new \Exception($m);
                 }
             } else {

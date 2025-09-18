@@ -54,6 +54,7 @@ class StockJobController extends Controller
         ]);
     }
 
+
     public function addSp($stock_job_id): Response
     {
         $jobDetail = StockJobDetail::query()->where('stock_job_id', $stock_job_id)->orderBy('id', 'desc')->get();
@@ -63,6 +64,15 @@ class StockJobController extends Controller
             'stock_job_id' => $stock_job_id,
             'stockJob' => $stockJob,
         ]);
+    }
+
+    public function create($is_code_cust_id)
+    {
+        if ($is_code_cust_id !== Auth::user()->is_code_cust_id) {
+            abort(403);
+        }
+        $new_job_id = 'JOB-STOCK' . time() . rand(0, 99999);
+        return Inertia::render('Stores/StockSp/CreateStockJob', ['new_job_id' => $new_job_id]);
     }
 
     public function store(StockJobRequest $request): RedirectResponse
@@ -83,7 +93,7 @@ class StockJobController extends Controller
         }
     }
 
-//    ------------------------------------ sp in job -------------------------------------------------------
+    //    ------------------------------------ sp in job -------------------------------------------------------
 
     public function addSpInJob(Request $request, $stock_job_id): RedirectResponse
     {
@@ -150,7 +160,6 @@ class StockJobController extends Controller
             DB::rollBack();
             return Redirect::route('stockJob.addSp', [$stock_job_id])->with('error', $exception->getMessage());
         }
-
     }
 
     public function endSpInJob(Request $request, $stock_job_id)
@@ -164,12 +173,11 @@ class StockJobController extends Controller
             DB::commit();
             return Redirect::route('stockJob.addSp', [$stock_job_id])->with('success', 'สำเร็จ');
         } catch (ModelNotFoundException $e) {
-//            dd($e,'ModelNotFoundException');
+            //            dd($e,'ModelNotFoundException');
             return Redirect::route('stockJob.addSp', [$stock_job_id])->with('error', 'ไม่พบข้อมูล');
         } catch (\Exception $e) {
-//            dd($e,'Exception');
+            //            dd($e,'Exception');
             return Redirect::route('stockJob.addSp', [$stock_job_id])->with('error', $e->getMessage());
-
         }
     }
 

@@ -117,7 +117,7 @@ export default function StockJobDetail({stock_job_id, jobDetail, stockJob}) {
 
     return (
         <AuthenticatedLayout>
-            <Container maxWidth="false" sx={{mt: 3}}>
+            <Container maxWidth="false" sx={{mt: 3,}}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
                         <Typography variant="h5" fontWeight='bold'>

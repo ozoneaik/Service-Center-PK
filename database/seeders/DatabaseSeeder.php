@@ -64,7 +64,8 @@ class DatabaseSeeder extends Seeder
             ['menu_name' => 'สั่งซื้ออะไหล่และตรวจสอบไดอะแกรม', 'group' => 6, 'main_menu' => true, 'redirect_route' => 'orders.list'],
             ['menu_name' => 'รายงานศูนย์บริการ', 'group' => 7, 'main_menu' => true, 'redirect_route' => 'report.menu'],
             ['menu_name' => 'จัดการร้านค้า', 'group' => 8, 'main_menu' => true, 'redirect_route' => null],
-            ['menu_name' => 'จัดการสต็อกอะไหล่', 'group' => 8, 'main_menu' => false, 'redirect_route' => 'stockSp.list'],
+            ['menu_name' => 'สต็อกอะไหล่', 'group' => 8, 'main_menu' => false, 'redirect_route' => 'stockSp.list'],
+            ['menu_name' => 'ปรับปรุงสต็อกอะไหล่', 'group' => 8, 'main_menu' => false, 'redirect_route' => 'stockSp.list'],
             ['menu_name' => 'ข้อมูลผู้ใช้', 'group' => 8, 'main_menu' => false, 'redirect_route' => 'storeUsers.index'],
             ['menu_name' => 'จัดการเครื่องปริ้นต์', 'group' => 8, 'main_menu' => false, 'redirect_route' => 'printerIp.index'],
             ['menu_name' => 'จัดการช่างซ่อม', 'group' => 8, 'main_menu' => false, 'redirect_route' => 'repairMan.index']

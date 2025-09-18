@@ -12,21 +12,14 @@ import {Add, ClearAll, Search} from "@mui/icons-material";
 import {TableStyle} from "../../../../css/TableStyle.js";
 
 export default function StockJobs({jobs}) {
-    const {flash} = usePage().props
+    const {flash, auth} = usePage().props
     const [alert, setAlert] = useState(false)
     const {post, delete: destroy} = useForm();
     const isMobile = useMediaQuery('(max-width:600px)');
     const [searchJob, setSearchJob] = useState('');
     const [searchJobStatus, setSearchJobStatus] = useState('');
     const handleStoreJob = () => {
-        AlertDialogQuestion({
-            text: 'กด ตกลง เพื่อสร้าง job',
-            onPassed: (confirm) => {
-                confirm && post(route('stockJob.store'), {
-                    onFinish: () => setAlert(true)
-                })
-            }
-        })
+        router.get(route('stockJob.create',{is_code_cust_id : auth.user.is_code_cust_id}));
     }
 
     const handleDelete = (stock_job_id) => {
@@ -163,18 +156,20 @@ export default function StockJobs({jobs}) {
                                 <Table>
                                     <TableHead>
                                         <TableRow sx={TableStyle.TableHead}>
-                                            <TableCell>รหัส job</TableCell>
                                             <TableCell>สถานะ</TableCell>
-                                            <TableCell align='center'>จำนวนอะไหล่ทั้งหมด</TableCell>
-                                            <TableCell>สร้างเมื่อ</TableCell>
-                                            <TableCell>ปิดจ็อบเมื่อ</TableCell>
-                                            <TableCell align='center'>จัดการ</TableCell>
+                                            <TableCell>รหัส job</TableCell>
+                                            <TableCell>ประเภท</TableCell>
+                                            <TableCell>จำนวนรายการ</TableCell>
+                                            <TableCell>วันที่เวลาสร้าง</TableCell>
+                                            <TableCell>ชื่อผู้สร้าง</TableCell>
+                                            <TableCell>#</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
                                         {jobs.length > 0 ? (
                                             jobs.map((job, index) => (
                                                 <TableRow key={index}>
+                                                    <TableCell>{job.stock_job_id}</TableCell>
                                                     <TableCell>{job.stock_job_id}</TableCell>
                                                     <TableCell>
                                                         {job.job_status}

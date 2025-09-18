@@ -49,9 +49,14 @@ export function getMenuHeadersAdminBranch(user) {
             name: 'จัดการร้านค้า',
             childs: [
                 {
-                    name: 'จัดการสต็อกอะไหล่',
+                    name: 'สต็อกอะไหล่',
                     routeUrl: 'stockSp.list',
-                    is_code_cust_id: true // จะถูกใช้ใน NavBar เพื่อแนบ is_code_cust_id
+                    is_code_cust_id: true
+                },
+                {
+                    name: 'ปรับปรุงสต็อก',
+                    routeUrl: 'sfd',
+                    is_code_cust_id: true
                 },
                 {
                     name: 'ข้อมูลผู้ใช้',
@@ -69,7 +74,7 @@ export function getMenuHeadersAdmin(user) {
         {
             name: 'ผู้ดูแลระบบ',
             routerUrl: 'admin.show',
-            childs : []
+            childs: []
         }
     ];
 }

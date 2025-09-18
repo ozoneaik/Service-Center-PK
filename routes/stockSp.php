@@ -18,6 +18,8 @@ Route::prefix('/stock-sp')->group(function () {
     Route::get('/shopEdit/{id}', [ShopController::class, 'edit'])->name('stockSp.shopEdit')->middleware('adminPermission');
     Route::post('/shopStore', [ShopController::class, 'store'])->name('shop.store');
     Route::get('/store-search/{is_code_cust_id}', [ShopController::class, 'searchStoreById'])->name('shop.search');
+
+    //ดึงข้อมูลสต็อกสินค้าของร้านนั้นๆ
     Route::get('/shop/{is_code_cust_id}', [StockSpController::class, 'StockSpList'])->name('stockSp.list');
     //    Route::get('/shop/{is_code_cust_id}', [StSpController::class, 'index'])->name('stockSp.list');
     Route::post('/store-one-sp', [StockSpController::class, 'storeOneSp'])->name('stockSp.storeOneSp');
@@ -27,6 +29,7 @@ Route::prefix('/stock-sp')->group(function () {
 
 Route::prefix('/stock-job')->group(function () {
     Route::get('/index', [StockJobController::class, 'index'])->name('stockJob.index');
+    Route::get('/create/{is_code_cust_id}', [StockJobController::class, 'create'])->name('stockJob.create');
     Route::post('/store', [StockJobController::class, 'store'])->name('stockJob.store');
     Route::get('/add-sp/{stock_job_id}', [StockJobController::class, 'addSp'])->name('stockJob.addSp');
     Route::delete('/delete-sp/{stock_job_id}/{sp_code}', [StockJobController::class, 'deleteSp'])->name('stockJob.deleteSp');

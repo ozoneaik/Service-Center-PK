@@ -25,6 +25,11 @@ class SpareClaimController extends Controller
             ->where('is_code_key', Auth::user()->is_code_cust_id)
             ->where('status', 'success')
             ->get();
+        $job_pending = JobList::query()
+            ->where('is_code_key', Auth::user()->is_code_cust_id)
+            ->where('status', 'pending')
+            ->get();
+
         $sp_selected = [];
 
         $global_index = 0;
@@ -79,6 +84,14 @@ class SpareClaimController extends Controller
             }
         }
 
+        foreach ($job_pending as $job) {
+            $spareParts = SparePart::query()->where('job_id', $job->job_id)
+                ->where('status', 'pending')
+                ->where('price_multiple_gp', 0)
+                ->where('claim_remark', 'เคลมด่วน')
+                ->get();
+        }
+
         $groupAssoc = [];
 
         foreach ($sp_selected_alt as $item) {
@@ -108,7 +121,7 @@ class SpareClaimController extends Controller
         logStamp::query()->create(['description' => Auth::user()->user_code . " พยายามสร้างเอกสารเคลม $claim_id"]);
         $selected = $request->input('selected');
         $items = [];
-//        "{\\"text\\":\\"ศูนย์ซ่อม : hello world\\\\nแจ้งเรื่อง : เคลม\\\\nรายการ :\\\\n\\\\nSP50122-01*1\\\\nSP50122-02*1\\\\nSP50122-03*1\\"}"}
+        //        "{\\"text\\":\\"ศูนย์ซ่อม : hello world\\\\nแจ้งเรื่อง : เคลม\\\\nรายการ :\\\\n\\\\nSP50122-01*1\\\\nSP50122-02*1\\\\nSP50122-03*1\\"}"}
         DB::beginTransaction();
         Claim::query()->create([
             'claim_id' => $claim_id,
@@ -196,7 +209,7 @@ class SpareClaimController extends Controller
     {
         $claim = Claim::query()->where('claim_id', $claim_id)->first();
         $list = ClaimDetail::query()->where('claim_id', $claim_id)->get();
-        return Inertia::render('SpareClaim/HistoryClaimNewDetail',[
+        return Inertia::render('SpareClaim/HistoryClaimNewDetail', [
             'list' => $list,
             'claim_id' => $claim_id,
             'claim' => $claim

@@ -1,11 +1,11 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {Card, CardContent, Container, Grid2, Typography, Box, IconButton, Fade, Paper} from "@mui/material";
+import { Card, CardContent, Container, Grid2, Typography, Box, IconButton, Fade, Paper } from "@mui/material";
 import {
     Assessment as AssessmentIcon, PieChart as PieChartIcon, Inventory as InventoryIcon, Dashboard as DashboardIcon,
-    BugReport as BugReportIcon, Settings as SettingsIcon, TrendingUp as TrendingUpIcon
+    BugReport as BugReportIcon, Settings as SettingsIcon, TrendingUp as TrendingUpIcon, Article
 } from "@mui/icons-material";
-import {Head, router} from "@inertiajs/react";
-import {AlertDialog} from "@/Components/AlertDialog.js";
+import { Head, router } from "@inertiajs/react";
+import { AlertDialog } from "@/Components/AlertDialog.js";
 
 const listMenu = [
     {
@@ -51,11 +51,18 @@ const listMenu = [
         color: '#607D8B',
         bgGradient: 'linear-gradient(135deg, #607D8B 0%, #90A4AE 100%)',
         description: 'จัดการและตรวจสอบรายการค่าเปิดเครื่อง',
-        routeUrl : 'report.start-up-cost.index'
+        routeUrl: 'report.start-up-cost.index'
+    },
+    {
+        name: 'ออกใบเสนอราคา',
+        icon: <Article sx={{ fontSize: 40 }} />,
+        color: '#607D8B',
+        bgGradient: 'linear-gradient(135deg, #607D8B 0%, #90A4AE 100%)',
+        description: 'ออกใบเสนอราคา',
     }
 ];
 
-function IconContainer({item}){
+function IconContainer({ item }) {
     return (
         <Box
             sx={{
@@ -75,12 +82,12 @@ function IconContainer({item}){
     )
 }
 
-function TitleAndDescriptionContainer({item}){
+function TitleAndDescriptionContainer({ item }) {
     return (
         <>
             <Typography
                 variant="h6" fontWeight="bold" textAlign="center"
-                sx={{mb: 1, color: '#2c3e50', lineHeight: 1.3, minHeight: 48}}
+                sx={{ mb: 1, color: '#2c3e50', lineHeight: 1.3, minHeight: 48 }}
             >
                 {item.name}
             </Typography>
@@ -99,13 +106,13 @@ function TitleAndDescriptionContainer({item}){
     )
 }
 
-function ActionsButton({item}){
+function ActionsButton({ item }) {
     return (
         <Box display="flex" justifyContent="center" mt={2}>
             <IconButton
                 sx={{
                     backgroundColor: item.color, color: 'white', width: 36, height: 36,
-                    '&:hover': {backgroundColor: item.color, transform: 'scale(1.1)'}
+                    '&:hover': { backgroundColor: item.color, transform: 'scale(1.1)' }
                 }} size="small"
             >
                 <TrendingUpIcon fontSize="small" />
@@ -118,23 +125,23 @@ function ActionsButton({item}){
 export default function ReportMenu() {
 
     const handleRedirect = (routeUrl = null) => {
-        if(routeUrl === null) {
+        if (routeUrl === null) {
             AlertDialog({
-                icon : 'error',
-                text : 'กำลังพัฒนา'
+                icon: 'error',
+                text: 'กำลังพัฒนา'
             })
-            return ;
+            return;
         }
         router.get(route(routeUrl));
     }
     return (
         <AuthenticatedLayout>
-            <Head title='เมนูรายงาน'/>
+            <Head title='เมนูรายงาน' />
             <Container maxWidth="xl" sx={{ py: 4 }}>
                 <Grid2 container spacing={3}>
                     {listMenu.map((item, index) => (
                         <Grid2 size={{ xs: 12, sm: 6, lg: 4 }} key={index}>
-                            <Fade onClick={()=>handleRedirect(item.routeUrl)} in={true} timeout={500 + (index * 100)}>
+                            <Fade onClick={() => handleRedirect(item.routeUrl)} in={true} timeout={500 + (index * 100)}>
                                 <Card
                                     variant="outlined"
                                     sx={{
@@ -143,8 +150,8 @@ export default function ReportMenu() {
                                         boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                                         '&:hover': {
                                             transform: 'translateY(-8px)', boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                                            '& .icon-container': {transform: 'scale(1.1) rotate(5deg)',},
-                                            '& .gradient-overlay': {opacity: 0.1}
+                                            '& .icon-container': { transform: 'scale(1.1) rotate(5deg)', },
+                                            '& .gradient-overlay': { opacity: 0.1 }
                                         }
                                     }}
                                 >
@@ -162,13 +169,13 @@ export default function ReportMenu() {
                                         position: 'relative', zIndex: 1, p: 3
                                     }}>
                                         {/* ไอคอน */}
-                                        <IconContainer item={item}/>
+                                        <IconContainer item={item} />
 
                                         {/* หัวเรื่อง และ คำอธิบาย */}
-                                        <TitleAndDescriptionContainer item={item}/>
+                                        <TitleAndDescriptionContainer item={item} />
 
                                         {/* ไอคอนข้างล่าง */}
-                                        <ActionsButton item={item}/>
+                                        <ActionsButton item={item} />
                                     </CardContent>
                                 </Card>
                             </Fade>
