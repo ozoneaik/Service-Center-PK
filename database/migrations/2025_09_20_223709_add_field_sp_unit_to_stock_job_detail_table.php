@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('stock_jobs', function (Blueprint $table) {
-            $table->string('type')->default('เพิ่ม')->comment('ประเภท');
+        Schema::table('stock_job_details', function (Blueprint $table) {
+            $table->string('sp_unit')->nullable()->comment('หน่วยอะไหล่');
         });
     }
 
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('stock_jobs', function (Blueprint $table) {
+        Schema::table('stock_job_details', function (Blueprint $table) {
             //
         });
     }

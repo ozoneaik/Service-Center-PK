@@ -18,11 +18,30 @@ const tableHeaders = [
 ];
 
 // function ลบ
-const different = (qty_sp = 0, rp_qty = 0, stj_qty = 0) => {
-    return (qty_sp - rp_qty) + stj_qty;
+const different = (qty_sp = 0, rp_qty = 0, stj_add = 0, stj_remove = 0) => {
+    return qty_sp - (rp_qty + stj_remove) + stj_add;
 }
 
-const TableDetail = ({ stocks }) => {
+
+const TableDetail = ({ stocks, stock_job_add_type, stock_job_remove_type }) => {
+
+    // รวมจำนวน (+)
+    const addSummary = {};
+    stock_job_add_type.forEach(job => {
+        job.list.forEach(item => {
+            if (!addSummary[item.sp_code]) addSummary[item.sp_code] = 0;
+            addSummary[item.sp_code] += item.sp_qty;
+        });
+    });
+
+    // รวมจำนวน (-)
+    const removeSummary = {};
+    stock_job_remove_type.forEach(job => {
+        job.list.forEach(item => {
+            if (!removeSummary[item.sp_code]) removeSummary[item.sp_code] = 0;
+            removeSummary[item.sp_code] += item.sp_qty;
+        });
+    });
     return (
         <Table>
             <TableHead>
@@ -45,11 +64,20 @@ const TableDetail = ({ stocks }) => {
                         </TableCell>
                         <TableCell>{stock.sp_code}</TableCell>
                         <TableCell>{stock.sp_name}</TableCell>
+                        <TableCell>{stock.sp_unit || 'อัน'}</TableCell>
                         <TableCell>{stock.qty_sp || 0}</TableCell>
                         <TableCell>{stock.rp_qty || 0}</TableCell>
-                        <TableCell>{stock.stj_qty || 0}</TableCell>
                         <TableCell>
-                            {different(stock.qty_sp, stock.rp_qty, stock.stj_qty)}
+                            {removeSummary[stock.sp_code] ?? 0}
+                        </TableCell>
+                        <TableCell>
+                            {addSummary[stock.sp_code] ?? 0}
+                        </TableCell>
+                        <TableCell>
+                            {different(stock.qty_sp, stock.rp_qty, addSummary[stock.sp_code] ?? 0,removeSummary[stock.sp_code] ?? 0)}
+                        </TableCell>
+                        <TableCell>
+                            <Button variant="contained" size="small">รายละเอียด</Button>
                         </TableCell>
                     </TableRow>
                 ))}
@@ -180,7 +208,7 @@ const MobileDetail = ({ stocks }) => {
     )
 }
 
-export default function StockSpList({ stocks, store, job_pending }) {
+export default function StockSpList({ stocks, store, job_pending, stock_job_add_type, stock_job_remove_type }) {
     const isMobile = useMediaQuery('(max-width:600px)');
     const [openAddSpBill, setOpenAddSpBill] = useState(false);
     const [openAddSpBasic, setOpenAddSpBasic] = useState(false);
@@ -208,6 +236,9 @@ export default function StockSpList({ stocks, store, job_pending }) {
     const handleClearFilter = () => {
         router.get(route('stockSp.list', { is_code_cust_id: store.is_code_cust_id, }));
     }
+
+
+
 
     return (
         <>
@@ -307,10 +338,18 @@ export default function StockSpList({ stocks, store, job_pending }) {
 
                         <Grid2 size={12}>
                             {isMobile ? (
-                                <MobileDetail stocks={stocks} />
+                                <MobileDetail
+                                    stocks={stocks}
+                                    stock_job_add_type={stock_job_add_type}
+                                    stock_job_remove_type={stock_job_remove_type}
+                                />
                             ) : (
                                 <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
-                                    <TableDetail stocks={stocks} />
+                                    <TableDetail
+                                        stocks={stocks}
+                                        stock_job_add_type={stock_job_add_type}
+                                        stock_job_remove_type={stock_job_remove_type}
+                                    />
                                 </Paper>
                             )}
                         </Grid2>

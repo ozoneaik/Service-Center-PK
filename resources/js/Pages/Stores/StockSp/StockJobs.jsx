@@ -1,32 +1,32 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {Head, Link, router, useForm, usePage} from "@inertiajs/react";
+import { Head, Link, router, useForm, usePage } from "@inertiajs/react";
 import {
-    Alert, Button, Card, CardContent, Container, Grid2, InputAdornment, MenuItem, Paper, Select, Stack,
+    Alert, Button, Card, CardContent, Chip, Container, Grid2, InputAdornment, MenuItem, Paper, Select, Stack,
     Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, useMediaQuery
 } from "@mui/material";
 import PasswordIcon from "@mui/icons-material/Password";
-import {AlertDialogQuestion} from "@/Components/AlertDialog.js";
-import {useState} from "react";
-import {DateFormatTh} from "@/Components/DateFormat.jsx";
-import {Add, ClearAll, Search} from "@mui/icons-material";
-import {TableStyle} from "../../../../css/TableStyle.js";
+import { AlertDialogQuestion } from "@/Components/AlertDialog.js";
+import { useState } from "react";
+import { DateFormatTh } from "@/Components/DateFormat.jsx";
+import { Add, ArrowBack, ClearAll, Search } from "@mui/icons-material";
+import { TableStyle } from "../../../../css/TableStyle.js";
 
-export default function StockJobs({jobs}) {
-    const {flash, auth} = usePage().props
+export default function StockJobs({ jobs }) {
+    const { flash, auth } = usePage().props
     const [alert, setAlert] = useState(false)
-    const {post, delete: destroy} = useForm();
+    const { post, delete: destroy } = useForm();
     const isMobile = useMediaQuery('(max-width:600px)');
     const [searchJob, setSearchJob] = useState('');
     const [searchJobStatus, setSearchJobStatus] = useState('');
     const handleStoreJob = () => {
-        router.get(route('stockJob.create',{is_code_cust_id : auth.user.is_code_cust_id}));
+        router.get(route('stockJob.create', { is_code_cust_id: auth.user.is_code_cust_id }));
     }
 
     const handleDelete = (stock_job_id) => {
         AlertDialogQuestion({
             text: 'กด ตกลง เพื่อลบ JOB',
             onPassed: (confirm) => {
-                confirm && destroy(route('stockJob.delete', {stock_job_id: stock_job_id}), {
+                confirm && destroy(route('stockJob.delete', { stock_job_id: stock_job_id }), {
                     onFinish: () => setAlert(true)
                 })
             }
@@ -34,7 +34,7 @@ export default function StockJobs({jobs}) {
     }
 
     const handleChangeFilter = (e) => {
-        const {name, value} = e.target;
+        const { name, value } = e.target;
         console.log(name, value)
         if (name === 'searchJob') {
             setSearchJob(value);
@@ -47,16 +47,26 @@ export default function StockJobs({jobs}) {
         if (clear) {
             router.get(route('stockJob.index'));
         } else {
-            router.get(route('stockJob.index', {searchJob, searchJobStatus}), {}, {preserveState: true, replace: true});
+            router.get(route('stockJob.index', { searchJob, searchJobStatus }), {}, { preserveState: true, replace: true });
         }
     };
     return (
         <AuthenticatedLayout>
-            <Head title='ปรับปรุง stock'/>
-            <Container maxWidth='false' sx={{backgroundColor: 'white', p: 3}}>
+            <Head title='ปรับปรุง stock' />
+            <Container maxWidth='false' sx={{ backgroundColor: 'white', p: 3 }}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
-                        <Stack direction={{xs: 'column', md: 'row'}} spacing={2}>
+                        <Button
+                            size="small" variant='contained' startIcon={<ArrowBack />}
+                            onClick={() => {
+                                router.get(route('stockSp.list', { is_code_cust_id: auth.user.is_code_cust_id }))
+                            }}
+                        >
+                            หลับไปหน้าสต็อกอะไหล่
+                        </Button>
+                    </Grid2>
+                    <Grid2 size={12}>
+                        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
                             <TextField
                                 fullWidth size="small" label='ค้นหารหัสจ็อบ'
                                 type="text" name="searchJob"
@@ -64,7 +74,7 @@ export default function StockJobs({jobs}) {
                                 slotProps={{
                                     input: {
                                         startAdornment: <InputAdornment position="start">
-                                            <PasswordIcon/>
+                                            <PasswordIcon />
                                         </InputAdornment>
                                     }
                                 }}
@@ -79,28 +89,28 @@ export default function StockJobs({jobs}) {
                                 <MenuItem value='processing'>processing</MenuItem>
                             </Select>
                             <Button
-                                sx={{minWidth: 100}} size='small'
-                                variant='contained' startIcon={<Search/>}
+                                sx={{ minWidth: 100 }} size='small'
+                                variant='contained' startIcon={<Search />}
                                 onClick={() => handleSearchFilter(false)}
                             >
                                 ค้นหา
                             </Button>
                             <Button
-                                sx={{minWidth: 150}} size='small' color='secondary'
-                                variant='contained' startIcon={<ClearAll/>}
+                                sx={{ minWidth: 150 }} size='small' color='secondary'
+                                variant='contained' startIcon={<ClearAll />}
                                 onClick={() => handleSearchFilter(true)}
                             >
                                 ล้างการค้นหา
                             </Button>
-                            <Button sx={{minWidth: 150}} variant='contained' startIcon={<Add/>}
-                                    onClick={handleStoreJob}>
+                            <Button sx={{ minWidth: 150 }} variant='contained' startIcon={<Add />}
+                                onClick={handleStoreJob}>
                                 สร้าง jobs
                             </Button>
                         </Stack>
                     </Grid2>
                     {flash.success && alert && (
                         <Grid2 size={12}>
-                            <Alert sx={{fontWeight: 'bold'}} onClose={() => {
+                            <Alert sx={{ fontWeight: 'bold' }} onClose={() => {
                                 setAlert(false)
                             }}>
                                 {flash.success}
@@ -116,7 +126,9 @@ export default function StockJobs({jobs}) {
                                         <Card key={index} variant='outlined'>
                                             <CardContent>
                                                 <Stack spacing={1}>
-                                                    <Typography>รหัสจ็อบ : {job.stock_job_id}</Typography>
+                                                    <Typography>
+                                                        รหัสจ็อบ : {job.stock_job_id}
+                                                    </Typography>
                                                     <Typography>
                                                         สถานะ : {job.job_status}
                                                     </Typography>
@@ -124,16 +136,16 @@ export default function StockJobs({jobs}) {
                                                         จำนวนอะไหล่ทั้งหมด : {job.total_qty}
                                                     </Typography>
                                                     <Typography>
-                                                        สร้างเมื่อ : <DateFormatTh date={job.created_at}/>
+                                                        สร้างเมื่อ : <DateFormatTh date={job.created_at} />
                                                     </Typography>
                                                     <Typography>
-                                                        ปิดจ็อบเมื่อ : <DateFormatTh date={job.closeJobAt}/>
+                                                        ปิดจ็อบเมื่อ : <DateFormatTh date={job.closeJobAt} />
                                                     </Typography>
                                                     <Stack direction='row' spacing={2}>
                                                         <Button
                                                             fullWidth
                                                             variant='contained' component={Link}
-                                                            href={route('stockJob.addSp', {stock_job_id: job.stock_job_id})}
+                                                            href={route('stockJob.addSp', { stock_job_id: job.stock_job_id })}
                                                             size='small'>
                                                             รายละเอียด
                                                         </Button>
@@ -152,7 +164,7 @@ export default function StockJobs({jobs}) {
                             </Stack>
                         ) : (
 
-                            <Paper variant='outlined' sx={{p: 2, overflowX: 'auto'}}>
+                            <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
                                 <Table>
                                     <TableHead>
                                         <TableRow sx={TableStyle.TableHead}>
@@ -162,32 +174,42 @@ export default function StockJobs({jobs}) {
                                             <TableCell>จำนวนรายการ</TableCell>
                                             <TableCell>วันที่เวลาสร้าง</TableCell>
                                             <TableCell>ชื่อผู้สร้าง</TableCell>
-                                            <TableCell>#</TableCell>
+                                            <TableCell align="center">#</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
                                         {jobs.length > 0 ? (
                                             jobs.map((job, index) => (
                                                 <TableRow key={index}>
-                                                    <TableCell>{job.stock_job_id}</TableCell>
-                                                    <TableCell>{job.stock_job_id}</TableCell>
                                                     <TableCell>
-                                                        {job.job_status}
+                                                        <Chip
+                                                            variant="contained" label={job.job_status}
+                                                            color={job.job_status === 'success' ? 'success' : 'primary'}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {job.stock_job_id}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Chip
+                                                            variant="contained" label={job.type}
+                                                            color={job.type === 'เพิ่ม' ? 'primary' : 'error'}
+                                                        />
                                                     </TableCell>
                                                     <TableCell align='center'>
                                                         {job.total_qty}
                                                     </TableCell>
                                                     <TableCell>
-                                                        <DateFormatTh date={job.created_at}/>
+                                                        <DateFormatTh date={job.created_at} />
                                                     </TableCell>
                                                     <TableCell>
-                                                        <DateFormatTh date={job.closeJobAt}/>
+                                                        {job.user_name}
                                                     </TableCell>
                                                     <TableCell>
                                                         <Stack spacing={2} direction='row' justifyContent='center'>
                                                             <Button
                                                                 variant='contained' component={Link} size='small'
-                                                                href={route('stockJob.addSp', {stock_job_id: job.stock_job_id})}
+                                                                href={route('stockJob.addSp', { stock_job_id: job.stock_job_id })}
                                                             >
                                                                 รายละเอียด
                                                             </Button>

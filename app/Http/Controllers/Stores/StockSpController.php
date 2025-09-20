@@ -94,6 +94,41 @@ class StockSpController extends Controller
             }
         }
 
+        $stock_job_add_type = StockJob::query()
+            ->where('job_status', 'processing')
+            ->where('is_code_cust_id', $is_code_cust_id)
+            ->where('type', 'เพิ่ม')
+            ->get()
+            ->map(function ($stj_add) {
+                $stj_add = (object)$stj_add->toArray(); // แปลงเป็น stdClass
+                $stj_add->list = StockJobDetail::query()
+                    ->where('stock_job_id', $stj_add->stock_job_id)
+                    ->select('sp_code','sp_name','sp_qty')
+                    ->get()
+                    ->toArray();
+                return $stj_add;
+            })
+            ->values()
+            ->all(); // ให้ได้ array object ที่เข้าถึงแบบ $obj->property
+
+        $stock_job_remove_type = StockJob::query()
+            ->where('job_status', 'processing')
+            ->where('is_code_cust_id', $is_code_cust_id)
+            ->where('type', 'ลด')
+            ->get()
+            ->map(function ($stj_remove) {
+                $stj_remove = (object)$stj_remove->toArray();
+                $stj_remove->list = StockJobDetail::query()
+                    ->where('stock_job_id', $stj_remove->stock_job_id)
+                    ->select('sp_code','sp_name','sp_qty')
+                    ->get()
+                    ->toArray();
+                return $stj_remove;
+            })
+            ->values()
+            ->all();
+
+
 
         //        dd($stocks->toArray(), $store->toArray(), $job_pending->toArray(), $rp_sp->toArray(),$stj_sp->toArray());
         return Inertia::render('Stores/StockSp/StockSpList', [
@@ -101,19 +136,9 @@ class StockSpController extends Controller
             'store' => $store,
             'status' => session('status'),
             'job_pending' => [$job_pending, $rp_sp],
+            'stock_job_add_type' => $stock_job_add_type,
+            'stock_job_remove_type' => $stock_job_remove_type
         ]);
-    }
-
-    public function searchSku($sp_code, $is_code_cust_id): JsonResponse
-    {
-        $search = StockSparePart::query()
-            ->where('sp_code', 'like', "%$sp_code%")
-            ->where('is_code_cust_id', $is_code_cust_id)
-            ->first();
-        return response()->json([
-            'message' => $search ? 'พบข้อมูล' : 'ไม่พบข้อมูล',
-            'data' => $search ?? []
-        ], $search ? 200 : 404);
     }
 
     public function storeManySp(Request $request): RedirectResponse
@@ -163,6 +188,8 @@ class StockSpController extends Controller
         }
     }
 
+
+    //นับจำนวนคงเหลือใน stock job
     public function countSp($sp_code)
     {
         try {
@@ -175,11 +202,11 @@ class StockSpController extends Controller
             }
             // สต็อกคงเหลือพร้อมใช้งาน
             $stock_job_processing_positive_type = StockJob::query()->where('type', 'เพิ่ม')->where('is_code_cust_id', Auth::user()->is_code_cust_id)->where('job_status', 'processing')->get();
-            $sp_count_already_posio_type = 0;
+            $sp_count_already_positive_type = 0;
             foreach ($stock_job_processing_positive_type as $key => $stock_job) {
                 $stock_job_detail = StockJobDetail::query()->where('stock_job_id', $stock_job->stock_job_id)->where('sp_code', $sp_code)->first();
                 if ($stock_job_detail) {
-                    $stock_job_processing_positive_type += $stock_job_detail->sp_qty;
+                    $sp_count_already_positive_type += (int)$stock_job_detail->sp_qty;
                 }
             }
 
@@ -188,7 +215,7 @@ class StockSpController extends Controller
             foreach ($stock_job_processing_nagative_type as $key => $stock_job) {
                 $stock_job_detail = StockJobDetail::query()->where('stock_job_id', $stock_job->stock_job_id)->where('sp_code', $sp_code)->first();
                 if ($stock_job_detail) {
-                    $sp_count_already_nagative_type += $stock_job_detail->sp_qty;
+                    $sp_count_already_nagative_type += (int)$stock_job_detail->sp_qty;
                 }
             }
 
@@ -198,11 +225,11 @@ class StockSpController extends Controller
             foreach ($job_pending as $key => $job) {
                 $spare_part = SparePart::query()->where('job_id', $job->job_id)->where('sp_code', $sp_code)->first();
                 if ($spare_part) {
-                    $count_spare_part_job += $spare_part->qty;
+                    $count_spare_part_job += (int)$spare_part->qty;
                 }
             }
 
-            $total_aready = $sp_count - ($sp_count_already_nagative_type + $count_spare_part_job) + $sp_count_already_posio_type;
+            $total_aready = (int)$sp_count - (int)($sp_count_already_nagative_type + $count_spare_part_job) + (int)$sp_count_already_positive_type;
             return response()->json([
                 'message' => 'พบข้อมูล',
                 'sp_count' => $sp_count,
@@ -213,7 +240,15 @@ class StockSpController extends Controller
                 'message' => $e->getMessage(),
                 'sp_count' => 0,
                 'total_aready' => 0
-            ],400);
+            ], 400);
+        }
+    }
+
+    public function storeOrUpdateStockJob(Request $request)
+    {
+        try {
+            dd($request->all());
+        } catch (\Exception $e) {
         }
     }
 }

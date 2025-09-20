@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Stocks;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StockJobRequest;
 use App\Models\StockJob;
 use App\Models\StockJobDetail;
 use App\Models\StockSparePart;
@@ -19,7 +18,6 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
-use function PHPUnit\Framework\isEmpty;
 
 class StockJobController extends Controller
 {
@@ -36,14 +34,14 @@ class StockJobController extends Controller
         }
 
         $jobs = $query
-            ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
-            ->orderBy('created_at', 'desc')
+            ->where('stock_jobs.is_code_cust_id', Auth::user()->is_code_cust_id)
+            ->leftJoin('users', 'users.is_code_cust_id', '=', 'stock_jobs.is_code_cust_id')
+            ->select('stock_jobs.*', 'users.name as user_name')
+            ->orderBy('stock_jobs.created_at', 'desc')
             ->get();
         foreach ($jobs as $job) {
-            $total = StockJobDetail::query()
-                ->where('stock_job_id', $job->stock_job_id)
-                ->sum('sp_qty'); // ใช้ sum แทน raw
-            $job->total_qty = intval($total) ?? 0;
+            $total = StockJobDetail::query()->where('stock_job_id', $job->stock_job_id)->select('id')->get();
+            $job->total_qty = count($total) ?? 0;
         }
         return Inertia::render('Stores/StockSp/StockJobs', [
             'jobs' => $jobs,
@@ -51,18 +49,6 @@ class StockJobController extends Controller
                 'searchJob' => $request->searchJob,
                 'searchJobStatus' => $request->searchJobStatus
             ]
-        ]);
-    }
-
-
-    public function addSp($stock_job_id): Response
-    {
-        $jobDetail = StockJobDetail::query()->where('stock_job_id', $stock_job_id)->orderBy('id', 'desc')->get();
-        $stockJob = StockJob::query()->where('stock_job_id', $stock_job_id)->first();
-        return Inertia::render('Stores/StockSp/StockJobDetail', [
-            'jobDetail' => $jobDetail,
-            'stock_job_id' => $stock_job_id,
-            'stockJob' => $stockJob,
         ]);
     }
 
@@ -75,21 +61,53 @@ class StockJobController extends Controller
         return Inertia::render('Stores/StockSp/CreateStockJob', ['new_job_id' => $new_job_id]);
     }
 
-    public function store(StockJobRequest $request): RedirectResponse
+    public function store(Request $request)
     {
+
         try {
+            $req = $request['dataToSave'];
             DB::beginTransaction();
-            $stock_job_id = 'JOB-STOCK' . time() . rand(0, 99999);
-            StockJob::query()->create([
-                'stock_job_id' => $stock_job_id,
+            StockJob::query()->where('stock_job_id', $req['job_id'])->delete();
+            StockJobDetail::query()->where('stock_job_id', $req['job_id'])->delete();
+
+            $store_stock_job = StockJob::query()->create([
+                'stock_job_id' => $req['job_id'],
                 'is_code_cust_id' => Auth::user()->is_code_cust_id,
-                'user_code_key' => Auth::user()->user_code
+                'user_code_key' => Auth::user()->user_code,
+                'job_status' => 'processing',
+                'type' => $req['job_type'] === 'add' ? 'เพิ่ม' : 'ลด',
             ]);
+
+
+            if ($store_stock_job) {
+                $new_stock_job_detail = [];
+                foreach ($req['list'] as $key => $sp) {
+                    $new_stock_job_detail[$key] = StockJobDetail::query()->create([
+                        'stock_job_id' => $store_stock_job->stock_job_id,
+                        'is_code_cust_id' => Auth::user()->is_code_cust_id,
+                        'user_code_key' => Auth::user()->user_code,
+                        'sp_code' => $sp['sp_code'],
+                        'sp_name' => $sp['sp_name'],
+                        'sp_qty' => $sp['sp_qty'],
+                        'sp_unit' => $sp['sp_unit'] ?? null,
+                        'sku_name' => 'ไม่มีข้อมูล',
+                        'sku_code' => 'ไม่มีข้อมูล',
+                        'total_after_total_if_add' => $sp['total_after_total_if_add'] ?? 0,
+                        'total_after_total_if_remove' => $sp['total_after_total_if_remove'] ?? 0
+                    ]);
+                }
+            } else {
+                throw new \Exception('เกิดข้อผิดพลาดในการบันทึกข้อมูล store_stock_job');
+            }
+
+
+            // dd($store_stock_job->toArray(),$new_stock_job_detail);
             DB::commit();
-            return Redirect::route('stockJob.addSp', ['stock_job_id' => $stock_job_id])->with('success', 'สร้าง job สำเร็จ');
+            return redirect()->route('stockJob.index')->with('success', 'บันทึกข้อมูลสําเร็จ');
         } catch (\Exception $e) {
+            dd($e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
             DB::rollBack();
-            return back()->withInput()->withErrors(['error' => 'มีข้อผิดพลาดในการสร้าง job']);
         }
     }
 

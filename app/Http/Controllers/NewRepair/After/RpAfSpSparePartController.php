@@ -5,10 +5,10 @@ namespace App\Http\Controllers\NewRepair\After;
 use App\Http\Controllers\Controller;
 use App\Models\CustomerInJob;
 use App\Models\SparePart;
-use Dflydev\DotAccessData\Data;
+use App\Models\StockSparePart;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 
 class RpAfSpSparePartController extends Controller
 {
@@ -42,17 +42,17 @@ class RpAfSpSparePartController extends Controller
 
             $created = [];
             // สร้างใหม่
-            foreach ($spare_parts as $key=>$spare_part) {
+            foreach ($spare_parts as $key => $spare_part) {
                 $claim = $spare_part['claim'] ?? false;
-                if(isset($spare_part['warranty']) && $spare_part['warranty'] === 'Y') {
+                if (isset($spare_part['warranty']) && $spare_part['warranty'] === 'Y') {
                     $warranty = true;
-                }elseif(isset($spare_part['warranty']) && $spare_part['warranty'] === 'N') {
+                } elseif (isset($spare_part['warranty']) && $spare_part['warranty'] === 'N') {
                     $warranty = false;
-                }elseif (isset($spare_part['sp_warranty']) && $spare_part['sp_warranty'] === 'Y') {
+                } elseif (isset($spare_part['sp_warranty']) && $spare_part['sp_warranty'] === 'Y') {
                     $warranty = true;
-                }elseif (isset($spare_part['sp_warranty']) && $spare_part['sp_warranty'] === 'N') {
+                } elseif (isset($spare_part['sp_warranty']) && $spare_part['sp_warranty'] === 'N') {
                     $warranty = false;
-                }else{
+                } else {
                     $warranty = false;
                 }
                 $created[$key] = SparePart::query()->create([
@@ -63,7 +63,7 @@ class RpAfSpSparePartController extends Controller
                     'price_per_unit' => floatval($spare_part['price_per_unit'] ?? 0),
                     'stdprice_per_unit' => floatval($spare_part['stdprice_per_unit'] ?? 0),
                     'gp' => $spare_part['gp'] ?? 0,
-//                    'sp_warranty' => $spare_part['sp_warranty'],
+                    //                    'sp_warranty' => $spare_part['sp_warranty'],
                     'sp_warranty' => $warranty,
                     'approve' => $spare_part['approve'] ?? 'no',
                     'approve_status' => $spare_part['approve_status'] ?? 'yes',
@@ -75,6 +75,21 @@ class RpAfSpSparePartController extends Controller
                     'remark' => $spare_part['remark'] ?? null,
                     'remark_noclaim' => $spare_part['remark_noclaim'] ?? null,
                 ]);
+
+                $check_stock = StockSparePart::query()->where('sp_code', $spare_part['spcode'])
+                    ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                    ->first();
+                if (!$check_stock) {
+                    StockSparePart::query()->create([
+                        'is_code_cust_id' => Auth::user()->is_code_cust_id,
+                        'sp_code' => $spare_part['spcode'],
+                        'sp_name' => $spare_part['spname'],
+                        'qty_sp' => 0,
+                        'old_qty_sp' => 0,
+                        'sku_code' => 'ไม่มีข้อมูล',
+                        'sku_name' => 'ไม่มีข้อมูล',
+                    ]);
+                }
             }
 
 
@@ -91,7 +106,6 @@ class RpAfSpSparePartController extends Controller
                 $data = json_decode($create_qu->getContent(), true);
 
                 $full_file_path_qu = $data['full_file_path'];
-
             }
             return response()->json([
                 'message' => 'success',
@@ -102,7 +116,6 @@ class RpAfSpSparePartController extends Controller
                 'full_file_path_qu' => $full_file_path_qu,
                 'created' => $created,
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([

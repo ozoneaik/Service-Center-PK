@@ -15,6 +15,9 @@ class StockJobDetail extends Model
         'sku_name',
         'sp_code',
         'sp_name',
-        'sp_qty'
+        'sp_qty',
+        'sp_unit',
+        'total_after_total_if_add',
+        'total_after_total_if_remove'
     ];
 }

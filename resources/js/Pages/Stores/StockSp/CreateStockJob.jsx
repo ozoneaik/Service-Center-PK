@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import { Add, Delete, Save, Search } from "@mui/icons-material";
 import {
     Box, Button, Container, FormControl, FormControlLabel,
@@ -165,7 +165,7 @@ export default function CreateStockJob({ new_job_id, sp_list = [], job_type = 'a
     }, [spList]);
 
     // บันทึกข้อมูล
-    const handleSave = useCallback(() => {
+    const handleSave = () => {
         if (spList.length === 0) {
             AlertDialog({
                 title: 'แจ้งเตือน',
@@ -175,19 +175,14 @@ export default function CreateStockJob({ new_job_id, sp_list = [], job_type = 'a
             return;
         }
 
-        // TODO: ส่งข้อมูลไปบันทึก
-        console.log('Data to save:', {
+        const dataToSave = {
             job_id: new_job_id,
             job_type: jobType,
-            items: spList
-        });
+            list: spList
+        }
 
-        AlertDialog({
-            title: 'กำลังบันทึก',
-            text: 'ระบบกำลังดำเนินการบันทึกข้อมูล',
-            icon: 'info'
-        });
-    }, [spList, jobType, new_job_id]);
+        router.post(route('stockJob.store'), { dataToSave });
+    };
 
     // กด Enter ในช่องค้นหา
     const handleKeyPress = useCallback((e) => {
@@ -212,7 +207,6 @@ export default function CreateStockJob({ new_job_id, sp_list = [], job_type = 'a
         <AuthenticatedLayout>
             <Head title="สร้าง job" />
             <Container maxWidth="false" sx={{ backgroundColor: 'white', p: isMobile ? 2 : 3 }}>
-
                 {/* Header */}
                 <Box display='flex'
                     flexDirection={isMobile ? 'column' : 'row'}
@@ -240,6 +234,7 @@ export default function CreateStockJob({ new_job_id, sp_list = [], job_type = 'a
                 {/* Search Zone */}
                 <Box mb={3}>
                     <Grid2 container spacing={2}>
+
                         {/* รหัสอะไหล่ */}
                         <Grid2 size={{ xs: 12, md: 3 }}>
                             <TextField
