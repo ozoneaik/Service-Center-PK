@@ -21,97 +21,27 @@ class SpareClaimController extends Controller
 {
     public function index(): Response
     {
-        $job_success = JobList::query()
-            ->where('is_code_key', Auth::user()->is_code_cust_id)
-            ->where('status', 'success')
+        $isCodeKey = Auth::user()->is_code_cust_id;
+
+        $spareParts = SparePart::query()
+            ->leftJoin('job_lists', 'spare_parts.job_id', '=', 'job_lists.job_id')
+            ->select('spare_parts.*')
+            ->where('spare_parts.status', 'pending')
+            ->where('spare_parts.claim', true)
+            ->where('job_lists.is_code_key', $isCodeKey)
             ->get();
-        $job_pending = JobList::query()
-            ->where('is_code_key', Auth::user()->is_code_cust_id)
-            ->where('status', 'pending')
-            ->get();
 
-        $sp_selected = [];
+        $grouped = collect($spareParts)->groupBy('sp_code')->map(function ($items, $sp_code) {
+            return [
+                'sp_code' => $sp_code,
+                'sp_name' => $items->first()->sp_name,
+                'sp_unit' => $items->first()->sp_unit,
+                'qty'     => $items->sum('qty'),
+                'detail'  => $items->values(),
+            ];
+        })->values();
 
-        $global_index = 0;
-        foreach ($job_success as $job) {
-            $spareParts = SparePart::query()
-                ->where('job_id', $job->job_id)
-                ->where('status', 'pending')
-                ->where('price_multiple_gp', 0)
-                ->get();
-
-            foreach ($spareParts as $sp) {
-                $should_add = false;
-
-                if ($job->warranty) {
-                    // ถ้ามี warranty ให้เช็คทั้ง remark_noclaim และ claim
-                    if ($sp->remark_noclaim == 'เคลมปกติ' || $sp->claim) {
-                        $should_add = true;
-                    }
-                } else {
-                    // ถ้าไม่มี warranty ให้เช็คแค่ claim
-                    if ($sp->claim) {
-                        $should_add = true;
-                    }
-                }
-
-                if ($should_add) {
-                    $sp_selected[$global_index] = $sp->toArray();
-                    $global_index++;
-                }
-            }
-        }
-
-        $sp_selected_alt = [];
-
-        foreach ($job_success as $job) {
-            $spareParts = SparePart::query()
-                ->where('job_id', $job->job_id)
-                ->where('status', 'pending')
-                ->where('price_multiple_gp', 0)
-                ->get();
-
-            foreach ($spareParts as $sp) {
-                if ($job->warranty) {
-                    if ($sp->remark_noclaim == 'เคลมปกติ' || $sp->claim) {
-                        $sp_selected_alt[] = $sp->toArray();
-                    }
-                } else {
-                    if ($sp->claim) {
-                        $sp_selected_alt[] = $sp->toArray();
-                    }
-                }
-            }
-        }
-
-        foreach ($job_pending as $job) {
-            $spareParts = SparePart::query()->where('job_id', $job->job_id)
-                ->where('status', 'pending')
-                ->where('price_multiple_gp', 0)
-                ->where('claim_remark', 'เคลมด่วน')
-                ->get();
-        }
-
-        $groupAssoc = [];
-
-        foreach ($sp_selected_alt as $item) {
-            $code = $item['sp_code'];
-            if (!isset($groupAssoc[$code])) {
-                $groupAssoc[$code] = [
-                    'sp_code' => $item['sp_code'],
-                    'sp_name' => $item['sp_name'],
-                    'sp_unit' => $item['sp_unit'],
-                    'qty' => 0,
-                    'detail' => [],
-                ];
-            }
-            $groupAssoc[$code]['qty'] += $item['qty'];
-            $groupAssoc[$code]['detail'][] = $item;
-        }
-        $group = array_values($groupAssoc);
-
-
-        return Inertia::render('SpareClaim/ClaimMain', ['spareParts' => $group]);
+        return Inertia::render('SpareClaim/ClaimMain', ['spareParts' => $grouped]);
     }
 
     public function store(ClaimRequest $request): JsonResponse

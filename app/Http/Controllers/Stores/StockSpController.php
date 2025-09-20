@@ -14,6 +14,7 @@ use App\Models\StoreInformation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
@@ -94,52 +95,13 @@ class StockSpController extends Controller
         }
 
 
-//        dd($stocks->toArray(), $store->toArray(), $job_pending->toArray(), $rp_sp->toArray(),$stj_sp->toArray());
+        //        dd($stocks->toArray(), $store->toArray(), $job_pending->toArray(), $rp_sp->toArray(),$stj_sp->toArray());
         return Inertia::render('Stores/StockSp/StockSpList', [
             'stocks' => $stocks,
             'store' => $store,
             'status' => session('status'),
             'job_pending' => [$job_pending, $rp_sp],
         ]);
-    }
-
-    public function storeOneSp(StockSpRequest $request): RedirectResponse
-    {
-        $data = $request;
-        DB::beginTransaction();
-        try {
-            $stockSp = StockSparePart::query()
-                ->where('is_code_cust_id', $data['is_code_cust_id'])
-                ->where('sp_code', $data['sp_code'])
-                ->first();
-            if ($stockSp) {
-                $stockSp->update([
-                    'old_qty_sp' => $stockSp->qty_sp,
-                    'qty_sp' => $data['qty_sp'] + $stockSp->qty_sp,
-                ]);
-                $message = "อัปเดตสต็อกอะไหล่ {$data['sp_name']} เรียบร้อยแล้ว";
-            } else {
-                StockSparePart::create([
-                    'sku_code' => $data['sku_code'] ?? 'ไม่พบรหัสสินค้า',
-                    'sku_name' => $data['sku_name'] ?? 'ไม่พบชื่อสินค้า',
-                    'sp_code' => $data['sp_code'],
-                    'sp_name' => $data['sp_name'],
-                    'qty_sp' => $data['qty_sp'],
-                    'old_qty_sp' => $data['qty_sp'],
-                    'is_code_cust_id' => $data['is_code_cust_id'],
-                ]);
-                $message = "บันทึกสต็อกอะไหล่ {$data['sp_name']} สำเร็จ";
-            }
-            DB::commit();
-            return Redirect::route('stockSp.list', [
-                'is_code_cust_id' => $data['is_code_cust_id']
-            ])->with('success', $message);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return Redirect::route('stockSp.list', [
-                'is_code_cust_id' => $data['is_code_cust_id']
-            ])->with('error', $e->getMessage());
-        }
     }
 
     public function searchSku($sp_code, $is_code_cust_id): JsonResponse
@@ -198,6 +160,60 @@ class StockSpController extends Controller
             return Redirect::route('stockSp.list', [
                 'is_code_cust_id' => $request->is_code_cust_id ?? null
             ])->with('error', $e->getMessage());
+        }
+    }
+
+    public function countSp($sp_code)
+    {
+        try {
+            //สต็อกคงเหลือ	
+            $sp_count = StockSparePart::query()->where('sp_code', $sp_code)->where('is_code_cust_id', Auth::user()->is_code_cust_id)->first();
+            if ($sp_count) {
+                $sp_count = $sp_count->qty_sp;
+            } else {
+                $sp_count = 0;
+            }
+            // สต็อกคงเหลือพร้อมใช้งาน
+            $stock_job_processing_positive_type = StockJob::query()->where('type', 'เพิ่ม')->where('is_code_cust_id', Auth::user()->is_code_cust_id)->where('job_status', 'processing')->get();
+            $sp_count_already_posio_type = 0;
+            foreach ($stock_job_processing_positive_type as $key => $stock_job) {
+                $stock_job_detail = StockJobDetail::query()->where('stock_job_id', $stock_job->stock_job_id)->where('sp_code', $sp_code)->first();
+                if ($stock_job_detail) {
+                    $stock_job_processing_positive_type += $stock_job_detail->sp_qty;
+                }
+            }
+
+            $stock_job_processing_nagative_type = StockJob::query()->where('type', 'เพิ่ม')->where('is_code_cust_id', Auth::user()->is_code_cust_id)->where('job_status', 'processing')->get();
+            $sp_count_already_nagative_type = 0;
+            foreach ($stock_job_processing_nagative_type as $key => $stock_job) {
+                $stock_job_detail = StockJobDetail::query()->where('stock_job_id', $stock_job->stock_job_id)->where('sp_code', $sp_code)->first();
+                if ($stock_job_detail) {
+                    $sp_count_already_nagative_type += $stock_job_detail->sp_qty;
+                }
+            }
+
+            // จำนวนอะไหล่ที่กำลังซ่อม
+            $job_pending = JobList::query()->where('is_code_key', Auth::user()->is_code_cust_id)->where('status', 'pending')->get();
+            $count_spare_part_job = 0;
+            foreach ($job_pending as $key => $job) {
+                $spare_part = SparePart::query()->where('job_id', $job->job_id)->where('sp_code', $sp_code)->first();
+                if ($spare_part) {
+                    $count_spare_part_job += $spare_part->qty;
+                }
+            }
+
+            $total_aready = $sp_count - ($sp_count_already_nagative_type + $count_spare_part_job) + $sp_count_already_posio_type;
+            return response()->json([
+                'message' => 'พบข้อมูล',
+                'sp_count' => $sp_count,
+                'total_aready' => $total_aready
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'sp_count' => 0,
+                'total_aready' => 0
+            ],400);
         }
     }
 }

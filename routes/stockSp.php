@@ -22,9 +22,9 @@ Route::prefix('/stock-sp')->group(function () {
     //ดึงข้อมูลสต็อกสินค้าของร้านนั้นๆ
     Route::get('/shop/{is_code_cust_id}', [StockSpController::class, 'StockSpList'])->name('stockSp.list');
     //    Route::get('/shop/{is_code_cust_id}', [StSpController::class, 'index'])->name('stockSp.list');
-    Route::post('/store-one-sp', [StockSpController::class, 'storeOneSp'])->name('stockSp.storeOneSp');
     Route::get('/search/{sp_code}/{is_code_cust_id}', [StockSpController::class, 'searchSku'])->name('stockSp.searchSku');
     Route::post('/store-many-sp', [StockSpController::class, 'storeManySp'])->name('stockSp.storeManySp');
+    Route::get('/count-sp/{sp_code}', [StockSpController::class, 'countSp'])->name('stockSp.countSp');
 });
 
 Route::prefix('/stock-job')->group(function () {

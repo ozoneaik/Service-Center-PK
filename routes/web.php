@@ -17,6 +17,7 @@ use App\Http\Controllers\Stores\PrinterIpController;
 use App\Http\Controllers\Stores\RepairManController;
 use App\Http\Controllers\Stores\UserController;
 use App\Http\Controllers\Test\DomPdfController;
+use App\Http\Controllers\Utils\SparePartDetailController;
 use App\Http\Controllers\WarrantyProductController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
@@ -149,6 +150,8 @@ Route::get('/test-page', function () {
 });
 
 Route::get('/dom-pdf/{group_job_id}', [DomPdfController::class, 'index'])->name('dom-pdf.index');
+
+Route::get('/get-spare-part/{skusp}', [SparePartDetailController::class,'detail'])->name('utils.spare-part.detail');
 
 Route::get('/closed', [ClosedController::class, 'index'])->name('closed');
 

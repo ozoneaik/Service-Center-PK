@@ -1,16 +1,11 @@
 import {
-    AppBar,
-    Button,
-    Dialog,
-    DialogContent,
-    DialogTitle, IconButton, Stack, Table, TableBody, TableCell, TableHead, TableRow,
-    Toolbar,
-    Typography
+    AppBar,Dialog,Toolbar,Typography,
+    DialogContent,IconButton, Table, TableBody, TableCell, TableHead, TableRow,
 } from "@mui/material";
 import React from "react";
 import CloseIcon from '@mui/icons-material/Close';
 
-export default function DialogDetail({open , setOpen, data,sparePartsDetail}){
+export default function DialogDetail({open , setOpen,sparePartsDetail}){
     return (
         <Dialog fullWidth maxWidth='lg' open={open} onClose={()=>setOpen(false)}>
             <AppBar sx={{ position: 'relative' }}>
@@ -33,6 +28,7 @@ export default function DialogDetail({open , setOpen, data,sparePartsDetail}){
                             <TableCell>ชื่ออะไหล่</TableCell>
                             <TableCell>จำนวน</TableCell>
                             <TableCell>หน่วย</TableCell>
+                            <TableCell>เคลม</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -44,6 +40,7 @@ export default function DialogDetail({open , setOpen, data,sparePartsDetail}){
                                 <TableCell>{item.sp_name}</TableCell>
                                 <TableCell>{item.qty}</TableCell>
                                 <TableCell>{item.sp_unit}</TableCell>
+                                <TableCell>{item.claim_remark || item.remark_noclaim || 'เคลมปกติ'}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

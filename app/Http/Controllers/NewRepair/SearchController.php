@@ -91,14 +91,14 @@ class SearchController extends Controller
                 if ($api_label === 'P') {
                     $sku_list = $response_json['assets'][0];
                     $sku_list['serial_id'] = '9999';
-                    $checkWarranty = WarrantyProduct::query()->select('expire_date', 'warranty_period')->where('serial_id', $formData['sn'])->first();
+                    // $checkWarranty = WarrantyProduct::query()->select('expire_date', 'warranty_period')->where('serial_id', $formData['sn'])->first();
                     return [
                         'status' => true,
                         'data_from_api' => $responseJson,
                         'combo_set' => false,
                         'sku_list' => [$sku_list],
                         'warranty_expire' => $warranty_expire,
-                        'expire_date' => $checkWarranty->expire_date ?? ''
+                        'expire_date' => ''
                     ];
                 } else {
                     $sku_arr = $response_json['skuset'];
@@ -134,7 +134,7 @@ class SearchController extends Controller
         } catch (\Exception $e) {
             return [
                 'status' => false,
-                'message' => $e->getMessage(),
+                'message' => $e->getMessage(). $e->getLine(),
                 'combo_set' => null,
                 'sku_list' => null,
             ];

@@ -1,22 +1,11 @@
 import {
-    Box,
-    Button, Card, CardContent, Divider,
-    Grid2,
-    Paper,
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow, Typography,
-    useMediaQuery
+    Box,Button, Card, CardContent,Grid2,Stack,useMediaQuery,
+    Table,TableBody,TableCell,TableHead,TableRow, Typography,Checkbox
 } from "@mui/material";
-import Checkbox from "@mui/material/Checkbox";
 import PreviewIcon from "@mui/icons-material/Preview";
 import {useEffect, useState} from "react";
 import DialogDetail from "@/Pages/SpareClaim/DialogDetail.jsx";
 import {AlertDialog} from "@/Components/AlertDialog.js";
-import {DateFormatTh} from "@/Components/DateFormat.jsx";
 
 export default function AlreadyClaim({spareParts}) {
     const [open, setOpen] = useState(false);
@@ -96,7 +85,7 @@ export default function AlreadyClaim({spareParts}) {
 
     return (
         <>
-            {open && <DialogDetail sparePartsDetail={detail} open={open} setOpen={setOpen} data={[1, 2, 3, 4]}/>}
+            {open && <DialogDetail sparePartsDetail={detail} open={open} setOpen={setOpen}/>}
                 <Grid2 container spacing={2}>
                     {isMobile ? (
                         <Grid2 size={12}>

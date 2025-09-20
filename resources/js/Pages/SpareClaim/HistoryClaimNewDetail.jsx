@@ -1,10 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {Head, router} from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import {
     Box, Button, Card, CardContent, Chip, Container, Divider, Grid2, Stack, Step,
     StepLabel, Stepper, Typography, useMediaQuery
 } from "@mui/material";
-import {ArrowBack} from "@mui/icons-material";
+import { ArrowBack } from "@mui/icons-material";
 import React from "react";
 
 const steps = [
@@ -15,12 +15,18 @@ const steps = [
     'จัดส่งสำเร็จ'
 ];
 
-export default function HistoryClaimNewDetail({list, claim_id, claim}) {
+export default function HistoryClaimNewDetail({ list, claim_id, claim }) {
     const isMobile = useMediaQuery('(max-width:600px)');
+    console.log(list);
+
+    const handleError = (e) => {
+        e.target.src = defaultImage;
+    }
+
     return (
         <AuthenticatedLayout>
-            <Head title={`รายละเอียดเอกสารเคลม ${claim_id}`}/>
-            <Container maxWidth='false' sx={{bgcolor: 'white', p: 2}}>
+            <Head title={`รายละเอียดเอกสารเคลม ${claim_id}`} />
+            <Container maxWidth='false' sx={{ bgcolor: 'white', p: 2 }}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
                         <Stack direction='row' justifyContent='space-between' alignItems='center'>
@@ -29,11 +35,11 @@ export default function HistoryClaimNewDetail({list, claim_id, claim}) {
                                     size='small' color='primary' variant='outlined'
                                     onClick={() => router.get(route('spareClaim.history'))}
                                 >
-                                    <ArrowBack/>
+                                    <ArrowBack />
                                 </Button>
                                 <Typography fontWeight='bold' fontSize={20}>เอกสารเคลม {claim_id}</Typography>
                             </Stack>
-                            <StatusClaim status={claim.status}/>
+                            <StatusClaim status={claim.status} />
 
                         </Stack>
                     </Grid2>
@@ -58,43 +64,48 @@ export default function HistoryClaimNewDetail({list, claim_id, claim}) {
                                     <Card key={index} variant='outlined'>
                                         <CardContent>
                                             <Stack direction={isMobile ? 'column' : 'row'} justifyContent='start'
-                                                   spacing={2}>
+                                                spacing={2}>
                                                 <Box width={80} height={80}>
-                                                    <img width='100%' height='100%'
-                                                         src={spImage}
-                                                         onError={(e) => {
-                                                             e.target.src = defaultImage;
-                                                         }}
-                                                    />
+                                                    <img width='100%' height='100%' src={spImage} onError={handleError} />
+                                                    {item.id}
                                                 </Box>
                                                 <Stack spacing={1} width='100%'>
                                                     <Box sx={detailBoxStyle}>
                                                         <Typography variant="subtitle2"
-                                                                    sx={{fontWeight: 'bold', color: 'text.secondary'}}>
+                                                            sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
                                                             รหัส/ชื่ออะไหล่
                                                         </Typography>
-                                                        <Typography variant="body2" sx={{fontWeight: 'bold'}}>
+                                                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                                                             {item.sp_code} {item.sp_name}
                                                         </Typography>
                                                     </Box>
-                                                    <Divider sx={{my: 1}}/>
+                                                    <Divider sx={{ my: 1 }} />
                                                     <Box sx={detailBoxStyle}>
                                                         <Typography variant="subtitle2"
-                                                                    sx={{fontWeight: 'bold', color: 'text.secondary'}}>
+                                                            sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
                                                             job แจ้งซ่อม เลขที่
                                                         </Typography>
-                                                        <Typography variant="body2" sx={{fontWeight: 'bold'}}>
+                                                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                                                             {item.job_id}
                                                         </Typography>
                                                     </Box>
                                                     <Box sx={detailBoxStyle}>
                                                         <Typography variant="subtitle2"
-                                                                    sx={{fontWeight: 'bold', color: 'text.secondary'}}>
+                                                            sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
+                                                            ประเภทการเคลม
+                                                        </Typography>
+                                                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                                            {item.claim_remark || item.remark_noclaim || 'เคลมปกติ'}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Box sx={detailBoxStyle}>
+                                                        <Typography variant="subtitle2"
+                                                            sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
                                                             จำนวน
                                                         </Typography>
                                                         <Chip
                                                             color='primary' label={item.qty + ' ' + item.unit}
-                                                            variant="body2" sx={{fontWeight: 'bold'}}
+                                                            variant="body2" sx={{ fontWeight: 'bold' }} size="small"
                                                         />
                                                     </Box>
                                                 </Stack>
@@ -114,12 +125,12 @@ export default function HistoryClaimNewDetail({list, claim_id, claim}) {
     )
 }
 
-const StatusClaim = ({status}) => {
+const StatusClaim = ({ status }) => {
     const status_formated = {
-        'pending': {status: 'secondary', label: 'กำลังตรวจสอบคำขอเคลม'},
-        'approved': {status: 'success', label: 'เสร็จสิ้น'},
-        'rejected': {status: 'error', label: 'ไม่อนุมัติ'},
-    }[status] || {status: 'info', label: 'ไม่สามารถระบุได้'};
+        'pending': { status: 'secondary', label: 'กำลังตรวจสอบคำขอเคลม' },
+        'approved': { status: 'success', label: 'เสร็จสิ้น' },
+        'rejected': { status: 'error', label: 'ไม่อนุมัติ' },
+    }[status] || { status: 'info', label: 'ไม่สามารถระบุได้' };
     return (
         <Chip
             size='small'
