@@ -1,6 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, router } from "@inertiajs/react";
-import { Button, Container, Grid2, Stack, Typography, useMediaQuery } from "@mui/material";
+import { Head, router, usePage } from "@inertiajs/react";
+import { Alert, Button, Container, Grid2, Stack, Typography, useMediaQuery } from "@mui/material";
 import RpmFilter from "./RpmFilter";
 import { Add } from "@mui/icons-material";
 import RpmListDesktopView from "./RpmListDesktopView";
@@ -9,7 +9,6 @@ import { AlertDialogQuestion } from "@/Components/AlertDialog";
 
 export default function RpmList({ repair_mans, is_code_cust_id }) {
     const isMobile = useMediaQuery('(max-width:600px)');
-
     const handleSoftDelete = (repair_man) => {
         AlertDialogQuestion({
             text: `คุณต้องการลบช่างซ่อม ${repair_man.technician_name} หรือไม่?`,
@@ -19,7 +18,7 @@ export default function RpmList({ repair_mans, is_code_cust_id }) {
             }
         })
     }
-
+    const { flash } = usePage().props;
     const handleOnUpdate = (id) => {
         router.get(route('repairMan.edit', { id }))
     }
@@ -30,6 +29,13 @@ export default function RpmList({ repair_mans, is_code_cust_id }) {
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
                         <RpmFilter />
+                    </Grid2>
+                    <Grid2 size={12}>
+                        {(flash?.success || flash?.error) && (
+                            <Alert severity={flash?.success ? 'success' : 'error'}>
+                                {flash?.success || flash?.error}
+                            </Alert>
+                        )}
                     </Grid2>
                     <Grid2 size={12}>
                         <Stack direction='row' justifyContent='space-between' alignItems='center'>

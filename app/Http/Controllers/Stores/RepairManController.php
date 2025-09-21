@@ -30,7 +30,7 @@ class RepairManController extends Controller
     // เพิ่มช่าง
     public function store(RpmStoreRequest $request)
     {
-        $validated = $request->validated();
+        $validated = $request->all();
         RepairMan::create($validated);
         return redirect()
             ->route('repairMan.index', ['is_code_cust_id' => $validated['is_code_cust_id']])
@@ -51,7 +51,7 @@ class RepairManController extends Controller
     // แก้ไขช่าง
     public function update(RpmStoreRequest $request, $id)
     {
-        $validated = $request->validated();
+        $validated = $request->all();
         RepairMan::where('id', $id)->update($validated);
         return redirect()
             ->route('repairMan.index', ['is_code_cust_id' => $validated['is_code_cust_id']])

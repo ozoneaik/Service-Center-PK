@@ -25,7 +25,6 @@ class RpmStoreRequest extends FormRequest
             'is_code_cust_id' => 'required',
             'technician_name' => 'required|string|max:255',
             'technician_nickname' => 'required|string|max:255',
-            'technician_phone' => 'required',
         ];
     }
 
@@ -35,7 +34,6 @@ class RpmStoreRequest extends FormRequest
             'is_code_cust_id.required' => 'กรุณาระบุรหัสลูกค้า',
             'technician_name.required' => 'กรุณาระบุชื่อช่างซ่อม',
             'technician_nickname.required' => 'กรุณาระบุชื่อเล่นช่างซ่อม',
-            'technician_phone.required' => 'กรุณาระบุเบอร์โทรช่างซ่อม',
         ];
     }
 }

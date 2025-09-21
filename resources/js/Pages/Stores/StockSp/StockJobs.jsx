@@ -143,10 +143,10 @@ export default function StockJobs({ jobs }) {
                                                     </Typography>
                                                     <Stack direction='row' spacing={2}>
                                                         <Button
-                                                            fullWidth
+                                                            fullWidth size='small'
                                                             variant='contained' component={Link}
-                                                            href={route('stockJob.addSp', { stock_job_id: job.stock_job_id })}
-                                                            size='small'>
+                                                            href={route('stockJob.detailReadonly', { stock_job_id: job.stock_job_id })}
+                                                        >
                                                             รายละเอียด
                                                         </Button>
                                                         <Button
@@ -171,7 +171,7 @@ export default function StockJobs({ jobs }) {
                                             <TableCell>สถานะ</TableCell>
                                             <TableCell>รหัส job</TableCell>
                                             <TableCell>ประเภท</TableCell>
-                                            <TableCell>จำนวนรายการ</TableCell>
+                                            <TableCell>จำนวนรายการอะไหล่</TableCell>
                                             <TableCell>วันที่เวลาสร้าง</TableCell>
                                             <TableCell>ชื่อผู้สร้าง</TableCell>
                                             <TableCell align="center">#</TableCell>
@@ -209,15 +209,9 @@ export default function StockJobs({ jobs }) {
                                                         <Stack spacing={2} direction='row' justifyContent='center'>
                                                             <Button
                                                                 variant='contained' component={Link} size='small'
-                                                                href={route('stockJob.addSp', { stock_job_id: job.stock_job_id })}
+                                                                href={route('stockJob.detailReadonly', { stock_job_id: job.stock_job_id })}
                                                             >
                                                                 รายละเอียด
-                                                            </Button>
-                                                            <Button
-                                                                variant='contained' size='small' color='error'
-                                                                onClick={() => handleDelete(job.stock_job_id)}
-                                                            >
-                                                                ลบ
                                                             </Button>
                                                         </Stack>
                                                     </TableCell>

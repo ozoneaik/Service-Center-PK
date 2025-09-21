@@ -24,7 +24,7 @@ export default function RpmListDesktopView({ repair_mans, onSoftDelete, handleOn
                             {repair_man.technician_name} ({repair_man.technician_nickname})
                         </TableCell>
                         <TableCell>
-                            {repair_man.technician_phone}
+                            {repair_man.technician_phone || 'ไม่มีข้อมูล'}
                         </TableCell>
                         <TableCell>
                             <Box display='flex' flexWrap='nowrap' gap={2} justifyContent='center'>

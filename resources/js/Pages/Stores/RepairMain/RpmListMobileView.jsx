@@ -14,7 +14,7 @@ export default function RpmListMobileView({ repair_mans, onSoftDelete, handleOnU
                             {repair_man.technician_nickname}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            {repair_man.technician_phone}
+                            {repair_man.technician_phone || 'ไม่มีข้อมูล'}
                         </Typography>
                     </CardContent>
                     <CardActions>

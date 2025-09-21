@@ -1,10 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, router } from "@inertiajs/react";
+import { Head, router, useForm } from "@inertiajs/react";
 import { Save } from "@mui/icons-material";
 import { Button, Container, FormControl, FormLabel, Grid2, Stack, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 
-export default function RpmCreate({ store, repair_man }) {    
+export default function RpmCreate({ store, repair_man }) {
     const [form, setForm] = useState({
         id: repair_man?.id || null,
         technician_name: repair_man?.technician_name || '',
@@ -13,24 +13,42 @@ export default function RpmCreate({ store, repair_man }) {
         is_code_cust_id: store.is_code_cust_id || null,
     });
 
+    const { data, setData, processing, errors, post, put } = useForm({
+        id: repair_man?.id || null,
+        technician_name: repair_man?.technician_name || '',
+        technician_nickname: repair_man?.technician_nickname || '',
+        technician_phone: repair_man?.technician_phone || '',
+        is_code_cust_id: store.is_code_cust_id || null,
+    });
+
     const handleChange = (e) => {
-        setForm({
-            ...form,
-            [e.target.name]: e.target.value,
-        });
+        const { name, value } = e.target;
+        setData(name, value);
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (repair_man.id) {
-            router.put(route('repairMan.update', { id: repair_man.id }), form);
+        console.log(data);
+        if (repair_man?.id) {
+            put(route('repairMan.update'), {
+                onFinish: (e) => console.log('updated finished => ', e),
+                onError: (e) => {
+                    console.error('updated error => ', e);
+                    console.error('updated errors => ', errors);
+                },
+                onSuccess: (e) => console.log('updated success => ', e)
+            });
         } else {
-            router.post(route("repairMan.store"), form);
+            post(route('repairMan.store'), {
+                onFinish: (e) => console.log('stored finished => ', e),
+                onError: (e) => {
+                    console.error('stored error => ', e);
+                    console.error('stored errors => ', errors);
+                },
+                onSuccess: (e) => console.log('stored success => ', e)
+            });
         }
     };
-
-
-
     return (
         <AuthenticatedLayout>
             <Head title="สร้างหรือแก้ไขช่างซ่อม" />
@@ -51,13 +69,12 @@ export default function RpmCreate({ store, repair_man }) {
                                     required
                                     size="small"
                                     name="technician_name"
-                                    value={form.technician_name}
+                                    value={data.technician_name}
                                     onChange={handleChange}
                                     placeholder="กรอกชื่อช่าง"
                                 />
                             </FormControl>
                         </Grid2>
-
                         <Grid2 size={{ sm: 12, md: 6 }}>
                             <FormControl fullWidth>
                                 <FormLabel htmlFor="technician_nickname" required>
@@ -67,26 +84,24 @@ export default function RpmCreate({ store, repair_man }) {
                                     required
                                     size="small"
                                     name="technician_nickname"
-                                    value={form.technician_nickname}
+                                    value={data.technician_nickname}
                                     onChange={handleChange}
                                     placeholder="กรอกชื่อเล่น"
                                 />
                             </FormControl>
                         </Grid2>
-
                         <Grid2 size={{ sm: 12, md: 6 }}>
                             <FormControl fullWidth>
                                 <FormLabel htmlFor="technician_phone">เบอร์โทร (ไม่บังคับ)</FormLabel>
                                 <TextField
                                     size="small"
                                     name="technician_phone"
-                                    value={form.technician_phone}
+                                    value={data.technician_phone}
                                     onChange={handleChange}
                                     placeholder="กรอกเบอร์โทร"
                                 />
                             </FormControl>
                         </Grid2>
-
                         <Grid2 size={12}>
                             <Stack direction="row" spacing={2} justifyContent="flex-end">
                                 <Button
@@ -98,6 +113,7 @@ export default function RpmCreate({ store, repair_man }) {
                                 <Button
                                     type="submit" variant="contained"
                                     color="primary" startIcon={<Save />}
+                                    loading={processing}
                                 >
                                     บันทึก
                                 </Button>
