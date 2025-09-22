@@ -2,10 +2,8 @@
 
 use App\Http\Controllers\GroupStoreController;
 use App\Http\Controllers\Stocks\StockJobController;
-use App\Http\Controllers\StocksNew\StSpController;
 use App\Http\Controllers\Stores\ShopController;
 use App\Http\Controllers\Stores\StockSpController;
-use App\Models\StockJob;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('/stock-sp')->group(function () {
@@ -21,6 +19,7 @@ Route::prefix('/stock-sp')->group(function () {
 
     //ดึงข้อมูลสต็อกสินค้าของร้านนั้นๆ
     Route::get('/shop/{is_code_cust_id}', [StockSpController::class, 'StockSpList'])->name('stockSp.list');
+    Route::get('/detail/{sp_code}/{is_code_cust_id}', [StockSpController::class,'detail'])->name('stockSp.detail');
     //    Route::get('/shop/{is_code_cust_id}', [StSpController::class, 'index'])->name('stockSp.list');
     Route::get('/search/{sp_code}/{is_code_cust_id}', [StockSpController::class, 'searchSku'])->name('stockSp.searchSku');
     Route::post('/store-many-sp', [StockSpController::class, 'storeManySp'])->name('stockSp.storeManySp');
@@ -30,10 +29,12 @@ Route::prefix('/stock-sp')->group(function () {
 Route::prefix('/stock-job')->group(function () {
     Route::get('/index', [StockJobController::class, 'index'])->name('stockJob.index');
     Route::get('/create/{is_code_cust_id}', [StockJobController::class, 'create'])->name('stockJob.create');
+    Route::get('/edit/{stock_job_id}/{is_code_cust_id}', [StockJobController::class, 'edit'])->name('stockJob.edit');
+    Route::put('/update/{stock_job_id}', [StockJobController::class,'update'])->name('stockJob.update');
     Route::get('/detail-readonly/{stock_job_id}', [StockJobController::class, 'detailReadonly'])->name('stockJob.detailReadonly');
     Route::post('/store', [StockJobController::class, 'store'])->name('stockJob.store');
     Route::delete('/delete/{stock_job_id}', [StockJobController::class, 'delete'])->name('stockJob.delete');
-    Route::delete('/delete/{stock_job_id}', [StockJobController::class, 'destroy'])->name('stockJob.destroy');
+    Route::delete('/destroy/{stock_job_id}', [StockJobController::class, 'destroy'])->name('stockJob.destroy');
 });
 
 

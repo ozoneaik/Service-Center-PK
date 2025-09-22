@@ -63,6 +63,55 @@ class StockJobController extends Controller
         return Inertia::render('Stores/StockSp/CreateStockJob', ['new_job_id' => $new_job_id]);
     }
 
+    // ไปยังหน้าแก้ไข job สต็อกอะไหล่
+    public function edit($stock_job_id, $is_code_cust_id)
+    {
+        if ($is_code_cust_id !== Auth::user()->is_code_cust_id) {
+            abort(403);
+        }
+        $job = StockJob::query()->where('stock_job_id', $stock_job_id)->first();
+        $new_job_id = $stock_job_id;
+        $job_detail = StockJobDetail::query()->where('stock_job_id', $stock_job_id)->get();
+        return Inertia::render('Stores/StockSp/CreateStockJob', [
+            'new_job_id' => $new_job_id,
+            'job' => $job,
+            'job_type' => $job->type === 'เพิ่ม' ? 'add' : 'remove',
+            'sp_list' => $job_detail
+        ]);
+    }
+
+    //อัพเดทสถานะ job สต็อกอะไหล่
+    public function update($stock_job_id, Request $request)
+    {
+        try {
+            $req = $request->all();
+            if (!isset($req['job_status'])) {
+                throw new \Exception('ไม่พบสถานะที่ต้องการอัพเดท');
+            }
+            DB::beginTransaction();
+            $job = StockJob::query()->where('stock_job_id', $stock_job_id)->first();
+            $job->job_status = $req['job_status'];
+
+            $job_detail = StockJobDetail::query()->where('stock_job_id', $stock_job_id)->get();
+            foreach ($job_detail as $detail) {
+                $stock_sp = StockSparePart::query()->where('sp_code', $detail->sp_code)->first();
+                if ($stock_sp && $job['type'] === 'เพิ่ม') {
+                    $stock_sp->qty_sp += $detail->sp_qty;
+                } elseif ($stock_sp && $job['type'] === 'ลด') {
+                    $stock_sp->qty_sp -= $detail->sp_qty;
+                }
+                $stock_sp->save();
+            }
+            $job->save();
+            DB::commit();
+            $message = 'อัพเดทสถานะเอกสาร ' . $stock_job_id . ' เป็น ' . ($req['job_status'] === 'complete' ? 'ปรับปรุงแล้ว' : $req['job_status']) . ' เรียบร้อย';
+            return redirect()->route('stockJob.index', ['is_code_cust_id' => $job->is_code_cust_id])->with('success', $message);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return  redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
     // สร้าง job ของ สต็อกอะไหล่
     public function store(Request $request)
     {
@@ -205,7 +254,29 @@ class StockJobController extends Controller
         }
     }
 
-    public function delete($stock_job_id) {}
+    public function delete($stock_job_id)
+    {
+        try {
+            $job = StockJob::query()->where('stock_job_id', $stock_job_id)->first();
+            if (!$job) {
+                throw new ModelNotFoundException("ไม่พบข้อมูลเอกสารนี้");
+            };
+            DB::beginTransaction();
+            StockJobDetail::query()->where('stock_job_id', $stock_job_id)->delete();
+            $job->delete();
+            DB::commit();
+            return redirect()->route('stockJob.index')->with('success', "ลบเอกสาร " . $job['stock_job_id'] . " เรียบร้อย");
+        } catch (ModelNotFoundException $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
 
-    public function destroy($stock_job_id) {}
+    public function destroy($stock_job_id)
+    {
+        dd('destroy');
+    }
 }

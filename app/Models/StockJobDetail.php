@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StockJobDetail extends Model
 {
+    use SoftDeletes;
     protected $table = 'stock_job_details';
     protected $fillable = [
         'stock_job_id',

@@ -11,6 +11,7 @@ import AddSpWithBill from "./AddSpWithBill.jsx";
 import AddSpBasic from "./AddSpBasic.jsx";
 import { Add, Clear, Search, Build, DriveFileRenameOutline, BuildCircle, Info } from "@mui/icons-material";
 import StpTooltip from "@/Components/StockPages/StpTooltip.jsx";
+import StockSpDetail from "./StockSpDetail.jsx";
 
 const tableHeaders = [
     'รูปภาพอะไหล่', 'รหัสอะไหล่', 'ชื่ออะไหล่', 'หน่วย', 'สต็อกคงเหลือ',
@@ -23,7 +24,7 @@ const different = (qty_sp = 0, rp_qty = 0, stj_add = 0, stj_remove = 0) => {
 }
 
 
-const TableDetail = ({ stocks, stock_job_add_type, stock_job_remove_type }) => {
+const TableDetail = ({ stocks, stock_job_add_type, stock_job_remove_type, setOpenStockDetail, setSpSelected }) => {
 
     // รวมจำนวน (+)
     const addSummary = {};
@@ -74,10 +75,15 @@ const TableDetail = ({ stocks, stock_job_add_type, stock_job_remove_type }) => {
                             {addSummary[stock.sp_code] ?? 0}
                         </TableCell>
                         <TableCell>
-                            {different(stock.qty_sp, stock.rp_qty, addSummary[stock.sp_code] ?? 0,removeSummary[stock.sp_code] ?? 0)}
+                            {different(stock.qty_sp, stock.rp_qty, addSummary[stock.sp_code] ?? 0, removeSummary[stock.sp_code] ?? 0)}
                         </TableCell>
                         <TableCell>
-                            <Button variant="contained" size="small">รายละเอียด</Button>
+                            <Button variant="contained" size="small" onClick={() => {
+                                setOpenStockDetail(true)
+                                setSpSelected(stock.sp_code)
+                            }}>
+                                รายละเอียด
+                            </Button>
                         </TableCell>
                     </TableRow>
                 ))}
@@ -212,6 +218,8 @@ export default function StockSpList({ stocks, store, job_pending, stock_job_add_
     const isMobile = useMediaQuery('(max-width:600px)');
     const [openAddSpBill, setOpenAddSpBill] = useState(false);
     const [openAddSpBasic, setOpenAddSpBasic] = useState(false);
+    const [openStockDetail, setOpenStockDetail] = useState(false);
+    const [spSelected, setSpSelected] = useState(null);
 
     const [filter, setFilter] = useState({ sp_code: '', sp_name: '' });
 
@@ -244,6 +252,7 @@ export default function StockSpList({ stocks, store, job_pending, stock_job_add_
         <>
             {openAddSpBasic && <AddSpBasic openAddSpBasic={openAddSpBasic} setOpenAddSpBasic={setOpenAddSpBasic} />}
             {openAddSpBill && <AddSpWithBill openAddSpBill={openAddSpBill} setOpenAddSpBill={setOpenAddSpBill} />}
+            {openStockDetail && <StockSpDetail open={openStockDetail} setOpen={setOpenStockDetail} sp_code={spSelected} />}
             <AuthenticatedLayout>
                 <Head title="จัดการสต็อกอะไหล่" />
                 <Container maxWidth='false' sx={{ backgroundColor: 'white', p: 3 }}>
@@ -349,6 +358,9 @@ export default function StockSpList({ stocks, store, job_pending, stock_job_add_
                                         stocks={stocks}
                                         stock_job_add_type={stock_job_add_type}
                                         stock_job_remove_type={stock_job_remove_type}
+                                        openStockDetail={openStockDetail}
+                                        setSpSelected={setSpSelected}
+                                        setOpenStockDetail={setOpenStockDetail}
                                     />
                                 </Paper>
                             )}

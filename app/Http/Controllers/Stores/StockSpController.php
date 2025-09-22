@@ -200,7 +200,8 @@ class StockSpController extends Controller
             } else {
                 $sp_count = 0;
             }
-            // สต็อกคงเหลือพร้อมใช้งาน
+
+            // จำนวนอะไหล่ขาเพิ่ม
             $stock_job_processing_positive_type = StockJob::query()->where('type', 'เพิ่ม')->where('is_code_cust_id', Auth::user()->is_code_cust_id)->where('job_status', 'processing')->get();
             $sp_count_already_positive_type = 0;
             foreach ($stock_job_processing_positive_type as $key => $stock_job) {
@@ -210,7 +211,8 @@ class StockSpController extends Controller
                 }
             }
 
-            $stock_job_processing_nagative_type = StockJob::query()->where('type', 'เพิ่ม')->where('is_code_cust_id', Auth::user()->is_code_cust_id)->where('job_status', 'processing')->get();
+            // จำนวนอะไหล่ขาลด
+            $stock_job_processing_nagative_type = StockJob::query()->where('type', 'ลด')->where('is_code_cust_id', Auth::user()->is_code_cust_id)->where('job_status', 'processing')->get();
             $sp_count_already_nagative_type = 0;
             foreach ($stock_job_processing_nagative_type as $key => $stock_job) {
                 $stock_job_detail = StockJobDetail::query()->where('stock_job_id', $stock_job->stock_job_id)->where('sp_code', $sp_code)->first();
@@ -229,6 +231,7 @@ class StockSpController extends Controller
                 }
             }
 
+            // สต็อกคงเหลือพร้อมใช้งาน
             $total_aready = (int)$sp_count - (int)($sp_count_already_nagative_type + $count_spare_part_job) + (int)$sp_count_already_positive_type;
             return response()->json([
                 'message' => 'พบข้อมูล',
@@ -244,11 +247,12 @@ class StockSpController extends Controller
         }
     }
 
-    public function storeOrUpdateStockJob(Request $request)
+    public function detail($sp_code,$is_code_cust_id)
     {
-        try {
-            dd($request->all());
-        } catch (\Exception $e) {
-        }
+        return response()->json([
+            'message' => 'พบข้อมูล',
+            'sp_code' => $sp_code,
+            'is_code_cust_id' => $is_code_cust_id
+        ]);
     }
 }
