@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\NewRepair;
 
 use App\Http\Controllers\Controller;
-use App\Models\Behavior;
 use App\Models\JobList;
 use App\Models\WarrantyProduct;
 use Carbon\Carbon;
