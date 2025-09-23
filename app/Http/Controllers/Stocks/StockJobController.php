@@ -39,7 +39,7 @@ class StockJobController extends Controller
 
         $jobs = $query
             ->where('stock_jobs.is_code_cust_id', Auth::user()->is_code_cust_id)
-            ->leftJoin('users', 'users.is_code_cust_id', '=', 'stock_jobs.is_code_cust_id')
+            ->leftJoin('users', 'users.user_code', '=', 'stock_jobs.user_code_key')
             ->select('stock_jobs.*', 'users.name as user_name')
             ->orderBy('stock_jobs.created_at', 'desc')
             ->get();
