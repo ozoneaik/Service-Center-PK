@@ -1,6 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router } from "@inertiajs/react";
-import { Add, Delete, Save, Search } from "@mui/icons-material";
+import { Add, ArrowBack, Delete, Save, Search } from "@mui/icons-material";
 import {
     Box, Button, Container, FormControl, FormControlLabel,
     IconButton, Radio, RadioGroup, Table, TableBody, TableCell,
@@ -207,17 +207,25 @@ export default function CreateStockJob({ new_job_id, sp_list = [], job_type = 'a
         <AuthenticatedLayout>
             <Head title="สร้าง job" />
             <Container maxWidth="false" sx={{ backgroundColor: 'white', p: isMobile ? 2 : 3 }}>
+
                 {/* Header */}
                 <Box display='flex'
                     flexDirection={isMobile ? 'column' : 'row'}
                     justifyContent='space-between'
                     alignItems={isMobile ? 'flex-start' : 'center'}
                     mb={2}
-                    gap={isMobile ? 2 : 0}>
+                    gap={isMobile ? 2 : 0}
+                >
                     <Box display='flex'
-                        flexDirection={isMobile ? 'column' : 'row'}
+                        flexDirection={isMobile ? 'column' : 'row'} gap={2}
                         alignItems={isMobile ? 'flex-start' : 'center'}
-                        gap={2}>
+                    >
+                        <Button
+                            size='small' variant="outlined" color="inherit" startIcon={<ArrowBack />}
+                            onClick={() => router.get(route('stockJob.index'))}
+                        >
+                            กลับไปยังหน้ารายการ job
+                        </Button>
                         <Typography fontSize={isMobile ? 18 : 20} fontWeight='bold'>
                             สร้าง #{new_job_id}
                         </Typography>

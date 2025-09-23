@@ -85,7 +85,7 @@ export default function StockJobs({ jobs }) {
                                 value={searchJobStatus} size='small'
                             >
                                 <MenuItem value='' disabled>เลือก</MenuItem>
-                                <MenuItem value='success'>success</MenuItem>
+                                <MenuItem value='complete'>complete</MenuItem>
                                 <MenuItem value='processing'>processing</MenuItem>
                             </Select>
                             <Button
@@ -108,12 +108,10 @@ export default function StockJobs({ jobs }) {
                             </Button>
                         </Stack>
                     </Grid2>
-                    {flash.success && alert && (
+                    {(flash.success || flash.error) && (
                         <Grid2 size={12}>
-                            <Alert sx={{ fontWeight: 'bold' }} onClose={() => {
-                                setAlert(false)
-                            }}>
-                                {flash.success}
+                            <Alert sx={{ fontWeight: 'bold' }}>
+                                {flash.success || flash.error}
                             </Alert>
                         </Grid2>
                     )}
@@ -184,7 +182,7 @@ export default function StockJobs({ jobs }) {
                                                     <TableCell>
                                                         <Chip
                                                             variant="contained" label={job.job_status}
-                                                            color={job.job_status === 'success' ? 'success' : 'primary'}
+                                                            color={job.job_status === 'complete' ? 'success' : job.job_status === 'processing' ? 'primary' : 'error'}
                                                         />
                                                     </TableCell>
                                                     <TableCell>

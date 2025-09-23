@@ -51,7 +51,8 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave }) {
             setLoading(true);
             try {
                 const response = await fetch(
-                    "https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province_with_amphure_tambon.json"
+                    // "https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province_with_amphure_tambon.json"
+                    "https://raw.githubusercontent.com/kongvut/thai-province-data/refs/heads/master/api/latest/province_with_district_and_sub_district.json"
                 );
                 if (!response.ok) {
                     throw new Error("Failed to fetch provinces");
@@ -100,6 +101,7 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave }) {
     }, [selected, provinces, amphures, tambons, setData]);
 
     const handleProvinceChange = (event) => {
+        // alert(event.target.value);
         const provinceId = event.target.value ? Number(event.target.value) : "";
 
         // รีเซ็ตข้อมูลอำเภอและตำบล
@@ -113,9 +115,13 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave }) {
         setTambons([]);
 
         if (provinceId) {
+            console.log(provinces);
+            
+            
             const province = provinces.find(p => p.id === provinceId);
             if (province) {
-                setAmphures(province.amphure);
+                console.log(province);
+                setAmphures(province.districts);
             }
         }
     };
@@ -135,7 +141,7 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave }) {
         if (amphureId) {
             const district = amphures.find(a => a.id === amphureId);
             if (district) {
-                setTambons(district.tambon);
+                setTambons(district.sub_districts);
             }
         }
     };
