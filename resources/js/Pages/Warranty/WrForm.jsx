@@ -1,12 +1,12 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import {Head} from "@inertiajs/react";
+import { Head } from "@inertiajs/react";
 import {
     Button, Container, Grid2,
     Stack, TextField, Typography, Paper, Alert, Box
 } from "@mui/material";
-import {Search, CheckCircle, AppRegistration, CloudUpload} from "@mui/icons-material";
-import {useRef, useState} from "react";
-import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
+import { Search, CheckCircle, AppRegistration, CloudUpload } from "@mui/icons-material";
+import { useRef, useState } from "react";
+import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
 import ProductDetail from "@/Components/ProductDetail.jsx";
 
 export default function WrForm() {
@@ -23,12 +23,15 @@ export default function WrForm() {
     const [selectedFile, setSelectedFile] = useState(null); // เปลี่ยนจาก '' เป็น null
     const [filePreview, setFilePreview] = useState(null); // เพิ่ม state สำหรับ preview รูป
 
+    // state ใหม่
+    const [custTel, setCustTel] = useState('');
+
     const handleSearch = async (e) => {
         e.preventDefault();
         setProduct(null);
         try {
             setLoading(true);
-            const {data, status} = await axios.post(route('warranty.search', {
+            const { data, status } = await axios.post(route('warranty.search', {
                 serial_id: search.current.value
             }));
 
@@ -55,7 +58,6 @@ export default function WrForm() {
     const handleRegister = (e) => {
         e.preventDefault();
 
-        // ตรวจสอบว่าได้เลือกไฟล์แล้วหรือไม่
         if (!selectedFile) {
             AlertDialog({
                 title: 'แจ้งเตือน',
@@ -64,11 +66,18 @@ export default function WrForm() {
             return;
         }
 
-        // ตรวจสอบว่าได้เลือกวันที่แล้วหรือไม่
         if (!selectedDay) {
             AlertDialog({
                 title: 'แจ้งเตือน',
                 message: 'กรุณาเลือกวันที่ซื้อสินค้า'
+            });
+            return;
+        }
+
+        if (!custTel) {
+            AlertDialog({
+                title: 'แจ้งเตือน',
+                message: 'กรุณากรอกเบอร์โทรลูกค้า'
             });
             return;
         }
@@ -80,28 +89,28 @@ export default function WrForm() {
                 onPassed: async (confirm) => {
                     if (confirm) {
                         try {
-                            // สร้าง FormData สำหรับส่งไฟล์
                             const formData = new FormData();
                             formData.append('date_warranty', selectedDay);
                             formData.append('serial_id', search.current.value);
                             formData.append('pid', product.pid);
-                            formData.append('p_name', product.pname);
+                            formData.append('pname', product.pname);
+                            formData.append('facmodel', product.facmodel || '');
                             formData.append('warrantyperiod', product.warrantyperiod);
-                            formData.append('evidence_file', selectedFile); // เปลี่ยนจาก selectedFile เป็น evidence_file
+                            formData.append('cust_tel', custTel);
+                            formData.append('evidence_file', selectedFile);
 
-                            const {data, status} = await axios.post(route('warranty.store'), formData, {
-                                headers: {
-                                    'Content-Type': 'multipart/form-data',
-                                },
-                            });
+                            const { data, status } = await axios.post(
+                                route('warranty-history.store'),
+                                formData,
+                                { headers: { 'Content-Type': 'multipart/form-data' } }
+                            );
 
-                            console.log(data)
+                            console.log(data);
                             AlertDialog({
                                 icon: 'success',
-                                text: data.message
-                            })
-                            setIsAlreadyRegistered(true)
-
+                                text: `${data.message}\nสิ้นสุดประกันถึง: ${data.expire_date}`
+                            });
+                            setIsAlreadyRegistered(true);
                         } catch (error) {
                             AlertDialog({
                                 title: 'เกิดข้อผิดพลาด',
@@ -110,7 +119,7 @@ export default function WrForm() {
                         }
                     }
                 }
-            })
+            });
         } catch (error) {
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
@@ -174,8 +183,8 @@ export default function WrForm() {
 
     return (
         <AuthenticatedLayout>
-            <Head title='ลงทะเบียนรับประกัน'/>
-            <Container sx={{mt: 2}}>
+            <Head title='ลงทะเบียนรับประกัน' />
+            <Container sx={{ mt: 2 }}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
                         <form onSubmit={handleSearch}>
@@ -191,7 +200,7 @@ export default function WrForm() {
                                 <Button
                                     loading={loading}
                                     type='submit'
-                                    startIcon={<Search/>}
+                                    startIcon={<Search />}
                                     variant='contained'
                                     disabled={loading}
                                 >
@@ -203,7 +212,7 @@ export default function WrForm() {
 
                     {product && (
                         <Grid2 size={12}>
-                            <ProductDetail {...product} serial={search.current.value}/>
+                            <ProductDetail {...product} serial={search.current.value} />
                         </Grid2>
                     )}
 
@@ -211,8 +220,8 @@ export default function WrForm() {
                         <Grid2 size={12}>
                             <Alert
                                 severity="success"
-                                icon={<CheckCircle/>}
-                                sx={{fontSize: '1.1rem', py: 2}}
+                                icon={<CheckCircle />}
+                                sx={{ fontSize: '1.1rem', py: 2 }}
                             >
                                 <Typography variant="h6" component="div">
                                     คุณได้ลงทะเบียนเรียบร้อยแล้ว
@@ -227,7 +236,7 @@ export default function WrForm() {
                     {product && !isAlreadyRegistered && (
                         <>
                             <Grid2 size={12}>
-                                <Paper elevation={2} sx={{p: 3}}>
+                                <Paper elevation={2} sx={{ p: 3 }}>
                                     <Typography variant="h6" gutterBottom>
                                         ลงทะเบียนรับประกัน
                                     </Typography>
@@ -245,6 +254,22 @@ export default function WrForm() {
                                                     onChange={(e) => setSelectedDay(e.target.value)}
                                                     required
                                                     sx={{ mb: 2 }}
+                                                />
+                                            </Box>
+
+                                            {/* ฟอร์มเบอร์โทร */}
+                                            <Box>
+                                                <Typography variant="subtitle1" gutterBottom>
+                                                    เบอร์โทรลูกค้า *
+                                                </Typography>
+                                                <TextField
+                                                    size='small'
+                                                    type='tel'
+                                                    value={custTel}
+                                                    onChange={(e) => setCustTel(e.target.value)}
+                                                    required
+                                                    placeholder="กรอกเบอร์โทร เช่น 081234****"
+                                                    sx={{ mb: 2, minWidth: 300, }}
                                                 />
                                             </Box>
 
@@ -320,7 +345,7 @@ export default function WrForm() {
 
                                             <Box>
                                                 <Button
-                                                    startIcon={<AppRegistration/>}
+                                                    startIcon={<AppRegistration />}
                                                     type="submit"
                                                     variant="contained"
                                                     disabled={registering || !selectedDay || !selectedFile}

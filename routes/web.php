@@ -16,6 +16,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Stores\PrinterIpController;
 use App\Http\Controllers\Stores\RepairManController;
 use App\Http\Controllers\Stores\UserController;
+use App\Http\Controllers\TblHistoryProdController;
 use App\Http\Controllers\Test\DomPdfController;
 use App\Http\Controllers\Utils\SparePartDetailController;
 use App\Http\Controllers\WarrantyProductController;
@@ -39,7 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
 
-//    Route::middleware('menuAccess')->group(function (){
+    //    Route::middleware('menuAccess')->group(function (){
     // จัดการ Jobs
     require __DIR__ . '/jobs.php';
 
@@ -56,6 +57,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/store', [WarrantyProductController::class, 'store'])->name('warranty.store');
         Route::put('/update', [WarrantyProductController::class, 'update'])->name('warranty.update');
         Route::get('/fetchDataLocal/{serial_id}', [WarrantyProductController::class, 'fetchDataLocal'])->name('warranty.fetchDataLocal');
+    });
+
+    Route::prefix('warranty-history')->group(function () {
+        Route::post('/store', [TblHistoryProdController::class, 'store'])->name('warranty-history.store');
     });
 
     // สั่งซื้ออะไหล่
@@ -123,7 +128,6 @@ Route::middleware('auth')->group(function () {
         });
     });
     require __DIR__ . '/admin.php';
-
 });
 
 Route::get('/Unauthorized', function () {
@@ -151,10 +155,6 @@ Route::get('/test-page', function () {
 
 Route::get('/dom-pdf/{group_job_id}', [DomPdfController::class, 'index'])->name('dom-pdf.index');
 
-Route::get('/get-spare-part/{skusp}', [SparePartDetailController::class,'detail'])->name('utils.spare-part.detail');
+Route::get('/get-spare-part/{skusp}', [SparePartDetailController::class, 'detail'])->name('utils.spare-part.detail');
 
 Route::get('/closed', [ClosedController::class, 'index'])->name('closed');
-
-
-
-
