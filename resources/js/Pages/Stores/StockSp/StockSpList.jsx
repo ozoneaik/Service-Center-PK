@@ -20,8 +20,9 @@ const tableHeaders = [
 
 // function ลบ
 const different = (qty_sp = 0, rp_qty = 0, stj_add = 0, stj_remove = 0) => {
-    return qty_sp - (rp_qty + stj_remove) + stj_add;
+    return qty_sp - (rp_qty + stj_remove);
 }
+
 
 
 const TableDetail = ({ stocks, stock_job_add_type, stock_job_remove_type, setOpenStockDetail, setSpSelected }) => {

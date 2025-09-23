@@ -4,14 +4,15 @@ import { Add, ArrowBack, Delete, Save, Search } from "@mui/icons-material";
 import {
     Box, Button, Container, FormControl, FormControlLabel,
     IconButton, Radio, RadioGroup, Table, TableBody, TableCell,
-    TableHead, TableRow, TextField, Typography, useTheme, useMediaQuery, Grid2
+    TableHead, TableRow, TextField, Typography, useTheme, useMediaQuery, Grid2,
+    Chip
 } from "@mui/material";
 import { TableStyle } from "../../../../css/TableStyle";
 import { useRef, useState, useCallback } from "react";
 import axios from "axios";
 import { AlertDialog } from "@/Components/AlertDialog";
 
-export default function CreateStockJob({ new_job_id, sp_list = [], job_type = 'add' }) {
+export default function CreateStockJob({ new_job_id, sp_list = [], job_type = 'add', from = 'create' }) {
     // States
     const [spList, setSpList] = useState(sp_list);
     const [jobType, setJobType] = useState(job_type);
@@ -77,9 +78,24 @@ export default function CreateStockJob({ new_job_id, sp_list = [], job_type = 'a
             return;
         }
 
-        const { data, status } = await axios.get(route('stockSp.countSp', { sp_code: searchSp.current?.value?.trim() }));
-        const count_sp = data.sp_count;
-        const total_aready = data.total_aready;
+        let count_sp = 0;
+        let total_aready = 0;
+        try {
+            const { data, status } = await axios.get(route('stockSp.countSp', {
+                sp_code: searchSp.current?.value?.trim(),
+                stock_job_id: new_job_id
+            }),{
+                params : {from : from, searchQty: searchQty}
+            });
+            count_sp = data.sp_count;
+            total_aready = data.total_aready;
+        } catch (error) {
+            AlertDialog({
+                title: 'เกิดผิดพลาด',
+                text: error.response?.data?.message || "ไม่สามารถตรวจสอบสต็อกอะไหล่ได้",
+            });
+            return;
+        }
 
 
         // ตรวจสอบจำนวน
@@ -229,12 +245,19 @@ export default function CreateStockJob({ new_job_id, sp_list = [], job_type = 'a
                         <Typography fontSize={isMobile ? 18 : 20} fontWeight='bold'>
                             สร้าง #{new_job_id}
                         </Typography>
-                        <Typography variant="body2">เลือกประเภทของ job</Typography>
+                        <Typography variant="body2">
+                            {from === 'add' && 'เลือก'}ประเภทของ job
+                        </Typography>
                         <FormControl>
-                            <RadioGroup name="select-type" value={jobType} row={!isMobile} onChange={handleChangeType}>
-                                <FormControlLabel value="add" control={<Radio />} label="เพิ่ม" />
-                                <FormControlLabel value="remove" control={<Radio />} label="ลด" />
-                            </RadioGroup>
+                            {from === 'edit' ? (
+                                <Chip label={jobType === 'add' ? 'เพิ่ม' : 'ลด'} />
+                            ) : (
+                                <RadioGroup name="select-type" value={jobType} row={!isMobile} onChange={handleChangeType}>
+                                    <FormControlLabel value="add" control={<Radio />} label="เพิ่ม" />
+                                    <FormControlLabel value="remove" control={<Radio />} label="ลด" />
+                                </RadioGroup>
+                            )}
+
                         </FormControl>
                     </Box>
                 </Box>
@@ -356,7 +379,16 @@ export default function CreateStockJob({ new_job_id, sp_list = [], job_type = 'a
                                             >
                                                 <Delete />
                                             </IconButton>
+                                            <IconButton
+                                                color="info"
+                                                onClick={() => console.log(sp)}
+                                                size={isMobile ? "small" : "medium"}
+                                            >
+                                                check
+                                            </IconButton>
                                         </TableCell>
+
+
                                     </TableRow>
                                 ))
                             ) : (

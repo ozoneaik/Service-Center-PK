@@ -88,9 +88,11 @@ export default function stockJobDetailReadonly({ job, job_detail = [] }) {
                         </Button>
                         <Button
                             variant="contained" color="warning" startIcon={<Edit />}
-                            onClick={handleToEdit} disabled={job.job_status === 'complete'}
+                            onClick={handleToEdit} 
+                            // disabled={job.job_status === 'complete'}
+                            disabled
                         >
-                            แก้ไข
+                            แก้ไข (ปิดปรับปรง)
                         </Button>
                         <Button
                             variant="contained" startIcon={<BuildCircle />}
