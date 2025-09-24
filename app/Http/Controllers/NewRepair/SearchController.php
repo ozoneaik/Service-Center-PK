@@ -134,7 +134,7 @@ class SearchController extends Controller
         } catch (\Exception $e) {
             return [
                 'status' => false,
-                'message' => $e->getMessage(). $e->getLine(),
+                'message' => $e->getMessage() . $e->getLine(),
                 'combo_set' => null,
                 'sku_list' => null,
             ];
@@ -174,6 +174,7 @@ class SearchController extends Controller
         $findDetail['listbehavior'] = $listbehavior;
 
         if ($findDetail) {
+            $findDetail['expire_date'] = $findDetail['insurance_expire'] ?? null;
             $get_sku_and_behavior = [];
             $pid = $findDetail['pid'];
             return $findDetail;

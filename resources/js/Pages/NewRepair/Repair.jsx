@@ -51,9 +51,10 @@ export default function Repair({ DATA }) {
             try {
                 const { data, status } = await axios.post(route('repair.search'), { SN, PID });
                 console.log(data, status);
+                const insurance_expire = data.data.data_from_api.insurance_expire || null;
                 const combo_set = data.data.combo_set;
                 const addWarranty = data.data.warranty_expire; // เก็บสถานะรับประกัน
-                const expire_date = data.data.expire_date;
+                const expire_date = data.data.expire_date || insurance_expire || null;
                 if (combo_set) {
                     setOpenSelSku(true);
                     let sku_list = data.data.sku_list;
@@ -63,7 +64,7 @@ export default function Repair({ DATA }) {
                     setComboSets(sku_list)
                 } else {
                     let sku_list = data.data.sku_list[0];
-                    sku_list = { ...sku_list, warranty_status: addWarranty,expire_date }
+                    sku_list = { ...sku_list, warranty_status: addWarranty, expire_date }
                     setDetail(sku_list);
                 }
 

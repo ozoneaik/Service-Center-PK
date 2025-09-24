@@ -161,10 +161,10 @@ export default function RpMain({ productDetail, serial_id }) {
             warrantyperiod: productDetail.warrantyperiod,
             warrantycondition: productDetail.warrantycondition,
             warrantynote: productDetail.warrantynote,
-            warranty: productDetail.warranty || productDetail.warranty_status || productDetail.warrantyexpire || false
+            warranty: productDetail.warranty || productDetail.warranty_status || productDetail.warrantyexpire || false,
+            insurance_expire : productDetail.expire_date || null
         }
     }
-
 
     return (
         <Grid2 container spacing={2}>
