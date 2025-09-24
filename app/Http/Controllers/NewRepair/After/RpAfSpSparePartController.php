@@ -71,7 +71,7 @@ class RpAfSpSparePartController extends Controller
                     'qty' => $spare_part['qty'] ?? 0,
                     'sp_unit' => $spare_part['spunit'] ?? 'อัน',
                     'claim' => $spare_part['spcode'] === 'SV001' ? false : $claim,
-                    'claim_remark' => $spare_part['claim_remark'] ?? null,
+                    'claim_remark' => ($spare_part['remark_noclaim'] ?? null) === 'เคลมด่วน' ? 'เคลมด่วน' : ($spare_part['claim_remark'] ?? null),
                     'remark' => $spare_part['remark'] ?? null,
                     'remark_noclaim' => $spare_part['remark_noclaim'] ?? null,
                 ]);
