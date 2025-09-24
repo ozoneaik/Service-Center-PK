@@ -37,6 +37,7 @@ class StockSpController extends Controller
                 ->select(DB::raw('SUM(stock_job_details.sp_qty) as total_sp_qty'))
                 ->value('total_sp_qty'); // ดึงค่า SUM จริง ๆ
         }
+
         return Inertia::render('Stores/Manage/StoreList', ['shops' => $shops]);
     }
 
@@ -103,7 +104,7 @@ class StockSpController extends Controller
                 $stj_add = (object)$stj_add->toArray(); // แปลงเป็น stdClass
                 $stj_add->list = StockJobDetail::query()
                     ->where('stock_job_id', $stj_add->stock_job_id)
-                    ->select('sp_code','sp_name','sp_qty')
+                    ->select('sp_code', 'sp_name', 'sp_qty')
                     ->get()
                     ->toArray();
                 return $stj_add;
@@ -120,7 +121,7 @@ class StockSpController extends Controller
                 $stj_remove = (object)$stj_remove->toArray();
                 $stj_remove->list = StockJobDetail::query()
                     ->where('stock_job_id', $stj_remove->stock_job_id)
-                    ->select('sp_code','sp_name','sp_qty')
+                    ->select('sp_code', 'sp_name', 'sp_qty')
                     ->get()
                     ->toArray();
                 return $stj_remove;
@@ -131,6 +132,7 @@ class StockSpController extends Controller
 
 
         //        dd($stocks->toArray(), $store->toArray(), $job_pending->toArray(), $rp_sp->toArray(),$stj_sp->toArray());
+        // dd($stocks->toArray());
         return Inertia::render('Stores/StockSp/StockSpList', [
             'stocks' => $stocks,
             'store' => $store,
@@ -190,7 +192,7 @@ class StockSpController extends Controller
 
 
     //นับจำนวนคงเหลือใน stock job
-    public function countSp($sp_code)
+    public function countSp($sp_code, $stock_job_id, Request $request)
     {
         try {
             //สต็อกคงเหลือ	
@@ -201,7 +203,37 @@ class StockSpController extends Controller
                 $sp_count = 0;
             }
 
-            // จำนวนอะไหล่ขาเพิ่ม
+            // เช็คก่อนว่า รหัสอะไหล่นี้มีสร้างจาก stock job ที่กำลังดำเนินการอยู่หรือไม่
+            $get_stock_job = StockJob::query()
+                ->leftJoin('stock_job_details', 'stock_job_details.stock_job_id', '=', 'stock_jobs.stock_job_id')
+                ->where('stock_jobs.is_code_cust_id', Auth::user()->is_code_cust_id)
+                ->where('stock_jobs.job_status', 'processing')
+                ->select('stock_job_details.*', 'stock_jobs.job_status')
+                ->get();
+            $check_found = false;
+            $check_found_in_job = '';
+            foreach ($get_stock_job as $key => $job) {
+                if (($job->sp_code === $sp_code) && ($job->stock_job_id !== $stock_job_id)) {
+                    $check_found = true;
+                    $check_found_in_job = $job->stock_job_id;
+                    break;
+                }
+            }
+
+            if ($check_found) {
+                $msg_error = 'ตรวจพบว่ามีการสร้างรายการปรับปรุงสต็อกอะไหล่ที่ค้างอยู่ในระบบสำหรับอะไหล่รหัส ' . $sp_code;
+                $msg_error .= '<br/>กรุณาตรวจสอบอีกครั้งที่ Stock Job ID: ' . $check_found_in_job;
+                throw new \Exception($msg_error);
+            }
+
+            if ($request->from === 'edit') {
+                $searchQty = (int)$request->searchQty;
+                // dd($searchQty);
+                DB::beginTransaction();
+                $stock_job_detail_sp_code_target = StockJobDetail::query()->where('sp_code', $sp_code)->where('stock_job_id', $stock_job_id)->first();
+                $stock_job_detail_sp_code_target->sp_qty = $stock_job_detail_sp_code_target->sp_qty +$searchQty;
+                $stock_job_detail_sp_code_target->save();
+            }
             $stock_job_processing_positive_type = StockJob::query()->where('type', 'เพิ่ม')->where('is_code_cust_id', Auth::user()->is_code_cust_id)->where('job_status', 'processing')->get();
             $sp_count_already_positive_type = 0;
             foreach ($stock_job_processing_positive_type as $key => $stock_job) {
@@ -233,6 +265,7 @@ class StockSpController extends Controller
 
             // สต็อกคงเหลือพร้อมใช้งาน
             $total_aready = (int)$sp_count - (int)($sp_count_already_nagative_type + $count_spare_part_job) + (int)$sp_count_already_positive_type;
+            DB::rollBack();
             return response()->json([
                 'message' => 'พบข้อมูล',
                 'sp_count' => $sp_count,
@@ -247,7 +280,7 @@ class StockSpController extends Controller
         }
     }
 
-    public function detail($sp_code,$is_code_cust_id)
+    public function detail($sp_code, $is_code_cust_id)
     {
         return response()->json([
             'message' => 'พบข้อมูล',

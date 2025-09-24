@@ -23,7 +23,7 @@ Route::prefix('/stock-sp')->group(function () {
     //    Route::get('/shop/{is_code_cust_id}', [StSpController::class, 'index'])->name('stockSp.list');
     Route::get('/search/{sp_code}/{is_code_cust_id}', [StockSpController::class, 'searchSku'])->name('stockSp.searchSku');
     Route::post('/store-many-sp', [StockSpController::class, 'storeManySp'])->name('stockSp.storeManySp');
-    Route::get('/count-sp/{sp_code}', [StockSpController::class, 'countSp'])->name('stockSp.countSp');
+    Route::get('/count-sp/{sp_code}/{stock_job_id}', [StockSpController::class, 'countSp'])->name('stockSp.countSp');
 });
 
 Route::prefix('/stock-job')->group(function () {

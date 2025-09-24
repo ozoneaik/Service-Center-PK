@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\NewRepair;
 
 use App\Http\Controllers\Controller;
-use App\Models\Behavior;
 use App\Models\JobList;
 use App\Models\WarrantyProduct;
 use Carbon\Carbon;
@@ -82,6 +81,7 @@ class SearchController extends Controller
 
                 // หาว่าในระบบได้มีการลงทะเบียนรับประกันหรือไม่
                 $warranty_expire = $response_json['warrantyexpire'] ?? false;
+                $insurance_expire = $response_json['insurance_expire'] ?? null;
 
                 if (isset($formData['sn']) && !$warranty_expire) {
                     $warranty_expire = $this->findWarranty($formData['sn'], $warranty_expire);
@@ -116,7 +116,7 @@ class SearchController extends Controller
                         'combo_set' => $combo_set,
                         'sku_list' => $assets_new_format,
                         'warranty_expire' => $warranty_expire,
-                        'expire_date' => $checkWarranty->expire_date ?? ''
+                        'expire_date' => $insurance_expire
                     ];
                 }
                 // เช็คก่อนว่า เป็น combo set หรือไม่

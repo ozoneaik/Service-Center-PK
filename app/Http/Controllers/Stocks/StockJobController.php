@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Stocks;
 
 use App\Http\Controllers\Controller;
+use App\Models\JobList;
+use App\Models\SparePart;
 use App\Models\StockJob;
 use App\Models\StockJobDetail;
 use App\Models\StockSparePart;
+use App\Models\StoreInformation;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Client\ConnectionException;
@@ -36,7 +39,7 @@ class StockJobController extends Controller
 
         $jobs = $query
             ->where('stock_jobs.is_code_cust_id', Auth::user()->is_code_cust_id)
-            ->leftJoin('users', 'users.is_code_cust_id', '=', 'stock_jobs.is_code_cust_id')
+            ->leftJoin('users', 'users.user_code', '=', 'stock_jobs.user_code_key')
             ->select('stock_jobs.*', 'users.name as user_name')
             ->orderBy('stock_jobs.created_at', 'desc')
             ->get();
@@ -66,19 +69,104 @@ class StockJobController extends Controller
     // ไปยังหน้าแก้ไข job สต็อกอะไหล่
     public function edit($stock_job_id, $is_code_cust_id)
     {
+
         if ($is_code_cust_id !== Auth::user()->is_code_cust_id) {
             abort(403);
         }
-        $job = StockJob::query()->where('stock_job_id', $stock_job_id)->first();
+
+        $job = StockJob::query()->where('stock_job_id', $stock_job_id)->firstOrFail();
         $new_job_id = $stock_job_id;
         $job_detail = StockJobDetail::query()->where('stock_job_id', $stock_job_id)->get();
+
+        $new_job_detail = [];
+        foreach ($job_detail as $key_global => $jd) {
+            $new_job_detail[$key_global] = $jd->toArray();
+
+            // ✅ ดึงคงเหลือปัจจุบัน
+            $sp_count = StockSparePart::query()
+                ->where('sp_code', $jd->sp_code)
+                ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                ->value('qty_sp') ?? 0;
+
+            // ✅ ตรวจสอบ job processing ที่ type=เพิ่ม (ยกเว้น job นี้)
+            $stock_job_processing_positive_type = StockJob::query()
+                ->where('type', 'เพิ่ม')
+                ->where('stock_job_id', '!=', $stock_job_id)
+                ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                ->where('job_status', 'processing')
+                ->get();
+
+            $sp_count_already_positive_type = 0;
+            foreach ($stock_job_processing_positive_type as $stock_job) {
+                $stock_job_detail = StockJobDetail::query()
+                    ->where('stock_job_id', $stock_job->stock_job_id)
+                    ->where('sp_code', $jd->sp_code)
+                    ->first();
+                if ($stock_job_detail) {
+                    $sp_count_already_positive_type += (int)$stock_job_detail->sp_qty;
+                }
+            }
+
+            // ✅ ตรวจสอบ job processing ที่ type=ลด (ยกเว้น job นี้)
+            $stock_job_processing_nagative_type = StockJob::query()
+                ->where('type', 'ลด')
+                ->where('stock_job_id', '!=', $stock_job_id)
+                ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                ->where('job_status', 'processing')
+                ->get();
+
+            $sp_count_already_nagative_type = 0;
+            foreach ($stock_job_processing_nagative_type as $stock_job) {
+                $stock_job_detail = StockJobDetail::query()
+                    ->where('stock_job_id', $stock_job->stock_job_id)
+                    ->where('sp_code', $jd->sp_code)
+                    ->first();
+                if ($stock_job_detail) {
+                    $sp_count_already_nagative_type += (int)$stock_job_detail->sp_qty;
+                }
+            }
+
+            // ✅ จำนวนอะไหล่ที่อยู่ระหว่างการซ่อม
+            $job_pending = JobList::query()
+                ->where('is_code_key', Auth::user()->is_code_cust_id)
+                ->where('status', 'pending')
+                ->get();
+
+            $count_spare_part_job = 0;
+            foreach ($job_pending as $j) {
+                $spare_part = SparePart::query()
+                    ->where('job_id', $j->job_id)
+                    ->where('sp_code', $jd->sp_code)
+                    ->first();
+                if ($spare_part) {
+                    $count_spare_part_job += (int)$spare_part->qty;
+                }
+            }
+
+            // ✅ คำนวณ stock พร้อมใช้งาน (สูตรเดียวกับ countSp)
+            $total_aready = (int)$sp_count - (int)($sp_count_already_nagative_type + $count_spare_part_job) + (int)$sp_count_already_positive_type;
+
+            // ✅ บวกจำนวนของ job ปัจจุบันกลับเข้าไป (ให้ผู้ใช้แก้ไขได้)
+            $total_aready += (int)$jd->sp_qty;
+
+            $new_job_detail[$key_global]['count_sp'] = $sp_count;
+            $new_job_detail[$key_global]['total_aready'] = $total_aready;
+            $new_job_detail[$key_global]['sp_count_already_positive_type'] = $sp_count_already_positive_type;
+            $new_job_detail[$key_global]['sp_count_already_nagative_type'] = $sp_count_already_nagative_type;
+            $new_job_detail[$key_global]['total_after_total_if_add'] = $total_aready;
+            $new_job_detail[$key_global]['total_after_total_if_remove'] = $total_aready;
+        }
+
         return Inertia::render('Stores/StockSp/CreateStockJob', [
             'new_job_id' => $new_job_id,
             'job' => $job,
             'job_type' => $job->type === 'เพิ่ม' ? 'add' : 'remove',
-            'sp_list' => $job_detail
+            'sp_list' => $new_job_detail,
+            'from' => 'edit'
         ]);
     }
+
+
 
     //อัพเดทสถานะ job สต็อกอะไหล่
     public function update($stock_job_id, Request $request)
@@ -97,10 +185,11 @@ class StockJobController extends Controller
                 $stock_sp = StockSparePart::query()->where('sp_code', $detail->sp_code)->first();
                 if ($stock_sp && $job['type'] === 'เพิ่ม') {
                     $stock_sp->qty_sp += $detail->sp_qty;
+                    $stock_sp->save();
                 } elseif ($stock_sp && $job['type'] === 'ลด') {
                     $stock_sp->qty_sp -= $detail->sp_qty;
+                    $stock_sp->save();
                 }
-                $stock_sp->save();
             }
             $job->save();
             DB::commit();
@@ -115,14 +204,15 @@ class StockJobController extends Controller
     // สร้าง job ของ สต็อกอะไหล่
     public function store(Request $request)
     {
-
         try {
             $req = $request['dataToSave'];
             DB::beginTransaction();
-            StockJob::query()->where('stock_job_id', $req['job_id'])->delete();
+            // StockJob::query()->where('stock_job_id', $req['job_id'])->delete();
             StockJobDetail::query()->where('stock_job_id', $req['job_id'])->delete();
 
-            $store_stock_job = StockJob::query()->create([
+            $store_stock_job = StockJob::query()->updateOrCreate([
+                'stock_job_id' => $req['job_id'],
+            ], [
                 'stock_job_id' => $req['job_id'],
                 'is_code_cust_id' => Auth::user()->is_code_cust_id,
                 'user_code_key' => Auth::user()->user_code,
