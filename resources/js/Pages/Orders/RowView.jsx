@@ -96,14 +96,14 @@ export default function RowView({ spList, setSpList }) {
                                             </Typography>
                                         ) : (
                                             <Stack direction='row' spacing={2} alignItems='center'>
-                                                <Typography color='green'>
-                                                    ราคาขาย ฿{parseFloat(item.price_per_unit).toFixed(3) ?? 0}
+                                                <Typography color='green' >
+                                                    ราคาทุน  ฿{parseFloat(item.price_per_unit).toFixed(2) ?? 0}
                                                 </Typography>
                                                 <Typography color='gray' fontSize={12}>
-                                                    ราคาทุน  เร็วๆนี้
+                                                    ราคาขาย เร็วๆนี้
                                                 </Typography>
                                                 <Typography color='gray' fontSize={12}>
-                                                    ราคาตั้ง เร็วๆนี้
+                                                    ราคาตั้ง ฿{parseFloat(item.stdprice_per_unit).toFixed(2) ?? 0}
                                                 </Typography>
                                             </Stack>
                                         )
