@@ -97,11 +97,10 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
 
     // จัดการการเปลี่ยนแปลงข้อมูลในการแก้ไข
     const handleEditChange = (spcode, field, value) => {
-        console.log(spcode, field, value);
 
         // ถ้ามีการเปลี่ยนแปลง หมายเหตุของการไม่เคลม
         if (field === 'remark_noclaim') {
-            if (value !== 'เคลมปกติ') {
+            if ((value !== 'เคลมปกติ' && (value !== 'เคลมด่วน'))) {
                 const sp_sel = spSelected.find(sp => sp.spcode === spcode)
                 setEditingSpares(prev => ({
                     ...prev,
@@ -453,6 +452,9 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                                                                     <MenuItem value={'เคลมปกติ'}>
                                                                         เคลมปกติ
                                                                     </MenuItem>
+                                                                    <MenuItem value={'เคลมด่วน'}>
+                                                                        เคลมด่วน
+                                                                    </MenuItem>
                                                                     <MenuItem value={'ลูกค้ามีการดัดแปลงสภาพเครื่องมา'}>
                                                                         ลูกค้ามีการดัดแปลงสภาพเครื่องมา
                                                                     </MenuItem>
@@ -735,6 +737,9 @@ const RowTable = (props) => {
                             id="no-claim" variant='outlined'>
                             <MenuItem value={'เคลมปกติ'}>
                                 เคลมปกติ
+                            </MenuItem>
+                            <MenuItem value={'เคลมด่วน'}>
+                                เคลมด่วน
                             </MenuItem>
                             <MenuItem value={'ลูกค้ามีการดัดแปลงสภาพเครื่องมา'}>
                                 ลูกค้ามีการดัดแปลงสภาพเครื่องมา
