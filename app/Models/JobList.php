@@ -31,6 +31,7 @@ class JobList extends Model
         'print_at',
         'print_updated_at',
         'counter_print',
-        'repair_man_id'
+        'repair_man_id',
+        'insurance_expire'
     ];
 }
