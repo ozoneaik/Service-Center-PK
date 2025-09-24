@@ -23,7 +23,7 @@ class ProfileController extends Controller
         // dd($request->user()->toArray());
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-            'status' => session('status'), 
+            'status' => session('status'),
         ]);
     }
 
@@ -41,6 +41,8 @@ class ProfileController extends Controller
         $StoreInformation->address = $request->address;
         $StoreInformation->phone = $request->phone;
         $StoreInformation->shop_name = $request->shop_name;
+        $StoreInformation->line_id = $request->line_id;
+        $StoreInformation->footer_description = $request->footer_description;
         $StoreInformation->save();
         $request->user()->save();
         return Redirect::route('profile.edit');

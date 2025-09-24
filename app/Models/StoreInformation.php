@@ -20,9 +20,11 @@ class StoreInformation extends Model
         'digit_code',
         'line_id',
         'footer_text',
+        'footer_description'
     ];
 
-    public function gp () : HasOne {
-        return $this->hasOne(Gp::class,'is_code_cust_id','is_code_cust_id');
+    public function gp(): HasOne
+    {
+        return $this->hasOne(Gp::class, 'is_code_cust_id', 'is_code_cust_id');
     }
 }

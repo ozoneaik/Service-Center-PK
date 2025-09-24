@@ -1,17 +1,18 @@
-import {Transition} from '@headlessui/react';
-import {Link, useForm, usePage} from '@inertiajs/react';
-import {Button, CircularProgress, FormLabel, TextField} from "@mui/material";
+import { Transition } from '@headlessui/react';
+import { Link, useForm, usePage } from '@inertiajs/react';
+import { Button, CircularProgress, FormLabel, TextField } from "@mui/material";
 
-export default function UpdateProfileInformation({mustVerifyEmail, status, className = ''}) {
+export default function UpdateProfileInformation({ mustVerifyEmail, status, className = '' }) {
     const user = usePage().props.auth.user;
 
-    const {data, setData, patch, errors, processing, recentlySuccessful} =
+    const { data, setData, patch, errors, processing, recentlySuccessful } =
         useForm({
             name: user.name,
             email: user.email,
             phone: user.store_info.phone,
             address: user.store_info.address,
             shop_name: user.store_info.shop_name,
+            footer_description: user.store_info.footer_description || "",
             is_code_cust_id: user.is_code_cust_id,
             role: user.role,
             admin_that_branch: user.admin_that_branch,
@@ -85,7 +86,7 @@ export default function UpdateProfileInformation({mustVerifyEmail, status, class
 
                 <div>
                     <FormLabel required htmlFor="address">ที่อยู่</FormLabel>
-                    <br/>
+                    <br />
                     <TextField
                         disabled={!user.admin_that_branch}
                         id='address'
@@ -137,9 +138,25 @@ export default function UpdateProfileInformation({mustVerifyEmail, status, class
                     </div>
                 )}
 
+                <div>
+                    <FormLabel htmlFor="footer_description">ข้อความท้ายใบรับซ่อม (optional)</FormLabel>
+                    <TextField
+                        id="footer_description"
+                        fullWidth
+                        multiline
+                        minRows={3}
+                        value={data.footer_description || ""}
+                        onChange={(e) => setData("footer_description", e.target.value)}
+                        autoComplete="off"
+                        size="small"
+                        error={!!errors.footer_description}
+                        helperText={errors.footer_description}
+                    />
+                </div>
+
                 <div className="flex items-center gap-4">
                     <Button type='submit' disabled={processing} variant='contained'
-                            startIcon={processing && <CircularProgress size={20}/>}>
+                        startIcon={processing && <CircularProgress size={20} />}>
                         บันทึก
                     </Button>
 
