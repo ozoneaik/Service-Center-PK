@@ -178,13 +178,13 @@
                 <div>
                     <div id="line-qr"></div>
                     <div style="font-size: 14px;">
-                        Line Id : {{ $store['line_id'] ?? '-' }}
+                        @Line : {{ $store['line_id'] ?? '-' }}
                     </div>
                 </div>
                 <div>
                     <div id="line-qr2"></div>
                     <div style="font-size: 14px;">
-                        ศูนย์ซ่อม pumpkin
+                        @Line : ศูนย์ซ่อม pumpkin
                     </div>
                 </div>
             </div>
@@ -215,7 +215,6 @@
             document.getElementById("line-qr").innerHTML = qr1.createImgTag(2, 2);
 
             var qr2 = qrcode(4, 'L');
-            // qr2.addData("https://service-center.pumpkin-th.com");
             qr2.addData("https://line.me/R/ti/p/~@pkcs");
             qr2.make();
             document.getElementById("line-qr2").innerHTML = qr2.createImgTag(2, 2);
