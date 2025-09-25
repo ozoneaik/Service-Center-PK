@@ -97,7 +97,7 @@ export const TableDetail = ({ jobs, handleShowDetail, url }) => {
     );
 };
 
-const FilterForm = ({ handleFilterChange, filters, searchJobs }) => {
+const FilterForm = ({ handleFilterChange, filters, setFilters, searchJobs }) => {
     const isMobile = useMediaQuery('(max-width:700px)');
     return (
         <Grid2 container spacing={2}>
@@ -139,7 +139,7 @@ const FilterForm = ({ handleFilterChange, filters, searchJobs }) => {
                     }}
                 />
             </Grid2>
-            <Grid2 size={{ md: 4, xs: 12 }}>
+            <Grid2 size={{ md: 2, xs: 12 }}>
                 <TextField
                     fullWidth label='ค้นหาชื่อลูกค้า' size="small"
                     type="text" name="name" value={filters.name}
@@ -153,7 +153,7 @@ const FilterForm = ({ handleFilterChange, filters, searchJobs }) => {
                     }}
                 />
             </Grid2>
-            <Grid2 size={{ md: 4, xs: 12 }}>
+            <Grid2 size={{ md: 2, xs: 12 }}>
                 <Select
                     variant='outlined'
                     fullWidth={!isMobile} value={filters.status || 'select'}
@@ -167,10 +167,76 @@ const FilterForm = ({ handleFilterChange, filters, searchJobs }) => {
                     <MenuItem value={'canceled'}>ยกเลิกการซ่อมแล้ว</MenuItem>
                 </Select>
             </Grid2>
-            <Grid2 size={{ md: 4, xs: 12 }}>
-                <Button onClick={searchJobs} startIcon={<Search />}
-                    variant='contained'>ค้นหา</Button>
+            <Grid2 size={{ md: 2, xs: 12 }}>
+                <TextField
+                    fullWidth
+                    size="small"
+                    type="date"
+                    label="วันที่เริ่มต้น"
+                    name="date_start"
+                    value={filters.date_start}
+                    onChange={handleFilterChange}
+                    InputLabelProps={{ shrink: true }}
+                />
             </Grid2>
+
+            <Grid2 size={{ md: 2, xs: 12 }}>
+                <TextField
+                    fullWidth
+                    size="small"
+                    type="date"
+                    label="วันที่สิ้นสุด"
+                    name="date_end"
+                    value={filters.date_end}
+                    onChange={handleFilterChange}
+                    InputLabelProps={{ shrink: true }}
+                />
+            </Grid2>
+
+            <Grid2 size={{ md: 1, xs: 12 }}>
+                <Button onClick={searchJobs} startIcon={<Search />}
+                    variant='contained'>ค้นหา
+                </Button>
+            </Grid2>
+            <Grid2 size={{ md: 1, xs: 12 }}>
+                    <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => {
+                            setFilters({
+                                serial_id: "",
+                                job_id: "",
+                                phone: "",
+                                name: "",
+                                status: "",
+                                date_start: "",
+                                date_end: ""
+                            });
+                            const routeName = window.location.pathname.startsWith("/admin/history-job")
+                                ? "admin.history-job"
+                                : "history.index";
+                            router.get(route(routeName), {}, { preserveState: true });
+                        }}
+                    >
+                        ล้างตัวกรอง
+                    </Button>
+            </Grid2>
+            {/* เพื่มการ Export */}
+            <Grid2 size={{ md: 2, xs: 12 }}>
+                <Box display={"flex"} justifyContent={"flex-end"}>
+                    <Button
+                        variant="contained"
+                        color="success"
+                        onClick={() => {
+                            const query = new URLSearchParams(filters).toString();
+                            window.open(route("history.export") + "?" + query, "_blank");
+                        }}
+                    >
+                        Export
+                    </Button>
+                </Box>
+            </Grid2>
+
         </Grid2>
     )
 }
@@ -241,13 +307,14 @@ const MobileDetail = ({ jobs, handleShowDetail, url }) => {
 
 export default function HistoryMain({ jobs }) {
     console.log(jobs);
-    
+
     const { url } = usePage();
     const isMobile = useMediaQuery('(max-width:700px)');
     const [filters, setFilters] = useState({
         serial_id: "", job_id: "",
         phone: "", name: "",
-        status: ""
+        status: "",
+        date_start: "", date_end: ""
     });
 
     const [openDrawer, setOpenDrawer] = useState(false);
@@ -270,7 +337,7 @@ export default function HistoryMain({ jobs }) {
 
     const DrawerList = (
         <Box sx={{ minWidth: 200, maxWidth: 300, p: 3 }} role="presentation">
-            <FilterForm handleFilterChange={handleFilterChange} filters={filters} searchJobs={searchJobs} />
+            <FilterForm handleFilterChange={handleFilterChange} filters={filters} setFilters={setFilters} searchJobs={searchJobs} />
         </Box>
 
     )
@@ -296,6 +363,7 @@ export default function HistoryMain({ jobs }) {
                         ) : (
                             <Grid2 size={12}>
                                 <FilterForm handleFilterChange={handleFilterChange} filters={filters}
+                                    setFilters={setFilters}
                                     searchJobs={searchJobs} />
                             </Grid2>
                         )}
