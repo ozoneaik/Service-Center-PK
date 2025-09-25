@@ -1,25 +1,50 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {
     Container, Table, TableBody, TableCell, TableHead, TableRow,
-    Typography, Chip, Button, useMediaQuery, Grid2, Card, CardContent, Divider, Stack, useTheme
+    Typography, Chip, Button, useMediaQuery, Grid2, Card, CardContent, Divider, Stack, useTheme,
+    Box,
+    IconButton
 } from "@mui/material";
-import {Link} from "@inertiajs/react";
-import {DateFormatTh} from "@/Components/DateFormat.jsx";
-import {RemoveRedEye} from "@mui/icons-material";
+import { Link } from "@inertiajs/react";
+import { DateFormatTh } from "@/Components/DateFormat.jsx";
+import { Refresh, RemoveRedEye } from "@mui/icons-material";
+import { useState } from "react";
+import { AlertDialog } from "@/Components/AlertDialog";
 
-export default function OrderHistory({history}) {
-    const historyList = history.data;
+export default function OrderHistory({ history }) {
+    const [loading, setLoading] = useState(false);
+    const [historyList, setHistoryList] = useState(history.data);
     const ColorStatus = (status) => ({
-        pending: 'warning',
-        success: 'success',
+        'กำลังรอรับคำสั่งซื้อ': 'warning',
+        'จัดส่งสำเร็จ': 'success',
         progress: 'secondary',
         canceled: 'error'
     }[status] || 'info');
 
     const isMobile = useMediaQuery('(max-width:600px)');
+
+    const checkOrderStatus = async (order_id) => {
+        try {
+            setLoading(true);
+            const { data, status } = await axios.get(route('orders.checkStatusOrder', { order_id }));
+            const orderStatus = data.data.status;
+            const orderTarget = historyList.find((item) => item.order_id === order_id);
+            if (orderTarget) {
+                orderTarget.status = orderStatus;
+                setHistoryList([...historyList]);
+            }
+        } catch (error) {
+            AlertDialog({
+                title: 'เกิดข้อผิดพลาด',
+                text: error.response?.data?.message || error.message,
+            });
+        } finally {
+            setLoading(false);
+        }
+    }
     return (
         <AuthenticatedLayout>
-            <Container maxWidth="false" sx={{mt: 4, bgcolor: 'white', p: 3}}>
+            <Container maxWidth="false" sx={{ mt: 4, bgcolor: 'white', p: 3 }}>
                 <Typography variant="h5" gutterBottom>
                     ประวัติคำสั่งซื้อ
                 </Typography>
@@ -31,15 +56,20 @@ export default function OrderHistory({history}) {
                                     <Card variant='outlined' key={index}>
                                         <CardContent>
                                             <Stack spacing={2}>
-                                                <TextDetail label={'รายการที่'} value={index + 1}/>
-                                                <TextDetail label={'หมายเลขคำสั่งซื้อ'} value={item.order_id}/>
+                                                <Box display='flex' justifyContent='space-between' alignItems='center'>
+                                                    <TextDetail label={'รายการที่'} value={index + 1} />
+                                                    <IconButton loading={loading} onClick={() => checkOrderStatus(item.order_id)} color="info" size="small">
+                                                        <Refresh />
+                                                    </IconButton>
+                                                </Box>
+                                                <TextDetail label={'หมายเลขคำสั่งซื้อ'} value={item.order_id} />
                                                 <TextDetail label={'วันที่สั่งซื้อ'}
-                                                            value={DateFormatTh({date: item.buy_at})}/>
-                                                <TextDetail label={'ที่อยู่'} value={item.address}/>
-                                                <TextDetail label={'สถานะ'} value={item.status_text}/>
-                                                <Divider/>
+                                                    value={DateFormatTh({ date: item.buy_at })} />
+                                                <TextDetail label={'ที่อยู่'} value={item.address} />
+                                                <TextDetail label={'สถานะ'} value={item.status_text} />
+                                                <Divider />
                                                 <Button
-                                                    fullWidth startIcon={<RemoveRedEye/>}
+                                                    fullWidth startIcon={<RemoveRedEye />}
                                                     variant='contained' size='small' component={Link}
                                                     href={`/orders/history-detail/${item.order_id}`}
                                                 >
@@ -60,7 +90,7 @@ export default function OrderHistory({history}) {
                                         <TableCell>หมายเลขคำสั่งซื้อ</TableCell>
                                         <TableCell>วันที่สั่งซื้อ</TableCell>
                                         <TableCell>ที่อยู่</TableCell>
-                                        <TableCell>สถานะ</TableCell>
+                                        <TableCell align="center">สถานะ</TableCell>
                                         <TableCell>รายละเอียด</TableCell>
                                     </TableRow>
                                 </TableHead>
@@ -73,7 +103,16 @@ export default function OrderHistory({history}) {
                                                 <TableCell>{new Date(item.buy_at).toLocaleString()}</TableCell>
                                                 <TableCell>{item.address}</TableCell>
                                                 <TableCell>
-                                                    <Chip label={item.status_text} color={ColorStatus(item.status)}/>
+                                                    <Box display='flex' justifyContent='center' alignItems='center' gap={2}>
+                                                        <Button
+                                                            color="info" startIcon={<Refresh />} size="small"
+                                                            loading={loading}
+                                                            onClick={() => checkOrderStatus(item.order_id)}
+                                                        >
+                                                            เช็คสถานะล่าสุด
+                                                        </Button>
+                                                        <Chip label={item.status} color={ColorStatus(item.status)} />
+                                                    </Box>
                                                 </TableCell>
                                                 <TableCell>
                                                     <Button
@@ -103,8 +142,8 @@ export default function OrderHistory({history}) {
     );
 }
 
-const TextDetail = ({label, value}) => {
-    const {palette} = useTheme();
+const TextDetail = ({ label, value }) => {
+    const { palette } = useTheme();
     const pumpkinColor = palette.pumpkinColor.main;
     return (
         <Stack direction='row' spacing={1}>

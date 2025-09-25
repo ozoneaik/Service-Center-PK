@@ -27,24 +27,24 @@ class Order extends Model
         'status_send_order'
     ];
 
-    protected $appends = ['status_text'];
+//     protected $appends = ['status_text'];
 
-    protected function statusText(): Attribute
-    {
-        return Attribute::get(function () {
-            if ($this->status === 'pending') {
-                $status_text = 'กำลังรอรับคำสั่งซื้อ';
-            } elseif ($this->status === 'progress') {
-                $status_text = 'กำลังดำเนินการจัดเตรียมสินค้า';
-            } elseif ($this->status === 'success') {
-                $status_text = 'คำสั่งซื้อเสร็จสิ้น';
-            } elseif ($this->status === 'canceled') {
-                $status_text = 'คำสั่งซื้อถูกยกเลิก';
-            } else {
-                $status_text = 'ไม่ทราบสถานะคำสั่งซื้อ';
-            }
-            return $status_text;
-//            return asset('storage/'.$this->file_path);
-        });
-    }
+//     protected function statusText(): Attribute
+//     {
+//         return Attribute::get(function () {
+//             if ($this->status === 'pending') {
+//                 $status_text = 'กำลังรอรับคำสั่งซื้อ';
+//             } elseif ($this->status === 'progress') {
+//                 $status_text = 'กำลังดำเนินการจัดเตรียมสินค้า';
+//             } elseif ($this->status === 'success') {
+//                 $status_text = 'คำสั่งซื้อเสร็จสิ้น';
+//             } elseif ($this->status === 'canceled') {
+//                 $status_text = 'คำสั่งซื้อถูกยกเลิก';
+//             } else {
+//                 $status_text = 'ไม่ทราบสถานะคำสั่งซื้อ';
+//             }
+//             return $status_text;
+// //            return asset('storage/'.$this->file_path);
+//         });
+//     }
 }
