@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('order_id')->unique()->comment('หมายเลขคำสั่งซื้อ');
             $table->string('is_code_key')->comment('ร้านที่สั่งซื้อ');
             $table->string('user_key')->comment('คนสั่งซื้อ');
-            $table->string('status')->default('pending')->comment('สถานะคำสั่งซื้อ');
+            $table->string('status')->default('กำลังรอรับคำสั่งซื้อ')->comment('สถานะคำสั่งซื้อ');
             $table->dateTime('buy_at')->comment('สั่งซื้อเมื่อ');
             $table->longText('address')->comment('ที่อยู่');
             $table->string('phone')->nullable()->comment('เบอร์โทรศัพท์');

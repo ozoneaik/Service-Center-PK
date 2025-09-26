@@ -69,7 +69,6 @@ class OrderController extends Controller
                         $result['sp'][$key]['remark'] = 'มาจากการสั่งซื้อ';
                         $result['sp'][$key]['path_file'] = env('VITE_IMAGE_SP') . $result['sp'][$key]['spcode'] . ".jpg";
                     }
-
                 } else throw new \Exception('ไม่พบรหัสสินค้านี้');
             } else throw new \Exception('มีปัญหากับ API');
         } catch (\Exception $e) {
@@ -93,7 +92,7 @@ class OrderController extends Controller
     public function history(): Response
     {
         $history = Order::query()
-            ->where('is_code_key', auth()->user()->is_code_cust_id)
+            ->where('is_code_key', Auth::user()->is_code_cust_id)
             ->orderBy('id', 'desc')->paginate(100);
         return Inertia::render('Orders/OrderHistory', ['history' => $history]);
     }
@@ -118,7 +117,7 @@ class OrderController extends Controller
     }
 
 
-//    Cart Controller
+    //    Cart Controller
 
     public function cartList(): Response
     {
@@ -136,7 +135,6 @@ class OrderController extends Controller
                 ->where('sku_code', $group->sku_code)
                 ->get();
             $totalSp += $group['list']->count();
-
         }
         return Inertia::render('Orders/carts/CartList', ['groupSku' => $groupSku, 'totalSp' => $totalSp]);
     }
@@ -145,8 +143,8 @@ class OrderController extends Controller
     {
         try {
             $cart = Cart::query()->create([
-                'is_code_cust_id' => auth()->user()->is_code_cust_id,
-                'user_code_key' => auth()->user()->user_code,
+                'is_code_cust_id' => Auth::user()->is_code_cust_id,
+                'user_code_key' => Auth::user()->user_code,
                 'sku_code' => $request->skufg,
                 'sku_name' => $request->pname,
                 'sp_code' => $request->spcode,
@@ -214,12 +212,12 @@ class OrderController extends Controller
 
             $order = Order::query()->create([
                 'order_id' => $order_id,
-                'is_code_key' => auth()->user()->is_code_cust_id,
-                'user_key' => auth()->user()->user_code,
+                'is_code_key' => Auth::user()->is_code_cust_id,
+                'user_key' => Auth::user()->user_code,
                 'buy_at' => Carbon::now(),
                 'status' => 'pending',
                 'phone' => $phone,
-                'address' => $request->address ?? auth()->user()->store_info->address,
+                'address' => $request->address ?? Auth::user()->store_info->address,
             ]);
             $totalOrderPrice = 0;
             $items = [];
@@ -254,8 +252,6 @@ class OrderController extends Controller
                             'sp_unit' => isset($sp['sp_unit']) ? $sp['sp_unit'] : 'ชิ้น',
                             'path_file' => $pathFile,
                         ]);
-
-
                     } catch (\Exception $e) {
                         Log::error('Error processing item: ' . $e->getMessage(), [
                             'item_id' => $spItem['id'] ?? 'unknown',
@@ -266,13 +262,13 @@ class OrderController extends Controller
             }
             // ดึงรหัส sale id เพื่อส่งไปยัง lark ของเซลล์นั้นๆ
             $receive_id = StoreInformation::query()
-                ->leftJoin('sale_information','sale_information.sale_code', '=' , 'store_information.sale_id')
+                ->leftJoin('sale_information', 'sale_information.sale_code', '=', 'store_information.sale_id')
                 ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
                 ->select('sale_information.lark_token')
                 ->first();
             $order->update(['total_price' => $totalOrderPrice]);
             $text_order_id = "รหัสออเดอร์ : $order_id";
-            $text = "ศูนย์ซ่อม : " . Auth::user()->store_info->shop_name ."\n$text_order_id". "\nแจ้งเรื่อง : สั่งซื้ออะไหล่\nรายการ :\n\n" . implode("\n", $items);
+            $text = "ศูนย์ซ่อม : " . Auth::user()->store_info->shop_name . "\n$text_order_id" . "\nแจ้งเรื่อง : สั่งซื้ออะไหล่\nรายการ :\n\n" . implode("\n", $items);
             $body = [
                 "receive_id" => $receive_id?->lark_token ?? 'unknown',
                 "msg_type" => "text",
@@ -295,12 +291,12 @@ class OrderController extends Controller
                 if (!$responseSend->successful()) {
                     $message = 'สร้างคำสั่งซื้อเรียบร้อยแล้ว แต่ ไม่สามารถส่งการแจ้งเตือนไปหาตัวแทนจำหน่ายได้ [สร้าง body ไม่สำเร็จ]';
                     $order->update(['status_send_order' => false]);
-//                    throw new \Exception('ไม่สามารถส่งการแจ้งเตือนไปหา lark ได้ send failed');
+                    //                    throw new \Exception('ไม่สามารถส่งการแจ้งเตือนไปหา lark ได้ send failed');
                 }
             } else {
                 $message = 'สร้างคำสั่งซื้อเรียบร้อยแล้ว แต่ ไม่สามารถส่งการแจ้งเตือนไปหาตัวแทนจำหน่ายได้ [สร้าง token lark ไม่สำเร็จ]';
                 $order->update(['status_send_order' => false]);
-//                throw new \Exception('ไม่สามารถส่งการแจ้งเตือนไปหา lark ได้ crate Token failed');
+                //                throw new \Exception('ไม่สามารถส่งการแจ้งเตือนไปหา lark ได้ crate Token failed');
             }
             DB::commit();
             return response()->json([
@@ -313,16 +309,15 @@ class OrderController extends Controller
                     'order' => $order
                 ],
             ], 200);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Order creation failed: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::user()->id(),
                 'trace' => $e->getTraceAsString()
             ]);
             return response()->json([
                 'status' => 'error',
-//                'message' => 'เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ กรุณาลองใหม่ภายหลัง',
+                //                'message' => 'เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ กรุณาลองใหม่ภายหลัง',
                 'message' => $e->getMessage(),
                 'error' => config('app.debug') ? $e->getMessage() : null
             ], 500);
@@ -346,5 +341,37 @@ class OrderController extends Controller
         }
     }
 
-
+    // เช็คสถานะคำสั่งซื้อจาก API ภายนอก
+    public function checkStatusOrder($order_id)
+    {
+        try {
+            DB::beginTransaction();
+            $uri = env('VITE_API_CHECK_ORDER');
+            $order_id_remove_prefix = str_replace('ORDER-', '', $order_id);
+            $body = [
+                'jobno' => $order_id_remove_prefix
+            ];
+            $response = Http::post($uri, $body);
+            if ($response->successful() && $response->status() === 200) {
+                $order = Order::query()->where('order_id', $order_id)->first();
+                if ($order) {
+                    $response_json = $response->json();
+                    if ($response_json['status']) {
+                        $order->status = $response_json['status'];
+                        $order->save();
+                    } else throw new \Exception('ไม่สามารถเชื่อมต่อกับ API ได้ กรุณาลองอีกครั้ง');
+                } else throw new \Exception('ไม่สามารถเชื่อมต่อกับ API ได้ กรุณาลองอีกครั้ง');
+            } else throw new \Exception('ไม่สามารถเชื่อมต่อกับ API ได้ กรุณาลองอีกครั้ง');
+            DB::commit();
+            return response()->json([
+                'data' => $response_json
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error occurred',
+                'error' => $e->getMessage()
+            ], 400);
+        }
+    }
 }
