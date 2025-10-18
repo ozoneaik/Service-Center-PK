@@ -62,7 +62,7 @@ export default function StockJobs({ jobs }) {
                                 router.get(route('stockSp.list', { is_code_cust_id: auth.user.is_code_cust_id }))
                             }}
                         >
-                            หลับไปหน้าสต็อกอะไหล่
+                            กลับไปหน้าสต็อกอะไหล่
                         </Button>
                     </Grid2>
                     <Grid2 size={12}>

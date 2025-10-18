@@ -89,8 +89,8 @@ export default function stockJobDetailReadonly({ job, job_detail = [] }) {
                         <Button
                             variant="contained" color="warning" startIcon={<Edit />}
                             onClick={handleToEdit} 
-                            // disabled={job.job_status === 'complete'}
-                            disabled
+                        // disabled={job.job_status === 'complete'}
+                        // disabled
                         >
                             แก้ไข (ปิดปรับปรง)
                         </Button>
@@ -138,13 +138,18 @@ export default function stockJobDetailReadonly({ job, job_detail = [] }) {
                                             {sp.sp_qty}
                                         </TableCell>
                                         <TableCell sx={{ fontSize: isMobile ? '0.8rem' : '1rem' }}>
-                                            0
+                                            {sp.count_sp ?? 0}
                                         </TableCell>
                                         <TableCell sx={{ fontSize: isMobile ? '0.8rem' : '1rem' }}>
-                                            0
+                                            {sp.total_aready ?? 0}
                                         </TableCell>
-                                        <TableCell sx={{ fontSize: isMobile ? '0.8rem' : '1rem', backgroundColor: sp.total_after_total_if_remove < 0 && jobType === 'remove' && '#f2b8b5' }}>
-                                            0
+                                        <TableCell
+                                            sx={{
+                                                fontSize: isMobile ? '0.8rem' : '1rem',
+                                                backgroundColor: jobType === 'ลด' && (sp.stock_after ?? 0) < 0 ? '#f2b8b5' : 'inherit'
+                                            }}
+                                        >
+                                            {sp.stock_after ?? 0}
                                         </TableCell>
                                     </TableRow>
                                 ))

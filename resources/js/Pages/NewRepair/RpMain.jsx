@@ -27,7 +27,7 @@ function CustomTabPanel(props) {
 
 export default function RpMain({ productDetail, serial_id }) {
     console.log(productDetail);
-    
+
     const [message, setMessage] = useState('ไม่สามารถกระทำการใดๆ');
     const [tabValue, setTabValue] = useState(0);
     const [searchingJob, setSearchingJob] = useState(false);
@@ -212,8 +212,12 @@ export default function RpMain({ productDetail, serial_id }) {
                                                 aria-controls={`panel${index}-content`}
                                                 id={`panel${index}-header`}
                                             >
-                                                <Typography>ชื่อลูกค้า : {job.cust_name}</Typography>
-                                                <Typography>เบอร์โทรศัพท์ : {job.cust_phone}</Typography>
+                                                <Typography component="span" sx={{ mr: 2 }}>
+                                                    ชื่อลูกค้า : {job.cust_name}
+                                                </Typography>
+                                                <Typography component="span">
+                                                    เบอร์โทรศัพท์ : {job.cust_phone}
+                                                </Typography>
                                             </AccordionSummary>
                                             <AccordionDetails>
                                                 <Typography fontWeight='bold'>รายละเอียด</Typography>

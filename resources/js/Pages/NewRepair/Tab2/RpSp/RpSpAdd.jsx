@@ -213,6 +213,7 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JO
                             <TableRow>
                                 <TableCell>เลือก</TableCell>
                                 <TableCell>รูปภาพ</TableCell>
+                                {/* <TableCell>Tracking</TableCell> */}
                                 <TableCell>รหัสและชื่ออะไหล่</TableCell>
                                 <TableCell>ราคาอะไหล่</TableCell>
                                 <TableCell>หน่วย</TableCell>
@@ -221,15 +222,18 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JO
                         <TableBody>
                             <TableRow>
                                 <TableCell>
-                                    <Checkbox checked={selectedService} onChange={handleServiceCheck}/>
+                                    <Checkbox checked={selectedService} onChange={handleServiceCheck} />
                                 </TableCell>
                                 <TableCell>
-                                    <img width={50} src={import.meta.env.VITE_IMAGE_DEFAULT}/>
+                                    <img width={50} src={import.meta.env.VITE_IMAGE_DEFAULT} />
                                 </TableCell>
+                                {/* <TableCell>-</TableCell> */}
                                 <TableCell>
                                     {serviceData.spcode}
                                     <br />
                                     {serviceData.spname}
+                                    <br />
+                                    {/* <TableCell>-</TableCell> */}
                                 </TableCell>
                                 <TableCell>{serviceData.price_multiple_gp}</TableCell>
                                 <TableCell>{serviceData.spunit}</TableCell>
@@ -263,11 +267,13 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JO
                                             {sp.spcode}
                                             <br />
                                             {sp.spname}
-                                            {/*<br/>*/}
+                                            <br />
+                                            <span>ตำแหน่งไดอะแกรม:</span> <span style={{ fontWeight: 'bold', color: 'green' }}>{sp.tracking_number ?? '-'}</span>
                                             {/*{sp.warranty}*/}
                                         </TableCell>
                                         <TableCell>{sp.price_per_unit}</TableCell>
                                         <TableCell>{sp.spunit}</TableCell>
+
                                     </TableRow>
                                 )
                             })}

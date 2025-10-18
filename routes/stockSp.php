@@ -16,10 +16,12 @@ Route::prefix('/stock-sp')->group(function () {
     Route::get('/shopEdit/{id}', [ShopController::class, 'edit'])->name('stockSp.shopEdit')->middleware('adminPermission');
     Route::post('/shopStore', [ShopController::class, 'store'])->name('shop.store');
     Route::get('/store-search/{is_code_cust_id}', [ShopController::class, 'searchStoreById'])->name('shop.search');
+    Route::get('/shopCreate', [ShopController::class, 'create'])->name('stockSp.shopCreate')->middleware('adminPermission');
+    Route::put('/shopUpdate/{id}', [ShopController::class, 'update'])->name('shop.update');
 
     //ดึงข้อมูลสต็อกสินค้าของร้านนั้นๆ
     Route::get('/shop/{is_code_cust_id}', [StockSpController::class, 'StockSpList'])->name('stockSp.list');
-    Route::get('/detail/{sp_code}/{is_code_cust_id}', [StockSpController::class,'detail'])->name('stockSp.detail');
+    Route::get('/detail/{sp_code}/{is_code_cust_id}', [StockSpController::class, 'detail'])->name('stockSp.detail');
     //    Route::get('/shop/{is_code_cust_id}', [StSpController::class, 'index'])->name('stockSp.list');
     Route::get('/search/{sp_code}/{is_code_cust_id}', [StockSpController::class, 'searchSku'])->name('stockSp.searchSku');
     Route::post('/store-many-sp', [StockSpController::class, 'storeManySp'])->name('stockSp.storeManySp');

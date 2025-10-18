@@ -330,18 +330,87 @@ class StockJobController extends Controller
         }
     }
 
+    // public function detailReadonly($stock_job_id = null)
+    // {
+    //     $job = StockJob::query()->where('stock_job_id', $stock_job_id)->first();
+    //     $job_detail = StockJobDetail::query()->where('stock_job_id', $stock_job_id)->get();
+    //     if ($job && $job_detail && $job_detail[0]['is_code_cust_id'] === Auth::user()->is_code_cust_id) {
+    //         return Inertia::render('Stores/StockSp/StockJobDetailReadonly', [
+    //             'job' => $job,
+    //             'job_detail' => $job_detail
+    //         ]);
+    //     } else {
+    //         abort(403);
+    //     }
+    // }
     public function detailReadonly($stock_job_id = null)
     {
-        $job = StockJob::query()->where('stock_job_id', $stock_job_id)->first();
-        $job_detail = StockJobDetail::query()->where('stock_job_id', $stock_job_id)->get();
-        if ($job && $job_detail && $job_detail[0]['is_code_cust_id'] === Auth::user()->is_code_cust_id) {
-            return Inertia::render('Stores/StockSp/StockJobDetailReadonly', [
-                'job' => $job,
-                'job_detail' => $job_detail
-            ]);
-        } else {
+        $job = StockJob::query()->where('stock_job_id', $stock_job_id)->firstOrFail();
+        $raw = StockJobDetail::query()->where('stock_job_id', $stock_job_id)->get();
+
+        if ($raw->isEmpty() || $raw[0]['is_code_cust_id'] !== Auth::user()->is_code_cust_id) {
             abort(403);
         }
+
+        $details = $raw->map(function ($jd) use ($job) {
+            // 1) สต็อกคงเหลือปัจจุบัน
+            $sp_count = StockSparePart::query()
+                ->where('sp_code', $jd->sp_code)
+                ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                ->value('qty_sp') ?? 0;
+
+            // 2) งานปรับเพิ่ม/ลด ที่กำลัง processing (ยกเว้นเรื่องอื่น ๆ ตาม logic เดิม)
+            $posJobs = StockJob::query()
+                ->where('type', 'เพิ่ม')
+                ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                ->where('job_status', 'processing')
+                ->get();
+
+            $negJobs = StockJob::query()
+                ->where('type', 'ลด')
+                ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                ->where('job_status', 'processing')
+                ->get();
+
+            $pos = 0;
+            $neg = 0;
+            foreach ($posJobs as $j) {
+                $d = StockJobDetail::query()->where('stock_job_id', $j->stock_job_id)->where('sp_code', $jd->sp_code)->first();
+                if ($d) $pos += (int)$d->sp_qty;
+            }
+            foreach ($negJobs as $j) {
+                $d = StockJobDetail::query()->where('stock_job_id', $j->stock_job_id)->where('sp_code', $jd->sp_code)->first();
+                if ($d) $neg += (int)$d->sp_qty;
+            }
+
+            // 3) งานซ่อมค้าง (pending)
+            $pendingJobs = JobList::query()
+                ->where('is_code_key', Auth::user()->is_code_cust_id)
+                ->where('status', 'pending')
+                ->get();
+            $inRepair = 0;
+            foreach ($pendingJobs as $pj) {
+                $sp = SparePart::query()->where('job_id', $pj->job_id)->where('sp_code', $jd->sp_code)->first();
+                if ($sp) $inRepair += (int)$sp->qty;
+            }
+
+            // 4) สต็อกพร้อมใช้งาน และ 5) หลังปรับ
+            $available = (int)$sp_count - (int)($neg + $inRepair) + (int)$pos;
+            $after = $job->type === 'เพิ่ม'
+                ? $available + (int)$jd->sp_qty
+                : $available - (int)$jd->sp_qty;
+
+            $arr = $jd->toArray();
+            $arr['count_sp'] = $sp_count;        // สต็อกคงเหลือ
+            $arr['total_aready'] = $available;   // สต็อกพร้อมใช้งาน
+            $arr['stock_after'] = $after;        // สต็อกหลังปรับ
+            return $arr;
+        });
+
+        return Inertia::render('Stores/StockSp/StockJobDetailReadonly', [
+            'job' => $job,
+            'job_detail' => $details,
+        ]);
     }
 
     public function delete($stock_job_id)

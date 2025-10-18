@@ -52,6 +52,7 @@ export default function Repair({ DATA }) {
                 const { data, status } = await axios.post(route('repair.search'), { SN, PID });
                 console.log(data, status);
                 const insurance_expire = data.data.data_from_api.insurance_expire || null;
+                const buy_date = data.data.buy_date || null;
                 const combo_set = data.data.combo_set;
                 const addWarranty = data.data.warranty_expire; // เก็บสถานะรับประกัน
                 const expire_date = data.data.expire_date || insurance_expire || null;
@@ -59,12 +60,12 @@ export default function Repair({ DATA }) {
                     setOpenSelSku(true);
                     let sku_list = data.data.sku_list;
                     sku_list = sku_list.map((item) => {
-                        return { ...item, warranty_status: addWarranty, expire_date }
+                        return { ...item, warranty_status: addWarranty, expire_date, buy_date }
                     })
                     setComboSets(sku_list)
                 } else {
                     let sku_list = data.data.sku_list[0];
-                    sku_list = { ...sku_list, warranty_status: addWarranty, expire_date }
+                    sku_list = { ...sku_list, warranty_status: addWarranty, expire_date, buy_date }
                     setDetail(sku_list);
                 }
 
@@ -121,6 +122,7 @@ export default function Repair({ DATA }) {
                                         warrantynote={detail.warrantynote || detail.warranty_note || ''}
                                         warrantyperiod={detail.warrantyperiod || detail.warranty_period || ''}
                                         expire_date={detail.expire_date}
+                                        buy_date={detail.buy_date}
                                     />
                                 )}
                                 <Button fullWidth onClick={() => setMiniSize(!miniSize)}>

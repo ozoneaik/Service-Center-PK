@@ -7,7 +7,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { ListDetailModal } from "@/Pages/HistoryPage/ListDetailModal.jsx";
-import { ChevronLeft, FilterList, ManageHistory, LocalPhone, Person, Search, Print } from "@mui/icons-material";
+import { ChevronLeft, FilterList, ManageHistory, LocalPhone, Person, Search, Print, FileUpload } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import { styled } from "@mui/material/styles";
 import { TableStyle } from "../../../css/TableStyle"
@@ -34,13 +34,14 @@ export const TableDetail = ({ jobs, handleShowDetail, url }) => {
             <TableHead>
                 <TableRow>
                     {(url.startsWith("/admin/history-job")
-                        ? ["รูปภาพ", "ซีเรียล", "รหัส job", "ศูนย์บริการ", "ข้อมูลลูกค้า", "ช่างที่ซ่อม", "สถานะ", "รายละเอียด"]
-                        : ["รูปภาพ", "ซีเรียล", "รหัส job", "ข้อมูลลูกค้า", "ช่างที่ซ่อม", "สถานะ", "รายละเอียด"]
+                        ? ["รูปภาพ", "ซีเรียล", "วันที่", "รหัส job", "ศูนย์บริการ", "ข้อมูลลูกค้า", "ช่างที่ซ่อม", "สถานะ", "รายละเอียด"]
+                        : ["รูปภาพ", "ซีเรียล", "วันที่", "รหัส job", "ข้อมูลลูกค้า", "ช่างที่ซ่อม", "สถานะ", "รายละเอียด"]
                     ).map((head, i) => (
                         <TableCell sx={TableStyle.TableHead} key={i}>{head}</TableCell>
                     ))}
                 </TableRow>
             </TableHead>
+
             <TableBody>
                 {jobs.map((job, index) => (
                     <TableRow key={index}>
@@ -49,6 +50,9 @@ export const TableDetail = ({ jobs, handleShowDetail, url }) => {
                             <Link href={route('repair.index', { job_id: job.job_id })}>
                                 {job.serial_id}
                             </Link>
+                        </TableCell>
+                        <TableCell>
+                            {job.created_at ? new Date(job.created_at).toLocaleString("th-TH") : "-"}
                         </TableCell>
                         <TableCell>
                             {job.job_id}
@@ -192,13 +196,15 @@ const FilterForm = ({ handleFilterChange, filters, setFilters, searchJobs }) => 
                     InputLabelProps={{ shrink: true }}
                 />
             </Grid2>
-
-            <Grid2 size={{ md: 1, xs: 12 }}>
-                <Button onClick={searchJobs} startIcon={<Search />}
-                    variant='contained'>ค้นหา
-                </Button>
-            </Grid2>
-            <Grid2 size={{ md: 1, xs: 12 }}>
+            <Grid2 size={{ md: 2, xs: 12 }}>
+                <Stack direction="row" spacing={1}>
+                    <Button
+                        onClick={searchJobs}
+                        startIcon={<Search />}
+                        variant="contained"
+                    >
+                        ค้นหา
+                    </Button>
                     <Button
                         variant="outlined"
                         color="warning"
@@ -220,11 +226,14 @@ const FilterForm = ({ handleFilterChange, filters, setFilters, searchJobs }) => 
                     >
                         ล้างตัวกรอง
                     </Button>
+                </Stack>
             </Grid2>
+
             {/* เพื่มการ Export */}
             <Grid2 size={{ md: 2, xs: 12 }}>
                 <Box display={"flex"} justifyContent={"flex-end"}>
                     <Button
+                        startIcon={<FileUpload />}
                         variant="contained"
                         color="success"
                         onClick={() => {
@@ -232,7 +241,7 @@ const FilterForm = ({ handleFilterChange, filters, setFilters, searchJobs }) => 
                             window.open(route("history.export") + "?" + query, "_blank");
                         }}
                     >
-                        Export
+                        ส่งออก Excel
                     </Button>
                 </Box>
             </Grid2>
@@ -273,6 +282,7 @@ const MobileDetail = ({ jobs, handleShowDetail, url }) => {
                                 <Link href={route('repair.index', { job_id: job.job_id })}>
                                     <TextDetail label='ซีเรียล' value={job.serial_id} />
                                 </Link>
+                                <TextDetail label='วันที่' value={job.created_at ? new Date(job.created_at).toLocaleString("th-TH") : "-"} />
                                 <TextDetail label='รหัส job' value={job.job_id} />
                                 <TextDetail label='ชื่อ/เบอร์โทรลูกค้า' value={job.name + job.phone} />
                                 {url.startsWith("/admin/history-job") && (

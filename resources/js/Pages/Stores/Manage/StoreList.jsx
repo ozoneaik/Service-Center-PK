@@ -85,11 +85,11 @@ const TableDetail = ({shops}) => {
     )
 }
 
-export default function StoreList({shops}) {
+export default function StoreList({shops, sales }) {
     const [addStoreOpen, setAddStoreOpen] = useState(false);
     return (
         <>
-            {addStoreOpen && <AddStore addStoreOpen={addStoreOpen} setAddStoreOpen={setAddStoreOpen}/>}
+            {addStoreOpen && <AddStore addStoreOpen={addStoreOpen} setAddStoreOpen={setAddStoreOpen} sales={sales} />}
             <AuthenticatedLayout>
                 <Head title="รายการร้านทั้งหมด"/>
                 <Container maxWidth='false' sx={{backgroundColor: 'white', p: 3}}>

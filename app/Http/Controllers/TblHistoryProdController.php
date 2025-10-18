@@ -91,7 +91,7 @@ class TblHistoryProdController extends Controller
                 'insurance'        => 'standard',
                 'approval'         => 'Y',
                 'status'           => 'enabled',
-                'reward'           => 'Y',
+                'reward'           => 'N',
                 'warranty_from'    => 'Service Center',
                 'create_at'        => Carbon::now(),
                 'updated_at'       => Carbon::now(),

@@ -1,4 +1,4 @@
-import { Button, Card, CardContent, Grid2, Stack, Typography } from "@mui/material";
+import { Button, Card, CardContent, Chip, Grid2, Stack, Typography } from "@mui/material";
 import { Box, useMediaQuery, useTheme } from "@mui/material";
 import { AlertDialog } from "@/Components/AlertDialog.js";
 import { useState } from "react";
@@ -52,6 +52,37 @@ export default function RowView({ spList, setSpList }) {
                     >
                         <Box
                             sx={{
+                                px: 1,
+                                py: isMobile ? 1.5 : 0,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                minWidth: isMobile ? '100%' : 100,
+                                gap: 0.5
+                            }}
+                        >
+                            <Typography variant="caption" color="text.secondary" textAlign="center" sx={{ fontSize: '12px', fontWeight: 'bold' }}>
+                                ตำแหน่งไดอะแกรม
+                            </Typography>
+                            <Chip
+                                size="small"
+
+                                label={`${item.tracking_number ?? '-'}`}
+                                color="default"
+                                sx={{
+                                    fontWeight: 'bold',
+                                    fontSize: '14px',
+                                    // margin: 0.5,
+                                    padding: 1,
+                                    // minWidth: 1,
+                                    // borderRadius: '8px',
+                                    display: 'flex', justifyContent: 'center',
+                                }}
+                            />
+                        </Box>
+                        <Box
+                            sx={{
                                 display: 'flex', justifyContent: 'center',
                                 padding: isMobile ? theme.spacing(2, 0, 0, 0) : 0
                             }}
@@ -95,15 +126,15 @@ export default function RowView({ spList, setSpList }) {
                                                 ไม่สามารถเพิ่มใส่ตะกร้าได้ เนื่องจากไม่พบราคา
                                             </Typography>
                                         ) : (
-                                            <Stack direction='row' spacing={2} alignItems='center'>
-                                                <Typography color='green' >
-                                                    ราคาทุน  ฿{parseFloat(item.price_per_unit).toFixed(2) ?? 0}
+                                            <Stack direction='row' spacing={2} alignItems='center' paddingTop={1}>
+                                                <Typography color='green' fontSize={14} fontWeight={'bold'}>
+                                                    <span style={{ color: 'black' }}>ราคาทุน:</span>  ฿{parseFloat(item.price_per_unit).toFixed(2) ?? 0}
                                                 </Typography>
-                                                <Typography color='gray' fontSize={12}>
-                                                    ราคาขาย เร็วๆนี้
+                                                <Typography color='gray' fontSize={14} fontWeight={'bold'}>
+                                                    <span>ราคาขาย: เร็วๆนี้</span>
                                                 </Typography>
-                                                <Typography color='gray' fontSize={12}>
-                                                    ราคาตั้ง ฿{parseFloat(item.stdprice_per_unit).toFixed(2) ?? 0}
+                                                <Typography color='green' fontSize={14} fontWeight={'bold'}>
+                                                    <span style={{ color: 'black' }}>ราคาตั้ง:</span> ฿{parseFloat(item.stdprice_per_unit).toFixed(2) ?? 0}
                                                 </Typography>
                                             </Stack>
                                         )

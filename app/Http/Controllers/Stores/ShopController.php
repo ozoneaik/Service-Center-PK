@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Stores;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ShopRequest;
+use App\Models\SaleInformation;
 use App\Models\StoreInformation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -56,24 +57,73 @@ class ShopController extends Controller
     public function edit($id): Response
     {
         $store = StoreInformation::query()->findOrFail($id);
-        return Inertia::render('Stores/Manage/EditStore',[
-            'store' => $store
+        $store->subdistrict = $store->sub_district;
+
+        $sales = SaleInformation::query()
+            ->select('id', 'sale_code', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return Inertia::render('Stores/Manage/EditStore', [
+            'store' => $store,
+            'sales' => $sales
         ]);
     }
 
     public function searchStoreById($is_code_cust_id): JsonResponse
     {
-        $store = StoreInformation::query()->where('is_code_cust_id',$is_code_cust_id)->first();
+        $store = StoreInformation::query()->where('is_code_cust_id', $is_code_cust_id)->first();
         if ($store) {
             return response()->json([
                 'message' => 'เจอข้อมูลร้าน',
                 'store' => $store
             ]);
-        }else{
+        } else {
             return response()->json([
                 'message' => 'ไม่เจอข้อมูลร้าน',
                 'store' => []
-            ],404);
+            ], 404);
+        }
+    }
+
+    public function create(): Response
+    {
+        $sales = SaleInformation::query()
+            ->select('id', 'sale_code', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return Inertia::render('Stores/Manage/AddStore', [
+            'sales' => $sales
+        ]);
+    }
+
+    public function update(ShopRequest $request, $id): RedirectResponse
+    {
+        try {
+            DB::beginTransaction();
+
+            $store = StoreInformation::query()->findOrFail($id);
+
+            $store->update([
+                // 'is_code_cust_id' => $request['is_code_cust_id'],
+                'shop_name'       => $request['shop_name'],
+                'phone'           => $request['phone'],
+                'address'         => $request['full_address'],
+                'address_sub'     => $request['address_sub'],
+                'province'        => $request['province'],
+                'district'        => $request['district'],
+                'subdistrict'    => $request['subdistrict'],
+                'sale_id'         => $request['sale_id'],
+                'line_id'         => $request->line_id ?? null,
+            ]);
+
+            DB::commit();
+            return Redirect::route('stockSp.shopList')
+                ->with('success', 'อัพเดทข้อมูลร้านเรียบร้อยแล้ว');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return Redirect::back()->with('error', $e->getMessage());
         }
     }
 }

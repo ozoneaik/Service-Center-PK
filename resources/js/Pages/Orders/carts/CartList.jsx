@@ -3,10 +3,11 @@ import { Head, Link, router, usePage } from "@inertiajs/react";
 import {
     Avatar, Box, Button, Card, CardContent, Divider, Grid2, IconButton, Stack, Typography, useMediaQuery
 } from "@mui/material";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
 import { ArrowBack, Check, Delete, Add, Remove, FileUpload } from "@mui/icons-material";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
+import Swal from "sweetalert2";
 
 const ListSp = ({ sps, sku_code, setGroups, groups }) => {
     const [SpPreview, setSpPreview] = useState(false);
@@ -141,7 +142,7 @@ const ListSp = ({ sps, sku_code, setGroups, groups }) => {
     )
 }
 
-export default function CartList({ groupSku, totalSp }) {
+export default function CartList({ groupSku, totalSp, flash }) {
     const [groups, setGroups] = useState(groupSku);
     const user = usePage().props.auth.user;
     const [address, setAddress] = useState(user.store_info.address);
@@ -156,6 +157,70 @@ export default function CartList({ groupSku, totalSp }) {
             }, 0);
         }, 0);
     }, [groups]);
+
+    // const handleExportPdf = async () => {
+    //     try {
+    //         setProcessing(true);
+    //         console.log("🚀 กำลังยิง API /orders/export-pdf-cart ...", { groups, address, phone });
+    //         const { data } = await axios.post('/orders/export-pdf-cart', {
+    //             groups,
+    //             address,
+    //             phone
+    //         });
+    //         console.log("📥 Response จาก Laravel:", data);
+    //         if (data.status === 'success') {
+    //             if (data.pdf_url) {
+    //                 const link = document.createElement('a');
+    //                 link.href = data.pdf_url;
+    //                 link.download = 'order.pdf';
+    //                 document.body.appendChild(link);
+    //                 link.click();
+    //                 document.body.removeChild(link);
+    //                 console.log("📄 ดาวน์โหลด PDF จาก URL:", data.pdf_url);
+    //             } else if (data.pdf_base64) {
+    //                 const link = document.createElement('a');
+    //                 link.href = data.pdf_base64;
+    //                 link.download = 'order.pdf';
+    //                 document.body.appendChild(link);
+    //                 link.click();
+    //                 document.body.removeChild(link);
+    //                 console.log("📄 ดาวน์โหลด PDF จาก Base64 สำเร็จ");
+    //             } else {
+    //                 AlertDialog({ title: 'ผิดพลาด', text: 'ไม่พบข้อมูล PDF ที่โหลดได้' });
+    //             }
+    //         } else {
+    //             AlertDialog({ title: 'ผิดพลาด', text: data.message });
+    //         }
+    //     } catch (error) {
+    //         console.error("❌ Error handleExportPdf:", error);
+    //         AlertDialog({
+    //             title: 'ผิดพลาด',
+    //             text: error.response?.data?.message || error.message
+    //         });
+    //     } finally {
+    //         setProcessing(false);
+    //     }
+    // };
+
+    const handleExportPdf = async () => {
+        try {
+            setProcessing(true);
+            console.log("🚀 กำลังยิง API /orders/export-pdf-cart ...", { groups, address, phone });
+            router.post(route('orders.export.pdf'), {
+                groups,
+                address,
+                phone
+            });
+        } catch (error) {
+            console.error("❌ Error handleExportPdf:", error);
+            AlertDialog({
+                title: 'ผิดพลาด',
+                text: error.response?.data?.message || error.message
+            });
+        } finally {
+            setProcessing(false);
+        }
+    };
 
     const handleConfirmOrder = () => {
         AlertDialogQuestion({
@@ -188,6 +253,43 @@ export default function CartList({ groupSku, totalSp }) {
         }
     }
 
+    useEffect(() => {
+        if (flash?.success) {
+            Swal.fire({
+                title: flash.success,
+                icon: 'success',
+                timer: 2500,
+                showConfirmButton: false,
+            });
+        }
+        if (flash?.error) {
+            Swal.fire({
+                title: 'เกิดข้อผิดพลาด',
+                text: flash.error,
+                icon: 'error'
+            });
+        }
+        // if (flash?.pdf_url) {
+        //     window.open(flash.pdf_url, '_blank');
+        // }
+        if (flash?.pdf_url) {
+            const newWindow = window.open(flash.pdf_url, '_blank');
+            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                Swal.fire({
+                    title: '⚠️ ไม่สามารถเปิดไฟล์ PDF ได้',
+                    text: 'เบราว์เซอร์ของคุณอาจบล็อกหน้าต่างป๊อปอัปไว้ กรุณาอนุญาตการเปิดป๊อปอัป หรือคลิกปุ่มด้านล่างเพื่อเปิดใหม่',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'เปิด PDF อีกครั้ง',
+                    cancelButtonText: 'ยกเลิก'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.open(flash.pdf_url, '_blank');
+                    }
+                });
+            }
+        }
+    }, [flash]);
 
     return (
         <AuthenticatedLayout>
@@ -255,7 +357,7 @@ export default function CartList({ groupSku, totalSp }) {
                                 startIcon={<FileUpload />} variant="contained"
                                 color="secondary"
                                 size="large"
-                                onClick={() => alert('เร็วๆนี้')}>
+                                onClick={handleExportPdf}>
                                 ส่งออก PDF
                             </Button>
                             &nbsp;&nbsp;

@@ -17,7 +17,7 @@ const fields = [
 
 ];
 
-export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave }) {
+export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave, sales }) {
     const [statusSaved, setStatusSaved] = useState(false);
      const { flash } = usePage().props
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -39,12 +39,17 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave }) {
     const [tambons, setTambons] = useState([]);
     const [loading, setLoading] = useState(false);
     const [apiError, setApiError] = useState("");
+    const [shouldSubmit, setShouldSubmit] = useState(false);
 
     const [selected, setSelected] = useState({
         province_id: "",
         amphure_id: "",
         tambon_id: ""
     });
+
+    useEffect(() => {
+        console.log("✅ sales จาก Controller:", sales);
+    }, [sales]);
 
     useEffect(() => {
         const fetchProvinces = async () => {
@@ -116,8 +121,8 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave }) {
 
         if (provinceId) {
             console.log(provinces);
-            
-            
+
+
             const province = provinces.find(p => p.id === provinceId);
             if (province) {
                 console.log(province);
@@ -167,31 +172,64 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave }) {
         setTambons([]);
     };
 
+    // const handleSubmit = (e) => {
+    //     e.preventDefault();
+    //     // สร้างข้อมูลที่จะส่งไป
+    //     const formData = {
+    //         ...data,
+    //         // สร้างที่อยู่แบบสมบูรณ์
+    //         full_address: `${data.address} ${data.subdistrict} ${data.district} ${data.province} ${data.zipcode}`
+    //     };
+    //     setData('full_address', formData.full_address);
+    //     console.log("บันทึกข้อมูล:", formData);
+    //     // ส่งข้อมูลกลับไปที่ component หลัก
+    //     //shop.store stockSp.shopList
+    //     post(route('shop.store'), {
+    //         preserveScroll: true,
+    //         onSuccess: (response) => {
+    //             console.log("✅ บันทึกสำเร็จ:", response);
+    //             setStatusSaved(true);
+    //         },
+    //         onError: (errors) => {
+    //             console.error("❌ เกิดข้อผิดพลาดจาก Backend:", errors);
+    //             setStatusSaved(true);
+    //         }
+    //     })
+    //     // if (onSave) { onSave(formData); }
+    //     // handleClose();
+    // };
+
+    useEffect(() => {
+        if (shouldSubmit && data.full_address) {
+            console.log("🚀 ส่งข้อมูลหลัง state update:", data);
+
+            post(route('shop.store'), {
+                preserveScroll: true,
+                onSuccess: (response) => {
+                    console.log("✅ บันทึกสำเร็จ:", response);
+                    setStatusSaved(true);
+                    setShouldSubmit(false);
+                    setTimeout(() => {
+                        handleClose();
+                        setStatusSaved(false);
+                    }, 2000);
+                },
+                onError: (errors) => {
+                    console.error("❌ เกิดข้อผิดพลาดจาก Backend:", errors);
+                    setStatusSaved(true);
+                    setShouldSubmit(false);
+                }
+            });
+        }
+    }, [data.full_address, shouldSubmit]);
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        // สร้างข้อมูลที่จะส่งไป
-        const formData = {
-            ...data,
-            // สร้างที่อยู่แบบสมบูรณ์
-            full_address: `${data.address} ${data.subdistrict} ${data.district} ${data.province} ${data.zipcode}`
-        };
-        setData('full_address',formData.full_address);
-        console.log("บันทึกข้อมูล:", formData);
-        // ส่งข้อมูลกลับไปที่ component หลัก
-        //shop.store stockSp.shopList
-        post(route('shop.store'), {
-            preserveScroll: true,
-            onSuccess: (response) => {
-                console.log("✅ บันทึกสำเร็จ:", response);
-                setStatusSaved(true);
-            },
-            onError: (errors) => {
-                console.error("❌ เกิดข้อผิดพลาดจาก Backend:", errors);
-                setStatusSaved(true);
-            }
-        })
-        // if (onSave) { onSave(formData); }
-        // handleClose();
+        console.log("🔍 ข้อมูลปัจจุบัน:", data);
+        const fullAddress = `${data.address} ${data.subdistrict} ${data.district} ${data.province} ${data.zipcode}`.trim();
+        console.log("📍 Full Address:", fullAddress);
+        setData('full_address', fullAddress);
+        setShouldSubmit(true);
     };
 
     return (
@@ -360,16 +398,25 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave }) {
                             </Typography>
                         </Grid2>
                         <Grid2 size={12}>
-                            <TextField
-                                label='รหัสเซลล์ (token ของ lark)' value={data.sale_id} fullWidth
-                                onChange={(e) => setData('sale_id', e.target.value)}
-                                type='text' size="small" required
-                                error={!!errors.sale_id}
-                                helperText={errors.sale_id}
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                            />
+                            <FormControl fullWidth size="small" required error={!!errors.sale_id}>
+                                <InputLabel id="sale-label">เลือกเซลล์</InputLabel>
+                                <Select
+                                    labelId="sale-label"
+                                    value={String(data.sale_id || "")}
+                                    onChange={(e) => setData('sale_id', e.target.value)}
+                                    label="เซลล์ประจำร้าน"
+                                >
+                                    <MenuItem value="">
+                                        <em>กรุณาเลือกเซลล์</em>
+                                    </MenuItem>
+                                    {sales?.map((sale) => (
+                                        <MenuItem key={sale.id} value={String(sale.id)}>
+                                            {sale.sale_code} - {sale.name}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                                {errors.sale_id && <FormHelperText>{errors.sale_id}</FormHelperText>}
+                            </FormControl>
                         </Grid2>
                     </Grid2>
 

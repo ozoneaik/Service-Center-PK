@@ -1,6 +1,5 @@
 import { Card, Grid2, Stack, Typography } from "@mui/material";
 
-
 export default function ProductDetail({
     serial = 'ไม่พบ',
     imagesku,
@@ -12,7 +11,8 @@ export default function ProductDetail({
     warrantynote = '',
     warrantyperiod = '',
     status_job,
-    expire_date
+    expire_date,
+    buy_date
 }) {
     const Detail = ({ value, title, Color = '#f55721' }) => (
         <Typography fontWeight='bold' variant="subtitle1" sx={{ color: 'black' }}>
@@ -26,6 +26,31 @@ export default function ProductDetail({
                 style={{ color: 'black' }}>ถึง</span> {to}</span>
         </Typography>
     )
+
+    //เช๊คสถานะการรับประกันกรณีเป็น false
+    const now = new Date();
+    let warrantyStatusText = warranty_status ? 'อยู่ในประกัน' : 'ไม่อยู่ในประกัน';
+    let warrantyColor = warranty_status ? 'green' : 'red';
+
+    if (!warranty_status) {
+        if (!buy_date) {
+            warrantyStatusText = 'ยังไม่ได้ลงทะเบียนรับประกัน';
+            warrantyColor = 'orange';
+        } else if (expire_date) {
+            const expireDate = new Date(expire_date);
+            if (expireDate < now) {
+                warrantyStatusText = 'หมดอายุการรับประกัน';
+                warrantyColor = 'red';
+            } else {
+                warrantyStatusText = 'ไม่อยู่ในประกัน';
+                warrantyColor = 'red';
+            }
+        } else {
+            warrantyStatusText = 'ไม่อยู่ในประกัน';
+            warrantyColor = 'red';
+        }
+    }
+
     return (
         <Grid2 container spacing={3} direction={{ lg: 'row', xs: 'column-reverse' }}>
             <Grid2 size={{ xs: 12, lg: 8 }}>
@@ -35,6 +60,7 @@ export default function ProductDetail({
                     <Typography variant='h5' fontWeight='bold'>S/N : {serial}</Typography>
                 </Stack>
                 <Stack direction='column' spacing={1}>
+
                     <Detail title={'ระยะเวลารับประกัน (เดือน)'} value={warrantyperiod} />
                     <Detail title={'เงื่อนไขการรับประกัน'} value={warrantycondition} />
                     <Detail title={'หมายเหตุรับประกัน'}
@@ -42,13 +68,23 @@ export default function ProductDetail({
                     {warranty && (
                         <>
                             {/*<DetailWarranty title={'ระยะประกัน'} to={'23-01-2024'} start={'23-01-2025'}/>*/}
-                            <Detail title={'สถานะรับประกัน'}
+                            {/* <Detail title={'สถานะรับประกัน'}
                                 value={warranty_status ? 'อยู่ในประกัน' : 'ไม่อยู่ในประกัน'}
-                                Color={warranty_status ? 'green' : 'red'} />
+                                Color={warranty_status ? 'green' : 'red'} /> */}
+                            <Detail title={'สถานะรับประกัน'}
+                                value={warrantyStatusText}
+                                Color={warrantyColor} />
                         </>
                     )}
                     {status_job && <Detail title={'สถานะการซ่อม'} value={warrantynote} />}
-                    {warranty_status && <Detail title={'วันที่หมดประกัน'} value={expire_date} />}
+                    {buy_date && (
+                        <Detail
+                            title={'วันที่ซื้อสินค้า'}
+                            value={buy_date}
+                        />
+                    )}
+                    {warrantyStatusText && <Detail title={'วันที่หมดประกัน'} value={expire_date} />}
+                    {/* <Detail title={'วันที่หมดประกัน'} value={expire_date} /> */}
                 </Stack>
 
             </Grid2>

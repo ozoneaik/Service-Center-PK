@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ShopRequest extends FormRequest
 {
@@ -22,7 +23,13 @@ class ShopRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'is_code_cust_id' => ['required', 'string', 'max:255', 'unique:store_information,is_code_cust_id'],            // รหัสร้านต้องไม่ว่าง
+            // 'is_code_cust_id' => ['required', 'string', 'max:255', 'unique:store_information,is_code_cust_id'],            // รหัสร้านต้องไม่ว่าง
+            'is_code_cust_id' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('store_information', 'is_code_cust_id')->ignore($this->id),
+            ],
             'shop_name' => ['required', 'string', 'max:255'],        // ชื่อร้านต้องไม่ว่าง
             'address' => ['required', 'string', 'max:500'],          // ที่อยู่ต้องไม่ว่าง
             'phone' => ['required', 'regex:/^0[0-9]{9}$/'],         // เบอร์โทรต้องเป็นตัวเลข 10 หลัก (ขึ้นต้นด้วย 0)

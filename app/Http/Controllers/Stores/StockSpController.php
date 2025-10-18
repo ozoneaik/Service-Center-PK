@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StockSpRequest;
 use App\Models\Bill;
 use App\Models\JobList;
+use App\Models\SaleInformation;
 use App\Models\SparePart;
 use App\Models\StockJob;
 use App\Models\StockJobDetail;
 use App\Models\StockSparePart;
 use App\Models\StoreInformation;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,7 +40,15 @@ class StockSpController extends Controller
                 ->value('total_sp_qty'); // ดึงค่า SUM จริง ๆ
         }
 
-        return Inertia::render('Stores/Manage/StoreList', ['shops' => $shops]);
+        $sales = SaleInformation::select('id', 'sale_code', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return Inertia::render('Stores/Manage/StoreList', [
+            'shops' => $shops,
+            'sales' => $sales
+        ]);
+        // return Inertia::render('Stores/Manage/StoreList', ['shops' => $shops]);
     }
 
     // หน้าแสดงสต็อกรายการอะไหล่
@@ -280,12 +290,116 @@ class StockSpController extends Controller
         }
     }
 
-    public function detail($sp_code, $is_code_cust_id)
+
+    // public function detail($sp_code, $is_code_cust_id)
+    // {
+    //     return response()->json([
+    //         'message' => 'พบข้อมูล',
+    //         'sp_code' => $sp_code,
+    //         'is_code_cust_id' => $is_code_cust_id
+    //     ]);
+    // }
+
+    // App/Http/Controllers/Stores/StockSpController.php
+
+    public function detail($sp_code, $is_code_cust_id): JsonResponse
     {
+        $currentStock = StockSparePart::query()
+            ->where('is_code_cust_id', $is_code_cust_id)
+            ->where('sp_code', $sp_code)
+            ->value('qty_sp') ?? 0;
+
+        // --- ปรับปรุงสต็อก (เพิ่ม/ลด) : join users ด้วย user_code ---
+        $adjustments = StockJobDetail::query()
+            ->leftJoin('stock_jobs', 'stock_jobs.stock_job_id', '=', 'stock_job_details.stock_job_id')
+            ->leftJoin('users', 'users.user_code', '=', 'stock_job_details.user_code_key')
+            ->where('stock_job_details.sp_code', $sp_code)
+            ->where('stock_jobs.is_code_cust_id', $is_code_cust_id)
+            ->where('stock_jobs.job_status', 'complete') // ✅ นับเฉพาะที่ปิดงานแล้ว
+            ->select([
+                'stock_jobs.stock_job_id',
+                'stock_jobs.type',
+                'stock_jobs.created_at as date_at',
+                'stock_jobs.updated_at as updated_at',
+                'stock_job_details.sp_qty',
+                DB::raw("COALESCE(users.name, users.user_code, stock_job_details.user_code_key, 'ไม่ระบุ') as actor"),
+            ])
+            ->get()
+            ->map(function ($r) {
+                $sign = $r->type === 'เพิ่ม' ? 1 : -1;
+                $tran = $sign * (int) $r->sp_qty;
+
+                $date    = $r->date_at ? Carbon::parse($r->date_at) : null;
+                $updated = $r->updated_at ? Carbon::parse($r->updated_at) : null;
+
+                return [
+                    'date'       => $date ? $date->format('Y-m-d') : null,
+                    'ref'        => 'JOB-STOCK' . $r->stock_job_id,
+                    'type'       => 'ปรับปรุง',
+                    'tran'       => $tran,
+                    'updated_at' => $updated ? $updated->format('Y-m-d H:i:s') : null,
+                    'actor'      => $r->actor,
+                    'sort_at'    => $date ? $date->timestamp : 0,
+                ];
+            })
+            ->values()
+            ->toBase();
+
+        // --- ซ่อม (ลบออก) -> Base Collection ---
+        $repairs = SparePart::query()
+            ->leftJoin('job_lists', 'job_lists.job_id', '=', 'spare_parts.job_id')
+            ->leftJoin('users as u_creator', 'u_creator.user_code', '=', 'job_lists.user_key')
+            ->leftJoin('users as u_closer',  'u_closer.user_code',  '=', 'job_lists.close_job_by')
+            ->where('spare_parts.sp_code', $sp_code)
+            ->where('job_lists.is_code_key', $is_code_cust_id)
+            ->whereIn('job_lists.status', ['success', 'complete']) // ✅ ปิดงานแล้วเท่านั้น
+            ->select([
+                'spare_parts.qty',
+                'spare_parts.created_at as date_at',
+                'job_lists.updated_at as updated_at',
+                'spare_parts.job_id',
+                DB::raw("COALESCE(u_closer.name, u_closer.user_code, u_creator.name, u_creator.user_code, 'ไม่ระบุ') as actor"),
+            ])
+            ->get()
+            ->map(function ($r) {
+                $date    = $r->date_at ? Carbon::parse($r->date_at) : null;
+                $updated = $r->updated_at ? Carbon::parse($r->updated_at) : null;
+
+                return [
+                    'date'       => $date ? $date->format('Y-m-d') : null,
+                    'ref'        => $r->job_id,
+                    'type'       => 'ซ่อม',
+                    'tran'       => -1 * (int) $r->qty,
+                    'updated_at' => $updated ? $updated->format('Y-m-d H:i:s') : null,
+                    'actor'      => $r->actor,
+                    'sort_at'    => $date ? $date->timestamp : 0,
+                ];
+            })
+            ->values()
+            ->toBase();
+
+        // รวม + เรียงเวลา (ทั้งสองเป็น Base แล้ว จึง merge ได้ปลอดภัย)
+        $rows = $adjustments->concat($repairs) // จะใช้ ->merge() ก็ได้
+            ->sortBy('sort_at')
+            ->values();
+
+        // คำนวณ before/after ด้วย map
+        $running = 0;
+        $rows = $rows->map(function ($row) use (&$running) {
+            $before = $running;
+            $after  = $before + (int) $row['tran'];
+            $running = $after;
+            $row['before'] = $before;
+            $row['after']  = $after;
+            return $row;
+        });
+
         return response()->json([
-            'message' => 'พบข้อมูล',
-            'sp_code' => $sp_code,
-            'is_code_cust_id' => $is_code_cust_id
+            'message'         => 'พบข้อมูล',
+            'sp_code'         => $sp_code,
+            'is_code_cust_id' => $is_code_cust_id,
+            'current_stock'   => (int) $currentStock,
+            'transactions'    => $rows->values(),
         ]);
     }
 }

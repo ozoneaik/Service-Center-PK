@@ -36,57 +36,419 @@ class OrderController extends Controller
         ]);
     }
 
+    //default
+    // public function search($sku)
+    // {
+    //     $Api = env('VITE_API_ORDER');
+    //     $imagePath = env('VITE_IMAGE_PATH');
+    //     $message = '';
+    //     $result = [];
+    //     $status = 500;
+    //     try {
+    //         $response = Http::post($Api, ['pid' => $sku, 'view' => 'single']);
+
+    //         if ($response->successful()) {
+    //             $data = $response->json();
+    //             if (isset($data['status']) && $data['status'] === 'SUCCESS') {
+    //                 $status = 200;
+    //                 $result = $data['assets'][0];
+    //                 foreach ($result['sp'] as $key => $resultItem) {
+    //                     $result['sp'][$key] = $resultItem;
+    //                     $result['sp'][$key]['skufg'] = $sku;
+    //                     $result['sp'][$key]['pname'] = $data['assets'][0]['pname'];
+    //                     $result['sp'][$key]['imagesku'] = $data['assets'][0]['imagesku'];
+    //                     $Carts = Cart::query()
+    //                         ->where('sp_code', $result['sp'][$key]['spcode'])
+    //                         ->where('is_active', false)
+    //                         ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+    //                         ->first();
+    //                     if ($Carts) {
+    //                         $result['sp'][$key]['added'] = true;
+    //                     } else {
+    //                         $result['sp'][$key]['added'] = false;
+    //                     }
+    //                     $result['sp'][$key]['remark'] = 'มาจากการสั่งซื้อ';
+    //                     $result['sp'][$key]['path_file'] = env('VITE_IMAGE_SP') . $result['sp'][$key]['spcode'] . ".jpg";
+    //                 }
+    //             } else throw new \Exception('ไม่พบรหัสสินค้านี้');
+    //         } else throw new \Exception('มีปัญหากับ API');
+    //     } catch (\Exception $e) {
+    //         $message = $e->getMessage();
+    //         $status = 400;
+    //     }
+
+    //     return Inertia::render('Orders/OrderList', [
+    //         'message' => $message ?? '',
+    //         'sku' => $sku ?? null,
+    //         'result' => $result ?? [],
+    //     ]);
+
+    //     // return response()->json([
+    //     //     'message' => $message,
+    //     //     'sku' => $sku,
+    //     //     'result' => $result,
+    //     // ], $status);
+    // }
+
+    //check layout inside outside
+    // public function search($sku)
+    // {
+    //     $Api = env('VITE_API_ORDER');
+    //     $DiagramApi = env('VITE_API_DIAGRAM_NEW');
+    //     $message = '';
+    //     $result = [];
+    //     $status = 500;
+
+    //     try {
+    //         $response = Http::post($Api, ['pid' => $sku, 'view' => 'single']);
+    //         if (!$response->successful()) throw new \Exception('API สินค้าหลักไม่ตอบกลับ');
+
+    //         $data = $response->json();
+    //         if (($data['status'] ?? '') !== 'SUCCESS') throw new \Exception('ไม่พบรหัสสินค้านี้');
+
+    //         $result = $data['assets'][0];
+    //         $status = 200;
+
+    //         $diagramRes = Http::post($DiagramApi, [
+    //             'pid' => $sku,
+    //             'view' => 'single'
+    //         ]);
+
+    //         $diagramLayers = [];
+    //         $diagramMap = [];
+
+    //         if ($diagramRes->successful()) {
+    //             $diagramData = $diagramRes->json();
+    //             if (is_array($diagramData)) {
+    //                 foreach ($diagramData as $dm) {
+    //                     if (isset($dm['image']) && is_array($dm['image'])) {
+    //                         foreach ($dm['image'] as $index => $img) {
+    //                             $diagramLayers[] = [
+    //                                 'layer' => "รูปที่ " . ($index + 1),
+    //                                 'path_file' => $img['path_file'],
+    //                                 'layer_char' => $index === 0 ? 'outside' : 'inside',
+    //                             ];
+    //                         }
+    //                     }
+
+    //                     if (isset($dm['list']) && is_array($dm['list'])) {
+    //                         foreach ($dm['list'] as $item) {
+    //                             $sp = $item['skusp'] ?? null;
+    //                             if (!$sp) continue;
+    //                             $diagramMap[$sp] = [
+    //                                 'tracking' => $item['tracking_number'] ?? null,
+    //                                 'layout'   => $item['layout'] ?? 'outside',
+    //                             ];
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         } else {
+    //             Log::warning("⚠️ Diagram API failed", ['status' => $diagramRes->status()]);
+    //         }
+
+    //         foreach ($result['sp'] as $key => $resultItem) {
+    //             $spcode = $resultItem['spcode'];
+    //             $result['sp'][$key] = $resultItem;
+    //             $result['sp'][$key]['skufg'] = $sku;
+    //             $result['sp'][$key]['pname'] = $result['pname'] ?? '';
+    //             $result['sp'][$key]['imagesku'] = $result['imagesku'] ?? '';
+
+    //             if (isset($diagramMap[$spcode])) {
+    //                 $result['sp'][$key]['tracking_number'] = $diagramMap[$spcode]['tracking'];
+    //                 $result['sp'][$key]['layout'] = $diagramMap[$spcode]['layout'];
+    //             } else {
+    //                 $result['sp'][$key]['tracking_number'] = null;
+    //                 $result['sp'][$key]['layout'] = 'outside';
+    //             }
+
+    //             $Carts = Cart::query()
+    //                 ->where('sp_code', $spcode)
+    //                 ->where('is_active', false)
+    //                 ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+    //                 ->first();
+
+    //             $result['sp'][$key]['added'] = (bool)$Carts;
+    //             $result['sp'][$key]['remark'] = 'มาจากการสั่งซื้อ';
+    //             $result['sp'][$key]['path_file'] = env('VITE_IMAGE_SP') . $spcode . ".jpg";
+    //         }
+    //         $result['diagram_layers'] = $diagramLayers;
+    //     } catch (\Exception $e) {
+    //         $message = $e->getMessage();
+    //         $status = 400;
+    //     }
+
+    //     return Inertia::render('Orders/OrderList', [
+    //         'message' => $message,
+    //         'sku' => $sku,
+    //         'result' => $result,
+    //     ]);
+    // }
+
+    // public function search($sku)
+    // {
+    //     $Api = env('VITE_API_ORDER');
+    //     $DiagramApi = env('VITE_API_DIAGRAM_NEW_TWO');
+    //     $message = '';
+    //     $result = [];
+    //     $status = 500;
+
+    //     try {
+    //         $response = Http::post($Api, ['pid' => $sku, 'view' => 'single']);
+    //         if (!$response->successful()) throw new \Exception('API สินค้าหลักไม่ตอบกลับ');
+
+    //         $data = $response->json();
+    //         if (($data['status'] ?? '') !== 'SUCCESS') throw new \Exception('ไม่พบรหัสสินค้านี้');
+
+    //         $result = $data['assets'][0];
+    //         $status = 200;
+
+    //         $diagramRes = Http::post($DiagramApi, [
+    //             'pid' => $sku,
+    //             'views' => 'single'
+    //         ]);
+
+    //         $diagramLayers = [];
+    //         $diagramMap = [];
+
+    //         if ($diagramRes->successful()) {
+    //             $diagramData = $diagramRes->json();
+
+    //             if (is_array($diagramData) && count($diagramData) > 0) {
+    //                 // ตรวจว่ามี typedm เดียวหรือหลายอัน
+    //                 $typedmList = collect($diagramData)->pluck('typedm')->filter()->unique()->values();
+    //                 $hasSingleType = $typedmList->count() <= 1;
+
+    //                 foreach ($diagramData as $dm) {
+    //                     $type = $dm['typedm'] ?? 'DM01';
+
+    //                     if ($hasSingleType) {
+    //                         if (isset($dm['image']) && is_array($dm['image'])) {
+    //                             foreach ($dm['image'] as $index => $img) {
+    //                                 $diagramLayers[] = [
+    //                                     'layer' => "รูปที่ " . ($index + 1),
+    //                                     'path_file' => $img['path_file'],
+    //                                     'layer_char' => $index === 0 ? 'outside' : 'inside',
+    //                                     'typedm' => 'DM01',
+    //                                 ];
+    //                             }
+    //                         }
+    //                         if (isset($dm['list']) && is_array($dm['list'])) {
+    //                             foreach ($dm['list'] as $item) {
+    //                                 $sp = $item['skusp'] ?? null;
+    //                                 if (!$sp) continue;
+    //                                 $layout = $item['layout'] ?? 'outside';
+    //                                 if (!$layout && isset($item['namefile_dm'])) {
+    //                                     $layout = str_contains(strtolower($item['namefile_dm']), 'inside')
+    //                                         ? 'inside'
+    //                                         : 'outside';
+    //                                 }
+
+    //                                 $diagramMap[$sp] = [
+    //                                     'tracking' => $item['tracking_number'] ?? null,
+    //                                     'layout' => $layout,
+    //                                     'typedm' => 'DM01',
+    //                                 ];
+    //                             }
+    //                         }
+    //                     }
+    //                     else {
+    //                         if (isset($dm['image']) && is_array($dm['image'])) {
+    //                             foreach ($dm['image'] as $index => $img) {
+    //                                 $diagramLayers[] = [
+    //                                     'layer' => "DM {$type} - รูปที่ " . ($index + 1),
+    //                                     'path_file' => $img['path_file'],
+    //                                     'layer_char' => $index === 0 ? 'outside' : 'inside',
+    //                                     'typedm' => $type,
+    //                                 ];
+    //                             }
+    //                         }
+    //                         if (isset($dm['list']) && is_array($dm['list'])) {
+    //                             foreach ($dm['list'] as $item) {
+    //                                 $sp = $item['skusp'] ?? null;
+    //                                 if (!$sp) continue;
+    //                                 $diagramMap[$sp] = [
+    //                                     'tracking' => $item['tracking_number'] ?? null,
+    //                                     'layout' => $item['layout'] ?? 'outside',
+    //                                     'typedm' => $type,
+    //                                 ];
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         } else {
+    //             Log::warning("⚠️ Diagram API failed", ['status' => $diagramRes->status()]);
+    //         }
+    //         foreach ($result['sp'] as $key => $resultItem) {
+    //             $spcode = $resultItem['spcode'];
+    //             $result['sp'][$key] = $resultItem;
+    //             $result['sp'][$key]['skufg'] = $sku;
+    //             $result['sp'][$key]['pname'] = $result['pname'] ?? '';
+    //             $result['sp'][$key]['imagesku'] = $result['imagesku'] ?? '';
+
+    //             if (isset($diagramMap[$spcode])) {
+    //                 $result['sp'][$key]['tracking_number'] = $diagramMap[$spcode]['tracking'];
+    //                 $result['sp'][$key]['layout'] = $diagramMap[$spcode]['layout'];
+    //                 $result['sp'][$key]['typedm'] = $diagramMap[$spcode]['typedm'] ?? 'DM01';
+    //             } else {
+    //                 $result['sp'][$key]['tracking_number'] = null;
+    //                 $result['sp'][$key]['layout'] = 'outside';
+    //                 $result['sp'][$key]['typedm'] = 'DM01';
+    //             }
+
+    //             $Carts = Cart::query()
+    //                 ->where('sp_code', $spcode)
+    //                 ->where('is_active', false)
+    //                 ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+    //                 ->first();
+
+    //             $result['sp'][$key]['added'] = (bool)$Carts;
+    //             $result['sp'][$key]['remark'] = 'มาจากการสั่งซื้อ';
+    //             $result['sp'][$key]['path_file'] = env('VITE_IMAGE_SP') . $spcode . ".jpg";
+    //         }
+    //         $result['diagram_layers'] = $diagramLayers;
+    //     } catch (\Exception $e) {
+    //         $message = $e->getMessage();
+    //         $status = 400;
+    //     }
+    //     return Inertia::render('Orders/OrderList', [
+    //         'message' => $message,
+    //         'sku' => $sku,
+    //         'result' => $result,
+    //     ]);
+    // }
+
+    //ใหม่ล่าสุด
     public function search($sku)
     {
         $Api = env('VITE_API_ORDER');
-        $imagePath = env('VITE_IMAGE_PATH');
+        $DiagramApi = env('VITE_API_DIAGRAM_NEW_TWO');
+
         $message = '';
         $result = [];
         $status = 500;
+
         try {
             $response = Http::post($Api, ['pid' => $sku, 'view' => 'single']);
+            if (!$response->successful()) throw new \Exception('API สินค้าหลักไม่ตอบกลับ');
 
-            if ($response->successful()) {
-                $data = $response->json();
-                if (isset($data['status']) && $data['status'] === 'SUCCESS') {
-                    $status = 200;
-                    $result = $data['assets'][0];
-                    foreach ($result['sp'] as $key => $resultItem) {
-                        $result['sp'][$key] = $resultItem;
-                        $result['sp'][$key]['skufg'] = $sku;
-                        $result['sp'][$key]['pname'] = $data['assets'][0]['pname'];
-                        $result['sp'][$key]['imagesku'] = $data['assets'][0]['imagesku'];
-                        $Carts = Cart::query()
-                            ->where('sp_code', $result['sp'][$key]['spcode'])
-                            ->where('is_active', false)
-                            ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
-                            ->first();
-                        if ($Carts) {
-                            $result['sp'][$key]['added'] = true;
-                        } else {
-                            $result['sp'][$key]['added'] = false;
+            $data = $response->json();
+            if (($data['status'] ?? '') !== 'SUCCESS') throw new \Exception('ไม่พบรหัสสินค้านี้');
+
+            $result = $data['assets'][0] ?? [];
+            $status = 200;
+
+            $diagramRes = Http::post($DiagramApi, [
+                'pid'   => $sku,
+                'views' => 'single'
+            ]);
+
+            $diagramLayers = [];      // [{modelfg, layer, path_file}]
+            $diagramMap = [];         // spcode => ['modelfg' => '...', 'tracking' => ..., 'layout' => ...]
+            $modelOptions = [];       // unique list of modelfg
+
+            if ($diagramRes->successful()) {
+                $diagramData = $diagramRes->json();
+
+                if (is_array($diagramData)) {
+                    foreach ($diagramData as $dm) {
+                        $model = $dm['modelfg'] ?? ($result['facmodel'] ?? null);
+
+                        // เก็บรายการรูปภาพตามโมเดล
+                        // if (isset($dm['image']) && is_array($dm['image'])) {
+                        //     foreach ($dm['image'] as $index => $img) {
+                        //         $diagramLayers[] = [
+                        //             'modelfg'   => $model,
+                        //             'layer'     => 'รูปที่ ' . ($index + 1),
+                        //             'path_file' => $img['path_file'] ?? null,
+                        //         ];
+                        //     }
+                        // }
+                        if (isset($dm['image']) && is_array($dm['image'])) {
+                            foreach ($dm['image'] as $index => $img) {
+                                // หา layout ของรูป
+                                $layerChar = null;
+                                if (!empty($img['layout'])) {
+                                    $layerChar = strtolower($img['layout']);
+                                } elseif (!empty($img['namefile_dm']) && str_contains(strtolower($img['namefile_dm']), 'inside')) {
+                                    $layerChar = 'inside';
+                                } else {
+                                    // fallback: รูปแรก outside, รูปถัดไป inside
+                                    $layerChar = $index === 0 ? 'outside' : 'inside';
+                                }
+
+                                $diagramLayers[] = [
+                                    'modelfg'    => $model,
+                                    'layer'      => 'รูปที่ ' . ($index + 1),
+                                    'path_file'  => $img['path_file'] ?? null,
+                                    'layer_char' => $layerChar,
+                                    // 'typedm'   => $dm['typedm'] ?? 'DM01', // ถ้าอยากส่งไปด้วยก็ได้
+                                ];
+                            }
                         }
-                        $result['sp'][$key]['remark'] = 'มาจากการสั่งซื้อ';
-                        $result['sp'][$key]['path_file'] = env('VITE_IMAGE_SP') . $result['sp'][$key]['spcode'] . ".jpg";
+
+                        if (isset($dm['list']) && is_array($dm['list'])) {
+                            foreach ($dm['list'] as $item) {
+                                $sp = $item['skusp'] ?? null;
+                                if (!$sp) continue;
+
+                                $diagramMap[$sp] = [
+                                    'modelfg' => $item['modelfg'] ?? $model,
+                                    'tracking' => $item['tracking_number'] ?? null,
+                                    'layout'   => $item['layout'] ?? 'outside',
+                                ];
+                                if (!empty($diagramMap[$sp]['modelfg'])) {
+                                    $modelOptions[] = $diagramMap[$sp]['modelfg'];
+                                }
+                            }
+                        }
                     }
-                } else throw new \Exception('ไม่พบรหัสสินค้านี้');
-            } else throw new \Exception('มีปัญหากับ API');
+                }
+            } else {
+                Log::warning("⚠️ Diagram API failed", ['status' => $diagramRes->status()]);
+            }
+
+            $modelOptions = array_values(array_unique(array_filter($modelOptions)));
+            foreach ($result['sp'] as $key => $item) {
+                $spcode = $item['spcode'] ?? null;
+                $result['sp'][$key]['skufg']     = $sku;
+                $result['sp'][$key]['pname']     = $result['pname'] ?? '';
+                $result['sp'][$key]['imagesku']  = $result['imagesku'] ?? '';
+                $result['sp'][$key]['path_file'] = env('VITE_IMAGE_SP') . $spcode . ".jpg";
+
+                if ($spcode && isset($diagramMap[$spcode])) {
+                    $result['sp'][$key]['modelfg']         = $diagramMap[$spcode]['modelfg'] ?? ($result['facmodel'] ?? null);
+                    $result['sp'][$key]['tracking_number'] = $diagramMap[$spcode]['tracking'] ?? null;
+                    $result['sp'][$key]['layout']          = $diagramMap[$spcode]['layout'] ?? 'outside';
+                } else {
+                    $result['sp'][$key]['modelfg']         = $result['facmodel'] ?? null;
+                    $result['sp'][$key]['tracking_number'] = null;
+                    $result['sp'][$key]['layout']          = 'outside';
+                }
+
+                // ติดสถานะในตะกร้า
+                $Carts = Cart::query()
+                    ->where('sp_code', $spcode)
+                    ->where('is_active', false)
+                    ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                    ->first();
+                $result['sp'][$key]['added']  = (bool) $Carts;
+                $result['sp'][$key]['remark'] = 'มาจากการสั่งซื้อ';
+            }
+
+            $result['model_options']  = $modelOptions;
+            $result['diagram_layers'] = $diagramLayers;
         } catch (\Exception $e) {
             $message = $e->getMessage();
-            $status = 400;
+            $status  = 400;
         }
 
         return Inertia::render('Orders/OrderList', [
-            'message' => $message ?? '',
-            'sku' => $sku ?? null,
-            'result' => $result ?? [],
+            'message' => $message,
+            'sku'     => $sku,
+            'result'  => $result,
         ]);
-
-        // return response()->json([
-        //     'message' => $message,
-        //     'sku' => $sku,
-        //     'result' => $result,
-        // ], $status);
     }
 
     public function history(): Response
@@ -116,27 +478,57 @@ class OrderController extends Controller
         return Inertia::render('Orders/OrderSuccess', ['message' => $message]);
     }
 
-
-    //    Cart Controller
+    // Cart Controller
+    // public function cartList(): Response
+    // {
+    //     $sku_image_path = env('VITE_IMAGE_PID');
+    //     $groupSku = Cart::query()->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+    //         ->where('is_active', false)
+    //         ->select('sku_code', 'sku_name')
+    //         ->groupBy('sku_code', 'sku_name')
+    //         ->get();
+    //     $totalSp = 0;
+    //     foreach ($groupSku as $key => $group) {
+    //         $group['sku_image_path'] = $sku_image_path . $group['sku_code'] . ".jpg";
+    //         $group['list'] = Cart::query()->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+    //             ->where('is_active', false)
+    //             ->where('sku_code', $group->sku_code)
+    //             ->get();
+    //         $totalSp += $group['list']->count();
+    //     }
+    //     return Inertia::render('Orders/carts/CartList', ['groupSku' => $groupSku, 'totalSp' => $totalSp]);
+    // }
 
     public function cartList(): Response
     {
-        $sku_image_path = env('VITE_IMAGE_SKU');
-        $groupSku = Cart::query()->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+        $sku_image_path = env('VITE_IMAGE_PID');
+        $groupSku = Cart::query()
+            ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
             ->where('is_active', false)
             ->select('sku_code', 'sku_name')
             ->groupBy('sku_code', 'sku_name')
             ->get();
+
         $totalSp = 0;
-        foreach ($groupSku as $key => $group) {
+        foreach ($groupSku as $group) {
             $group['sku_image_path'] = $sku_image_path . $group['sku_code'] . ".jpg";
-            $group['list'] = Cart::query()->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+            $group['list'] = Cart::query()
+                ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
                 ->where('is_active', false)
                 ->where('sku_code', $group->sku_code)
                 ->get();
             $totalSp += $group['list']->count();
         }
-        return Inertia::render('Orders/carts/CartList', ['groupSku' => $groupSku, 'totalSp' => $totalSp]);
+
+        return Inertia::render('Orders/carts/CartList', [
+            'groupSku' => $groupSku,
+            'totalSp' => $totalSp,
+            'flash' => [
+                'success' => session('success'),
+                'error' => session('error'),
+                'pdf_url' => session('pdf_url'),
+            ]
+        ]);
     }
 
     public function addCart(Request $request): JsonResponse
@@ -341,37 +733,300 @@ class OrderController extends Controller
         }
     }
 
+    //ฟังก์ชั่น Export PDF 
+    public function exportPdfFromCart(Request $request)
+    {
+        try {
+            Log::info('📥 เริ่ม Export PDF จาก Cart', $request->all());
+
+            $groups = $request->input('groups', []);
+            $address = $request->input('address', Auth::user()->store_info->address ?? '');
+            $custName = Auth::user()->store_info->shop_name ?? Auth::user()->name;
+
+            if (empty($groups)) {
+                throw new \Exception("ไม่พบข้อมูลสินค้าในตะกร้า");
+            }
+
+            $payload = [
+                "req" => "path",
+                "regenqu" => "Y",
+                "doc_title" => "ใบคำสั่งซื้อ (SO)",
+                "typeservice" => "SO",
+                "custaddr" => $address,
+                "custnamesc" => $custName,
+                "sku" => []
+            ];
+
+            foreach ($groups as $group) {
+                foreach ($group['list'] as $sp) {
+                    $payload["sku"][] = [
+                        "pid"   => $sp['sp_code'] ?? null,
+                        "name"  => $sp['sp_name'] ?? '',
+                        "qty"   => $sp['qty'] ?? 1,
+                        "unit"  => $sp['sp_unit'] ?? 'ชิ้น',
+                        "price" => number_format($sp['price_per_unit'] ?? 0, 2, '.', '')
+                    ];
+                }
+            }
+
+            Log::info('📤 Payload ส่งไปยัง PDF API', $payload);
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json'
+            ])->post("http://192.168.0.13/genpdf/api/gen_so", $payload);
+
+            if (!$response->successful()) {
+                throw new \Exception("PDF API error: " . $response->body());
+            }
+
+            $body = trim($response->body());
+            $pdfUrl = null;
+
+            // ตรวจจับรูปแบบ URL หรือไฟล์ PDF
+            if (preg_match('/\.pdf$/i', $body)) {
+                $pdfUrl = "http://192.168.0.13/genpdf/" . ltrim($body, '/');
+            } else {
+                $decoded = json_decode($body, true);
+                if (is_string($decoded)) {
+                    $pdfUrl = $decoded;
+                }
+            }
+
+            if (!$pdfUrl) {
+                throw new \Exception("ไม่สามารถตีความผลลัพธ์ PDF ได้");
+            }
+
+            return redirect()->route('orders.carts')->with([
+                'success' => 'ส่งออกใบคำสั่งซื้อเรียบร้อยแล้ว',
+                'pdf_url' => $pdfUrl,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('❌ Export PDF ล้มเหลว', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('orders.carts')->with([
+                'error' => 'เกิดข้อผิดพลาดในการส่งออก PDF: ' . $e->getMessage()
+            ]);
+        }
+    }
+
     // เช็คสถานะคำสั่งซื้อจาก API ภายนอก
-    public function checkStatusOrder($order_id)
+    // public function checkStatusOrder($order_id)
+    // {
+    //     try {
+    //         DB::beginTransaction();
+    //         $uri = env('VITE_API_CHECK_ORDER');
+    //         $order_id_remove_prefix = str_replace('ORDER-', '', $order_id);
+    //         $body = [
+    //             'jobno' => $order_id_remove_prefix
+    //         ];
+    //         $response = Http::post($uri, $body);
+    //         if ($response->successful() && $response->status() === 200) {
+    //             $order = Order::query()->where('order_id', $order_id)->first();
+    //             if ($order) {
+    //                 $response_json = $response->json();
+    //                 if ($response_json['status']) {
+    //                     $order->status = $response_json['status'];
+    //                     $order->save();
+    //                 } else throw new \Exception('ไม่สามารถเชื่อมต่อกับ API ได้ กรุณาลองอีกครั้ง');
+    //             } else throw new \Exception('ไม่สามารถเชื่อมต่อกับ API ได้ กรุณาลองอีกครั้ง');
+    //         } else throw new \Exception('ไม่สามารถเชื่อมต่อกับ API ได้ กรุณาลองอีกครั้ง');
+    //         DB::commit();
+    //         return response()->json([
+    //             'data' => $response_json
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return response()->json([
+    //             'message' => 'Error occurred',
+    //             'error' => $e->getMessage()
+    //         ], 400);
+    //     }
+    // }
+
+    // public function checkStatusOrder($order_id): JsonResponse
+    // {
+    //     try {
+    //         DB::beginTransaction();
+    //         $uri = env('VITE_API_CHECK_ORDER');
+    //         $order_id_remove_prefix = str_replace('ORDER-', '', $order_id);
+    //         $body = [
+    //             'jobno' => $order_id_remove_prefix
+    //         ];
+    //         $response = Http::post($uri, $body);
+
+    //         if ($response->successful() && $response->status() === 200) {
+    //             $order = Order::query()->where('order_id', $order_id)->first();
+    //             if ($order) {
+    //                 $response_json = $response->json();
+    //                 if (isset($response_json['status']) && $response_json['status']) {
+    //                     $order->status = $response_json['status'];
+    //                     $order->save();
+
+    //                     DB::commit();
+    //                     return response()->json([
+    //                         'status' => 'success',
+    //                         'data' => $response_json
+    //                     ]);
+    //                 } else {
+    //                     throw new \Exception('ไม่พบข้อมูลสถานะใน response');
+    //                 }
+    //             } else {
+    //                 throw new \Exception('ไม่พบ order_id นี้ในระบบ');
+    //             }
+    //         } else {
+    //             throw new \Exception('ไม่สามารถเชื่อมต่อกับ API ได้ กรุณาลองอีกครั้ง');
+    //         }
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => $e->getMessage()
+    //         ], 400);
+    //     }
+    // }
+
+    public function checkStatusOrder($order_id): JsonResponse
     {
         try {
             DB::beginTransaction();
             $uri = env('VITE_API_CHECK_ORDER');
             $order_id_remove_prefix = str_replace('ORDER-', '', $order_id);
-            $body = [
-                'jobno' => $order_id_remove_prefix
-            ];
+            $body = ['jobno' => $order_id_remove_prefix];
+
+            // 🔹 เริ่มต้น Log ก่อนเรียก API
+            Log::info('📦 เริ่มเช็คสถานะออเดอร์', [
+                'order_id' => $order_id,
+                'endpoint' => $uri,
+                'request_body' => $body
+            ]);
+
             $response = Http::post($uri, $body);
+
+            // 🔹 Log Response ที่ได้จาก API
+            Log::info('📩 API ตอบกลับ', [
+                'order_id' => $order_id,
+                'http_status' => $response->status(),
+                'raw_body' => $response->body(),
+            ]);
+
             if ($response->successful() && $response->status() === 200) {
                 $order = Order::query()->where('order_id', $order_id)->first();
-                if ($order) {
-                    $response_json = $response->json();
-                    if ($response_json['status']) {
-                        $order->status = $response_json['status'];
-                        $order->save();
-                    } else throw new \Exception('ไม่สามารถเชื่อมต่อกับ API ได้ กรุณาลองอีกครั้ง');
-                } else throw new \Exception('ไม่สามารถเชื่อมต่อกับ API ได้ กรุณาลองอีกครั้ง');
-            } else throw new \Exception('ไม่สามารถเชื่อมต่อกับ API ได้ กรุณาลองอีกครั้ง');
-            DB::commit();
-            return response()->json([
-                'data' => $response_json
-            ]);
+
+                if (!$order) throw new \Exception('ไม่พบ order_id นี้ในระบบ');
+
+                $response_json = $response->json();
+                $externalStatus = $response_json['status'] ?? null;
+
+                // 🔹 log สถานะก่อนและหลัง
+                Log::info('🧾 สถานะปัจจุบันของออเดอร์', [
+                    'order_id' => $order_id,
+                    'status_old' => $order->status,
+                    'status_from_api' => $externalStatus,
+                ]);
+
+                if ($externalStatus) {
+                    $order->status = $externalStatus;
+                    $order->save();
+
+                    Log::info('✅ อัปเดตสถานะสำเร็จ', [
+                        'order_id' => $order_id,
+                        'status_new' => $order->status,
+                    ]);
+                }
+
+                DB::commit();
+
+                return response()->json([
+                    'status' => 'success',
+                    'data' => ['status' => $order->status]
+                ]);
+            } else {
+                throw new \Exception('API ภายนอกไม่ตอบกลับหรือเกิดข้อผิดพลาด');
+            }
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('❌ ตรวจสอบสถานะล้มเหลว', [
+                'order_id' => $order_id,
+                'error' => $e->getMessage(),
+            ]);
             return response()->json([
-                'message' => 'Error occurred',
-                'error' => $e->getMessage()
+                'status' => 'error',
+                'message' => $e->getMessage(),
             ], 400);
+        }
+    }
+
+    public function getAllStatusOrders(): JsonResponse
+    {
+        try {
+            $pendingOrders = Order::query()
+                // ->whereNotIn('status', ['จัดส่งสำเร็จ', 'canceled', 'completed'])
+                ->select('order_id', 'status', 'buy_at')
+                ->orderBy('buy_at', 'desc')
+                ->limit(100) // จำกัดไม่เกิน 100 orders ต่อครั้ง
+                ->get();
+
+            return response()->json([
+                'status' => 'success',
+                'count' => $pendingOrders->count(),
+                'orders' => $pendingOrders
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Get pending orders failed: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'ไม่สามารถดึงข้อมูล orders ได้',
+                'orders' => []
+            ], 500);
+        }
+    }
+
+    public function updateOrderStatusFromNode(Request $request): JsonResponse
+    {
+        try {
+            $orderId = $request->input('order_id');
+            $newStatus = $request->input('status');
+            if (!$orderId || !$newStatus) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'กรุณาระบุ order_id และ status'
+                ], 400);
+            }
+            DB::beginTransaction();
+            $order = Order::query()->where('order_id', $orderId)->first();
+            if (!$order) {
+                DB::rollBack();
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'ไม่พบ order_id นี้ในระบบ'
+                ], 404);
+            }
+            // อัปเดตเฉพาะเมื่อสถานะเปลี่ยนแปลง
+            if ($order->status !== $newStatus) {
+                $order->status = $newStatus;
+                $order->updated_at = now();
+                $order->save();
+
+                Log::info("Order {$orderId} status updated to {$newStatus} by Node Cron");
+            }
+            DB::commit();
+            return response()->json([
+                'status' => 'success',
+                'message' => 'อัปเดตสถานะสำเร็จ',
+                'order' => [
+                    'order_id' => $order->order_id,
+                    'status' => $order->status
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Update order status from Node failed: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'เกิดข้อผิดพลาดในการอัปเดตสถานะ'
+            ], 500);
         }
     }
 }

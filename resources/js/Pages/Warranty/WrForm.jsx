@@ -37,6 +37,11 @@ export default function WrForm() {
 
             console.log(data, status);
             setProduct(data.getRealProduct);
+            const expire_date = data.expire_date;
+            setProduct((prevProduct) => ({
+                ...prevProduct,
+                expire_date
+            }))
 
             // Check if already registered
             if (data.expire_date && data.expire_date.trim() !== '') {

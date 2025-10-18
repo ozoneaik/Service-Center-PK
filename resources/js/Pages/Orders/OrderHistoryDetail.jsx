@@ -39,13 +39,41 @@ export default function OrderHistoryDetail({ order, listSp, customer }) {
         }
     }
 
+    // const checkOrderStatus = async (order_id) => {
+    //     try {
+    //         setLoading(true);
+    //         const { data, status } = await axios.get(route('orders.checkStatusOrder', { order_id }));
+    //         console.log("data", data);
+    //         const orderStatus = data.data.status;
+    //         setOrderDetail({ ...orderDetail, status: orderStatus });
+    //     } catch (error) {
+    //         AlertDialog({
+    //             title: 'เกิดข้อผิดพลาด',
+    //             text: error.response?.data?.message || error.message,
+    //         });
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // }
     const checkOrderStatus = async (order_id) => {
         try {
             setLoading(true);
+            console.log("🚀 กำลังเรียก API checkStatusOrder...", { order_id });
+
             const { data, status } = await axios.get(route('orders.checkStatusOrder', { order_id }));
+
+            console.group("📦 [CHECK ORDER STATUS]");
+            console.log("HTTP Status:", status);
+            console.log("Response Data:", data);
+            console.log("Response JSON:", JSON.stringify(data, null, 2));
+            console.groupEnd();
+
             const orderStatus = data.data.status;
+            console.log("🟢 อัปเดตสถานะเป็น:", orderStatus);
+
             setOrderDetail({ ...orderDetail, status: orderStatus });
         } catch (error) {
+            console.error("❌ เกิดข้อผิดพลาดในการเรียก API:", error.response || error);
             AlertDialog({
                 title: 'เกิดข้อผิดพลาด',
                 text: error.response?.data?.message || error.message,
@@ -53,7 +81,8 @@ export default function OrderHistoryDetail({ order, listSp, customer }) {
         } finally {
             setLoading(false);
         }
-    }
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title='รายละเอียดคำสั่งซื้อ' />
