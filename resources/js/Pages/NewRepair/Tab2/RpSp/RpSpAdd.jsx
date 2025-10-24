@@ -204,7 +204,7 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JO
                 </Grid2>
             ) : (
                 // *** แสดงตารางเดิมใน Desktop view (ไม่ต้องเปลี่ยน) ***
-                <Grid2 size={12} bgcolor='white' maxHeight={400} sx={{ overflowY: 'auto' }}>
+                <Grid2 size={12} bgcolor='white' maxHeight={457} sx={{ overflowY: 'auto' }}>
                     <Table stickyHeader>
                         <TableHead>
                             <TableRow>

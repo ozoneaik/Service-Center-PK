@@ -184,9 +184,16 @@ export default function RpTab2Form({ productDetail, JOB, setMainStep, MainStep, 
                                 <CardContent>
                                     <HeaderTitle headTitle='อะไหล่' />
                                     {/*content here*/}
-                                    <RpSpMain
+                                    {/* <RpSpMain
                                         productDetail={productDetail} listSparePart={listSparePart}
                                         setStepForm={setStepForm} JOB={JOB} subremark1={subremark1}
+                                    /> */}
+                                    <RpSpMain
+                                        productDetail={productDetail}
+                                        listSparePart={productDetail.sp}
+                                        setStepForm={setStepForm}
+                                        JOB={JOB}
+                                        subremark1={subremark1}
                                     />
                                 </CardContent>
                             </Card>

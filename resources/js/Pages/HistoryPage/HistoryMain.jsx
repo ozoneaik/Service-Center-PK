@@ -47,7 +47,17 @@ export const TableDetail = ({ jobs, handleShowDetail, url }) => {
                     <TableRow key={index}>
                         <TableCell><img src={job.image_sku} width={50} alt="no image" /></TableCell>
                         <TableCell>
-                            <Link href={route('repair.index', { job_id: job.job_id })}>
+                            {/* <Link href={route('repair.index', { job_id: job.job_id })}>
+                                {job.serial_id}
+                            </Link> */}
+                            <Link
+                                href={route("repair.index", {
+                                    job_id: job.job_id,
+                                    typedm: job.typedm || null,
+                                    modelfg: job.modelfg || null,
+                                    layout: job.layout || null,
+                                })}
+                            >
                                 {job.serial_id}
                             </Link>
                         </TableCell>
@@ -183,7 +193,6 @@ const FilterForm = ({ handleFilterChange, filters, setFilters, searchJobs }) => 
                     InputLabelProps={{ shrink: true }}
                 />
             </Grid2>
-
             <Grid2 size={{ md: 2, xs: 12 }}>
                 <TextField
                     fullWidth
