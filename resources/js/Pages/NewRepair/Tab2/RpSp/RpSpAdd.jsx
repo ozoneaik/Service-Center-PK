@@ -9,7 +9,7 @@ import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 import SaveIcon from "@mui/icons-material/Save";
 import Collapse from "@mui/material/Collapse";
 
-export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JOB }) {
+export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JOB, showServiceRow = true }) {
     const [previewImage, setPreviewImage] = useState(false);
     const [previewSelected, setPreviewSelected] = useState('');
     const [selectedSpares, setSelectedSpares] = useState([]);
@@ -101,42 +101,45 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JO
             {isMobile ? (
                 <Grid2 size={12} maxHeight={400} overflow='auto'>
                     <Stack spacing={2}>
-                        <Card
-                            sx={{
-                                cursor: 'pointer',
-                                '&:hover': { backgroundColor: '#f5f5f5' }
-                            }}
-                        >
-                            <CardContent
-                                onClick={() => { }}
-                                sx={{ pb: '8px !important' }}
+                        {showServiceRow && (
+                            <Card
+                                sx={{
+                                    cursor: 'pointer',
+                                    '&:hover': { backgroundColor: '#f5f5f5' }
+                                }}
                             >
-                                <Box display="flex" alignItems="center" justifyContent="space-between">
-                                    <Box display="flex" alignItems="center" gap={2}>
-                                        <img
-                                            width={50} height={50}
-                                            src={import.meta.env.VITE_IMAGE_DEFAULT}
-                                            style={{ borderRadius: 4 }}
-                                        />
-                                        <Box>
-                                            <Typography variant="body2" fontWeight="bold">
-                                                {serviceData.spcode}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                {serviceData.spname}
-                                            </Typography>
-                                            <Typography variant="body2" color="primary" fontWeight="bold">
-                                                {serviceData.price_per_unit} บาท
-                                            </Typography>
+                                <CardContent
+                                    onClick={() => { }}
+                                    sx={{ pb: '8px !important' }}
+                                >
+                                    <Box display="flex" alignItems="center" justifyContent="space-between">
+                                        <Box display="flex" alignItems="center" gap={2}>
+                                            <img
+                                                width={50} height={50}
+                                                src={import.meta.env.VITE_IMAGE_DEFAULT}
+                                                style={{ borderRadius: 4 }}
+                                            />
+                                            <Box>
+                                                <Typography variant="body2" fontWeight="bold">
+                                                    {serviceData.spcode}
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {serviceData.spname}
+                                                </Typography>
+                                                <Typography variant="body2" color="primary" fontWeight="bold">
+                                                    {serviceData.price_per_unit} บาท
+                                                </Typography>
+                                            </Box>
                                         </Box>
+                                        <Checkbox
+                                            checked={selectedService}
+                                            onChange={handleServiceCheck}
+                                        />
                                     </Box>
-                                    <Checkbox
-                                        checked={selectedService}
-                                        onChange={handleServiceCheck}
-                                    />
-                                </Box>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
+                        )}
+
                         {listSparePart.map((sp, index) => {
                             const imageSp = import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
                             const isSelected = isSpareSelected(sp.spcode);
@@ -220,24 +223,26 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JO
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            <TableRow>
-                                <TableCell>
-                                    <Checkbox checked={selectedService} onChange={handleServiceCheck} />
-                                </TableCell>
-                                <TableCell>
-                                    <img width={50} src={import.meta.env.VITE_IMAGE_DEFAULT} />
-                                </TableCell>
-                                {/* <TableCell>-</TableCell> */}
-                                <TableCell>
-                                    {serviceData.spcode}
-                                    <br />
-                                    {serviceData.spname}
-                                    <br />
+                            {showServiceRow && (
+                                <TableRow>
+                                    <TableCell>
+                                        <Checkbox checked={selectedService} onChange={handleServiceCheck} />
+                                    </TableCell>
+                                    <TableCell>
+                                        <img width={50} src={import.meta.env.VITE_IMAGE_DEFAULT} />
+                                    </TableCell>
                                     {/* <TableCell>-</TableCell> */}
-                                </TableCell>
-                                <TableCell>{serviceData.price_multiple_gp}</TableCell>
-                                <TableCell>{serviceData.spunit}</TableCell>
-                            </TableRow>
+                                    <TableCell>
+                                        {serviceData.spcode}
+                                        <br />
+                                        {serviceData.spname}
+                                        <br />
+                                        {/* <TableCell>-</TableCell> */}
+                                    </TableCell>
+                                    <TableCell>{serviceData.price_multiple_gp}</TableCell>
+                                    <TableCell>{serviceData.spunit}</TableCell>
+                                </TableRow>
+                            )}
                             {listSparePart.map((sp, index) => {
                                 const imageSp = import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
                                 const isSelected = isSpareSelected(sp.spcode);

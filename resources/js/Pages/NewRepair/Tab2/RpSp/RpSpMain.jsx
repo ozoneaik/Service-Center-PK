@@ -1,295 +1,57 @@
-// import {Alert, Button, Card, CardContent, CircularProgress, Grid2, Stack} from "@mui/material";
-// import DmPreview from "@/Components/DmPreview.jsx";
-// import RpSpAdd from "@/Pages/NewRepair/Tab2/RpSp/RpSpAdd.jsx";
-// import RpSpSummary from "@/Pages/NewRepair/Tab2/RpSp/RpSpSummary.jsx";
-// import PaletteIcon from "@mui/icons-material/Palette";
-// import React, {useEffect, useState} from "react";
-
-// export default function RpSpMain({listSparePart, productDetail, setStepForm, JOB,subremark1}) {
-//     const pid = productDetail.pid;
-//     const fac_model = productDetail.facmodel;
-//     const DM = productDetail.dm || 'DM01';
-//     const [loading, setLoading] = useState(false);
-//     const [spSelected, setSpSelected] = useState([]);
-//     const [showSummary, setShowSummary] = useState(false);
-
-//     useEffect(() => {
-//         fetchData().finally(() => setLoading(false));
-//     }, []);
-
-
-//     const fetchData = async () => {
-//         try {
-//             setLoading(true);
-//             const {data, status} = await axios.get(route('repair.after.spare-part.index', {
-//                 serial_id: JOB.serial_id,
-//                 job_id: JOB.job_id,
-//             }))
-//             setSpSelected(data.spare_parts)
-//             if (data.spare_parts.length > 0){
-//                 setShowSummary(true)
-//             }
-//         } catch (error) {
-//             console.log(error)
-//         }
-//     }
-
-//     const handleAddSpare = (newSpares) => {
-//         setSpSelected(prev => {
-//             // รวมของเดิมที่ยังมีอยู่กับของใหม่ที่ยังไม่เคยมี
-//             const updated = newSpares.filter(
-//                 (item, index, self) =>
-//                     index === self.findIndex(i => i.spcode === item.spcode) // กันของซ้ำใน newSpares เอง
-//             );
-//             return updated;
-//         });
-//         setShowSummary(true);
-//     };
-
-//     const handleUpdateSpSelected = (updatedSpares) => {
-//         setSpSelected(updatedSpares);
-//     }
-
-
-//     // หากบันทึกจากหน้า สรุปรายการอะไหล่เสร็จสิ้น
-//     const Saved = (full_file_path = null) => {
-//         // fetchData().finally(()=>setLoading(false))
-//         setStepForm(2);
-//         if (full_file_path) {
-//             window.open(full_file_path, '_blank');
-//         }
-//     }
-
-//     return (
-//         <>
-//             {loading ? (<CircularProgress/>) : (
-//                 <>
-//                     {showSummary ? (
-//                         <RpSpSummary
-//                             JOB={JOB}
-//                             spSelected={spSelected}
-//                             setShowSummary={setShowSummary}
-//                             onUpdateSpSelected={handleUpdateSpSelected}
-//                             onSaved={(full_file_path)=>Saved(full_file_path)}
-//                         />
-//                     ) : (
-//                         <Grid2 container spacing={2}>
-//                             <Grid2 size={{md : 3, sm : 12}}>
-//                                 <Card sx={{maxHeight : 500 ,overflow : 'auto'}}>
-//                                     <CardContent>
-//                                         <DmPreview detail={{fac_model, dm_type: DM, pid: pid}}/>
-//                                     </CardContent>
-//                                 </Card>
-//                             </Grid2>
-//                             <Grid2 size={{md : 9, sm : 12}}>
-//                                 <Grid2 container spacing={2}>
-//                                     <Grid2 size={12}>
-//                                         <Stack direction='row' spacing={2}>
-//                                             {JOB.warranty && (
-//                                                 <Alert sx={{mb: 1,width : '100%'}}
-//                                                        icon={<PaletteIcon fontSize="inherit"/>} severity="success">
-//                                                     แถบสีเขียว คือ อะไหล่ที่อยู่ในรับประกัน
-//                                                 </Alert>
-//                                             )}
-//                                             <Alert icon={<PaletteIcon fontSize="inherit"/>}
-//                                                    severity="error" sx={{mb: 1,width : '100%'}}>
-//                                                 แถบสีแดง คือ อะไหล่ที่ยังไม่ถูกตั้งราคา {showSummary && 'show'} {spSelected.length}
-//                                             </Alert>
-//                                         </Stack>
-//                                     </Grid2>
-
-
-//                                     <Grid2 size={12}>
-//                                         {!showSummary && (
-//                                             <RpSpAdd
-//                                                 JOB={JOB}
-//                                                 listSparePart={listSparePart}
-//                                                 onAddSpare={handleAddSpare}
-//                                                 spSelected={spSelected}
-//                                             />
-//                                         )}
-//                                     </Grid2>
-//                                 </Grid2>
-//                             </Grid2>
-//                         </Grid2>
-//                     )}
-//                 </>
-//             )}
-//         </>
-//     )
-// }
-
-//-------------------------------------2---------------------------------------------------
-// import { Alert, Card, CardContent, CircularProgress, Grid2, Stack } from "@mui/material";
-// import DmPreview from "@/Components/DmPreview.jsx";
-// import RpSpAdd from "@/Pages/NewRepair/Tab2/RpSp/RpSpAdd.jsx";
-// import RpSpSummary from "@/Pages/NewRepair/Tab2/RpSp/RpSpSummary.jsx";
+//---------------------------------------------------------------------------------------------
+// import {
+//   Alert,
+//   Card,
+//   CardContent,
+//   CircularProgress,
+//   Grid2,
+//   Stack,
+//   Box,
+//   Autocomplete,
+//   TextField,
+// } from "@mui/material";
 // import PaletteIcon from "@mui/icons-material/Palette";
 // import React, { useEffect, useMemo, useState } from "react";
 // import axios from "axios";
+// import DmPreview from "@/Components/DmPreview.jsx";
+// import RpSpAdd from "@/Pages/NewRepair/Tab2/RpSp/RpSpAdd.jsx";
+// import RpSpSummary from "@/Pages/NewRepair/Tab2/RpSp/RpSpSummary.jsx";
 
 // export default function RpSpMain({ listSparePart, productDetail, setStepForm, JOB, subremark1 }) {
 //   const pid = productDetail.pid;
 //   const fac_model = productDetail.facmodel;
 //   const DM = productDetail.dm || "DM01";
 
-//   const diagramLayers = productDetail?.diagram_layers || [];
+//   const memoDiagramLayers = useMemo(() => productDetail?.diagram_layers || [], [productDetail?.diagram_layers]);
 //   const defaultLayout = (productDetail?.active_layout || "outside").toLowerCase().trim();
 
 //   const [loading, setLoading] = useState(false);
 //   const [spSelected, setSpSelected] = useState([]);
 //   const [showSummary, setShowSummary] = useState(false);
+
 //   const [activeLayout, setActiveLayout] = useState(defaultLayout);
+
+//   // ใหม่: สำหรับเลือกโมเดล
+//   const [modelOptions, setModelOptions] = useState([]);
+//   const [selectedModel, setSelectedModel] = useState(null);
+//   const [filteredList, setFilteredList] = useState([]);
 
 //   useEffect(() => {
-//     fetchData().finally(() => setLoading(false));
-//   }, []);
-
-//   const fetchData = async () => {
-//     try {
-//       setLoading(true);
-//       const { data } = await axios.get(
-//         route("repair.after.spare-part.index", {
-//           serial_id: JOB.serial_id,
-//           job_id: JOB.job_id,
-//         })
-//       );
-//       setSpSelected(data.spare_parts);
-//       if (data.spare_parts.length > 0) setShowSummary(true);
-//     } catch (error) {
-//       console.log(error);
+//     // เตรียมตัวเลือกโมเดลจากอะไหล่ทั้งหมด
+//     let models = Array.isArray(productDetail.model_options)
+//       ? [...productDetail.model_options]
+//       : [];
+//     if (!models.length) {
+//       const uniq = Array.from(new Set((listSparePart || []).map((x) => x.modelfg).filter(Boolean)));
+//       models = uniq;
 //     }
-//   };
+//     setModelOptions(models);
 
-//   const handleAddSpare = (newSpares) => {
-//     setSpSelected((prev) => {
-//       // กันของซ้ำใน newSpares เอง
-//       const updated = newSpares.filter(
-//         (item, index, self) => index === self.findIndex((i) => i.spcode === item.spcode)
-//       );
-//       return updated;
-//     });
-//     setShowSummary(true);
-//   };
+//     const firstModel = models.length ? models[0] : null;
+//     setSelectedModel(firstModel);
+//   }, [productDetail, listSparePart]);
 
-//   const handleUpdateSpSelected = (updatedSpares) => setSpSelected(updatedSpares);
-
-//   const Saved = (full_file_path = null) => {
-//     setStepForm(2);
-//     if (full_file_path) window.open(full_file_path, "_blank");
-//   };
-
-//   const filteredListSparePart = useMemo(() => {
-//     const want = (activeLayout || "outside").toLowerCase().trim();
-//     const filtered = (listSparePart || []).filter((sp) => {
-//       const layout = ((sp?.layout ?? "outside") + "").toLowerCase().trim();
-//       return layout === want;
-//     });
-//     console.log("[RpSpMain] activeLayout =", want, " -> filtered count =", filtered.length);
-//     return filtered;
-//   }, [listSparePart, activeLayout]);
-
-//   return (
-//     <>
-//       {loading ? (
-//         <CircularProgress />
-//       ) : (
-//         <>
-//           {showSummary ? (
-//             <RpSpSummary
-//               JOB={JOB}
-//               spSelected={spSelected}
-//               setShowSummary={setShowSummary}
-//               onUpdateSpSelected={handleUpdateSpSelected}
-//               onSaved={(full_file_path) => Saved(full_file_path)}
-//             />
-//           ) : (
-//             <Grid2 container spacing={2}>
-//               <Grid2 size={{ md: 3, sm: 12 }}>
-//                 <Card sx={{ maxHeight: 500, overflow: "auto" }}>
-//                   <CardContent>
-//                     <DmPreview
-//                       detail={{ fac_model, dm_type: DM, pid }}
-//                       diagramLayers={diagramLayers}
-//                       initialLayout={defaultLayout}
-//                       onLayoutChange={(layout) => {
-//                         const next = (layout || "outside").toLowerCase().trim();
-//                         console.log("[RpSpMain] layout from DmPreview =", next);
-//                         setActiveLayout(next);
-//                       }}
-//                     />
-//                   </CardContent>
-//                 </Card>
-//               </Grid2>
-
-//               <Grid2 size={{ md: 9, sm: 12 }}>
-//                 <Grid2 container spacing={2}>
-//                   <Grid2 size={12}>
-//                     <Stack direction="row" spacing={2}>
-//                       {JOB.warranty && (
-//                         <Alert
-//                           sx={{ mb: 1, width: "100%" }}
-//                           icon={<PaletteIcon fontSize="inherit" />}
-//                           severity="success"
-//                         >
-//                           แถบสีเขียว คือ อะไหล่ที่อยู่ในรับประกัน
-//                         </Alert>
-//                       )}
-//                       <Alert
-//                         icon={<PaletteIcon fontSize="inherit" />}
-//                         severity="error"
-//                         sx={{ mb: 1, width: "100%" }}
-//                       >
-//                         แถบสีแดง คือ อะไหล่ที่ยังไม่ถูกตั้งราคา
-//                       </Alert>
-//                     </Stack>
-//                   </Grid2>
-//                   <Grid2 size={12}>
-//                     {!showSummary && (
-//                       <RpSpAdd
-//                         JOB={JOB}
-//                         listSparePart={filteredListSparePart} 
-//                         onAddSpare={handleAddSpare}
-//                         spSelected={spSelected}
-//                       />
-//                     )}
-//                   </Grid2>
-//                 </Grid2>
-//               </Grid2>
-//             </Grid2>
-//           )}
-//         </>
-//       )}
-//     </>
-//   );
-// }
-
-//-----------------------------------------3------------------------------------------------
-// import { Alert, Card, CardContent, CircularProgress, Grid2, Stack } from "@mui/material";
-// import DmPreview from "@/Components/DmPreview.jsx";
-// import RpSpAdd from "@/Pages/NewRepair/Tab2/RpSp/RpSpAdd.jsx";
-// import RpSpSummary from "@/Pages/NewRepair/Tab2/RpSp/RpSpSummary.jsx";
-// import PaletteIcon from "@mui/icons-material/Palette";
-// import React, { useEffect, useMemo, useState } from "react";
-// import axios from "axios";
-
-// export default function RpSpMain({ listSparePart, productDetail, setStepForm, JOB, subremark1 }) {
-//   const pid = productDetail.pid;
-//   const fac_model = productDetail.facmodel;
-//   const DM = productDetail.dm || "DM01";
-
-//   const memoDiagramLayers = useMemo(
-//     () => productDetail?.diagram_layers || [],
-//     [productDetail?.diagram_layers]
-//   );
-
-//   const defaultLayout = (productDetail?.active_layout || "outside").toLowerCase().trim();
-
-//   const [loading, setLoading] = useState(false);
-//   const [spSelected, setSpSelected] = useState([]);
-//   const [showSummary, setShowSummary] = useState(false);
-//   const [activeLayout, setActiveLayout] = useState(defaultLayout);
-
+//   // โหลดข้อมูลอะไหล่ที่เคยเลือก
 //   useEffect(() => {
 //     fetchData().finally(() => setLoading(false));
 //   }, []);
@@ -326,14 +88,23 @@
 //     setStepForm(2);
 //     if (full_file_path) window.open(full_file_path, "_blank");
 //   };
-//   const filteredListSparePart = useMemo(() => {
+
+//   // ฟิลเตอร์ list ตาม model + layout
+//   useEffect(() => {
+//     const byModel = !selectedModel
+//       ? listSparePart
+//       : listSparePart.filter((x) => (x.modelfg || null) === selectedModel);
 //     const want = (activeLayout || "outside").toLowerCase().trim();
-//     const filtered = (listSparePart || []).filter((sp) => {
-//       const layout = ((sp?.layout ?? "outside") + "").toLowerCase().trim();
-//       return layout === want;
-//     });
-//     return filtered;
-//   }, [listSparePart, activeLayout]);
+//     const byLayout = byModel.filter(
+//       (x) => ((x.layout || "outside") + "").toLowerCase().trim() === want
+//     );
+//     setFilteredList(byLayout.length ? byLayout : byModel);
+//   }, [selectedModel, listSparePart, activeLayout]);
+
+//   // const diagramLayersForModel = memoDiagramLayers.filter(
+//   //   (x) => !selectedModel || x.modelfg === selectedModel
+//   // );
+//   const diagramLayersForModel = memoDiagramLayers;
 
 //   return (
 //     <>
@@ -351,12 +122,26 @@
 //             />
 //           ) : (
 //             <Grid2 container spacing={2}>
+//               {/* ซ้าย: DmPreview + เลือกโมเดล */}
 //               <Grid2 size={{ md: 3, sm: 12 }}>
-//                 <Card sx={{ maxHeight: 500, overflow: "auto" }}>
+//                 <Card sx={{ maxHeight: 600, overflow: "auto", p: 1 }}>
 //                   <CardContent>
+//                     <Box sx={{ mb: 2 }}>
+//                       <Autocomplete
+//                         fullWidth
+//                         size="small"
+//                         options={modelOptions}
+//                         value={selectedModel}
+//                         onChange={(_e, v) => setSelectedModel(v)}
+//                         renderInput={(params) => (
+//                           <TextField {...params} label="เลือกโมเดล" placeholder="เช่น J-12BID1504" />
+//                         )}
+//                       />
+//                     </Box>
+
 //                     <DmPreview
-//                       detail={{ fac_model, dm_type: DM, pid }}
-//                       diagramLayers={memoDiagramLayers}    
+//                       detail={{ pid, fac_model, dm_type: DM }}
+//                       diagramLayers={diagramLayersForModel}
 //                       initialLayout={defaultLayout}
 //                       onLayoutChange={(layout) => {
 //                         const next = (layout || "outside").toLowerCase().trim();
@@ -366,25 +151,36 @@
 //                   </CardContent>
 //                 </Card>
 //               </Grid2>
+
+//               {/* ขวา: รายการอะไหล่ */}
 //               <Grid2 size={{ md: 9, sm: 12 }}>
 //                 <Grid2 container spacing={2}>
 //                   <Grid2 size={12}>
 //                     <Stack direction="row" spacing={2}>
 //                       {JOB.warranty && (
-//                         <Alert sx={{ mb: 1, width: "100%" }} icon={<PaletteIcon fontSize="inherit" />} severity="success">
+//                         <Alert
+//                           sx={{ mb: 1, width: "100%" }}
+//                           icon={<PaletteIcon fontSize="inherit" />}
+//                           severity="success"
+//                         >
 //                           แถบสีเขียว คือ อะไหล่ที่อยู่ในรับประกัน
 //                         </Alert>
 //                       )}
-//                       <Alert icon={<PaletteIcon fontSize="inherit" />} severity="error" sx={{ mb: 1, width: "100%" }}>
+//                       <Alert
+//                         icon={<PaletteIcon fontSize="inherit" />}
+//                         severity="error"
+//                         sx={{ mb: 1, width: "100%" }}
+//                       >
 //                         แถบสีแดง คือ อะไหล่ที่ยังไม่ถูกตั้งราคา
 //                       </Alert>
 //                     </Stack>
 //                   </Grid2>
+
 //                   <Grid2 size={12}>
 //                     {!showSummary && (
 //                       <RpSpAdd
 //                         JOB={JOB}
-//                         listSparePart={filteredListSparePart}
+//                         listSparePart={filteredList}
 //                         onAddSpare={handleAddSpare}
 //                         spSelected={spSelected}
 //                       />
@@ -399,8 +195,7 @@
 //     </>
 //   );
 // }
-
-//------------------------------------------4-----------------------------------------------------
+//----------------------------------------------------------------------------
 import {
   Alert,
   Card,
@@ -409,8 +204,6 @@ import {
   Grid2,
   Stack,
   Box,
-  Autocomplete,
-  TextField,
 } from "@mui/material";
 import PaletteIcon from "@mui/icons-material/Palette";
 import React, { useEffect, useMemo, useState } from "react";
@@ -430,28 +223,8 @@ export default function RpSpMain({ listSparePart, productDetail, setStepForm, JO
   const [loading, setLoading] = useState(false);
   const [spSelected, setSpSelected] = useState([]);
   const [showSummary, setShowSummary] = useState(false);
-
   const [activeLayout, setActiveLayout] = useState(defaultLayout);
-
-  // ใหม่: สำหรับเลือกโมเดล
-  const [modelOptions, setModelOptions] = useState([]);
-  const [selectedModel, setSelectedModel] = useState(null);
   const [filteredList, setFilteredList] = useState([]);
-
-  useEffect(() => {
-    // เตรียมตัวเลือกโมเดลจากอะไหล่ทั้งหมด
-    let models = Array.isArray(productDetail.model_options)
-      ? [...productDetail.model_options]
-      : [];
-    if (!models.length) {
-      const uniq = Array.from(new Set((listSparePart || []).map((x) => x.modelfg).filter(Boolean)));
-      models = uniq;
-    }
-    setModelOptions(models);
-
-    const firstModel = models.length ? models[0] : null;
-    setSelectedModel(firstModel);
-  }, [productDetail, listSparePart]);
 
   // โหลดข้อมูลอะไหล่ที่เคยเลือก
   useEffect(() => {
@@ -491,22 +264,36 @@ export default function RpSpMain({ listSparePart, productDetail, setStepForm, JO
     if (full_file_path) window.open(full_file_path, "_blank");
   };
 
-  // ฟิลเตอร์ list ตาม model + layout
+  // ฟิลเตอร์ list ตาม layout (inside / outside)
   useEffect(() => {
-    const byModel = !selectedModel
-      ? listSparePart
-      : listSparePart.filter((x) => (x.modelfg || null) === selectedModel);
     const want = (activeLayout || "outside").toLowerCase().trim();
-    const byLayout = byModel.filter(
+    const byLayout = listSparePart.filter(
       (x) => ((x.layout || "outside") + "").toLowerCase().trim() === want
     );
-    setFilteredList(byLayout.length ? byLayout : byModel);
-  }, [selectedModel, listSparePart, activeLayout]);
+    setFilteredList(byLayout.length ? byLayout : listSparePart);
+  }, [listSparePart, activeLayout]);
 
-  // const diagramLayersForModel = memoDiagramLayers.filter(
-  //   (x) => !selectedModel || x.modelfg === selectedModel
-  // );
-  const diagramLayersForModel = memoDiagramLayers;
+  // const diagramLayers = memoDiagramLayers;
+  const diagramLayers = useMemo(() => {
+    const layers = memoDiagramLayers || [];
+    const unique = [];
+    const seen = new Set();
+
+    layers.forEach((layer) => {
+      const key = `${layer.path_file}_${layer.layer_char}_${layer.typedm}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        unique.push(layer);
+      }
+    });
+    return unique;
+  }, [memoDiagramLayers]);
+
+  const firstDiagramLayout = diagramLayers.length > 0
+    ? (diagramLayers[0].layer_char || "outside").toLowerCase().trim()
+    : "outside";
+
+  const isFirstDiagram = (activeLayout || "").toLowerCase().trim() === firstDiagramLayout;
 
   return (
     <>
@@ -524,26 +311,14 @@ export default function RpSpMain({ listSparePart, productDetail, setStepForm, JO
             />
           ) : (
             <Grid2 container spacing={2}>
-              {/* ซ้าย: DmPreview + เลือกโมเดล */}
-              <Grid2 size={{ md: 3, sm: 12 }}>
-                <Card sx={{ maxHeight: 600, overflow: "auto", p: 1 }}>
-                  <CardContent>
-                    <Box sx={{ mb: 2 }}>
-                      <Autocomplete
-                        fullWidth
-                        size="small"
-                        options={modelOptions}
-                        value={selectedModel}
-                        onChange={(_e, v) => setSelectedModel(v)}
-                        renderInput={(params) => (
-                          <TextField {...params} label="เลือกโมเดล" placeholder="เช่น J-12BID1504" />
-                        )}
-                      />
-                    </Box>
 
+              {/* ซ้าย: Diagram แสดงรูป Inside/Outside */}
+              <Grid2 size={{ md: 3, sm: 12 }}>
+                <Card sx={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", p: 1 }}>
+                  <CardContent sx={{ flex: 1, overflowY: "auto" }}>
                     <DmPreview
                       detail={{ pid, fac_model, dm_type: DM }}
-                      diagramLayers={diagramLayersForModel}
+                      diagramLayers={diagramLayers}
                       initialLayout={defaultLayout}
                       onLayoutChange={(layout) => {
                         const next = (layout || "outside").toLowerCase().trim();
@@ -577,7 +352,6 @@ export default function RpSpMain({ listSparePart, productDetail, setStepForm, JO
                       </Alert>
                     </Stack>
                   </Grid2>
-
                   <Grid2 size={12}>
                     {!showSummary && (
                       <RpSpAdd
@@ -585,6 +359,7 @@ export default function RpSpMain({ listSparePart, productDetail, setStepForm, JO
                         listSparePart={filteredList}
                         onAddSpare={handleAddSpare}
                         spSelected={spSelected}
+                        showServiceRow={isFirstDiagram}
                       />
                     )}
                   </Grid2>
