@@ -207,16 +207,17 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JO
                 </Grid2>
             ) : (
                 // *** แสดงตารางเดิมใน Desktop view (ไม่ต้องเปลี่ยน) ***
+                //วิวแก้ไข
                 <Grid2 size={12} bgcolor='white' maxHeight={457} sx={{ overflowY: 'auto' }}>
                     <Table stickyHeader>
                         <TableHead>
                             <TableRow>
-                                <TableCell colSpan={5} sx={{ fontWeight: 'bold', fontSize: 20 }}>อะไหล่</TableCell>
+                                <TableCell colSpan={6} sx={{ fontWeight: 'bold', fontSize: 20 }}>อะไหล่</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell>เลือก</TableCell>
+                                <TableCell>ตำแหน่ง</TableCell>
                                 <TableCell>รูปภาพ</TableCell>
-                                {/* <TableCell>Tracking</TableCell> */}
                                 <TableCell>รหัสและชื่ออะไหล่</TableCell>
                                 <TableCell>ราคาอะไหล่</TableCell>
                                 <TableCell>หน่วย</TableCell>
@@ -228,16 +229,14 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JO
                                     <TableCell>
                                         <Checkbox checked={selectedService} onChange={handleServiceCheck} />
                                     </TableCell>
+                                    <TableCell>-</TableCell>
                                     <TableCell>
                                         <img width={50} src={import.meta.env.VITE_IMAGE_DEFAULT} />
                                     </TableCell>
-                                    {/* <TableCell>-</TableCell> */}
                                     <TableCell>
                                         {serviceData.spcode}
                                         <br />
                                         {serviceData.spname}
-                                        <br />
-                                        {/* <TableCell>-</TableCell> */}
                                     </TableCell>
                                     <TableCell>{serviceData.price_multiple_gp}</TableCell>
                                     <TableCell>{serviceData.spunit}</TableCell>
@@ -262,25 +261,30 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JO
                                                 onChange={(e) => handleSpareCheck(sp, e.target.checked)}
                                             />
                                         </TableCell>
-                                        <TableCell onClick={() => {
-                                            setPreviewImage(true);
-                                            setPreviewSelected(imageSp)
-                                        }}>
+
+                                        {/* คอลัมน์ใหม่ “ตำแหน่งไดอะแกรม” */}
+                                        <TableCell sx={{ fontWeight: 'bold', color: 'green' }}>
+                                            {sp.tracking_number ?? '-'}
+                                        </TableCell>
+
+                                        <TableCell
+                                            onClick={() => {
+                                                setPreviewImage(true);
+                                                setPreviewSelected(imageSp);
+                                            }}
+                                        >
                                             <img width={50} src={imageSp} onError={showDefaultImage} alt="" />
                                         </TableCell>
+
                                         <TableCell>
                                             {sp.spcode}
                                             <br />
                                             {sp.spname}
-                                            <br />
-                                            <span>ตำแหน่งไดอะแกรม:</span> <span style={{ fontWeight: 'bold', color: 'green' }}>{sp.tracking_number ?? '-'}</span>
-                                            {/*{sp.warranty}*/}
                                         </TableCell>
                                         <TableCell>{sp.price_per_unit}</TableCell>
                                         <TableCell>{sp.spunit}</TableCell>
-
                                     </TableRow>
-                                )
+                                );
                             })}
                         </TableBody>
                     </Table>

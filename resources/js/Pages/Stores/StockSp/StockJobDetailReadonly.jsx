@@ -92,7 +92,8 @@ export default function stockJobDetailReadonly({ job, job_detail = [] }) {
                         // disabled={job.job_status === 'complete'}
                         // disabled
                         >
-                            แก้ไข (ปิดปรับปรง)
+                            {/* แก้ไข (ปิดปรับปรง) */}
+                            แก้ไข
                         </Button>
                         <Button
                             variant="contained" startIcon={<BuildCircle />}

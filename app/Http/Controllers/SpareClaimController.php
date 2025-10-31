@@ -19,30 +19,136 @@ use Inertia\Response;
 
 class SpareClaimController extends Controller
 {
+    // public function index(): Response
+    // {
+    //     $isCodeKey = Auth::user()->is_code_cust_id;
+
+    //     $spareParts = SparePart::query()
+    //         ->leftJoin('job_lists', 'spare_parts.job_id', '=', 'job_lists.job_id')
+    //         ->select('spare_parts.*')
+    //         ->where('spare_parts.status', 'pending')
+    //         ->where('spare_parts.claim', true)
+    //         ->where('spare_parts.claim_remark', 'เคลมด่วน')
+    //         ->where('job_lists.is_code_key', $isCodeKey)
+    //         ->get();
+
+    //     $grouped = collect($spareParts)->groupBy('sp_code')->map(function ($items, $sp_code) {
+    //         return [
+    //             'sp_code' => $sp_code,
+    //             'sp_name' => $items->first()->sp_name,
+    //             'sp_unit' => $items->first()->sp_unit,
+    //             'qty'     => $items->sum('qty'),
+    //             'detail'  => $items->values(),
+    //         ];
+    //     })->values();
+
+    //     return Inertia::render('SpareClaim/ClaimMain', ['spareParts' => $grouped]);
+    // }
+
+    // ปรับปรุงฟังก์ชัน index เพื่อรวมเคลมด่วนและเคลมปกติ (วิว)
     public function index(): Response
     {
         $isCodeKey = Auth::user()->is_code_cust_id;
 
-        $spareParts = SparePart::query()
+        //  1. เคลมด่วน (pending)
+        $urgentParts = SparePart::query()
             ->leftJoin('job_lists', 'spare_parts.job_id', '=', 'job_lists.job_id')
-            ->select('spare_parts.*')
-            ->where('spare_parts.status', 'pending')
+            ->select('spare_parts.*', 'job_lists.status as job_status')
             ->where('spare_parts.claim', true)
+            ->where('spare_parts.claim_remark', 'เคลมด่วน')
+            ->where('spare_parts.status', 'pending')
             ->where('job_lists.is_code_key', $isCodeKey)
+            ->orderByDesc('spare_parts.created_at')
             ->get();
 
-        $grouped = collect($spareParts)->groupBy('sp_code')->map(function ($items, $sp_code) {
+        // 2. เคลมปกติ (ไม่ใช่เคลมด่วน แต่ job ปิดงานแล้ว) 
+        $normalParts = SparePart::query()
+            ->leftJoin('job_lists', 'spare_parts.job_id', '=', 'job_lists.job_id')
+            ->select('spare_parts.*', 'job_lists.status as job_status')
+            ->where('spare_parts.claim', true)
+            ->where(function ($q) {
+                $q->whereNull('spare_parts.claim_remark')
+                    ->orWhere('spare_parts.claim_remark', '!=', 'เคลมด่วน');
+            })
+            ->where('spare_parts.status', 'pending')
+            ->where('job_lists.status', 'success')
+            ->where('job_lists.is_code_key', $isCodeKey)
+            ->orderByDesc('spare_parts.created_at')
+            ->get();
+
+        // รวมทั้งสองประเภท
+        $allParts = $urgentParts->merge($normalParts);
+
+        // Group ตาม sp_code
+        $grouped = collect($allParts)->groupBy('sp_code')->map(function ($items, $sp_code) {
+            $first = $items->first();
             return [
                 'sp_code' => $sp_code,
-                'sp_name' => $items->first()->sp_name,
-                'sp_unit' => $items->first()->sp_unit,
+                'sp_name' => $first->sp_name,
+                'sp_unit' => $first->sp_unit,
                 'qty'     => $items->sum('qty'),
+                'type'    => $first->claim_remark === 'เคลมด่วน' ? 'เคลมด่วน' : 'เคลมปกติ',
                 'detail'  => $items->values(),
             ];
         })->values();
 
-        return Inertia::render('SpareClaim/ClaimMain', ['spareParts' => $grouped]);
+        return Inertia::render('SpareClaim/ClaimMain', [
+            'spareParts' => $grouped,
+        ]);
     }
+
+    // public function index(): Response
+    // {
+    //     $isCodeKey = Auth::user()->is_code_cust_id;
+
+    //     // 1. เคลมด่วน
+    //     $urgentParts = SparePart::query()
+    //         ->leftJoin('job_lists', 'spare_parts.job_id', '=', 'job_lists.job_id')
+    //         ->select('spare_parts.*', 'job_lists.status as job_status')
+    //         ->where(function ($q) {
+    //             $q->where('spare_parts.claim_remark', 'เคลมด่วน')
+    //                 ->orWhere('spare_parts.remark_noclaim', 'เคลมด่วน');
+    //         })
+    //         ->where('spare_parts.status', 'pending')
+    //         ->where('job_lists.is_code_key', $isCodeKey)
+    //         ->get();
+
+    //     // 2. เคลมปกติ (รวมทั้ง claim = true และ claim = false)
+    //     $normalParts = SparePart::query()
+    //         ->leftJoin('job_lists', 'spare_parts.job_id', '=', 'job_lists.job_id')
+    //         ->select('spare_parts.*', 'job_lists.status as job_status')
+    //         ->where(function ($q) {
+    //             $q->whereNull('spare_parts.claim_remark')
+    //                 ->orWhere('spare_parts.claim_remark', '!=', 'เคลมด่วน');
+    //         })
+    //         ->where('spare_parts.status', 'pending')   // ยังไม่เคลม
+    //         ->where('job_lists.status', 'success')     // ปิดงานแล้ว
+    //         ->where('job_lists.is_code_key', $isCodeKey)
+    //         ->whereIn('spare_parts.claim', [true, false])
+    //         ->get();
+
+    //     // รวมสองชุดเข้าด้วยกัน
+    //     $allParts = $urgentParts->merge($normalParts);
+
+    //     // Group ตาม sp_code
+    //     $grouped = collect($allParts)->groupBy('sp_code')->map(function ($items, $sp_code) {
+    //         $first = $items->first();
+    //         return [
+    //             'sp_code' => $sp_code,
+    //             'sp_name' => $first->sp_name,
+    //             'sp_unit' => $first->sp_unit,
+    //             'qty'     => $items->sum('qty'),
+    //             'type'    => $first->claim_remark === 'เคลมด่วน' || $first->remark_noclaim === 'เคลมด่วน'
+    //                 ? 'เคลมด่วน'
+    //                 : 'เคลมปกติ',
+    //             'detail'  => $items->values(),
+    //         ];
+    //     })->values();
+
+    //     return Inertia::render('SpareClaim/ClaimMain', [
+    //         'spareParts' => $grouped,
+    //     ]);
+    // }
 
     public function store(ClaimRequest $request): JsonResponse
     {

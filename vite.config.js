@@ -25,6 +25,35 @@ import react from '@vitejs/plugin-react';
 //     }
 // });
 
+// export default defineConfig(({ command }) => {
+
+//     const isDev = command === 'serve';
+
+//     return {
+//         base: isDev
+//             ? '/AOF_WORKS/Service-Center-PK/public/' // ✅ ใช้ base เดิมของคุณ
+//             : '/',
+
+//         server: isDev ? {
+//             host: '0.0.0.0',         // ✅ เปิดให้ทุกเครื่องใน LAN เข้าได้
+//             port: 5173,
+//             cors: true,              // ✅ ปิดปัญหา CORS
+//             strictPort: true,
+//             hmr: {
+//                 host: '192.168.9.32', // ✅ ใช้ IP จริงของเครื่องคุณ
+//             },
+//         } : undefined,
+
+//         plugins: [
+//             laravel({
+//                 input: 'resources/js/app.jsx',
+//                 refresh: true,
+//             }),
+//             react(),
+//         ],
+//     };
+// });
+
 
 export default defineConfig({
     plugins: [

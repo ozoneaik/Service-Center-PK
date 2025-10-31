@@ -12,7 +12,9 @@ export default function ProductDetail({
     warrantyperiod = '',
     status_job,
     expire_date,
-    buy_date
+    buy_date,
+    warranty_text = null,
+    warranty_color = null
 }) {
     const Detail = ({ value, title, Color = '#f55721' }) => (
         <Typography fontWeight='bold' variant="subtitle1" sx={{ color: 'black' }}>
@@ -32,11 +34,29 @@ export default function ProductDetail({
     let warrantyStatusText = warranty_status ? 'อยู่ในประกัน' : 'ไม่อยู่ในประกัน';
     let warrantyColor = warranty_status ? 'green' : 'red';
 
+    //เดิมเงื่อนไขการแสดงผลสถานะการรับประกัน (วิว)
+    // if (!warranty_status) {
+    //     if (!buy_date) {
+    //         warrantyStatusText = 'ยังไม่ได้ลงทะเบียนรับประกัน';
+    //         warrantyColor = 'orange';
+    //     } else if (expire_date) {
+    //         const expireDate = new Date(expire_date);
+    //         if (expireDate < now) {
+    //             warrantyStatusText = 'หมดอายุการรับประกัน';
+    //             warrantyColor = 'red';
+    //         } else {
+    //             warrantyStatusText = 'ไม่อยู่ในประกัน';
+    //             warrantyColor = 'red';
+    //         }
+    //     } else {
+    //         warrantyStatusText = 'ไม่อยู่ในประกัน';
+    //         warrantyColor = 'red';
+    //     }
+    // }
+
+    // เงื่อนไขการแสดงผลสถานะการรับประกันใหม่ (วิว)
     if (!warranty_status) {
-        if (!buy_date) {
-            warrantyStatusText = 'ยังไม่ได้ลงทะเบียนรับประกัน';
-            warrantyColor = 'orange';
-        } else if (expire_date) {
+        if (expire_date) {
             const expireDate = new Date(expire_date);
             if (expireDate < now) {
                 warrantyStatusText = 'หมดอายุการรับประกัน';
@@ -45,6 +65,9 @@ export default function ProductDetail({
                 warrantyStatusText = 'ไม่อยู่ในประกัน';
                 warrantyColor = 'red';
             }
+        } else if (!buy_date) {
+            warrantyStatusText = 'ยังไม่ได้ลงทะเบียนรับประกัน';
+            warrantyColor = 'orange';
         } else {
             warrantyStatusText = 'ไม่อยู่ในประกัน';
             warrantyColor = 'red';
@@ -71,9 +94,16 @@ export default function ProductDetail({
                             {/* <Detail title={'สถานะรับประกัน'}
                                 value={warranty_status ? 'อยู่ในประกัน' : 'ไม่อยู่ในประกัน'}
                                 Color={warranty_status ? 'green' : 'red'} /> */}
-                            <Detail title={'สถานะรับประกัน'}
+                                
+                            {/* <Detail title={'สถานะรับประกัน'}
                                 value={warrantyStatusText}
-                                Color={warrantyColor} />
+                                Color={warrantyColor}
+                            /> */}
+                            <Detail
+                                title={'สถานะรับประกัน'}
+                                value={warranty_text || warrantyStatusText}
+                                Color={warranty_color || warrantyColor}
+                            />
                         </>
                     )}
                     {status_job && <Detail title={'สถานะการซ่อม'} value={warrantynote} />}
@@ -83,7 +113,8 @@ export default function ProductDetail({
                             value={buy_date}
                         />
                     )}
-                    {warrantyStatusText && <Detail title={'วันที่หมดประกัน'} value={expire_date} />}
+                    {/* {warrantyStatusText && <Detail title={'วันที่หมดประกัน'} value={expire_date} />} */}
+                    {expire_date && <Detail title={'วันที่หมดประกัน'} value={expire_date} />}
                     {/* <Detail title={'วันที่หมดประกัน'} value={expire_date} /> */}
                 </Stack>
 

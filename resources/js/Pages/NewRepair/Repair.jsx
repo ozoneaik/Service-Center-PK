@@ -85,9 +85,68 @@ export default function Repair({ DATA }) {
                 setShowPidForm(false);
             }
         }
-
-
     }
+    
+    // ปรับปรุงฟังก์ชัน handleSearch เพื่อเพิ่มการจับเวลาโหลดข้อมูล (วิว)
+    // const handleSearch = async (e) => {
+    //     e.preventDefault();
+
+    //     // 🕒 เริ่มจับเวลา
+    //     const startTime = performance.now();
+
+    //     setLoading(true);
+    //     setDetail(null);
+
+    //     if (SN.startsWith('JOB-')) {
+    //         router.get(route('repair.index', { job_id: SN }));
+    //     } else {
+    //         try {
+    //             const { data, status } = await axios.post(route('repair.search'), { SN, PID });
+
+    //             // คำนวณเวลาหลังจากได้ข้อมูลสำเร็จ
+    //             const endTime = performance.now();
+    //             const elapsedSeconds = ((endTime - startTime) / 1000).toFixed(2);
+
+    //             console.log(`✅ โหลดข้อมูลทั้งหมดเสร็จใน ${elapsedSeconds} วินาที`);
+
+    //             // ดึงข้อมูลจาก response
+    //             const insurance_expire = data.data.data_from_api.insurance_expire || null;
+    //             const buy_date = data.data.buy_date || null;
+    //             const combo_set = data.data.combo_set;
+    //             const addWarranty = data.data.warranty_expire;
+    //             const expire_date = data.data.expire_date || insurance_expire || null;
+
+    //             if (combo_set) {
+    //                 setOpenSelSku(true);
+    //                 let sku_list = data.data.sku_list;
+    //                 sku_list = sku_list.map((item) => {
+    //                     return { ...item, warranty_status: addWarranty, expire_date, buy_date }
+    //                 });
+    //                 setComboSets(sku_list);
+    //             } else {
+    //                 let sku_list = data.data.sku_list[0];
+    //                 sku_list = { ...sku_list, warranty_status: addWarranty, expire_date, buy_date };
+    //                 setDetail(sku_list);
+    //             }
+
+    //             setSN('');
+    //             setPID('');
+
+    //         } catch (error) {
+    //             const errorMessage = error.response?.data?.message || 'เกิดข้อผิดพลาด';
+    //             const errorStatus = error.response?.status || 500;
+    //             AlertDialog({
+    //                 title: 'เกิดข้อผิดพลาด',
+    //                 text: ErrorMessage({ status: errorStatus, message: errorMessage })
+    //             });
+    //         } finally {
+    //             setMiniSize(false);
+    //             setLoading(false);
+    //             setMenuSel(0);
+    //             setShowPidForm(false);
+    //         }
+    //     }
+    // };
 
     return (
         <AuthenticatedLayout>

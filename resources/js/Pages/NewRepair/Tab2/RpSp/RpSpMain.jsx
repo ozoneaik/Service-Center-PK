@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 // import {
 //   Alert,
 //   Card,
@@ -7,8 +7,6 @@
 //   Grid2,
 //   Stack,
 //   Box,
-//   Autocomplete,
-//   TextField,
 // } from "@mui/material";
 // import PaletteIcon from "@mui/icons-material/Palette";
 // import React, { useEffect, useMemo, useState } from "react";
@@ -28,28 +26,8 @@
 //   const [loading, setLoading] = useState(false);
 //   const [spSelected, setSpSelected] = useState([]);
 //   const [showSummary, setShowSummary] = useState(false);
-
 //   const [activeLayout, setActiveLayout] = useState(defaultLayout);
-
-//   // ใหม่: สำหรับเลือกโมเดล
-//   const [modelOptions, setModelOptions] = useState([]);
-//   const [selectedModel, setSelectedModel] = useState(null);
 //   const [filteredList, setFilteredList] = useState([]);
-
-//   useEffect(() => {
-//     // เตรียมตัวเลือกโมเดลจากอะไหล่ทั้งหมด
-//     let models = Array.isArray(productDetail.model_options)
-//       ? [...productDetail.model_options]
-//       : [];
-//     if (!models.length) {
-//       const uniq = Array.from(new Set((listSparePart || []).map((x) => x.modelfg).filter(Boolean)));
-//       models = uniq;
-//     }
-//     setModelOptions(models);
-
-//     const firstModel = models.length ? models[0] : null;
-//     setSelectedModel(firstModel);
-//   }, [productDetail, listSparePart]);
 
 //   // โหลดข้อมูลอะไหล่ที่เคยเลือก
 //   useEffect(() => {
@@ -89,22 +67,36 @@
 //     if (full_file_path) window.open(full_file_path, "_blank");
 //   };
 
-//   // ฟิลเตอร์ list ตาม model + layout
+//   // ฟิลเตอร์ list ตาม layout (inside / outside)
 //   useEffect(() => {
-//     const byModel = !selectedModel
-//       ? listSparePart
-//       : listSparePart.filter((x) => (x.modelfg || null) === selectedModel);
 //     const want = (activeLayout || "outside").toLowerCase().trim();
-//     const byLayout = byModel.filter(
+//     const byLayout = listSparePart.filter(
 //       (x) => ((x.layout || "outside") + "").toLowerCase().trim() === want
 //     );
-//     setFilteredList(byLayout.length ? byLayout : byModel);
-//   }, [selectedModel, listSparePart, activeLayout]);
+//     setFilteredList(byLayout.length ? byLayout : listSparePart);
+//   }, [listSparePart, activeLayout]);
 
-//   // const diagramLayersForModel = memoDiagramLayers.filter(
-//   //   (x) => !selectedModel || x.modelfg === selectedModel
-//   // );
-//   const diagramLayersForModel = memoDiagramLayers;
+//   // const diagramLayers = memoDiagramLayers;
+//   const diagramLayers = useMemo(() => {
+//     const layers = memoDiagramLayers || [];
+//     const unique = [];
+//     const seen = new Set();
+
+//     layers.forEach((layer) => {
+//       const key = `${layer.path_file}_${layer.layer_char}_${layer.typedm}`;
+//       if (!seen.has(key)) {
+//         seen.add(key);
+//         unique.push(layer);
+//       }
+//     });
+//     return unique;
+//   }, [memoDiagramLayers]);
+
+//   const firstDiagramLayout = diagramLayers.length > 0
+//     ? (diagramLayers[0].layer_char || "outside").toLowerCase().trim()
+//     : "outside";
+
+//   const isFirstDiagram = (activeLayout || "").toLowerCase().trim() === firstDiagramLayout;
 
 //   return (
 //     <>
@@ -122,26 +114,14 @@
 //             />
 //           ) : (
 //             <Grid2 container spacing={2}>
-//               {/* ซ้าย: DmPreview + เลือกโมเดล */}
-//               <Grid2 size={{ md: 3, sm: 12 }}>
-//                 <Card sx={{ maxHeight: 600, overflow: "auto", p: 1 }}>
-//                   <CardContent>
-//                     <Box sx={{ mb: 2 }}>
-//                       <Autocomplete
-//                         fullWidth
-//                         size="small"
-//                         options={modelOptions}
-//                         value={selectedModel}
-//                         onChange={(_e, v) => setSelectedModel(v)}
-//                         renderInput={(params) => (
-//                           <TextField {...params} label="เลือกโมเดล" placeholder="เช่น J-12BID1504" />
-//                         )}
-//                       />
-//                     </Box>
 
+//               {/* ซ้าย: Diagram แสดงรูป Inside/Outside */}
+//               <Grid2 size={{ md: 3, sm: 12 }}>
+//                 <Card sx={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", p: 1 }}>
+//                   <CardContent sx={{ flex: 1, overflowY: "auto" }}>
 //                     <DmPreview
 //                       detail={{ pid, fac_model, dm_type: DM }}
-//                       diagramLayers={diagramLayersForModel}
+//                       diagramLayers={diagramLayers}
 //                       initialLayout={defaultLayout}
 //                       onLayoutChange={(layout) => {
 //                         const next = (layout || "outside").toLowerCase().trim();
@@ -175,7 +155,6 @@
 //                       </Alert>
 //                     </Stack>
 //                   </Grid2>
-
 //                   <Grid2 size={12}>
 //                     {!showSummary && (
 //                       <RpSpAdd
@@ -183,6 +162,7 @@
 //                         listSparePart={filteredList}
 //                         onAddSpare={handleAddSpare}
 //                         spSelected={spSelected}
+//                         showServiceRow={isFirstDiagram}
 //                       />
 //                     )}
 //                   </Grid2>
@@ -195,7 +175,8 @@
 //     </>
 //   );
 // }
-//----------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------
+// วิวแก้
 import {
   Alert,
   Card,
@@ -204,6 +185,8 @@ import {
   Grid2,
   Stack,
   Box,
+  Autocomplete,
+  TextField,
 } from "@mui/material";
 import PaletteIcon from "@mui/icons-material/Palette";
 import React, { useEffect, useMemo, useState } from "react";
@@ -216,6 +199,7 @@ export default function RpSpMain({ listSparePart, productDetail, setStepForm, JO
   const pid = productDetail.pid;
   const fac_model = productDetail.facmodel;
   const DM = productDetail.dm || "DM01";
+  const serial = productDetail.serial_id || "";
 
   const memoDiagramLayers = useMemo(() => productDetail?.diagram_layers || [], [productDetail?.diagram_layers]);
   const defaultLayout = (productDetail?.active_layout || "outside").toLowerCase().trim();
@@ -225,6 +209,17 @@ export default function RpSpMain({ listSparePart, productDetail, setStepForm, JO
   const [showSummary, setShowSummary] = useState(false);
   const [activeLayout, setActiveLayout] = useState(defaultLayout);
   const [filteredList, setFilteredList] = useState([]);
+
+  //เพิ่ม: สำหรับเลือกโมเดล (เฉพาะเคส 9999)
+  const [modelOptions, setModelOptions] = useState([]);
+  const [selectedModel, setSelectedModel] = useState(null);
+
+  useEffect(() => {
+    // เตรียมตัวเลือกโมเดลจากข้อมูล productDetail
+    const options = productDetail.model_options || [];
+    setModelOptions(options);
+    if (options.length > 0) setSelectedModel(options[0]);
+  }, [productDetail]);
 
   // โหลดข้อมูลอะไหล่ที่เคยเลือก
   useEffect(() => {
@@ -264,16 +259,22 @@ export default function RpSpMain({ listSparePart, productDetail, setStepForm, JO
     if (full_file_path) window.open(full_file_path, "_blank");
   };
 
-  // ฟิลเตอร์ list ตาม layout (inside / outside)
+  // ฟิลเตอร์ list ตาม layout + model
   useEffect(() => {
     const want = (activeLayout || "outside").toLowerCase().trim();
+
     const byLayout = listSparePart.filter(
       (x) => ((x.layout || "outside") + "").toLowerCase().trim() === want
     );
-    setFilteredList(byLayout.length ? byLayout : listSparePart);
-  }, [listSparePart, activeLayout]);
 
-  // const diagramLayers = memoDiagramLayers;
+    const byModel = selectedModel
+      ? byLayout.filter((x) => (x.modelfg || "").trim() === selectedModel.trim())
+      : byLayout;
+
+    setFilteredList(byModel.length ? byModel : listSparePart);
+  }, [listSparePart, activeLayout, selectedModel]);
+
+  // กรองรูปซ้ำ
   const diagramLayers = useMemo(() => {
     const layers = memoDiagramLayers || [];
     const unique = [];
@@ -288,12 +289,6 @@ export default function RpSpMain({ listSparePart, productDetail, setStepForm, JO
     });
     return unique;
   }, [memoDiagramLayers]);
-
-  const firstDiagramLayout = diagramLayers.length > 0
-    ? (diagramLayers[0].layer_char || "outside").toLowerCase().trim()
-    : "outside";
-
-  const isFirstDiagram = (activeLayout || "").toLowerCase().trim() === firstDiagramLayout;
 
   return (
     <>
@@ -311,11 +306,25 @@ export default function RpSpMain({ listSparePart, productDetail, setStepForm, JO
             />
           ) : (
             <Grid2 container spacing={2}>
-
-              {/* ซ้าย: Diagram แสดงรูป Inside/Outside */}
+              {/* ซ้าย: Diagram + (เลือกโมเดลถ้า 9999) */}
               <Grid2 size={{ md: 3, sm: 12 }}>
-                <Card sx={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", p: 1 }}>
+                <Card sx={{ height: "100%", display: "flex", flexDirection: "column", p: 1 }}>
                   <CardContent sx={{ flex: 1, overflowY: "auto" }}>
+                    {serial === "9999" && modelOptions.length >= 1 && (
+                      <Box sx={{ mb: 2 }}>
+                        <Autocomplete
+                          fullWidth
+                          size="small"
+                          options={modelOptions}
+                          value={selectedModel}
+                          onChange={(_e, v) => setSelectedModel(v)}
+                          renderInput={(params) => (
+                            <TextField {...params} label="เลือกโมเดล" placeholder="เช่น J-12BID1504" />
+                          )}
+                        />
+                      </Box>
+                    )}
+
                     <DmPreview
                       detail={{ pid, fac_model, dm_type: DM }}
                       diagramLayers={diagramLayers}
@@ -359,7 +368,6 @@ export default function RpSpMain({ listSparePart, productDetail, setStepForm, JO
                         listSparePart={filteredList}
                         onAddSpare={handleAddSpare}
                         spSelected={spSelected}
-                        showServiceRow={isFirstDiagram}
                       />
                     )}
                   </Grid2>
