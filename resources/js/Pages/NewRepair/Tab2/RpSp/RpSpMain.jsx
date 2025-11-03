@@ -368,6 +368,7 @@ export default function RpSpMain({ listSparePart, productDetail, setStepForm, JO
                         listSparePart={filteredList}
                         onAddSpare={handleAddSpare}
                         spSelected={spSelected}
+                        showServiceRow={activeLayout === "outside"}
                       />
                     )}
                   </Grid2>
