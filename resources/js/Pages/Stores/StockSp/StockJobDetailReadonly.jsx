@@ -86,13 +86,22 @@ export default function stockJobDetailReadonly({ job, job_detail = [] }) {
                         >
                             ลบเอกสาร
                         </Button>
-                        <Button
+                        {/* <Button
                             variant="contained" color="warning" startIcon={<Edit />}
                             onClick={handleToEdit} 
                         // disabled={job.job_status === 'complete'}
                         // disabled
                         >
-                            {/* แก้ไข (ปิดปรับปรง) */}
+                            แก้ไข (ปิดปรับปรง)
+                            แก้ไข
+                        </Button> */}
+                        <Button
+                            variant="contained"
+                            color="warning"
+                            startIcon={<Edit />}
+                            onClick={handleToEdit}
+                            disabled={job.job_status === 'complete'} 
+                        >
                             แก้ไข
                         </Button>
                         <Button
