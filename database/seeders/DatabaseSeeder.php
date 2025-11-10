@@ -62,13 +62,18 @@ class DatabaseSeeder extends Seeder
             ['menu_name' => 'ลงทะเบียนรับประกันสินค้า', 'group' => 4, 'main_menu' => true, 'redirect_route' => 'warranty.index'],
             ['menu_name' => 'แจ้งเคลมอะไหล่และตรวจสอบสถานะเคลม', 'group' => 5, 'main_menu' => true, 'redirect_route' => 'spareClaim.index'],
             ['menu_name' => 'สั่งซื้ออะไหล่และตรวจสอบไดอะแกรม', 'group' => 6, 'main_menu' => true, 'redirect_route' => 'orders.list'],
-            ['menu_name' => 'รายงานศูนย์บริการ', 'group' => 7, 'main_menu' => true, 'redirect_route' => 'report.menu'],
-            ['menu_name' => 'จัดการร้านค้า', 'group' => 8, 'main_menu' => true, 'redirect_route' => null],
-            ['menu_name' => 'สต็อกอะไหล่', 'group' => 8, 'main_menu' => false, 'redirect_route' => 'stockSp.list'],
-            ['menu_name' => 'ปรับปรุงสต็อกอะไหล่', 'group' => 8, 'main_menu' => false, 'redirect_route' => 'stockJob.index'],
-            ['menu_name' => 'ข้อมูลผู้ใช้', 'group' => 8, 'main_menu' => false, 'redirect_route' => 'storeUsers.index'],
-            ['menu_name' => 'จัดการเครื่องปริ้นต์', 'group' => 8, 'main_menu' => false, 'redirect_route' => 'printerIp.index'],
-            ['menu_name' => 'จัดการช่างซ่อม', 'group' => 8, 'main_menu' => false, 'redirect_route' => 'repairMan.index']
+
+            ['menu_name' => 'เบิกอะไหล่สินค้า', 'group' => 7, 'main_menu' => true, 'redirect_route' => null],
+            ['menu_name' => 'เบิกอะไหล่สินค้า', 'group' => 7, 'main_menu' => false, 'redirect_route' => 'withdrawJob.index'],
+            ['menu_name' => 'ตั้งค่าส่วนลดการเบิก', 'group' => 7, 'main_menu' => false, 'redirect_route' => 'withdrawDiscountSetting.index'],
+
+            ['menu_name' => 'รายงานศูนย์บริการ', 'group' => 8, 'main_menu' => true, 'redirect_route' => 'report.menu'],
+            ['menu_name' => 'จัดการร้านค้า', 'group' => 9, 'main_menu' => true, 'redirect_route' => null],
+            ['menu_name' => 'สต็อกอะไหล่', 'group' => 9, 'main_menu' => false, 'redirect_route' => 'stockSp.list'],
+            ['menu_name' => 'ปรับปรุงสต็อกอะไหล่', 'group' => 9, 'main_menu' => false, 'redirect_route' => 'stockJob.index'],
+            ['menu_name' => 'ข้อมูลผู้ใช้', 'group' => 9, 'main_menu' => false, 'redirect_route' => 'storeUsers.index'],
+            ['menu_name' => 'จัดการเครื่องปริ้นต์', 'group' => 9, 'main_menu' => false, 'redirect_route' => 'printerIp.index'],
+            ['menu_name' => 'จัดการช่างซ่อม', 'group' => 9, 'main_menu' => false, 'redirect_route' => 'repairMan.index']
         ];
 
         foreach ($menu_system as $menu) {

@@ -241,7 +241,7 @@ class StockSpController extends Controller
                 // dd($searchQty);
                 DB::beginTransaction();
                 $stock_job_detail_sp_code_target = StockJobDetail::query()->where('sp_code', $sp_code)->where('stock_job_id', $stock_job_id)->first();
-                $stock_job_detail_sp_code_target->sp_qty = $stock_job_detail_sp_code_target->sp_qty +$searchQty;
+                $stock_job_detail_sp_code_target->sp_qty = $stock_job_detail_sp_code_target->sp_qty + $searchQty;
                 $stock_job_detail_sp_code_target->save();
             }
             $stock_job_processing_positive_type = StockJob::query()->where('type', 'เพิ่ม')->where('is_code_cust_id', Auth::user()->is_code_cust_id)->where('job_status', 'processing')->get();
@@ -310,12 +310,47 @@ class StockSpController extends Controller
             ->value('qty_sp') ?? 0;
 
         // --- ปรับปรุงสต็อก (เพิ่ม/ลด) : join users ด้วย user_code ---
+        // $adjustments = StockJobDetail::query()
+        //     ->leftJoin('stock_jobs', 'stock_jobs.stock_job_id', '=', 'stock_job_details.stock_job_id')
+        //     ->leftJoin('users', 'users.user_code', '=', 'stock_job_details.user_code_key')
+        //     ->where('stock_job_details.sp_code', $sp_code)
+        //     ->where('stock_jobs.is_code_cust_id', $is_code_cust_id)
+        //     ->where('stock_jobs.job_status', 'complete') // ✅ นับเฉพาะที่ปิดงานแล้ว
+        //     ->select([
+        //         'stock_jobs.stock_job_id',
+        //         'stock_jobs.type',
+        //         'stock_jobs.created_at as date_at',
+        //         'stock_jobs.updated_at as updated_at',
+        //         'stock_job_details.sp_qty',
+        //         DB::raw("COALESCE(users.name, users.user_code, stock_job_details.user_code_key, 'ไม่ระบุ') as actor"),
+        //     ])
+        //     ->get()
+        //     ->map(function ($r) {
+        //         $sign = $r->type === 'เพิ่ม' ? 1 : -1;
+        //         $tran = $sign * (int) $r->sp_qty;
+
+        //         $date    = $r->date_at ? Carbon::parse($r->date_at) : null;
+        //         $updated = $r->updated_at ? Carbon::parse($r->updated_at) : null;
+
+        //         return [
+        //             'date'       => $date ? $date->format('Y-m-d') : null,
+        //             'ref'        => 'JOB-STOCK' . $r->stock_job_id,
+        //             'type'       => 'ปรับปรุง',
+        //             'tran'       => $tran,
+        //             'updated_at' => $updated ? $updated->format('Y-m-d H:i:s') : null,
+        //             'actor'      => $r->actor,
+        //             'sort_at'    => $date ? $date->timestamp : 0,
+        //         ];
+        //     })
+        //     ->values()
+        //     ->toBase();
+
         $adjustments = StockJobDetail::query()
             ->leftJoin('stock_jobs', 'stock_jobs.stock_job_id', '=', 'stock_job_details.stock_job_id')
             ->leftJoin('users', 'users.user_code', '=', 'stock_job_details.user_code_key')
             ->where('stock_job_details.sp_code', $sp_code)
             ->where('stock_jobs.is_code_cust_id', $is_code_cust_id)
-            ->where('stock_jobs.job_status', 'complete') // ✅ นับเฉพาะที่ปิดงานแล้ว
+            ->where('stock_jobs.job_status', 'complete')
             ->select([
                 'stock_jobs.stock_job_id',
                 'stock_jobs.type',
@@ -326,16 +361,36 @@ class StockSpController extends Controller
             ])
             ->get()
             ->map(function ($r) {
-                $sign = $r->type === 'เพิ่ม' ? 1 : -1;
-                $tran = $sign * (int) $r->sp_qty;
+                $type = $r->type;
+                $sign = 0;
 
-                $date    = $r->date_at ? Carbon::parse($r->date_at) : null;
+                // แยกประเภทตาม type จริง
+                switch ($type) {
+                    case 'เพิ่ม':
+                        $sign = +1;
+                        $typeLabel = 'ปรับปรุง';  // เพิ่มสต็อก
+                        break;
+                    case 'ลด':
+                        $sign = -1;
+                        $typeLabel = 'ปรับปรุง';  // ลดสต็อก
+                        break;
+                    case 'เบิก':
+                        $sign = -1;
+                        $typeLabel = 'เบิก';      // เบิกอะไหล่
+                        break;
+                    default:
+                        $sign = 0;
+                        $typeLabel = 'อื่น ๆ';
+                }
+
+                $tran = $sign * (int) $r->sp_qty;
+                $date = $r->date_at ? Carbon::parse($r->date_at) : null;
                 $updated = $r->updated_at ? Carbon::parse($r->updated_at) : null;
 
                 return [
                     'date'       => $date ? $date->format('Y-m-d') : null,
                     'ref'        => 'JOB-STOCK' . $r->stock_job_id,
-                    'type'       => 'ปรับปรุง',
+                    'type'       => $typeLabel,
                     'tran'       => $tran,
                     'updated_at' => $updated ? $updated->format('Y-m-d H:i:s') : null,
                     'actor'      => $r->actor,
@@ -352,7 +407,7 @@ class StockSpController extends Controller
             ->leftJoin('users as u_closer',  'u_closer.user_code',  '=', 'job_lists.close_job_by')
             ->where('spare_parts.sp_code', $sp_code)
             ->where('job_lists.is_code_key', $is_code_cust_id)
-            ->whereIn('job_lists.status', ['success', 'complete']) // ✅ ปิดงานแล้วเท่านั้น
+            ->whereIn('job_lists.status', ['success', 'complete']) // ปิดงานแล้วเท่านั้น
             ->select([
                 'spare_parts.qty',
                 'spare_parts.created_at as date_at',

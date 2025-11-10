@@ -194,27 +194,6 @@ class OrderController extends Controller
         return Inertia::render('Orders/OrderSuccess', ['message' => $message]);
     }
 
-    // Cart Controller
-    // public function cartList(): Response
-    // {
-    //     $sku_image_path = env('VITE_IMAGE_PID');
-    //     $groupSku = Cart::query()->where('is_code_cust_id', Auth::user()->is_code_cust_id)
-    //         ->where('is_active', false)
-    //         ->select('sku_code', 'sku_name')
-    //         ->groupBy('sku_code', 'sku_name')
-    //         ->get();
-    //     $totalSp = 0;
-    //     foreach ($groupSku as $key => $group) {
-    //         $group['sku_image_path'] = $sku_image_path . $group['sku_code'] . ".jpg";
-    //         $group['list'] = Cart::query()->where('is_code_cust_id', Auth::user()->is_code_cust_id)
-    //             ->where('is_active', false)
-    //             ->where('sku_code', $group->sku_code)
-    //             ->get();
-    //         $totalSp += $group['list']->count();
-    //     }
-    //     return Inertia::render('Orders/carts/CartList', ['groupSku' => $groupSku, 'totalSp' => $totalSp]);
-    // }
-
     public function cartList(): Response
     {
         $sku_image_path = env('VITE_IMAGE_PID');
@@ -305,7 +284,7 @@ class OrderController extends Controller
     public function createOrder(Request $request): JsonResponse
     {
         try {
-            // ตรวจสอบว่ามีข้อมูล groups หรือไม่
+        // ตรวจสอบว่ามีข้อมูล groups หรือไม่
             if (!$request->has('groups') || empty($request->groups)) {
                 return response()->json([
                     'status' => 'error',

@@ -34,6 +34,13 @@ export function getMenuHeaders(user) {
             routeUrl: 'orders.list'
         },
         {
+            name: "เบิกอะไหล่สินค้า",
+            childs: [
+                { name: "เบิกอะไหล่สินค้า", routeUrl: "withdrawJob.index" },
+                { name: "ตั้งค่าส่วนลดการเบิก", routeUrl: "withdrawDiscountSetting.index" },
+            ],
+        },
+        {
             name: 'รายงานศูนย์บริการ',
             routeUrl: 'report.menu',
             target: '_blank'
@@ -58,6 +65,8 @@ export function getMenuHeadersAdminBranch(user) {
                     routeUrl: 'sfd',
                     is_code_cust_id: true
                 },
+
+                // { name: 'เบิกอะไหล่สินค้า', routeUrl: 'withdrawJob.index', is_code_cust_id: true },
                 {
                     name: 'ข้อมูลผู้ใช้',
                     routeUrl: 'storeUsers.index'

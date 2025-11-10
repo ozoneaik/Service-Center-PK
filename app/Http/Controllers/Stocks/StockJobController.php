@@ -352,58 +352,126 @@ class StockJobController extends Controller
             abort(403);
         }
 
+        // $details = $raw->map(function ($jd) use ($job) {
+        //     // 1) สต็อกคงเหลือปัจจุบัน
+        //     $sp_count = StockSparePart::query()
+        //         ->where('sp_code', $jd->sp_code)
+        //         ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+        //         ->value('qty_sp') ?? 0;
+
+        //     // 2) งานปรับเพิ่ม/ลด ที่กำลัง processing (ยกเว้นเรื่องอื่น ๆ ตาม logic เดิม)
+        //     $posJobs = StockJob::query()
+        //         ->where('type', 'เพิ่ม')
+        //         ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+        //         ->where('job_status', 'processing')
+        //         ->get();
+
+        //     $negJobs = StockJob::query()
+        //         ->where('type', 'ลด')
+        //         ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+        //         ->where('job_status', 'processing')
+        //         ->get();
+
+        //     $pos = 0;
+        //     $neg = 0;
+        //     foreach ($posJobs as $j) {
+        //         $d = StockJobDetail::query()->where('stock_job_id', $j->stock_job_id)->where('sp_code', $jd->sp_code)->first();
+        //         if ($d) $pos += (int)$d->sp_qty;
+        //     }
+        //     foreach ($negJobs as $j) {
+        //         $d = StockJobDetail::query()->where('stock_job_id', $j->stock_job_id)->where('sp_code', $jd->sp_code)->first();
+        //         if ($d) $neg += (int)$d->sp_qty;
+        //     }
+
+        //     // 3) งานซ่อมค้าง (pending)
+        //     $pendingJobs = JobList::query()
+        //         ->where('is_code_key', Auth::user()->is_code_cust_id)
+        //         ->where('status', 'pending')
+        //         ->get();
+        //     $inRepair = 0;
+        //     foreach ($pendingJobs as $pj) {
+        //         $sp = SparePart::query()->where('job_id', $pj->job_id)->where('sp_code', $jd->sp_code)->first();
+        //         if ($sp) $inRepair += (int)$sp->qty;
+        //     }
+
+        //     // 4) สต็อกพร้อมใช้งาน และ 5) หลังปรับ
+        //     $available = (int)$sp_count - (int)($neg + $inRepair) + (int)$pos;
+        //     $after = $job->type === 'เพิ่ม'
+        //         ? $available + (int)$jd->sp_qty
+        //         : $available - (int)$jd->sp_qty;
+
+        //     $arr = $jd->toArray();
+        //     $arr['count_sp'] = $sp_count;        // สต็อกคงเหลือ
+        //     $arr['total_aready'] = $available;   // สต็อกพร้อมใช้งาน
+        //     $arr['stock_after'] = $after;        // สต็อกหลังปรับ
+        //     return $arr;
+        // });
+
         $details = $raw->map(function ($jd) use ($job) {
-            // 1) สต็อกคงเหลือปัจจุบัน
             $sp_count = StockSparePart::query()
                 ->where('sp_code', $jd->sp_code)
                 ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
                 ->value('qty_sp') ?? 0;
 
-            // 2) งานปรับเพิ่ม/ลด ที่กำลัง processing (ยกเว้นเรื่องอื่น ๆ ตาม logic เดิม)
+            // แยก job processing ขาเพิ่ม ขาลด (ไม่รวม job ปัจจุบัน)
             $posJobs = StockJob::query()
                 ->where('type', 'เพิ่ม')
                 ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
                 ->where('job_status', 'processing')
+                ->where('stock_job_id', '!=', $job->stock_job_id) 
                 ->get();
 
             $negJobs = StockJob::query()
                 ->where('type', 'ลด')
                 ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
                 ->where('job_status', 'processing')
+                ->where('stock_job_id', '!=', $job->stock_job_id)
                 ->get();
 
             $pos = 0;
             $neg = 0;
             foreach ($posJobs as $j) {
-                $d = StockJobDetail::query()->where('stock_job_id', $j->stock_job_id)->where('sp_code', $jd->sp_code)->first();
+                $d = StockJobDetail::query()
+                    ->where('stock_job_id', $j->stock_job_id)
+                    ->where('sp_code', $jd->sp_code)
+                    ->first();
                 if ($d) $pos += (int)$d->sp_qty;
             }
             foreach ($negJobs as $j) {
-                $d = StockJobDetail::query()->where('stock_job_id', $j->stock_job_id)->where('sp_code', $jd->sp_code)->first();
+                $d = StockJobDetail::query()
+                    ->where('stock_job_id', $j->stock_job_id)
+                    ->where('sp_code', $jd->sp_code)
+                    ->first();
                 if ($d) $neg += (int)$d->sp_qty;
             }
 
-            // 3) งานซ่อมค้าง (pending)
+            // งานซ่อมค้าง
             $pendingJobs = JobList::query()
                 ->where('is_code_key', Auth::user()->is_code_cust_id)
                 ->where('status', 'pending')
                 ->get();
+
             $inRepair = 0;
             foreach ($pendingJobs as $pj) {
-                $sp = SparePart::query()->where('job_id', $pj->job_id)->where('sp_code', $jd->sp_code)->first();
+                $sp = SparePart::query()
+                    ->where('job_id', $pj->job_id)
+                    ->where('sp_code', $jd->sp_code)
+                    ->first();
                 if ($sp) $inRepair += (int)$sp->qty;
             }
 
-            // 4) สต็อกพร้อมใช้งาน และ 5) หลังปรับ
+            // สต็อกพร้อมใช้งาน "ก่อน" ปรับครั้งนี้
             $available = (int)$sp_count - (int)($neg + $inRepair) + (int)$pos;
+
+            // หลังปรับ (เพิ่ม/ลด)
             $after = $job->type === 'เพิ่ม'
                 ? $available + (int)$jd->sp_qty
                 : $available - (int)$jd->sp_qty;
 
             $arr = $jd->toArray();
-            $arr['count_sp'] = $sp_count;        // สต็อกคงเหลือ
-            $arr['total_aready'] = $available;   // สต็อกพร้อมใช้งาน
-            $arr['stock_after'] = $after;        // สต็อกหลังปรับ
+            $arr['count_sp'] = $sp_count;
+            $arr['total_aready'] = $available;
+            $arr['stock_after'] = $after;
             return $arr;
         });
 

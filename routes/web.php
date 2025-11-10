@@ -5,6 +5,8 @@ use App\Http\Controllers\Admin\HistorySpController;
 use App\Http\Controllers\Admin\MenuFileUploadController;
 use App\Http\Controllers\Admin\OrderManageController;
 use App\Http\Controllers\Admin\UserManageController;
+use App\Http\Controllers\WithDraws\WithdrawJobController;
+use App\Http\Controllers\WithDraws\WithdrawSpController;
 use App\Http\Controllers\ApprovalSpController;
 use App\Http\Controllers\ClosedController;
 use App\Http\Controllers\DmImageController;
@@ -20,6 +22,7 @@ use App\Http\Controllers\TblHistoryProdController;
 use App\Http\Controllers\Test\DomPdfController;
 use App\Http\Controllers\Utils\SparePartDetailController;
 use App\Http\Controllers\WarrantyProductController;
+use App\Http\Controllers\WithDraws\WithdrawDiscountController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -129,6 +132,33 @@ Route::middleware('auth')->group(function () {
         });
     });
     require __DIR__ . '/admin.php';
+});
+
+Route::prefix('withdraw')->group(function () {
+    Route::get('/index', [WithdrawSpController::class, 'index'])->name('withdrawSp.index');
+    Route::get('/carts', [WithdrawSpController::class, 'carts'])->name('withdrawSp.carts');
+    Route::post('/carts/add', [WithdrawSpController::class, 'addToCart'])->name('withdrawSp.carts.add');
+    Route::post('/carts/qty/{condition}', [WithdrawSpController::class, 'qty'])->name('carts.qty');
+    Route::get('/withdraw/summary', [WithdrawSpController::class, 'summary'])->name('withdrawSp.summary');
+    Route::delete('/carts/{id}', [WithdrawSpController::class, 'deleteCart'])->name('carts.delete');
+    Route::post('/create-order', [WithdrawSpController::class, 'createOrder'])->name('withdrawSp.createOrder');
+    Route::get('/history', [WithdrawSpController::class, 'history'])->name('withdrawSp.history');
+
+    Route::get('/cart-count', [WithdrawSpController::class, 'cartCount'])->name('withdrawSp.cartCount');
+    Route::get('/cart-spcodes', [WithdrawSpController::class, 'cartSpcodes'])->name('withdrawSp.cartSpcodes');
+
+    Route::get('/discount-setting', function () {
+        return Inertia::render('Admin/WithdrawSp/withdrawJobs/WithdrawDiscountSetting');
+    })->name('withdrawDiscountSetting.index');
+});
+
+Route::prefix('withdraw-job')->group(function () {
+    Route::get('/index', [WithdrawJobController::class, 'index'])->name('withdrawJob.index');
+    Route::get('/create/{is_code_cust_id}', [WithdrawJobController::class, 'create'])->name('withdrawJob.create');
+    Route::post('/store', [WithdrawJobController::class, 'store'])->name('withdrawJob.store');
+    Route::delete('/withdrawSp/carts/delete', [WithdrawJobController::class, 'deleteBySpCode'])->name('withdrawSp.carts.delete');
+    Route::get('/check-stock', [WithdrawJobController::class, 'checkStock'])->name('withdrawJob.checkStock');
+    Route::get('/{job_id}', [WithdrawJobController::class, 'show'])->name('withdrawJob.show');
 });
 
 Route::get('/Unauthorized', function () {

@@ -9,6 +9,8 @@ use App\Models\CustomerInJob;
 use App\Models\FileUpload;
 use App\Models\JobList;
 use App\Models\SparePart;
+use App\Models\StockJobDetail;
+use App\Models\StockSparePart;
 use App\Models\Symptom;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
@@ -228,6 +230,26 @@ class JobController extends Controller
                 $check_job_status->close_job_at = Carbon::now();
                 $check_job_status->close_job_by = Auth::user()->user_code;
                 $check_job_status->save();
+
+                // --- หักสต็อกจาก StockSparePart เมื่อปิดงานซ่อม ---
+                $spareParts = SparePart::query()
+                    ->where('job_id', $job_id)
+                    ->get();
+
+                foreach ($spareParts as $sp) {
+                    $stock = StockSparePart::query()
+                        ->where('sp_code', $sp->sp_code)
+                        ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                        ->first();
+
+                    if ($stock) {
+                        $newQty = $stock->qty_sp - (int) $sp->qty;
+                        $stock->update([
+                            'old_qty_sp' => $stock->qty_sp,
+                            'qty_sp' => $newQty,
+                        ]);
+                    }
+                }
             } else {
                 throw new \Exception('ไม่สามารถปิดจ็อบได้');
             }

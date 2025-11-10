@@ -19,6 +19,10 @@ class StockJobDetail extends Model
         'sp_name',
         'sp_qty',
         'sp_unit',
+        'stdprice_per_unit', 
+        'sell_price',       
+        'discount_percent',
+        'discount_amount', 
         'total_after_total_if_add',
         'total_after_total_if_remove'
     ];
