@@ -147,6 +147,9 @@ Route::prefix('withdraw')->group(function () {
     Route::get('/cart-count', [WithdrawSpController::class, 'cartCount'])->name('withdrawSp.cartCount');
     Route::get('/cart-spcodes', [WithdrawSpController::class, 'cartSpcodes'])->name('withdrawSp.cartSpcodes');
 
+    Route::post('/export-pdf-cart', [WithdrawJobController::class, 'exportPdf'])->name('orders.export.pdf');
+
+
     Route::get('/discount-setting', function () {
         return Inertia::render('Admin/WithdrawSp/withdrawJobs/WithdrawDiscountSetting');
     })->name('withdrawDiscountSetting.index');

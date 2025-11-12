@@ -11,6 +11,7 @@ import { ChevronLeft, FilterList, ManageHistory, LocalPhone, Person, Search, Pri
 import IconButton from "@mui/material/IconButton";
 import { styled } from "@mui/material/styles";
 import { TableStyle } from "../../../css/TableStyle"
+import { showDefaultImage } from "@/utils/showImage.js";
 
 const statusLabels = {
     pending: 'กำลังดำเนินการซ่อม', success: 'ปิดการซ่อมแล้ว',
@@ -45,7 +46,9 @@ export const TableDetail = ({ jobs, handleShowDetail, url }) => {
             <TableBody>
                 {jobs.map((job, index) => (
                     <TableRow key={index}>
-                        <TableCell><img src={job.image_sku} width={50} alt="no image" /></TableCell>
+                        <TableCell>
+                            <img src={job.image_sku} width={50} onError={showDefaultImage} />
+                        </TableCell>
                         <TableCell>
                             {/* <Link href={route('repair.index', { job_id: job.job_id })}>
                                 {job.serial_id}
@@ -177,6 +180,7 @@ const FilterForm = ({ handleFilterChange, filters, setFilters, searchJobs }) => 
                     <MenuItem disabled value={'select'}>เลือกสถานะการซ่อม</MenuItem>
                     <MenuItem value={''}>ทั้งหมด</MenuItem>
                     <MenuItem value={'pending'}>กำลังดำเนินการซ่อม</MenuItem>
+                    <MenuItem value={'send'}>ส่งไปยังศูนย์ซ่อม PK</MenuItem>
                     <MenuItem value={'success'}>ปิดการซ่อมแล้ว</MenuItem>
                     <MenuItem value={'canceled'}>ยกเลิกการซ่อมแล้ว</MenuItem>
                 </Select>

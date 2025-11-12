@@ -937,7 +937,7 @@
 
 //---------------------------------------------------------------------------------------------------------
 //version 2
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Head, router, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {
@@ -961,7 +961,8 @@ import {
 import { ArrowBack, Save } from "@mui/icons-material";
 import { showDefaultImage } from "@/utils/showImage.js";
 import { AlertDialog } from "@/Components/AlertDialog";
-import axios from "axios"; // 👈 ให้แน่ใจว่ามี import ตัวนี้อยู่
+import axios from "axios";
+import { Backdrop, CircularProgress } from "@mui/material";
 
 const money = (n) =>
     Number(n || 0).toLocaleString("th-TH", {
@@ -977,6 +978,7 @@ export default function WithdrawSummary({ groupSku = [], totalSp = 0, is_code_cu
     const [groupData, setGroupData] = React.useState(groupSku);
     const [discountPercent, setDiscountPercent] = React.useState(20);
     const [outOfStockList, setOutOfStockList] = React.useState([]);
+    const [processing, setProcessing] = useState(false);
 
     const allItems = groupData.flatMap((g) => g.list || []);
 
@@ -1165,6 +1167,93 @@ export default function WithdrawSummary({ groupSku = [], totalSp = 0, is_code_cu
                 }
             },
         });
+    };
+
+    const handleGeneratePDF_API = async () => {
+        try {
+            if (!groupData.length) {
+                AlertDialog({
+                    title: "ไม่มีข้อมูล",
+                    text: "ไม่มีรายการอะไหล่ในใบเบิก",
+                    icon: "warning",
+                });
+                return;
+            }
+
+            setProcessing(true);
+
+            // เตรียมข้อมูลสาขา/ลูกค้า
+            const soNumber = job_id || `SO-${Date.now()}`;
+            const storeName = user?.store_info?.shop_name || user?.name || "ไม่ระบุชื่อร้าน";
+            const address = user?.store_info?.address || "สำนักงานใหญ่";
+            const phone = user?.phone || "-";
+            const currentDate = new Date().toLocaleDateString("th-TH");
+            const totalPrice = totalAmount.toFixed(2);
+            const discountAmount = ((totalAmount * discountPercent) / 100).toFixed(2);
+            const netTotal = discountedTotal.toFixed(2);
+
+            const discountedGroups = groupData.map((group) => ({
+                ...group,
+                list: (group.list || []).map((item) => {
+                    const stdPrice = Number(item.stdprice_per_unit || 0);
+                    const qty = Number(item.qty || 0);
+                    const discountPerUnit = discountPercent > 0 ? (stdPrice * discountPercent / 100) : 0;
+                    const sellPrice = stdPrice - discountPerUnit; // ✅ ราคาหลังลด
+
+                    return {
+                        ...item,
+                        discount_percent: discountPercent,
+                        discount_per_unit: discountPerUnit,
+                        sell_price: sellPrice,
+                        amount: sellPrice * qty,
+                    };
+                }),
+            }));
+
+            // payload ส่งไป backend
+            const payload = {
+                so_number: soNumber,
+                store_name: storeName,
+                address,
+                phone,
+                date: currentDate,
+                total_price: totalPrice,
+                discount: discountAmount,
+                discount_percent: discountPercent,
+                net_total: netTotal,
+                // groups: groupData,
+                groups: discountedGroups,
+            };
+
+            console.log("📦 ส่ง payload ไป export.pdf:", payload);
+
+            const res = await axios.post(route("orders.export.pdf"), payload);
+
+            if (res?.data?.pdf_url) {
+                AlertDialog({
+                    title: "สำเร็จ",
+                    text: "สร้างใบเบิกสำเร็จ",
+                    icon: "success",
+                    timer: 1500,
+                    onPassed: () => window.open(res.data.pdf_url, "_blank"),
+                });
+            } else {
+                AlertDialog({
+                    title: "ผิดพลาด",
+                    text: res?.data?.message || "ไม่พบ URL ของไฟล์ PDF",
+                    icon: "error",
+                });
+            }
+        } catch (error) {
+            console.error("❌ Error handleGeneratePDF_API:", error);
+            AlertDialog({
+                title: "เกิดข้อผิดพลาด",
+                text: error.response?.data?.message || error.message,
+                icon: "error",
+            });
+        } finally {
+            setProcessing(false);
+        }
     };
 
     React.useEffect(() => {
@@ -1463,6 +1552,37 @@ export default function WithdrawSummary({ groupSku = [], totalSp = 0, is_code_cu
                     >
                         บันทึก
                     </Button>
+
+                    <Button
+                        variant="contained"
+                        color="info"
+                        onClick={handleGeneratePDF_API}
+                        // disabled={processing}
+                        disabled
+                        sx={{
+                            width: 180,
+                            bgcolor: "#0288D1",
+                            "&:hover": { bgcolor: "#0277BD" },
+                        }}
+                    >
+                        {processing ? "กำลังสร้าง..." : "ส่งออกใบเบิก PDF (กำลังพัฒนา)"}
+                    </Button>
+                    <Backdrop
+                        open={processing}
+                        sx={{
+                            color: "#fff",
+                            zIndex: (theme) => theme.zIndex.drawer + 1000,
+                            backdropFilter: "blur(3px)",
+                        }}
+                    >
+                        <Stack alignItems="center" spacing={2}>
+                            <CircularProgress color="inherit" size={60} thickness={4} />
+                            <Typography variant="h6" fontWeight="bold">
+                                กำลังสร้างใบเบิกอะไหล่...
+                            </Typography>
+                        </Stack>
+                    </Backdrop>
+
                 </Stack>
             </Container>
         </AuthenticatedLayout>

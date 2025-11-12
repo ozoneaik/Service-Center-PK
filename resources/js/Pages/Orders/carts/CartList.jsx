@@ -158,59 +158,26 @@ export default function CartList({ groupSku, totalSp, flash }) {
         }, 0);
     }, [groups]);
 
-    // const handleExportPdf = async () => {
-    //     try {
-    //         setProcessing(true);
-    //         console.log("🚀 กำลังยิง API /orders/export-pdf-cart ...", { groups, address, phone });
-    //         const { data } = await axios.post('/orders/export-pdf-cart', {
-    //             groups,
-    //             address,
-    //             phone
-    //         });
-    //         console.log("📥 Response จาก Laravel:", data);
-    //         if (data.status === 'success') {
-    //             if (data.pdf_url) {
-    //                 const link = document.createElement('a');
-    //                 link.href = data.pdf_url;
-    //                 link.download = 'order.pdf';
-    //                 document.body.appendChild(link);
-    //                 link.click();
-    //                 document.body.removeChild(link);
-    //                 console.log("📄 ดาวน์โหลด PDF จาก URL:", data.pdf_url);
-    //             } else if (data.pdf_base64) {
-    //                 const link = document.createElement('a');
-    //                 link.href = data.pdf_base64;
-    //                 link.download = 'order.pdf';
-    //                 document.body.appendChild(link);
-    //                 link.click();
-    //                 document.body.removeChild(link);
-    //                 console.log("📄 ดาวน์โหลด PDF จาก Base64 สำเร็จ");
-    //             } else {
-    //                 AlertDialog({ title: 'ผิดพลาด', text: 'ไม่พบข้อมูล PDF ที่โหลดได้' });
-    //             }
-    //         } else {
-    //             AlertDialog({ title: 'ผิดพลาด', text: data.message });
-    //         }
-    //     } catch (error) {
-    //         console.error("❌ Error handleExportPdf:", error);
-    //         AlertDialog({
-    //             title: 'ผิดพลาด',
-    //             text: error.response?.data?.message || error.message
-    //         });
-    //     } finally {
-    //         setProcessing(false);
-    //     }
-    // };
-
     const handleExportPdf = async () => {
         try {
             setProcessing(true);
             console.log("🚀 กำลังยิง API /orders/export-pdf-cart ...", { groups, address, phone });
-            router.post(route('orders.export.pdf'), {
+            // router.post(route('orders.export.pdf'), {
+            //     groups,
+            //     address,
+            //     phone
+            // });
+            const { data } = await axios.post(route('orders.export.pdf'), {
                 groups,
                 address,
                 phone
             });
+
+            if (data.success && data.pdf_url) {
+                window.open(data.pdf_url, '_blank');
+            } else {
+                AlertDialog({ title: 'ผิดพลาด', text: 'ไม่พบไฟล์ PDF' });
+            }
         } catch (error) {
             console.error("❌ Error handleExportPdf:", error);
             AlertDialog({

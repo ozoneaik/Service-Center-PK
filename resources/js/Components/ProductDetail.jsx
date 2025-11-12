@@ -1,4 +1,5 @@
 import { Card, Grid2, Stack, Typography } from "@mui/material";
+import { showDefaultImage } from "@/utils/showImage.js";
 
 export default function ProductDetail({
     serial = 'ไม่พบ',
@@ -121,7 +122,7 @@ export default function ProductDetail({
             </Grid2>
             <Grid2 size={{ xs: 5, md: 4 }}>
                 <img style={{ mixBlendMode: 'multiply', maxHeight: '300px' }}
-                    src={imagesku || 'https://images.dcpumpkin.com/images/product/500/default.jpg'} alt="" />
+                    src={imagesku || 'https://images.dcpumpkin.com/images/product/500/default.jpg'} onError={showDefaultImage} />
             </Grid2>
         </Grid2>
     )

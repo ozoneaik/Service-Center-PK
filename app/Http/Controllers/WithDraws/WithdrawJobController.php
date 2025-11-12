@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\StockJob;
 use App\Models\StockJobDetail;
 use App\Models\StockSparePart;
+use App\Models\StoreInformation;
 use App\Models\WithdrawCart;
 use App\Models\WithdrawOrderSpList;
 use Carbon\Carbon;
@@ -13,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -389,5 +391,174 @@ class WithdrawJobController extends Controller
             'job_detail'   => $job_detail,
             'total_amount' => $total_amount,
         ]);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        try {
+            Log::info('📥 เริ่ม Export PDF จาก Cart', $request->all());
+
+            $groups = $request->input('groups', []);
+            if (empty($groups)) {
+                throw new \Exception("ไม่พบข้อมูลสินค้าในใบเบิก");
+            }
+
+            // ดึงข้อมูลร้านจาก store_information ตาม is_code_cust_id
+            $store = StoreInformation::where('is_code_cust_id', Auth::user()->is_code_cust_id)->first();
+
+            // รับค่าจาก React + Fallback DB
+            $soNumber = $request->input('so_number', 'SO-' . time());
+            $storeName = $store->shop_name
+                ?? Auth::user()->store_info->shop_name
+                ?? $request->input('store_name')
+                ?? Auth::user()->name
+                ?? '-';
+            $address = $store->address ?? Auth::user()->store_info->address ?? '-';
+            $phone = $store->phone ?? Auth::user()->phone ?? '-';
+            $date = $request->input('date', now()->format('d/m/Y'));
+            $totalPrice = $request->input('total_price', 0);
+            $discount = $request->input('discount', 0);
+            $discountPercent = (float)($request->input('discount_percent') ?? 0);
+            $netTotal = $request->input('net_total', 0);
+
+            $payload = [
+                "req" => "path",
+                "regenqu" => "Y",
+                "docno" => $soNumber,
+                "doc_title" => "ใบเบิกอะไหล่",
+                "typeservice" => "SO",
+                "custnamesc" => $storeName,
+                "custname"   => $storeName,
+                "custaddr" => $address,
+                "custtel" => $phone,
+                "date" => $date,
+                "summary" => [
+                    "total_price" => (float)$totalPrice,
+                    "discount" => (float)$discount,
+                    "net_total" => (float)$netTotal,
+                ],
+                "sku" => [],
+            ];
+
+
+            $sumBeforeDiscount = 0;
+            $sumDiscount = 0;
+            $sumNet = 0;
+
+            foreach ($groups as $group) {
+                foreach ($group['list'] as $sp) {
+                    $qty = (float)($sp['qty'] ?? 1);
+                    $stdPrice = (float)($sp['stdprice_per_unit'] ?? 0); // ราคาตั้ง
+                    $discountPercent = (float)($request->input('discount_percent') ?? 0);
+
+                    // คำนวณส่วนลดต่อหน่วย
+                    $discountPerUnit = $discountPercent > 0 ? ($stdPrice * $discountPercent / 100) : 0;
+                    $sellPrice = $stdPrice - $discountPerUnit; // ราคาหลังหักส่วนลด
+                    $lineTotal = $sellPrice * $qty; // ยอดรวมสุทธิ
+
+                    // รวมยอดเพื่อแสดง summary ด้านล่าง
+                    $sumBeforeDiscount += ($stdPrice * $qty);
+                    $sumDiscount += ($discountPerUnit * $qty);
+                    $sumNet += $lineTotal;
+
+                    $payload["sku"][] = [
+                        "pid"            => $sp['sp_code'] ?? null,
+                        "name"           => $sp['sp_name'] ?? '',
+                        "qty"            => $qty,
+                        "unit"           => $sp['sp_unit'] ?? 'ชิ้น',
+
+                        // ราคาตั้งต่อหน่วย
+                        "unitprice"      => number_format($stdPrice, 2, '.', ''),
+                        "prod_discount"  => number_format($discountPercent, 2, '.', ''),
+
+                        // ส่วนลดต่อหน่วยและรวม
+                        "discount"       => number_format($discountPerUnit, 2, '.', ''),
+                        "discountamount" => number_format($discountPerUnit * $qty, 2, '.', ''),
+
+                        // ราคาหลังหักส่วนลด
+                        "sell_price"     => number_format($sellPrice, 2, '.', ''),
+
+                        // ราคาตั้ง (template บางตัวใช้)
+                        "price"          => number_format($stdPrice, 2, '.', ''),
+                        "priceperunit"   => number_format($stdPrice, 2, '.', ''),
+
+                        // ยอดรวมหลังส่วนลด
+                        "amount"         => number_format($lineTotal, 2, '.', ''),
+                        "netamount"      => number_format($lineTotal, 2, '.', ''),
+                        "net"            => number_format($lineTotal, 2, '.', ''),
+                    ];
+                }
+            }
+
+            $payload["summary"] = [
+                "price_before_discount" => number_format($sumBeforeDiscount, 2, '.', ''),
+                "prod_discount"         => number_format($discountPercent, 2, '.', ''),
+                "discount"     => number_format($sumDiscount, 2, '.', ''),
+                "total_price"  => number_format($sumNet, 2, '.', ''),
+                "net_total"    => number_format($sumNet, 2, '.', ''),
+                "sum_total"    => number_format($sumNet, 2, '.', ''),
+                "amount"       => number_format($sumNet, 2, '.', ''),
+            ];
+
+            Log::info('📤 Payload ส่งไปยัง PDF API', $payload);
+
+            // $response = Http::withHeaders([
+            //     'Content-Type' => 'application/json',
+            // ])->post("http://192.168.0.13/genpdf/api/gen_so", $payload);
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post("http://192.168.0.13/genpdf/api/get_req_pdf", $payload);
+
+            if (!$response->successful()) {
+                throw new \Exception("PDF API error: " . $response->body());
+            }
+
+            $body = trim($response->body());
+            $pdfUrl = null;
+
+            // กรณี response เป็น URL เต็ม เช่น "http://qupumpkin.dyndns.org:8130/_SO20251112154625.pdf"
+            if (preg_match('/^https?:\/\/.*\.pdf$/i', $body)) {
+                $pdfUrl = $body;
+
+                // 🔹 กรณี response เป็นชื่อไฟล์ เช่น "_SO20251112154625.pdf"
+            } elseif (preg_match('/\.pdf$/i', $body)) {
+                $pdfUrl = "http://qupumpkin.dyndns.org:8130/" . ltrim($body, '/');
+
+                // 🔹 กรณี response เป็น JSON เช่น {"path":"_SO20251112154625.pdf"}
+            } else {
+                $decoded = json_decode($body, true);
+                if (is_array($decoded) && isset($decoded['path'])) {
+                    $path = $decoded['path'];
+                    $pdfUrl = preg_match('/^https?:\/\//i', $path)
+                        ? $path
+                        : "http://qupumpkin.dyndns.org:8130/" . ltrim($path, '/');
+                } elseif (is_string($decoded) && preg_match('/\.pdf$/i', $decoded)) {
+                    $pdfUrl = preg_match('/^https?:\/\//i', $decoded)
+                        ? $decoded
+                        : "http://qupumpkin.dyndns.org:8130/" . ltrim($decoded, '/');
+                }
+            }
+
+            if (!$pdfUrl) {
+                throw new \Exception("ไม่สามารถตีความผลลัพธ์ PDF ได้");
+            }
+
+            Log::info('✅ สำเร็จ PDF URL: ' . $pdfUrl);
+
+            return response()->json([
+                'success' => true,
+                'pdf_url' => $pdfUrl,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('❌ Export PDF ล้มเหลว', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'เกิดข้อผิดพลาดในการส่งออก PDF: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

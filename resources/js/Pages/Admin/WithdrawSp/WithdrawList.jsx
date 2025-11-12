@@ -76,7 +76,8 @@ export default function WithdrawList({ count_cart, message, sku, result, job_id,
     const [loading, setLoading] = useState(false);
     const [product, setProduct] = useState(result || null);
 
-    const [activeLayout, setActiveLayout] = useState("outside");
+    const [activeLayout, setActiveLayout] = useState(1);
+    // const [activeLayout, setActiveLayout] = useState("outside");
     const [warnIncomplete, setWarnIncomplete] = useState(false);
 
     const [bucket, setBucket] = useState([]);
@@ -135,31 +136,45 @@ export default function WithdrawList({ count_cart, message, sku, result, job_id,
     useEffect(() => {
         const layersForModel = (product?.diagram_layers || []).filter(
             (x) => !selectedModel || x.modelfg === selectedModel);
+        // const first = layersForModel[0];
+        // const nextLayout = ((first?.layer_char || "outside") + "").toLowerCase().trim();
+        // setActiveLayout(nextLayout);
+
+        // const byModel = !selectedModel ? allSp : allSp.filter((x) => (x.modelfg || null) === selectedModel);
+        // const want = (nextLayout || "outside").toLowerCase().trim();
+        // const byLayout = byModel.filter(
+        //     (x) => ((x.layout || "outside") + "").toLowerCase().trim() === want
+        // );
+
+        // // setSpList(byLayout.length ? byLayout : byModel);
+        // const sorted = (byLayout.length ? byLayout : byModel).sort(sortByTracking);
+        // setSpList(sorted);
         const first = layersForModel[0];
-        const nextLayout = ((first?.layer_char || "outside") + "").toLowerCase().trim();
+        const nextLayout = Number(first?.layout || 1);
         setActiveLayout(nextLayout);
 
-        const byModel = !selectedModel ? allSp : allSp.filter((x) => (x.modelfg || null) === selectedModel);
-        const want = (nextLayout || "outside").toLowerCase().trim();
+        const byModel = !selectedModel ? allSp : allSp.filter((x) => x.modelfg === selectedModel);
         const byLayout = byModel.filter(
-            (x) => ((x.layout || "outside") + "").toLowerCase().trim() === want
+            (x) => Number(x.layout) === Number(nextLayout)
         );
-
-        // setSpList(byLayout.length ? byLayout : byModel);
         const sorted = (byLayout.length ? byLayout : byModel).sort(sortByTracking);
         setSpList(sorted);
     }, [selectedModel]);
 
     useEffect(() => {
-        const byModel = !selectedModel ? allSp : allSp.filter((x) => (x.modelfg || null) === selectedModel);
-
-        const want = (activeLayout || "outside").toLowerCase().trim();
+        // const byModel = !selectedModel ? allSp : allSp.filter(x => x.modelfg === selectedModel);
+        // const byLayout = byModel.filter(x => Number(x.layout) === Number(activeLayout));
+        // const sorted = (byLayout.length ? byLayout : byModel).sort(sortByTracking);
+        // setSpList(sorted);
+        const byModel = !selectedModel
+            ? allSp
+            : allSp.filter((x) => x.modelfg === selectedModel);
         const byLayout = byModel.filter(
-            (x) => ((x.layout || "outside") + "").toLowerCase().trim() === want
+            (x) => Number(x.layout) === Number(activeLayout)
         );
-        // setSpList(byLayout.length ? byLayout : byModel);
         const sorted = (byLayout.length ? byLayout : byModel).sort(sortByTracking);
         setSpList(sorted);
+        console.log("🔁 activeLayout changed →", activeLayout, "found:", byLayout.length);
     }, [activeLayout, selectedModel, allSp]);
 
     const diagramLayersForModel = (product?.diagram_layers || []).filter(
@@ -464,8 +479,8 @@ export default function WithdrawList({ count_cart, message, sku, result, job_id,
                                                 detail={{ pid: product.pid }}
                                                 diagramLayers={diagramLayersForModel}
                                                 initialLayout={activeLayout}
-                                                onLayoutChange={(layout) => {
-                                                    const next = (layout || "outside").toLowerCase().trim();
+                                                onLayoutChange={(layoutNum) => {
+                                                    const next = Number(layoutNum) || 1;
                                                     setActiveLayout(next);
                                                 }}
                                             />
@@ -582,7 +597,7 @@ export default function WithdrawList({ count_cart, message, sku, result, job_id,
                         component="img"
                         src={imgPreview.src}
                         alt={imgPreview.alt}
-                        onError={showDefaultImage}
+                         
                         sx={{ width: "100%", maxHeight: "30vh", display: "block", objectFit: "contain", mx: "auto" }}
                     />
                 </DialogContent>

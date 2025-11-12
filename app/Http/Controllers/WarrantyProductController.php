@@ -22,63 +22,174 @@ class WarrantyProductController extends Controller
         return Inertia::render('Warranty/WrForm');
     }
 
+    // public function search(Request $request): JsonResponse
+    // {
+    //     $request->validate(['serial_id' => 'required',], ['serial_id.required' => 'Serial ID is required']);
+    //     $serial_id = $request->input('serial_id');
+    //     logStamp::query()->create(['description' => Auth::user()->user_code . " ค้นหา ซีเรียล $serial_id ในหน้าลงทะเบียนรับประกัน"]);
+    //     try {
+    //         $response = Http::post(env('API_DETAIL'), [
+    //             'sn' => $serial_id,
+    //             'views' => $request->views,
+    //         ]);
+    //         if ($response->status() === 200) {
+    //             $searchResults = $response->json();
+    //             if ($searchResults['status'] === 'Fail') {
+    //                 throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $request->sn);
+    //             }
+
+    //             $res_RealProduct = Http::post(env('VITE_API_ORDER'), [
+    //                 'pid' => $searchResults['skumain'],
+    //                 'view' => 'single'
+    //             ]);
+
+    //             $res_RealProduct = $res_RealProduct->json();
+
+    //             $real_product = $res_RealProduct['assets'][0];
+    //             $real_product['serial_id'] = $serial_id;
+
+    //             if (!$searchResults['warrantyexpire']) {
+    //                 $warrantyAt = WarrantyProduct::query()->where('serial_id', $serial_id)->first();
+    //                 $expire_date = $warrantyAt->expire_date ?? '';
+    //                 $warrantyAt = $warrantyAt->date_warranty ?? '';
+    //             } else {
+    //                 $expire_date = $searchResults['insurance_expire'];
+    //                 $warrantyAt = $searchResults['buy_date'];
+    //             }
+    //             if ($expire_date < Carbon::now()->toDateString()) {
+    //                 $real_product['warranty_status'] = false;
+    //             } else {
+    //                 $real_product['warranty_status'] = true;
+    //             }
+    //         } else {
+    //             throw new \Exception('ไม่พบข้อมูล');
+    //         }
+
+    //         return response()->json([
+    //             'searchResults' => $searchResults,
+    //             'message' => 'success',
+    //             'warrantyAt' => $warrantyAt,
+    //             'expire_date' => $expire_date,
+    //             'time' => Carbon::now(),
+    //             'getRealProduct' => $real_product,
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'searchResults' => [],
+    //             'message' => $e->getMessage(),
+    //             'time' => Carbon::now()
+    //         ], 400);
+    //     }
+    // }
+
     public function search(Request $request): JsonResponse
     {
-        $request->validate(['serial_id' => 'required',], ['serial_id.required' => 'Serial ID is required']);
-        $serial_id = $request->input('serial_id');
-        logStamp::query()->create(['description' => Auth::user()->user_code . " ค้นหา ซีเรียล $serial_id ในหน้าลงทะเบียนรับประกัน"]);
+        $request->validate(['serial_id' => 'required'], [
+            'serial_id.required' => 'กรุณากรอกหมายเลขซีเรียล (Serial ID)',
+        ]);
+
+        $serial_id = trim($request->input('serial_id'));
+
+        logStamp::query()->create([
+            'description' => Auth::user()->user_code . " ค้นหาหมายเลขซีเรียล {$serial_id} ในหน้าลงทะเบียนรับประกัน"
+        ]);
+
         try {
-            $response = Http::post(env('API_DETAIL'), [
-                'sn' => $serial_id,
-                'views' => $request->views,
-            ]);
-            if ($response->status() === 200) {
-                $searchResults = $response->json();
-                if ($searchResults['status'] === 'Fail') {
-                    throw new \Exception('ไม่พบข้อมูลซีเรียล : ' . $request->sn);
-                }
+            $start = microtime(true);
+            $URL = env('VITE_WARRANTY_SN_API_GETDATA');
 
-                $res_RealProduct = Http::post(env('VITE_API_ORDER'),[
-                    'pid' => $searchResults['skumain'],
-                    'view' => 'single'
-                ]);
+            $response = Http::timeout(15)->get($URL, ['search' => $serial_id]);
+            $elapsed = number_format(microtime(true) - $start, 2);
 
-                $res_RealProduct = $res_RealProduct->json();
-
-                $real_product = $res_RealProduct['assets'][0];
-                $real_product['serial_id'] = $serial_id;
-
-                if (!$searchResults['warrantyexpire']){
-                    $warrantyAt = WarrantyProduct::query()->where('serial_id', $serial_id)->first();
-                    $expire_date = $warrantyAt->expire_date ?? '';
-                    $warrantyAt = $warrantyAt->date_warranty ?? '';
-                }else{
-                    $expire_date = $searchResults['insurance_expire'];
-                    $warrantyAt = $searchResults['buy_date'];
-                }
-                if($expire_date < Carbon::now()->toDateString()){
-                    $real_product['warranty_status'] = false;
-                }else{
-                    $real_product['warranty_status'] = true;
-                }
-
-            } else {
-                throw new \Exception('ไม่พบข้อมูล');
+            if (!$response->successful()) {
+                throw new \Exception('API ตอบกลับไม่สำเร็จ');
             }
 
+            $data = $response->json();
+            if (($data['status'] ?? '') !== 'SUCCESS') {
+                throw new \Exception($data['message'] ?? 'ไม่พบหมายเลขซีเรียลในระบบ');
+            }
+
+            $assets = $data['assets'] ?? [];
+            $pid = $data['skumain'] ?? array_key_first($assets);
+            $asset = $assets[$pid] ?? [];
+            $facmodel = $asset['facmodel'] ?? $pid;
+
+            $insurance_expire = $data['insurance_expire'] ?? null;
+            $buy_date = $data['buy_date'] ?? null;
+
+            if (empty($insurance_expire)) {
+                $local = WarrantyProduct::where('serial_id', $serial_id)->first();
+                $insurance_expire = $local->expire_date ?? null;
+                $buy_date = $local->date_warranty ?? null;
+            }
+
+            $warranty_status = false;
+            $warranty_color = 'red';
+            $warranty_text = 'ไม่อยู่ในประกัน';
+
+            // ถ้ามี field warrantyexpire ให้เช็คก่อน
+            $warrantyexpire = $data['warrantyexpire'] ?? null;
+
+            if ($warrantyexpire === true) {
+                $warranty_status = true;
+                $warranty_color = 'green';
+                $warranty_text = 'อยู่ในประกัน';
+            } elseif ($warrantyexpire === false) {
+                $warranty_status = false;
+                $warranty_color = 'red';
+                $warranty_text = 'ไม่อยู่ในประกัน';
+            } elseif (!empty($insurance_expire)) {
+                //  ถ้าไม่มี warrantyexpire แต่มีวันหมดประกัน → เช็ควัน
+                try {
+                    $expireDate = Carbon::parse($insurance_expire);
+                    if ($expireDate->isFuture()) {
+                        $warranty_status = true;
+                        $warranty_color = 'green';
+                        $warranty_text = 'อยู่ในประกัน';
+                    } else {
+                        $warranty_text = 'หมดอายุการรับประกัน';
+                    }
+                } catch (\Exception $e) {
+                    $warranty_text = 'ไม่สามารถระบุวันหมดประกันได้';
+                }
+            } else {
+                // ไม่มีทั้ง warrantyexpire และวันหมดประกัน → ยังไม่ได้ลงทะเบียน
+                $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
+                $warranty_color = 'orange';
+            }
+
+            $real_product = [
+                'pid' => $pid,
+                'pname' => $asset['pname'] ?? '',
+                'facmodel' => $facmodel,
+                'serial_id' => $serial_id,
+                'imagesku' => $asset['imagesku'][0] ?? null,
+                'warrantyperiod' => $asset['warrantyperiod'] ?? '',
+                'warrantycondition' => $asset['warrantycondition'] ?? '',
+                'warrantynote' => $asset['warrantynote'] ?? '',
+                'insurance_expire' => $insurance_expire,
+                'buy_date' => $buy_date,
+                'warranty_status' => $warranty_status,
+            ];
+
             return response()->json([
-                'searchResults' => $searchResults,
                 'message' => 'success',
-                'warrantyAt' => $warrantyAt,
-                'expire_date' => $expire_date,
-                'time' => Carbon::now(),
+                'searchResults' => $data,
                 'getRealProduct' => $real_product,
+                'warrantyAt' => $buy_date,
+                'expire_date' => $insurance_expire,
+                'warranty_status' => $warranty_status,
+                'warranty_color' => $warranty_color,
+                'warranty_text' => $warranty_text,
+                'time' => Carbon::now(),
+                'elapsed' => $elapsed,
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'searchResults' => [],
                 'message' => $e->getMessage(),
-                'time' => Carbon::now()
+                'searchResults' => [],
+                'time' => Carbon::now(),
             ], 400);
         }
     }
@@ -153,7 +264,6 @@ class WarrantyProductController extends Controller
 
                 // เก็บไฟล์ในโฟลเดอร์ storage/app/public/warranty_evidence
                 $evidenceFilePath = $file->storeAs('warranty_evidence', $fileName, 'public');
-
             } catch (\Exception $e) {
                 return response()->json([
                     'message' => 'เกิดข้อผิดพลาดในการอัปโหลดไฟล์: ' . $e->getMessage()
@@ -184,7 +294,6 @@ class WarrantyProductController extends Controller
             logStamp::query()->create([
                 'description' => Auth::user()->user_code . " ลงทะเบียนรับประกัน $serial_id สำเร็จ"
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -195,7 +304,6 @@ class WarrantyProductController extends Controller
 
             $message = 'เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' . $e->getMessage();
             $status = 500;
-
         } finally {
             return response()->json([
                 'message' => $message,
