@@ -464,12 +464,14 @@ export default function OrderList({ count_cart, message, sku, result }) {
         let filtered = allSp;
 
         // ถ้าเลือก DM01 / DM02 → กรองด้วย typedm
-        if (selectedModel.startsWith("DM")) {
-            const dmNum = selectedModel.replace("DM", "").trim();
-            filtered = allSp.filter((sp) => sp.typedm === dmNum);
-        } else {
-            filtered = allSp.filter((sp) => sp.modelfg === selectedModel);
-        }
+        // if (selectedModel.startsWith("DM")) {
+        //     const dmNum = selectedModel.replace("DM", "").trim();
+        //     filtered = allSp.filter((sp) => sp.typedm === dmNum);
+        // } else {
+        //     filtered = allSp.filter((sp) => sp.modelfg === selectedModel);
+        // }
+
+        filtered = allSp.filter((sp) => sp.modelfg === selectedModel);
 
         // ต่อด้วยกรอง layout (รูปที่ 1 / 2)
         const byLayout = filtered.filter(

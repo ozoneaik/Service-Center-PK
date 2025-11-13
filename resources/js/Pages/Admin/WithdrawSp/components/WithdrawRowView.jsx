@@ -153,9 +153,11 @@ export default function WithdrawRowView({ spList = [], onAdded, onPreview }) {
                                 startIcon={<AddShoppingCartIcon fontSize="small" />}
                                 onClick={() => handleAddToCart(sp)}
                                 disabled={
+                                    // sp.added ||
+                                    // loadingId === sp.spcode ||
+                                    // (sp.stock_balance ?? 0) <= 0
                                     sp.added ||
-                                    loadingId === sp.spcode ||
-                                    (sp.stock_balance ?? 0) <= 0
+                                    loadingId === sp.spcode
                                 }
                             >
                                 {sp.stock_balance <= 0
@@ -273,15 +275,21 @@ export default function WithdrawRowView({ spList = [], onAdded, onPreview }) {
                                             variant="contained"
                                             startIcon={<AddShoppingCartIcon fontSize="small" />}
                                             onClick={() => handleAddToCart(sp)}
-                                            disabled={
-                                                loadingId === sp.spcode ||
-                                                (sp.stock_balance ?? 0) <= 0
-                                            }
+                                            // disabled={
+                                            //     loadingId === sp.spcode ||
+                                            //     (sp.stock_balance ?? 0) <= 0
+                                            // }
+                                            disabled={loadingId === sp.spcode}
                                         >
-                                            {sp.stock_balance <= 0
+                                            {/* {sp.stock_balance <= 0
                                                 ? "สต็อกหมด"
                                                 : loadingId === sp.spcode
                                                     ? "กำลังเพิ่ม..."
+                                                    : "เพิ่ม"} */}
+                                            {loadingId === sp.spcode
+                                                ? "กำลังเพิ่ม..."
+                                                : sp.added
+                                                    ? "เพิ่มแล้ว"
                                                     : "เพิ่ม"}
                                         </Button>
                                     )}

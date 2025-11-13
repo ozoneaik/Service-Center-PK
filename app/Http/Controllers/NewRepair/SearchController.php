@@ -733,7 +733,7 @@ class SearchController extends Controller
                 throw new \Exception($data['message'] ?? 'ไม่พบข้อมูลสินค้าในระบบ');
             }
 
-            // --------------------------- ข้อมูลพื้นฐาน ---------------------------
+            // ข้อมูลพื้นฐาน 
             $assets = $data['assets'] ?? [];
             $dmList = $data['dm_list'] ?? [];
             $spAll  = $data['sp'] ?? [];
@@ -745,7 +745,6 @@ class SearchController extends Controller
             // asset ของ pid จริง
             $asset = $assets[$mainPid] ?? [];
             if (empty($asset)) {
-                // fallback แพทเทิร์นเก่า
                 if (isset($assets[$sku])) {
                     $asset = $assets[$sku];
                 } elseif (!empty($assets)) {
@@ -758,7 +757,7 @@ class SearchController extends Controller
             $imageDmBase = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/');
             $imageSpBase = rtrim(env('VITE_IMAGE_SP', ''), '/');
 
-            // ---- คืนค่ารับประกัน ----
+            // คืนค่ารับประกัน 
             $warranty_expire  = $data['warrantyexpire']   ?? false;
             $insurance_expire = $data['insurance_expire'] ?? null;
             $buy_date         = $data['buy_date']         ?? null;
@@ -767,46 +766,48 @@ class SearchController extends Controller
                 $warranty_expire = $this->findWarranty($formData['sn'], $warranty_expire);
             }
 
-            // --------------------------- เตรียมตัวแปร ---------------------------
+            // เตรียมตัวแปร
             $diagramLayers = [];
             $spListAll     = [];
             $spByDm        = [];  // Group spare part by DM
             $modelOptions  = [];
 
-            // --------------------------- โหลด Diagram + SP แยก DM ---------------------------
+            // โหลด Diagram + SP แยก DM
             if (!empty($dmList[$mainPid]) && is_array($dmList[$mainPid])) {
-
                 foreach ($dmList[$mainPid] as $dmKey => $dmData) {
+                    // $dmType = strtoupper($dmKey); // DM01 / DM02
 
-                    $dmType = strtoupper($dmKey); // DM01 / DM02
-                    $modelOptions[] = $dmType;
+                    // $modelfg = $dmData['modelfg'] ?? $facmodel;
+                    $modelfg = trim($dmData['modelfg'] ?? '');
+                    if ($modelfg === '') {
+                        // ถ้า modelfg ว่าง → fallback เป็น DM01, DM02
+                        $modelfg = "DM" . str_pad($dmKey, 2, "0", STR_PAD_LEFT);
+                    }
+                    $modelOptions[] = $modelfg;
 
-                    // ---------------- รูป Diagram ----------------
+                    // รูป Diagram 
                     for ($i = 1; $i <= 5; $i++) {
                         $imgKey = "img_{$i}";
                         $imgUrl = $dmData[$imgKey] ?? null;
                         if (!$imgUrl) continue;
-
                         if (!str_contains($imgUrl, 'http')) {
                             $imgUrl = "{$imageDmBase}/" . ltrim($imgUrl, '/');
                         }
 
                         $diagramLayers[] = [
                             'pid'       => $mainPid,
-                            'modelfg'   => $dmData['modelfg'] ?? $facmodel,
+                            'modelfg'   => $modelfg,
                             'layer'     => "รูปที่ {$i}",
                             'path_file' => $imgUrl,
                             'layout'    => $i,
-                            'typedm'    => $dmType,
+                            'typedm'    => $dmKey,
                         ];
                     }
 
-                    // ---------------- อะไหล่ของ DM ----------------
-                    $spByDm[$dmType] = [];
+                    // อะไหล่ของ DM
+                    $spByDm[$dmKey] = [];
                     if (!empty($spAll[$mainPid][$dmKey]) && is_array($spAll[$mainPid][$dmKey])) {
-
                         foreach ($spAll[$mainPid][$dmKey] as $sp) {
-
                             $spcode = $sp['spcode'] ?? null;
                             if (!$spcode) continue;
 
@@ -819,11 +820,11 @@ class SearchController extends Controller
                                 'spunit'            => $sp['spunit'] ?? 'ชิ้น',
                                 'layout'            => $layoutStr,
                                 'tracking_number'   => $sp['tracking_number'] ?? '',
-                                'modelfg'           => $dmData['modelfg'] ?? $facmodel,
+                                'modelfg'           => $modelfg,
                                 'pid'               => $mainPid,
                                 'pname'             => $asset['pname'] ?? '',
                                 'imagesku'          => $asset['imagesku'][0] ?? null,
-                                'typedm'            => $dmType,
+                                'typedm'            => $dmKey,
                                 'stdprice_per_unit' => number_format((float)($sp['stdprice'] ?? 0), 2, '.', ''),
                                 'price_per_unit'    => number_format(
                                     (float)($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0),
@@ -833,15 +834,14 @@ class SearchController extends Controller
                                 ),
                                 'path_file'         => "{$imageSpBase}/{$spcode}.jpg",
                             ];
-
                             $spListAll[] = $item;
-                            $spByDm[$dmType][] = $item;
+                            $spByDm[$dmKey][] = $item;
                         }
                     }
                 }
             }
 
-            // --------------------------- listbehavior ---------------------------
+            // listbehavior
             $listBehavior = [];
             if (isset($data['listbehavior']) && is_array($data['listbehavior'])) {
                 foreach ($data['listbehavior'] as $pidKey => $catData) {
@@ -864,7 +864,7 @@ class SearchController extends Controller
                 }
             }
 
-            // --------------------------- Warranty Info ---------------------------
+            // Warranty Info
             $warrantyperiod    = $asset['warrantyperiod']    ?? '';
             $warrantycondition = $asset['warrantycondition'] ?? '';
             $warrantynote      = $asset['warrantynote']      ?? '';
@@ -873,10 +873,10 @@ class SearchController extends Controller
             $pCatName          = $asset['pCatName']          ?? '';
             $pSubCatName       = $asset['pSubCatName']       ?? '';
 
-            // --------------------------- model_options (DM Only) ---------------------------
+            // model_options (DM Only) 
             $modelOptions = array_values(array_unique(array_filter($modelOptions)));
 
-            // --------------------------- สรุปผล ---------------------------
+            // สรุปผล 
             $skuItem = [
                 'pid'                => $mainPid,
                 'pname'              => $asset['pname'] ?? '',
@@ -911,7 +911,7 @@ class SearchController extends Controller
                 'has_multi_dm'  => count($modelOptions) > 1,
                 'data_from_api' => $data,
                 'elapsed'       => $elapsed,
-
+                'listbehavior'  => $listBehavior,
                 'warranty_expire' => $warranty_expire,
                 'expire_date'     => $insurance_expire,
                 'buy_date'        => $buy_date,
@@ -924,7 +924,6 @@ class SearchController extends Controller
             ];
         }
     }
-
 
     //13/11/2568
     // private function fetchDataFromApi(array $formData): array
@@ -1082,8 +1081,6 @@ class SearchController extends Controller
     //         ];
     //     }
     // }
-
-
 
     //อัพเดทใหม่ สถานะ (วิว)
     // private function searchFromHistory($job_id)

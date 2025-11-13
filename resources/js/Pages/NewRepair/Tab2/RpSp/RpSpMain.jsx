@@ -877,10 +877,13 @@ export default function RpSpMain({
   const diagramLayersFiltered = useMemo(() => {
     if (!selectedModel) return diagramLayers;
 
+    // return diagramLayers.filter(
+    //   (x) =>
+    //     x.typedm &&
+    //     x.typedm.toString().trim().toUpperCase() === selectedModel.toString().trim().toUpperCase()
+    // );
     return diagramLayers.filter(
-      (x) =>
-        x.typedm &&
-        x.typedm.toString().trim().toUpperCase() === selectedModel.toString().trim().toUpperCase()
+      (x) => x.modelfg === selectedModel
     );
   }, [diagramLayers, selectedModel]);
 
@@ -944,17 +947,20 @@ export default function RpSpMain({
     //         selectedModel.toString().trim().toUpperCase()
     //     )
     //     : byLayout;
-    
-    const byDM =
-      selectedModel && isSearchBy9999
-        ? byLayout.filter(
-          (x) =>
-            x.typedm &&
-            x.typedm.toString().trim().toUpperCase() ===
-            selectedModel.toString().trim().toUpperCase()
-        )
-        : byLayout;
 
+    // const byDM =
+    //   selectedModel && isSearchBy9999
+    //     ? byLayout.filter(
+    //       (x) =>
+    //         x.typedm &&
+    //         x.typedm.toString().trim().toUpperCase() ===
+    //         selectedModel.toString().trim().toUpperCase()
+    //     )
+    //     : byLayout;
+    const byDM =
+      selectedModel
+        ? byLayout.filter((x) => x.modelfg === selectedModel)
+        : byLayout;
     setFilteredList(byDM.length > 0 ? byDM : byLayout);
   }, [listSparePart, activeLayout, selectedModel, isSearchBy9999]);
 
@@ -990,7 +996,7 @@ export default function RpSpMain({
                         <TextField
                           {...params}
                           label="เลือกโมเดล (DM)"
-                          placeholder="DM01 / DM02"
+                          placeholder="เลือก DM"
                         />
                       )}
                     />

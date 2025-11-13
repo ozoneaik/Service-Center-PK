@@ -1016,6 +1016,111 @@ export default function WithdrawSummary({ groupSku = [], totalSp = 0, is_code_cu
         });
     };
 
+    // const handleSaveJob = async () => {
+    //     if (!allItems.length) {
+    //         AlertDialog({
+    //             title: "แจ้งเตือน",
+    //             text: "กรุณาเลือกอะไหล่อย่างน้อย 1 รายการก่อนบันทึก",
+    //             icon: "warning",
+    //         });
+    //         return;
+    //     }
+
+    //     try {
+    //         const outOfStock = [];
+
+    //         for (const item of allItems) {
+    //             const res = await axios.get(route("withdrawJob.checkStock"), {
+    //                 params: { sp_code: item.sp_code },
+    //             });
+    //             const stock = res.data?.stock_balance ?? 0;
+    //             const qty = Number(item.qty || 0);
+
+    //             if (stock <= 0 || qty > stock) {
+    //                 outOfStock.push(item.sp_code);
+    //             }
+    //         }
+
+    //         if (outOfStock.length > 0) {
+    //             setOutOfStockList(outOfStock);
+
+    //             const names = allItems
+    //                 .filter((i) => outOfStock.includes(i.sp_code))
+    //                 .map((i) => `<br/>• ${i.sp_code} (${i.sp_name})`)
+    //                 .join("\n");
+
+    //             AlertDialog({
+    //                 title: `สต็อกไม่เพียงพอ (${outOfStock.length} รายการ)`,
+    //                 text: `รายการต่อไปนี้สต็อกหมดหรือไม่พอ:\n${names}\n\nกรุณาปรับสต็อกหรือเอาออกก่อนดำเนินการต่อ`,
+    //                 icon: "error",
+    //             });
+
+    //             await fetchStocks();
+    //             return;
+    //         }
+    //     } catch (error) {
+    //         console.error("❌ Error while checking stock:", error);
+    //         AlertDialog({
+    //             title: "เกิดข้อผิดพลาด",
+    //             text: "ตรวจสอบสต็อกไม่สำเร็จ กรุณาลองใหม่",
+    //             icon: "error",
+    //         });
+    //         return;
+    //     }
+
+    //     const newJobId = job_id || `JOB-WD${Date.now()}${Math.floor(Math.random() * 1000)}`;
+    //     const payload = {
+    //         job_id: newJobId,
+    //         is_code_cust_id,
+    //         discount_percent: discountPercent,
+    //         items: allItems.map((x) => ({
+    //             sp_code: x.sp_code,
+    //             sp_name: x.sp_name,
+    //             sku_code: x.sku_code,
+    //             qty: Number(x.qty || 0),
+    //             sp_unit: x.sp_unit || "",
+    //             stdprice_per_unit: Number(x.stdprice_per_unit || 0),
+    //             sell_price: Number(x.sell_price || x.stdprice_per_unit || 0),
+    //         })),
+    //         created_by: user?.name || "unknown",
+    //     };
+
+    //     AlertDialog({
+    //         title: "ยืนยันการบันทึก",
+    //         text: `ต้องการบันทึกใบเบิกอะไหล่ทั้งหมด ${allItems.length} รายการ หรือไม่ ?`,
+    //         icon: "question",
+    //         showCancelButton: true,
+    //         confirmButtonText: "ตกลง",
+    //         cancelButtonText: "ยกเลิก",
+    //         onPassed: (confirm) => {
+    //             if (confirm) {
+    //                 router.post(route("withdrawJob.store"), payload, {
+    //                     onStart: () => console.log("saving..."),
+    //                     onSuccess: () => {
+    //                         AlertDialog({
+    //                             title: "สำเร็จ",
+    //                             text: `✅ บันทึกใบเบิก ${newJobId} เรียบร้อยแล้ว`,
+    //                             icon: "success",
+    //                             timer: 2000,
+    //                         });
+    //                         router.visit(route("withdrawJob.index"));
+    //                     },
+    //                     onError: (err) => {
+    //                         console.error(err);
+    //                         AlertDialog({
+    //                             title: "เกิดข้อผิดพลาด",
+    //                             text:
+    //                                 err?.response?.data?.message ||
+    //                                 "❌ บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
+    //                             icon: "error",
+    //                         });
+    //                     },
+    //                 });
+    //             }
+    //         },
+    //     });
+    // };
+
     const handleSaveJob = async () => {
         if (!allItems.length) {
             AlertDialog({
@@ -1026,49 +1131,8 @@ export default function WithdrawSummary({ groupSku = [], totalSp = 0, is_code_cu
             return;
         }
 
-        try {
-            const outOfStock = [];
-
-            for (const item of allItems) {
-                const res = await axios.get(route("withdrawJob.checkStock"), {
-                    params: { sp_code: item.sp_code },
-                });
-                const stock = res.data?.stock_balance ?? 0;
-                const qty = Number(item.qty || 0);
-
-                if (stock <= 0 || qty > stock) {
-                    outOfStock.push(item.sp_code);
-                }
-            }
-
-            if (outOfStock.length > 0) {
-                setOutOfStockList(outOfStock);
-
-                const names = allItems
-                    .filter((i) => outOfStock.includes(i.sp_code))
-                    .map((i) => `<br/>• ${i.sp_code} (${i.sp_name})`)
-                    .join("\n");
-
-                AlertDialog({
-                    title: `สต็อกไม่เพียงพอ (${outOfStock.length} รายการ)`,
-                    text: `รายการต่อไปนี้สต็อกหมดหรือไม่พอ:\n${names}\n\nกรุณาปรับสต็อกหรือเอาออกก่อนดำเนินการต่อ`,
-                    icon: "error",
-                });
-
-                await fetchStocks();
-                return;
-            }
-        } catch (error) {
-            console.error("❌ Error while checking stock:", error);
-            AlertDialog({
-                title: "เกิดข้อผิดพลาด",
-                text: "ตรวจสอบสต็อกไม่สำเร็จ กรุณาลองใหม่",
-                icon: "error",
-            });
-            return;
-        }
-
         const newJobId = job_id || `JOB-WD${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
         const payload = {
             job_id: newJobId,
             is_code_cust_id,
@@ -1095,7 +1159,6 @@ export default function WithdrawSummary({ groupSku = [], totalSp = 0, is_code_cu
             onPassed: (confirm) => {
                 if (confirm) {
                     router.post(route("withdrawJob.store"), payload, {
-                        onStart: () => console.log("saving..."),
                         onSuccess: () => {
                             AlertDialog({
                                 title: "สำเร็จ",
@@ -1106,12 +1169,9 @@ export default function WithdrawSummary({ groupSku = [], totalSp = 0, is_code_cu
                             router.visit(route("withdrawJob.index"));
                         },
                         onError: (err) => {
-                            console.error(err);
                             AlertDialog({
                                 title: "เกิดข้อผิดพลาด",
-                                text:
-                                    err?.response?.data?.message ||
-                                    "❌ บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
+                                text: err?.response?.data?.message || "❌ บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
                                 icon: "error",
                             });
                         },
@@ -1120,6 +1180,7 @@ export default function WithdrawSummary({ groupSku = [], totalSp = 0, is_code_cu
             },
         });
     };
+
 
     const handleRemoveItem = async (group, item) => {
         AlertDialog({
@@ -1221,6 +1282,11 @@ export default function WithdrawSummary({ groupSku = [], totalSp = 0, is_code_cu
                 discount: discountAmount,
                 discount_percent: discountPercent,
                 net_total: netTotal,
+
+                empproc: user?.name ?? "system",       // ผู้ทำรายการ
+                custsccode: user?.user_code ?? "-",    // รหัสพนักงาน
+                custscname: user?.name ?? "-",         // ชื่อพนักงาน
+
                 // groups: groupData,
                 groups: discountedGroups,
             };
@@ -1557,15 +1623,15 @@ export default function WithdrawSummary({ groupSku = [], totalSp = 0, is_code_cu
                         variant="contained"
                         color="info"
                         onClick={handleGeneratePDF_API}
-                        // disabled={processing}
-                        disabled
+                        disabled={processing}
+                        // disabled
                         sx={{
                             width: 180,
                             bgcolor: "#0288D1",
                             "&:hover": { bgcolor: "#0277BD" },
                         }}
                     >
-                        {processing ? "กำลังสร้าง..." : "ส่งออกใบเบิก PDF (กำลังพัฒนา)"}
+                        {processing ? "กำลังสร้าง..." : "ส่งออกใบเบิก PDF"}
                     </Button>
                     <Backdrop
                         open={processing}
@@ -1618,7 +1684,56 @@ function DesktopRow({
         }
     }, [editMode]);
 
-    const handleSave = async () => {
+    // const handleSave = async () => {
+    //     if (editQty <= 0) {
+    //         AlertDialog({
+    //             title: "จำนวนไม่ถูกต้อง",
+    //             text: "จำนวนอะไหล่ต้องมากกว่า 0",
+    //             icon: "warning",
+    //         });
+    //         return;
+    //     }
+
+    //     try {
+    //         const res = await axios.get(route("withdrawJob.checkStock"), {
+    //             params: { sp_code: item.sp_code },
+    //         });
+
+    //         const stock = res.data?.stock_balance ?? 0;
+
+    //         if (editQty > stock) {
+    //             AlertDialog({
+    //                 title: "สต๊อกไม่เพียงพอ",
+    //                 text: `คงเหลือ ${stock} ชิ้น สต็อคที่คุณต้องการ ${editQty} ชิ้น`,
+    //                 icon: "error",
+    //             });
+    //             return;
+    //         }
+
+    //         // item.qty = editQty;
+    //         // item.sell_price = editPrice;
+    //         // setEditMode(false);
+
+    //         onUpdate(group.sku_code, item.sp_code, editQty, editPrice);
+    //         setEditMode(false);
+
+    //         AlertDialog({
+    //             title: "บันทึกสำเร็จ",
+    //             text: `อัปเดตจำนวน ${item.sp_code} เป็น ${editQty} ชิ้นเรียบร้อยแล้ว`,
+    //             icon: "success",
+    //             timer: 1000,
+    //         });
+    //     } catch (err) {
+    //         console.error(err);
+    //         AlertDialog({
+    //             title: "เกิดข้อผิดพลาด",
+    //             text: err?.response?.data?.message || err.message,
+    //             icon: "error",
+    //         });
+    //     }
+    // };
+
+    const handleSave = () => {
         if (editQty <= 0) {
             AlertDialog({
                 title: "จำนวนไม่ถูกต้อง",
@@ -1628,44 +1743,18 @@ function DesktopRow({
             return;
         }
 
-        try {
-            const res = await axios.get(route("withdrawJob.checkStock"), {
-                params: { sp_code: item.sp_code },
-            });
+        // อัปเดตข้อมูลทันที ไม่เช็คสต๊อคแล้ว
+        onUpdate(group.sku_code, item.sp_code, editQty, editPrice);
+        setEditMode(false);
 
-            const stock = res.data?.stock_balance ?? 0;
-
-            if (editQty > stock) {
-                AlertDialog({
-                    title: "สต๊อกไม่เพียงพอ",
-                    text: `คงเหลือ ${stock} ชิ้น สต็อคที่คุณต้องการ ${editQty} ชิ้น`,
-                    icon: "error",
-                });
-                return;
-            }
-
-            // item.qty = editQty;
-            // item.sell_price = editPrice;
-            // setEditMode(false);
-
-            onUpdate(group.sku_code, item.sp_code, editQty, editPrice);
-            setEditMode(false);
-
-            AlertDialog({
-                title: "บันทึกสำเร็จ",
-                text: `อัปเดตจำนวน ${item.sp_code} เป็น ${editQty} ชิ้นเรียบร้อยแล้ว`,
-                icon: "success",
-                timer: 1000,
-            });
-        } catch (err) {
-            console.error(err);
-            AlertDialog({
-                title: "เกิดข้อผิดพลาด",
-                text: err?.response?.data?.message || err.message,
-                icon: "error",
-            });
-        }
+        AlertDialog({
+            title: "บันทึกสำเร็จ",
+            text: `อัปเดตจำนวน ${item.sp_code} เป็น ${editQty} ชิ้นเรียบร้อยแล้ว`,
+            icon: "success",
+            timer: 1000,
+        });
     };
+
 
     const handleCancel = () => {
         setEditQty(qty);
@@ -1836,43 +1925,65 @@ function MobileRow({
     const [editQty, setEditQty] = React.useState(qty);
     const [editPrice, setEditPrice] = React.useState(price);
 
-    const handleSave = async () => {
-        try {
-            const res = await axios.get(route("withdrawJob.checkStock"), {
-                params: { sp_code: item.sp_code },
-            });
-            const stock = res.data?.stock_balance ?? 0;
+    // const handleSave = async () => {
+    //     try {
+    //         const res = await axios.get(route("withdrawJob.checkStock"), {
+    //             params: { sp_code: item.sp_code },
+    //         });
+    //         const stock = res.data?.stock_balance ?? 0;
 
-            if (editQty > stock) {
-                AlertDialog({
-                    title: "สต๊อกไม่เพียงพอ",
-                    text: `คงเหลือ ${stock} ชิ้น แต่ต้องการ ${editQty} ชิ้น`,
-                    icon: "error",
-                });
-                return;
-            }
+    //         if (editQty > stock) {
+    //             AlertDialog({
+    //                 title: "สต๊อกไม่เพียงพอ",
+    //                 text: `คงเหลือ ${stock} ชิ้น แต่ต้องการ ${editQty} ชิ้น`,
+    //                 icon: "error",
+    //             });
+    //             return;
+    //         }
 
-            // item.qty = editQty;
-            // item.sell_price = editPrice;
-            // setEditMode(false);
+    //         // item.qty = editQty;
+    //         // item.sell_price = editPrice;
+    //         // setEditMode(false);
 
-            onUpdate(group.sku_code, item.sp_code, editQty, editPrice);
-            setEditMode(false);
+    //         onUpdate(group.sku_code, item.sp_code, editQty, editPrice);
+    //         setEditMode(false);
 
+    //         AlertDialog({
+    //             title: "สำเร็จ",
+    //             text: `อัปเดต ${item.sp_name} เป็น ${editQty} ชิ้นแล้ว`,
+    //             icon: "success",
+    //             timer: 1200,
+    //         });
+    //     } catch (err) {
+    //         AlertDialog({
+    //             title: "เกิดข้อผิดพลาด",
+    //             text: err?.response?.data?.message || err.message,
+    //             icon: "error",
+    //         });
+    //     }
+    // };
+
+    const handleSave = () => {
+        if (editQty <= 0) {
             AlertDialog({
-                title: "สำเร็จ",
-                text: `อัปเดต ${item.sp_name} เป็น ${editQty} ชิ้นแล้ว`,
-                icon: "success",
-                timer: 1200,
+                title: "จำนวนไม่ถูกต้อง",
+                text: "จำนวนต้องมากกว่า 0",
+                icon: "warning",
             });
-        } catch (err) {
-            AlertDialog({
-                title: "เกิดข้อผิดพลาด",
-                text: err?.response?.data?.message || err.message,
-                icon: "error",
-            });
+            return;
         }
+
+        onUpdate(group.sku_code, item.sp_code, editQty, editPrice);
+        setEditMode(false);
+
+        AlertDialog({
+            title: "สำเร็จ",
+            text: `อัปเดต ${item.sp_name} เป็น ${editQty} ชิ้นแล้ว`,
+            icon: "success",
+            timer: 1200,
+        });
     };
+
 
     const handleCancel = () => {
         setEditQty(qty);

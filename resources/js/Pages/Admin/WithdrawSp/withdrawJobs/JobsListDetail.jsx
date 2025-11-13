@@ -316,8 +316,8 @@ export default function JobsListDetail({ job, job_detail = [], total_amount = 0 
                                     variant="contained"
                                     color="info"
                                     onClick={handleGeneratePDF_API}
-                                    // disabled={processing}
-                                    disabled
+                                    disabled={processing}
+                                    // disabled
                                     sx={{
                                         width: 200,
                                         bgcolor: "#0288D1",
@@ -325,7 +325,7 @@ export default function JobsListDetail({ job, job_detail = [], total_amount = 0 
                                         mt: 2,
                                     }}
                                 >
-                                    {processing ? "กำลังสร้าง..." : "ส่งออกใบเบิก PDF (กำลังพัฒนา)"}
+                                    {processing ? "กำลังสร้าง..." : "ส่งออกใบเบิก PDF"}
                                 </Button>
 
                                 <Backdrop

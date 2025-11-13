@@ -300,8 +300,6 @@ class StockSpController extends Controller
     //     ]);
     // }
 
-    // App/Http/Controllers/Stores/StockSpController.php
-
     public function detail($sp_code, $is_code_cust_id): JsonResponse
     {
         $currentStock = StockSparePart::query()
@@ -434,20 +432,34 @@ class StockSpController extends Controller
             ->toBase();
 
         // รวม + เรียงเวลา (ทั้งสองเป็น Base แล้ว จึง merge ได้ปลอดภัย)
-        $rows = $adjustments->concat($repairs) // จะใช้ ->merge() ก็ได้
-            ->sortBy('sort_at')
-            ->values();
+        // $rows = $adjustments->concat($repairs) // จะใช้ ->merge() ก็ได้
+        //     ->sortBy('sort_at')
+        //     ->values();
 
-        // คำนวณ before/after ด้วย map
-        $running = 0;
+        $rows = $adjustments->concat($repairs)->sortByDesc('sort_at')->values();
+
+        $running = (int) $currentStock;
+
         $rows = $rows->map(function ($row) use (&$running) {
-            $before = $running;
-            $after  = $before + (int) $row['tran'];
-            $running = $after;
-            $row['before'] = $before;
-            $row['after']  = $after;
+            $row['after']  = $running;
+            $row['before'] = $row['after'] - (int)$row['tran'];
+            $running       = $row['before'];
             return $row;
         });
+
+        // เรียงกลับเป็นเก่า → ใหม่ เพื่อแสดงผล
+        $rows = $rows->sortBy('sort_at')->values();
+
+        // คำนวณ before/after ด้วย map
+        // $running = 0;
+        // $rows = $rows->map(function ($row) use (&$running) {
+        //     $before = $running;
+        //     $after  = $before + (int) $row['tran'];
+        //     $running = $after;
+        //     $row['before'] = $before;
+        //     $row['after']  = $after;
+        //     return $row;
+        // });
 
         return response()->json([
             'message'         => 'พบข้อมูล',

@@ -755,12 +755,14 @@ export default function WithdrawList({ count_cart, message, sku, result, job_id,
         let filtered = allSp;
 
         // ถ้าเลือก DM01 / DM02 → กรองด้วย typedm
-        if (selectedModel.startsWith("DM")) {
-            const dmNum = selectedModel.replace("DM", "").trim();
-            filtered = allSp.filter((sp) => sp.typedm === dmNum);
-        } else {
-            filtered = allSp.filter((sp) => sp.modelfg === selectedModel);
-        }
+        // if (selectedModel.startsWith("DM")) {
+        //     const dmNum = selectedModel.replace("DM", "").trim();
+        //     filtered = allSp.filter((sp) => sp.typedm === dmNum);
+        // } else {
+        //     filtered = allSp.filter((sp) => sp.modelfg === selectedModel);
+        // }
+
+        filtered = allSp.filter((sp) => sp.modelfg === selectedModel);
 
         // ต่อด้วยกรอง layout (inside/outside)
         const byLayout = filtered.filter(
@@ -843,7 +845,7 @@ export default function WithdrawList({ count_cart, message, sku, result, job_id,
                                 value={selectedModel}
                                 onChange={(_e, v) => setSelectedModel(v)}
                                 renderInput={(params) => (
-                                    <TextField {...params} label="เลือก DM" placeholder="DM01 / DM02" fullWidth size="small" />
+                                    <TextField {...params} label="เลือก DM" placeholder="เลือก DM" fullWidth size="small" />
                                 )}
                             />
                         )}

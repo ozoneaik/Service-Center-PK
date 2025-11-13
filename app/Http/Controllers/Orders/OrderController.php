@@ -461,7 +461,16 @@ class OrderController extends Controller
             if (!empty($dmList[$pid])) {
                 foreach ($dmList[$pid] as $dmKey => $dmData) {
                     // เพิ่ม DM01 / DM02 เข้า modelOptions
-                    $modelOptions[] = "DM{$dmKey}";
+
+                    // $modelfg = $dmData['modelfg'] ?? $facmodel;
+                    
+                    $modelfg = trim($dmData['modelfg'] ?? $facmodel);
+                    if ($modelfg == '') {
+                        $modelfg = "DM" . str_pad($dmKey, 2, "0", STR_PAD_LEFT);
+                    }
+                    $modelOptions[] = $modelfg;
+
+                    // $modelOptions[] = "DM{$dmKey}";
 
                     // loop รูป diagram
                     for ($i = 1; $i <= 5; $i++) {
@@ -474,7 +483,7 @@ class OrderController extends Controller
                         }
 
                         $diagramLayers[] = [
-                            'modelfg'   => "DM{$dmKey}",
+                            'modelfg'   => $modelfg,
                             'layer'     => "รูปที่ {$i}",
                             'path_file' => $imgUrl,
                             'layout'    => $i,
@@ -496,7 +505,7 @@ class OrderController extends Controller
                                 'price_per_unit'    => floatval($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0),
                                 'layout'            => (int)($sp['layout'] ?? 1),
                                 'tracking_number'   => $sp['tracking_number'] ?? '',
-                                'modelfg'           => $facmodel,
+                                'modelfg'           => $modelfg,
                                 'pid'               => $pid,
                                 'skufg'             => $pid,
                                 'pname'             => $asset['pname'] ?? '',
@@ -522,7 +531,7 @@ class OrderController extends Controller
                 $spList[$i]['added'] = (bool)$cart;
                 $spList[$i]['remark'] = 'มาจากการสั่งซื้อ';
             }
-            
+
 
             if (collect($modelOptions)->contains(fn($m) => str_starts_with($m, 'DM'))) {
                 $modelOptions = collect($modelOptions)

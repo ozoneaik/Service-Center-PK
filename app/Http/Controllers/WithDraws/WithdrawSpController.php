@@ -739,8 +739,16 @@ class WithdrawSpController extends Controller
             // loop dm list
             if (!empty($dmList[$pid])) {
                 foreach ($dmList[$pid] as $dmKey => $dmData) {
-                    $dmName = strtoupper("DM{$dmKey}");
-                    $modelOptions[] = $dmName; // เพิ่มชื่อ DM ใน dropdown
+                    // $dmName = strtoupper("DM{$dmKey}");
+                    // $modelOptions[] = $dmName; // เพิ่มชื่อ DM ใน dropdown
+
+                    // $modelfg = $dmData['modelfg'] ?? $facmodel;
+
+                    $modelfg = trim($dmData['modelfg'] ?? $facmodel);
+                    if ($modelfg == '') {
+                        $modelfg = "DM" . str_pad($dmKey, 2, "0", STR_PAD_LEFT);
+                    }
+                    $modelOptions[] = $modelfg;
 
                     // Diagram
                     for ($i = 1; $i <= 5; $i++) {
@@ -753,7 +761,7 @@ class WithdrawSpController extends Controller
                         }
 
                         $diagramLayers[] = [
-                            'modelfg' => $dmName,
+                            'modelfg' => $modelfg,
                             'layer' => "รูปที่ {$i}",
                             'path_file' => $imgUrl,
                             'layout' => $i,
@@ -775,7 +783,7 @@ class WithdrawSpController extends Controller
                                 'price_per_unit' => floatval($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0),
                                 'layout' => (int)($sp['layout'] ?? 1),
                                 'tracking_number' => $sp['tracking_number'] ?? '',
-                                'modelfg' => $dmName, // ใช้ชื่อ DM แทน facmodel
+                                'modelfg' => $modelfg,
                                 'pid' => $pid,
                                 'skufg' => $pid,
                                 'pname' => $asset['pname'] ?? '',
@@ -885,12 +893,12 @@ class WithdrawSpController extends Controller
                 ->where('sp_code', $request->spcode)
                 ->value('qty_sp') ?? 0;
 
-            if ($stockQty <= 0) {
-                return response()->json([
-                    'message' => 'out_of_stock',
-                    'error'   => 'สินค้าไม่มีสต็อกคงเหลือ',
-                ], 200);
-            }
+            // if ($stockQty <= 0) {
+            //     return response()->json([
+            //         'message' => 'out_of_stock',
+            //         'error'   => 'สินค้าไม่มีสต็อกคงเหลือ',
+            //     ], 200);
+            // }
 
             // ป้องกันซ้ำ
             if (WithdrawCart::existsInCart(Auth::user()->user_code, $request->spcode)) {

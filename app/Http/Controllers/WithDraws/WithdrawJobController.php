@@ -251,8 +251,22 @@ class WithdrawJobController extends Controller
                     ->lockForUpdate()
                     ->first();
 
-                if (!$stockSp) throw new \Exception("ไม่พบอะไหล่ในคลัง: {$spCode}");
-                if ($stockSp->qty_sp < $qty) throw new \Exception("สต็อกอะไหล่ {$spCode} ไม่พอ");
+                if (!$stockSp) {
+                    $stockSp = StockSparePart::create([
+                        'sp_code'        => $spCode,
+                        'sku_code'       => $item['sku_code'] ?? 'UNKNOWN',
+                        'sku_name'       => $item['sku_name'] ?? 'UNKNOWN',
+                        'sp_name'        => $item['sp_name'] ?? 'UNKNOWN',
+                        'sp_unit'        => $item['sp_unit'] ?? 'ชิ้น',
+
+                        'is_code_cust_id' => Auth::user()->is_code_cust_id,
+                        'qty_sp'         => 0,
+                        'user_code_key'  => Auth::user()->user_code,
+                    ]);
+                }
+
+                // if (!$stockSp) throw new \Exception("ไม่พบอะไหล่ในคลัง: {$spCode}");
+                // if ($stockSp->qty_sp < $qty) throw new \Exception("สต็อกอะไหล่ {$spCode} ไม่พอ");
 
                 $before = $stockSp->qty_sp;
                 $after  = $before - $qty;
@@ -427,9 +441,14 @@ class WithdrawJobController extends Controller
                 "docno" => $soNumber,
                 "doc_title" => "ใบเบิกอะไหล่",
                 "typeservice" => "SO",
+
+                "empproc"     => $request->input('empproc', Auth::user()->name ?? 'system'),
+                "custsccode"  => $request->input('custsccode', Auth::user()->user_code ?? '-'),
+                "custscname"  => $request->input('custscname', Auth::user()->name ?? '-'),
+                
                 "custnamesc" => $storeName,
                 "custname"   => $storeName,
-                "custaddr" => $address,
+                "custscaddr" => $address,
                 "custtel" => $phone,
                 "date" => $date,
                 "summary" => [
