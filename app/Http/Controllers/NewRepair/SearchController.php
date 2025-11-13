@@ -103,7 +103,7 @@ class SearchController extends Controller
                     $response['data_from_api']['buy_date']         = null;
                 }
             }
-            
+
             return response()->json([
                 'message' => 'ดึงข้อมูลสำเร็จ',
                 'data' => $response,
@@ -714,7 +714,7 @@ class SearchController extends Controller
                 throw new \Exception('ไม่พบรหัสสินค้า');
             }
 
-            // ----- ยิง API -----
+            // ยิง API 
             $response = Http::timeout(15)->get($URL, ['search' => $sku]);
             $elapsed  = number_format(microtime(true) - $start, 2);
 
@@ -1396,6 +1396,24 @@ class SearchController extends Controller
             $buy_date         = $response['buy_date'] ?? $findDetail['buy_date'] ?? null;
             $warrantyexpire   = $response['data_from_api']['warrantyexpire'] ?? null;
 
+            if (!empty($serial) && str_starts_with($serial, '9999')) {
+
+                $warranty_expire = null;
+                $insurance_expire = null;
+                $buy_date = null;
+                $warrantyexpire = false;
+
+                if (isset($response['data_from_api'])) {
+                    $response['data_from_api']['warrantyexpire']   = null;
+                    $response['data_from_api']['insurance_expire'] = null;
+                    $response['data_from_api']['buy_date']         = null;
+                }
+
+                Log::info('🔧 Apply 9999 warranty reset in history mode', [
+                    'serial' => $serial,
+                ]);
+            }
+
             // Normalize
             $insurance_expire = trim($insurance_expire ?? '');
             $buy_date = trim($buy_date ?? '');
@@ -1407,14 +1425,44 @@ class SearchController extends Controller
             $warranty_text = 'ไม่อยู่ในประกัน';
             $warranty_color = 'red';
 
-            if ($warrantyexpire === true) {
+            // if ($warrantyexpire === true) {
+            //     $warranty_status = true;
+            //     $warranty_text = 'อยู่ในประกัน';
+            //     $warranty_color = 'green';
+            // } elseif ($warrantyexpire === false) {
+            //     $warranty_status = false;
+            //     $warranty_text = 'ไม่อยู่ในประกัน';
+            //     $warranty_color = 'red';
+            // } elseif (!empty($insurance_expire) && strtotime($insurance_expire)) {
+            //     try {
+            //         $expireDate = Carbon::parse($insurance_expire);
+            //         if ($expireDate->isFuture()) {
+            //             $warranty_status = true;
+            //             $warranty_text = 'อยู่ในประกัน';
+            //             $warranty_color = 'green';
+            //         } else {
+            //             $warranty_text = 'หมดอายุการรับประกัน';
+            //         }
+            //     } catch (\Exception $e) {
+            //         Log::warning("⚠️ Invalid insurance_expire", ['value' => $insurance_expire]);
+            //     }
+            // } elseif (!empty($buy_date)) {
+            //     $warranty_text = 'ไม่อยู่ในประกัน';
+            //     $warranty_color = 'red';
+            // } else {
+            //     $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
+            //     $warranty_color = 'orange';
+            // }
+            // ถ้าไม่มีวันหมดประกัน + ไม่มีวันซื้อ = ยังไม่ได้ลงทะเบียน
+
+            if (empty($insurance_expire) && empty($buy_date)) {
+                $warranty_status = false;
+                $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
+                $warranty_color = 'orange';
+            } elseif ($warrantyexpire === true) {
                 $warranty_status = true;
                 $warranty_text = 'อยู่ในประกัน';
                 $warranty_color = 'green';
-            } elseif ($warrantyexpire === false) {
-                $warranty_status = false;
-                $warranty_text = 'ไม่อยู่ในประกัน';
-                $warranty_color = 'red';
             } elseif (!empty($insurance_expire) && strtotime($insurance_expire)) {
                 try {
                     $expireDate = Carbon::parse($insurance_expire);
@@ -1423,17 +1471,16 @@ class SearchController extends Controller
                         $warranty_text = 'อยู่ในประกัน';
                         $warranty_color = 'green';
                     } else {
+                        $warranty_status = false;
                         $warranty_text = 'หมดอายุการรับประกัน';
+                        $warranty_color = 'red';
                     }
                 } catch (\Exception $e) {
-                    Log::warning("⚠️ Invalid insurance_expire", ['value' => $insurance_expire]);
                 }
-            } elseif (!empty($buy_date)) {
+            } else {
+                $warranty_status = false;
                 $warranty_text = 'ไม่อยู่ในประกัน';
                 $warranty_color = 'red';
-            } else {
-                $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
-                $warranty_color = 'orange';
             }
 
             // รวมข้อมูลทั้งหมด
