@@ -522,6 +522,7 @@ class OrderController extends Controller
                 $spList[$i]['added'] = (bool)$cart;
                 $spList[$i]['remark'] = 'มาจากการสั่งซื้อ';
             }
+            
 
             if (collect($modelOptions)->contains(fn($m) => str_starts_with($m, 'DM'))) {
                 $modelOptions = collect($modelOptions)

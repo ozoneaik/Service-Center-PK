@@ -476,9 +476,15 @@ export default function OrderList({ count_cart, message, sku, result }) {
             (sp) => Number(sp.layout) === Number(activeLayout)
         );
 
-        const sorted = (byLayout.length ? byLayout : filtered).sort(
-            (a, b) => (a.tracking_number || "").localeCompare(b.tracking_number || "")
-        );
+        // const sorted = (byLayout.length ? byLayout : filtered).sort(
+        //     (a, b) => (a.tracking_number || "").localeCompare(b.tracking_number || "")
+        // );
+        // setSpList(sorted);
+        const sorted = (byLayout.length ? byLayout : filtered).sort((a, b) => {
+            const A = Number(a.tracking_number || 0);
+            const B = Number(b.tracking_number || 0);
+            return A - B;
+        });
         setSpList(sorted);
     }, [selectedModel, activeLayout, allSp]);
 
