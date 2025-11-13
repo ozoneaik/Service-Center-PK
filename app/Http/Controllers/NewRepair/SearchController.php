@@ -490,16 +490,221 @@ class SearchController extends Controller
     // }
 
     //เก่า
+    // private function fetchDataFromApi(array $formData): array
+    // {
+    //     $start = microtime(true);
+    //     try {
+    //         $URL = env('VITE_WARRANTY_SN_API_GETDATA');
+
+    //         $sku = $formData['pid'] ?? $formData['sn'] ?? null;
+
+    //         $response = Http::timeout(15)->get($URL, ['search' => $sku]);
+    //         $elapsed = number_format(microtime(true) - $start, 2);
+
+    //         Log::info('⏱️ [Warranty API]', [
+    //             'sku' => $sku,
+    //             'elapsed_sec' => $elapsed,
+    //             'status_code' => $response->status(),
+    //         ]);
+
+    //         if (!$response->successful()) {
+    //             throw new \Exception('API ตอบกลับไม่สำเร็จ');
+    //         }
+
+    //         $data = $response->json();
+    //         if (($data['status'] ?? '') !== 'SUCCESS') {
+    //             throw new \Exception($data['message'] ?? 'ไม่พบข้อมูลสินค้าในระบบ');
+    //         }
+
+    //         $response_json = $data;
+    //         $warranty_expire  = $response_json['warrantyexpire']   ?? false;
+    //         $insurance_expire = $response_json['insurance_expire'] ?? null;
+    //         $buy_date         = $response_json['buy_date']         ?? null;
+
+    //         if (isset($formData['sn']) && !$warranty_expire) {
+    //             $warranty_expire = $this->findWarranty($formData['sn'], $warranty_expire);
+    //         }
+
+    //         // -------------------- ข้อมูลหลัก --------------------
+    //         $assets  = $data['assets'] ?? [];
+    //         $dmList  = $data['dm_list'] ?? [];
+    //         $spAll   = $data['sp'] ?? [];
+    //         $skus    = $data['skuset'] ?? ($sku ? [$sku] : []);
+    //         $isCombo = $data['is_combo'] ?? false;
+    //         $skuMain = $data['skumain'] ?? ($skus[0] ?? null);
+    //         $mainPid = $skuMain;
+    //         $mainAsset = $assets[$mainPid] ?? [];
+
+    //         $isSerialSearch = isset($formData['sn']);
+
+    //         $isPidSearch = isset($formData['pid']) && !isset($formData['sn']);
+    //         $isMultiSku  = count($skus) > 1;
+    //         $allowModelSelect = (!$isCombo && $isMultiSku && !$isSerialSearch);
+
+    //         $imageDmBase = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/');
+    //         $imageSpBase = rtrim(env('VITE_IMAGE_SP', ''), '/');
+
+    //         $modelOptions = [];
+    //         $diagramLayers = [];
+    //         $spListAll = [];
+
+    //         foreach ($skus as $pidEach) {
+    //             $asset = $assets[$pidEach] ?? [];
+    //             $facmodel = $asset['facmodel'] ?? $pidEach;
+    //             if (!empty($facmodel)) $modelOptions[] = $facmodel;
+
+    //             // -------- dm_list (ภาพ Diagram) --------
+    //             if (!empty($dmList[$pidEach]) && is_array($dmList[$pidEach])) {
+    //                 foreach ($dmList[$pidEach] as $dmKey => $dmData) {
+    //                     for ($i = 1; $i <= 5; $i++) {
+    //                         $imgKey = "img_{$i}";
+    //                         $imgUrl = $dmData[$imgKey] ?? null;
+    //                         if (!$imgUrl) continue;
+    //                         if (!str_contains($imgUrl, 'http')) {
+    //                             $imgUrl = $imageDmBase . '/' . ltrim($imgUrl, '/');
+    //                         }
+
+    //                         $diagramLayers[] = [
+    //                             'pid'       => $pidEach,
+    //                             'modelfg'   => $dmData['modelfg'] ?? $facmodel,
+    //                             'layer'     => "รูปที่ {$i}",
+    //                             'path_file' => $imgUrl,
+    //                             'layout'    => $i,
+    //                             'typedm'    => $dmKey,
+    //                         ];
+    //                     }
+    //                 }
+    //             }
+
+    //             // -------- รายการอะไหล่ (Spare Parts) --------
+    //             if (!empty($spAll[$pidEach]) && is_array($spAll[$pidEach])) {
+    //                 foreach ($spAll[$pidEach] as $dmKey => $spItems) {
+    //                     $model = $dmList[$pidEach][$dmKey]['modelfg'] ?? ($asset['facmodel'] ?? $pidEach);
+
+    //                     foreach ($spItems as $sp) {
+    //                         $spcode = $sp['spcode'] ?? null;
+    //                         if (!$spcode) continue;
+
+    //                         $layout = $sp['layout'] ?? 1;
+    //                         if (is_numeric($layout)) {
+    //                             $layout = ((int)$layout === 1) ? 'outside' : 'inside';
+    //                         } else {
+    //                             $layout = (string)$layout;
+    //                         }
+
+    //                         $spListAll[] = [
+    //                             'spcode' => $spcode,
+    //                             'spname' => $sp['spname'] ?? '',
+    //                             'spunit' => $sp['spunit'] ?? 'ชิ้น',
+    //                             'layout' => $layout,
+    //                             'tracking_number' => $sp['tracking_number'] ?? '',
+    //                             'modelfg' => $model,
+    //                             'pid' => $pidEach,
+    //                             'pname' => $asset['pname'] ?? '',
+    //                             'imagesku' => $asset['imagesku'][0] ?? null,
+    //                             'typedm' => $dmKey,
+    //                             'stdprice_per_unit' => number_format((float)($sp['stdprice'] ?? 0), 2, '.', ''),
+    //                             'price_per_unit'    => number_format((float)($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0), 2, '.', ''),
+    //                             'path_file' => $imageSpBase ? "{$imageSpBase}/{$spcode}.jpg" : null,
+    //                         ];
+    //                     }
+    //                 }
+    //             }
+    //         }
+
+    //         // $mainPid = $skus[0];
+    //         // $mainAsset = $assets[$mainPid] ?? [];
+
+    //         $hasMultiDm = $isPidSearch && $isMultiSku && !$isCombo;
+    //         $modelOptions = array_values(array_unique(array_filter($modelOptions)));
+
+    //         // ดึงข้อมูลการรับประกัน
+    //         $warrantyperiod     = $mainAsset['warrantyperiod']     ?? '';
+    //         $warrantycondition  = $mainAsset['warrantycondition']  ?? '';
+    //         $warrantynote       = $mainAsset['warrantynote']       ?? '';
+    //         $pbaseunit          = $mainAsset['pbaseunit']          ?? 'ชิ้น';
+    //         $pcatid             = $mainAsset['pcatid']             ?? '';
+    //         $pCatName           = $mainAsset['pCatName']           ?? '';
+    //         $pSubCatName        = $mainAsset['pSubCatName']        ?? '';
+    //         $listBehavior = [];
+    //         if (isset($data['listbehavior']) && is_array($data['listbehavior'])) {
+    //             foreach ($data['listbehavior'] as $pidKey => $catData) {
+    //                 foreach ($catData as $catName => $subCatData) {
+    //                     foreach ($subCatData as $subCatName => $behaviors) {
+    //                         if (is_array($behaviors)) {
+    //                             foreach ($behaviors as $b) {
+    //                                 $listBehavior[] = [
+    //                                     'pid'          => $pidKey,
+    //                                     'catalog'      => $catName,
+    //                                     'subcatalog'   => $subCatName,
+    //                                     'behaviorname' => $b['behaviorname'] ?? '',
+    //                                     'causecode'    => $b['causecode'] ?? '',
+    //                                     'causename'    => $b['causename'] ?? '',
+    //                                 ];
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //         $skuItem = [
+    //             'pid'                => $mainPid,
+    //             'pname'              => $mainAsset['pname'] ?? '',
+    //             'facmodel'           => $mainAsset['facmodel'] ?? $mainPid,
+    //             'pbaseunit'          => $pbaseunit,
+    //             'pcatid'             => $pcatid,
+    //             'pCatName'           => $pCatName,
+    //             'pSubCatName'        => $pSubCatName,
+    //             'imagesku'           => $mainAsset['imagesku'][0] ?? null,
+    //             'diagram_layers'     => $diagramLayers,
+    //             'sp'                 => $spListAll,
+    //             'model_options'      => $modelOptions,
+    //             'allow_model_select' => $allowModelSelect,
+    //             'serial_id'          => $formData['sn'] ?? '9999',
+    //             'active_layout'      => 'outside',
+    //             'warrantyperiod'     => $warrantyperiod,
+    //             'warrantycondition'  => $warrantycondition,
+    //             'warrantynote'       => $warrantynote,
+    //             'listbehavior'       => $listBehavior,
+    //         ];
+
+    //         return [
+    //             'status'        => true,
+    //             'sku_list'      => [$skuItem],
+    //             'is_combo'      => $isCombo,
+    //             'has_multi_dm'  => $hasMultiDm,
+    //             'data_from_api' => $data,
+    //             'elapsed'       => $elapsed,
+    //             'listbehavior'  => $listBehavior,
+
+    //             'warranty_expire' => $warranty_expire,
+    //             'expire_date'     => $insurance_expire,
+    //             'buy_date'        => $buy_date,
+    //         ];
+    //     } catch (\Exception $e) {
+    //         Log::error('❌ fetchDataFromApi Error: ' . $e->getMessage());
+    //         return [
+    //             'status' => false,
+    //             'message' => $e->getMessage(),
+    //         ];
+    //     }
+    // }
+
     private function fetchDataFromApi(array $formData): array
     {
         $start = microtime(true);
+
         try {
             $URL = env('VITE_WARRANTY_SN_API_GETDATA');
 
             $sku = $formData['pid'] ?? $formData['sn'] ?? null;
+            if (!$sku) {
+                throw new \Exception('ไม่พบรหัสสินค้า');
+            }
 
+            // ----- ยิง API -----
             $response = Http::timeout(15)->get($URL, ['search' => $sku]);
-            $elapsed = number_format(microtime(true) - $start, 2);
+            $elapsed  = number_format(microtime(true) - $start, 2);
 
             Log::info('⏱️ [Warranty API]', [
                 'sku' => $sku,
@@ -516,116 +721,115 @@ class SearchController extends Controller
                 throw new \Exception($data['message'] ?? 'ไม่พบข้อมูลสินค้าในระบบ');
             }
 
-            $response_json = $data;
-            $warranty_expire  = $response_json['warrantyexpire']   ?? false;
-            $insurance_expire = $response_json['insurance_expire'] ?? null;
-            $buy_date         = $response_json['buy_date']         ?? null;
+            // --------------------------- ข้อมูลพื้นฐาน ---------------------------
+            $assets = $data['assets'] ?? [];
+            $dmList = $data['dm_list'] ?? [];
+            $spAll  = $data['sp'] ?? [];
+            $skuSet = $data['skuset'] ?? [$sku];
+
+            $skumain = $data['skumain'] ?? ($skuSet[0] ?? null);
+            $mainPid = $skumain;
+
+            // asset ของ pid จริง
+            $asset = $assets[$mainPid] ?? [];
+            if (empty($asset)) {
+                // fallback แพทเทิร์นเก่า
+                if (isset($assets[$sku])) {
+                    $asset = $assets[$sku];
+                } elseif (!empty($assets)) {
+                    $asset = reset($assets);
+                }
+            }
+
+            $facmodel = $asset['facmodel'] ?? $mainPid;
+
+            $imageDmBase = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/');
+            $imageSpBase = rtrim(env('VITE_IMAGE_SP', ''), '/');
+
+            // ---- คืนค่ารับประกัน ----
+            $warranty_expire  = $data['warrantyexpire']   ?? false;
+            $insurance_expire = $data['insurance_expire'] ?? null;
+            $buy_date         = $data['buy_date']         ?? null;
 
             if (isset($formData['sn']) && !$warranty_expire) {
                 $warranty_expire = $this->findWarranty($formData['sn'], $warranty_expire);
             }
 
-            // -------------------- ข้อมูลหลัก --------------------
-            $assets  = $data['assets'] ?? [];
-            $dmList  = $data['dm_list'] ?? [];
-            $spAll   = $data['sp'] ?? [];
-            $skus    = $data['skuset'] ?? ($sku ? [$sku] : []);
-            $isCombo = $data['is_combo'] ?? false;
-            $skuMain = $data['skumain'] ?? ($skus[0] ?? null);
-            $mainPid = $skuMain;
-            $mainAsset = $assets[$mainPid] ?? [];
-
-            $isSerialSearch = isset($formData['sn']);
-
-            $isPidSearch = isset($formData['pid']) && !isset($formData['sn']);
-            $isMultiSku  = count($skus) > 1;
-            $allowModelSelect = (!$isCombo && $isMultiSku && !$isSerialSearch);
-
-            $imageDmBase = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/');
-            $imageSpBase = rtrim(env('VITE_IMAGE_SP', ''), '/');
-
-            $modelOptions = [];
+            // --------------------------- เตรียมตัวแปร ---------------------------
             $diagramLayers = [];
-            $spListAll = [];
+            $spListAll     = [];
+            $spByDm        = [];  // Group spare part by DM
+            $modelOptions  = [];
 
-            foreach ($skus as $pidEach) {
-                $asset = $assets[$pidEach] ?? [];
-                $facmodel = $asset['facmodel'] ?? $pidEach;
-                if (!empty($facmodel)) $modelOptions[] = $facmodel;
+            // --------------------------- โหลด Diagram + SP แยก DM ---------------------------
+            if (!empty($dmList[$mainPid]) && is_array($dmList[$mainPid])) {
 
-                // -------- dm_list (ภาพ Diagram) --------
-                if (!empty($dmList[$pidEach]) && is_array($dmList[$pidEach])) {
-                    foreach ($dmList[$pidEach] as $dmKey => $dmData) {
-                        for ($i = 1; $i <= 5; $i++) {
-                            $imgKey = "img_{$i}";
-                            $imgUrl = $dmData[$imgKey] ?? null;
-                            if (!$imgUrl) continue;
-                            if (!str_contains($imgUrl, 'http')) {
-                                $imgUrl = $imageDmBase . '/' . ltrim($imgUrl, '/');
-                            }
+                foreach ($dmList[$mainPid] as $dmKey => $dmData) {
 
-                            $diagramLayers[] = [
-                                'pid'       => $pidEach,
-                                'modelfg'   => $dmData['modelfg'] ?? $facmodel,
-                                'layer'     => "รูปที่ {$i}",
-                                'path_file' => $imgUrl,
-                                'layout'    => $i,
-                                'typedm'    => $dmKey,
-                            ];
+                    $dmType = strtoupper($dmKey); // DM01 / DM02
+                    $modelOptions[] = $dmType;
+
+                    // ---------------- รูป Diagram ----------------
+                    for ($i = 1; $i <= 5; $i++) {
+                        $imgKey = "img_{$i}";
+                        $imgUrl = $dmData[$imgKey] ?? null;
+                        if (!$imgUrl) continue;
+
+                        if (!str_contains($imgUrl, 'http')) {
+                            $imgUrl = "{$imageDmBase}/" . ltrim($imgUrl, '/');
                         }
+
+                        $diagramLayers[] = [
+                            'pid'       => $mainPid,
+                            'modelfg'   => $dmData['modelfg'] ?? $facmodel,
+                            'layer'     => "รูปที่ {$i}",
+                            'path_file' => $imgUrl,
+                            'layout'    => $i,
+                            'typedm'    => $dmType,
+                        ];
                     }
-                }
 
-                // -------- รายการอะไหล่ (Spare Parts) --------
-                if (!empty($spAll[$pidEach]) && is_array($spAll[$pidEach])) {
-                    foreach ($spAll[$pidEach] as $dmKey => $spItems) {
-                        $model = $dmList[$pidEach][$dmKey]['modelfg'] ?? ($asset['facmodel'] ?? $pidEach);
+                    // ---------------- อะไหล่ของ DM ----------------
+                    $spByDm[$dmType] = [];
+                    if (!empty($spAll[$mainPid][$dmKey]) && is_array($spAll[$mainPid][$dmKey])) {
 
-                        foreach ($spItems as $sp) {
+                        foreach ($spAll[$mainPid][$dmKey] as $sp) {
+
                             $spcode = $sp['spcode'] ?? null;
                             if (!$spcode) continue;
 
-                            $layout = $sp['layout'] ?? 1;
-                            if (is_numeric($layout)) {
-                                $layout = ((int)$layout === 1) ? 'outside' : 'inside';
-                            } else {
-                                $layout = (string)$layout;
-                            }
+                            $layoutNum = (int)($sp['layout'] ?? 1);
+                            $layoutStr = $layoutNum === 2 ? "inside" : "outside";
 
-                            $spListAll[] = [
-                                'spcode' => $spcode,
-                                'spname' => $sp['spname'] ?? '',
-                                'spunit' => $sp['spunit'] ?? 'ชิ้น',
-                                'layout' => $layout,
-                                'tracking_number' => $sp['tracking_number'] ?? '',
-                                'modelfg' => $model,
-                                'pid' => $pidEach,
-                                'pname' => $asset['pname'] ?? '',
-                                'imagesku' => $asset['imagesku'][0] ?? null,
-                                'typedm' => $dmKey,
+                            $item = [
+                                'spcode'            => $spcode,
+                                'spname'            => $sp['spname'] ?? '',
+                                'spunit'            => $sp['spunit'] ?? 'ชิ้น',
+                                'layout'            => $layoutStr,
+                                'tracking_number'   => $sp['tracking_number'] ?? '',
+                                'modelfg'           => $dmData['modelfg'] ?? $facmodel,
+                                'pid'               => $mainPid,
+                                'pname'             => $asset['pname'] ?? '',
+                                'imagesku'          => $asset['imagesku'][0] ?? null,
+                                'typedm'            => $dmType,
                                 'stdprice_per_unit' => number_format((float)($sp['stdprice'] ?? 0), 2, '.', ''),
-                                'price_per_unit'    => number_format((float)($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0), 2, '.', ''),
-                                'path_file' => $imageSpBase ? "{$imageSpBase}/{$spcode}.jpg" : null,
+                                'price_per_unit'    => number_format(
+                                    (float)($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0),
+                                    2,
+                                    '.',
+                                    ''
+                                ),
+                                'path_file'         => "{$imageSpBase}/{$spcode}.jpg",
                             ];
+
+                            $spListAll[] = $item;
+                            $spByDm[$dmType][] = $item;
                         }
                     }
                 }
             }
 
-            // $mainPid = $skus[0];
-            // $mainAsset = $assets[$mainPid] ?? [];
-
-            $hasMultiDm = $isPidSearch && $isMultiSku && !$isCombo;
-            $modelOptions = array_values(array_unique(array_filter($modelOptions)));
-
-            // ดึงข้อมูลการรับประกัน
-            $warrantyperiod     = $mainAsset['warrantyperiod']     ?? '';
-            $warrantycondition  = $mainAsset['warrantycondition']  ?? '';
-            $warrantynote       = $mainAsset['warrantynote']       ?? '';
-            $pbaseunit          = $mainAsset['pbaseunit']          ?? 'ชิ้น';
-            $pcatid             = $mainAsset['pcatid']             ?? '';
-            $pCatName           = $mainAsset['pCatName']           ?? '';
-            $pSubCatName        = $mainAsset['pSubCatName']        ?? '';
+            // --------------------------- listbehavior ---------------------------
             $listBehavior = [];
             if (isset($data['listbehavior']) && is_array($data['listbehavior'])) {
                 foreach ($data['listbehavior'] as $pidKey => $catData) {
@@ -647,21 +851,41 @@ class SearchController extends Controller
                     }
                 }
             }
+
+            // --------------------------- Warranty Info ---------------------------
+            $warrantyperiod    = $asset['warrantyperiod']    ?? '';
+            $warrantycondition = $asset['warrantycondition'] ?? '';
+            $warrantynote      = $asset['warrantynote']      ?? '';
+            $pbaseunit         = $asset['pbaseunit']         ?? 'ชิ้น';
+            $pcatid            = $asset['pcatid']            ?? '';
+            $pCatName          = $asset['pCatName']          ?? '';
+            $pSubCatName       = $asset['pSubCatName']       ?? '';
+
+            // --------------------------- model_options (DM Only) ---------------------------
+            $modelOptions = array_values(array_unique(array_filter($modelOptions)));
+
+            // --------------------------- สรุปผล ---------------------------
             $skuItem = [
                 'pid'                => $mainPid,
-                'pname'              => $mainAsset['pname'] ?? '',
-                'facmodel'           => $mainAsset['facmodel'] ?? $mainPid,
+                'pname'              => $asset['pname'] ?? '',
+                'facmodel'           => $facmodel,
                 'pbaseunit'          => $pbaseunit,
                 'pcatid'             => $pcatid,
                 'pCatName'           => $pCatName,
                 'pSubCatName'        => $pSubCatName,
-                'imagesku'           => $mainAsset['imagesku'][0] ?? null,
+                'imagesku'           => $asset['imagesku'][0] ?? null,
+
+                // NEW DM+LAYOUT + SP
                 'diagram_layers'     => $diagramLayers,
                 'sp'                 => $spListAll,
+                'sp_by_dm'           => $spByDm,
+
                 'model_options'      => $modelOptions,
-                'allow_model_select' => $allowModelSelect,
+                'allow_model_select' => true,
                 'serial_id'          => $formData['sn'] ?? '9999',
                 'active_layout'      => 'outside',
+
+                // warranty
                 'warrantyperiod'     => $warrantyperiod,
                 'warrantycondition'  => $warrantycondition,
                 'warrantynote'       => $warrantynote,
@@ -671,11 +895,10 @@ class SearchController extends Controller
             return [
                 'status'        => true,
                 'sku_list'      => [$skuItem],
-                'is_combo'      => $isCombo,
-                'has_multi_dm'  => $hasMultiDm,
+                'is_combo'      => ($data['is_combo'] ?? false),
+                'has_multi_dm'  => count($modelOptions) > 1,
                 'data_from_api' => $data,
                 'elapsed'       => $elapsed,
-                'listbehavior'  => $listBehavior,
 
                 'warranty_expire' => $warranty_expire,
                 'expire_date'     => $insurance_expire,
@@ -690,160 +913,6 @@ class SearchController extends Controller
         }
     }
 
-    //12/11/2568 Deploy
-    // private function fetchDataFromApi(array $formData): array
-    // {
-    //     $start = microtime(true);
-    //     try {
-    //         $URL = env('VITE_WARRANTY_SN_API_GETDATA');
-
-    //         $sku = $formData['pid'] ?? $formData['sn'] ?? null;
-    //         if (!$sku) {
-    //             throw new \Exception('ไม่พบรหัสสินค้า');
-    //         }
-
-    //         $response = Http::timeout(15)->get($URL, ['search' => $sku]);
-    //         $elapsed = number_format(microtime(true) - $start, 2);
-
-    //         Log::info('⏱️ [Warranty API]', [
-    //             'sku' => $sku,
-    //             'elapsed_sec' => $elapsed,
-    //             'status_code' => $response->status(),
-    //         ]);
-
-    //         if (!$response->successful()) {
-    //             throw new \Exception('API ตอบกลับไม่สำเร็จ');
-    //         }
-
-    //         $data = $response->json();
-    //         if (($data['status'] ?? '') !== 'SUCCESS') {
-    //             throw new \Exception($data['message'] ?? 'ไม่พบข้อมูลสินค้าในระบบ');
-    //         }
-
-    //         $response_json = $data;
-    //         $warranty_expire  = $data['warrantyexpire'] ?? false;
-    //         $insurance_expire = $data['insurance_expire'] ?? null;
-    //         $buy_date         = $data['buy_date'] ?? null;
-
-    //         if (isset($formData['sn']) && !$warranty_expire) {
-    //             $warranty_expire = $this->findWarranty($formData['sn'], $warranty_expire);
-    //         }
-
-    //         // -------------------- ข้อมูลหลัก --------------------
-    //         $assets = $data['assets'] ?? [];
-    //         $dmList = $data['dm_list'] ?? [];
-    //         $spAll  = $data['sp'] ?? [];
-    //         $pid    = $sku; // ✅ ใช้เฉพาะ pid ที่ค้นหา
-
-    //         $asset = $assets[$pid] ?? [];
-    //         $facmodel = $asset['facmodel'] ?? $pid;
-    //         $imageDmBase = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/');
-    //         $imageSpBase = rtrim(env('VITE_IMAGE_SP', ''), '/');
-
-    //         $diagramLayers = [];
-    //         $modelOptions  = [];
-    //         $spListAll     = [];
-
-    //         // ✅ ใช้เฉพาะ dm_list ของ SKU นี้
-    //         if (!empty($dmList[$pid])) {
-    //             foreach ($dmList[$pid] as $dmKey => $dmData) {
-    //                 for ($i = 1; $i <= 5; $i++) {
-    //                     $imgKey = "img_{$i}";
-    //                     $imgUrl = $dmData[$imgKey] ?? null;
-    //                     if (!$imgUrl) continue;
-    //                     if (!str_contains($imgUrl, 'http')) {
-    //                         $imgUrl = "{$imageDmBase}/" . ltrim($imgUrl, '/');
-    //                     }
-    //                     $diagramLayers[] = [
-    //                         'pid'       => $pid,
-    //                         'modelfg'   => $dmData['modelfg'] ?? $facmodel,
-    //                         'layer'     => "รูปที่ {$i}",
-    //                         'path_file' => $imgUrl,
-    //                         'layout'    => $i,
-    //                         'typedm'    => $dmKey,
-    //                     ];
-    //                 }
-    //             }
-    //         }
-
-    //         // ✅ ใช้เฉพาะ sp ของ SKU นี้
-    //         if (!empty($spAll[$pid])) {
-    //             foreach ($spAll[$pid] as $dmKey => $spItems) {
-    //                 foreach ($spItems as $sp) {
-    //                     $spcode = $sp['spcode'] ?? null;
-    //                     if (!$spcode) continue;
-
-    //                     $spListAll[] = [
-    //                         'spcode' => $spcode,
-    //                         'spname' => $sp['spname'] ?? '',
-    //                         'spunit' => $sp['spunit'] ?? 'ชิ้น',
-    //                         'layout' => (int)($sp['layout'] ?? 1),
-    //                         'tracking_number' => $sp['tracking_number'] ?? '',
-    //                         'modelfg' => $dmList[$pid][$dmKey]['modelfg'] ?? $facmodel,
-    //                         'pid' => $pid,
-    //                         'pname' => $asset['pname'] ?? '',
-    //                         'imagesku' => $asset['imagesku'][0] ?? null,
-    //                         'typedm' => $dmKey,
-    //                         'stdprice_per_unit' => number_format((float)($sp['stdprice'] ?? 0), 2, '.', ''),
-    //                         'price_per_unit'    => number_format((float)($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0), 2, '.', ''),
-    //                         'path_file'         => "{$imageSpBase}/{$spcode}.jpg",
-    //                     ];
-    //                 }
-    //             }
-    //         }
-
-    //         $modelOptions = [$facmodel];
-    //         $allowModelSelect = false;
-
-    //         // ข้อมูลการรับประกัน
-    //         $warrantyperiod     = $asset['warrantyperiod']     ?? '';
-    //         $warrantycondition  = $asset['warrantycondition']  ?? '';
-    //         $warrantynote       = $asset['warrantynote']       ?? '';
-    //         $pbaseunit          = $asset['pbaseunit']          ?? 'ชิ้น';
-    //         $pcatid             = $asset['pcatid']             ?? '';
-    //         $pCatName           = $asset['pCatName']           ?? '';
-    //         $pSubCatName        = $asset['pSubCatName']        ?? '';
-
-    //         // 🧩 สรุปข้อมูลสุดท้าย
-    //         $skuItem = [
-    //             'pid'                => $pid,
-    //             'pname'              => $asset['pname'] ?? '',
-    //             'facmodel'           => $facmodel,
-    //             'pbaseunit'          => $pbaseunit,
-    //             'pcatid'             => $pcatid,
-    //             'pCatName'           => $pCatName,
-    //             'pSubCatName'        => $pSubCatName,
-    //             'imagesku'           => $asset['imagesku'][0] ?? null,
-    //             'diagram_layers'     => $diagramLayers,
-    //             'sp'                 => $spListAll,
-    //             'model_options'      => $modelOptions,
-    //             'allow_model_select' => $allowModelSelect,
-    //             'serial_id'          => $formData['sn'] ?? '9999',
-    //             'active_layout'      => 'outside',
-    //             'warrantyperiod'     => $warrantyperiod,
-    //             'warrantycondition'  => $warrantycondition,
-    //             'warrantynote'       => $warrantynote,
-    //         ];
-
-    //         return [
-    //             'status'          => true,
-    //             'sku_list'        => [$skuItem],
-    //             'is_combo'        => false,
-    //             'has_multi_dm'    => false,
-    //             'data_from_api'   => $data,
-    //             'elapsed'         => $elapsed,
-    //             'warranty_expire' => $warranty_expire,
-    //             'expire_date'     => $insurance_expire,
-    //             'buy_date'        => $buy_date,
-    //         ];
-    //     } catch (\Exception $e) {
-    //         Log::error('❌ fetchDataFromApi Error: ' . $e->getMessage());
-    //         return [
-    //             'status' => false,
-    //             'message' => $e->getMessage(),
-    //         ];
-    //     }
-    // }
 
     //13/11/2568
     // private function fetchDataFromApi(array $formData): array
@@ -1003,7 +1072,7 @@ class SearchController extends Controller
     // }
 
 
-    
+
     //อัพเดทใหม่ สถานะ (วิว)
     // private function searchFromHistory($job_id)
     // {
