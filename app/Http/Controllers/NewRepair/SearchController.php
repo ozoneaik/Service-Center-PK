@@ -92,6 +92,18 @@ class SearchController extends Controller
                 throw new \Exception($response['message'] ?? 'ไม่สามารถดึงข้อมูลสินค้าได้');
             }
 
+            if (($request->input('SN') ?? '') === '9999') {
+                $response['warranty_expire'] = null;
+                $response['expire_date']     = null;
+                $response['buy_date']        = null;
+
+                if (isset($response['data_from_api'])) {
+                    $response['data_from_api']['warrantyexpire']   = null;
+                    $response['data_from_api']['insurance_expire'] = null;
+                    $response['data_from_api']['buy_date']         = null;
+                }
+            }
+            
             return response()->json([
                 'message' => 'ดึงข้อมูลสำเร็จ',
                 'data' => $response,
