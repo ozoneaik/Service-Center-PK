@@ -384,7 +384,7 @@ export default function OrderList({ count_cart, message, sku, result }) {
     const [countCart, setCountCart] = useState(count_cart);
     const [product, setProduct] = useState(result || null);
 
-    // 🔹 ใช้เลข layout แทน outside/inside
+    // ใช้เลข layout แทน outside/inside
     const [activeLayout, setActiveLayout] = useState(1);
 
     const handleSearch = (e) => {
@@ -415,7 +415,7 @@ export default function OrderList({ count_cart, message, sku, result }) {
         const firstModel = models.length ? models[0] : null;
         setSelectedModel(firstModel);
 
-        // 🔹 ตั้ง layout เริ่มต้นเป็น 1
+        // ตั้ง layout เริ่มต้นเป็น 1
         setActiveLayout(1);
 
         const filteredByModel = firstModel
@@ -445,15 +445,42 @@ export default function OrderList({ count_cart, message, sku, result }) {
         setSpList(byLayout.length ? byLayout : byModel);
     }, [selectedModel]);
 
-    useEffect(() => {
-        const byModel = !selectedModel ? allSp : allSp.filter((x) => (x.modelfg || null) === selectedModel);
+    // useEffect(() => {
+    //     const byModel = !selectedModel ? allSp : allSp.filter((x) => (x.modelfg || null) === selectedModel);
 
-        const byLayout = byModel.filter(
-            (x) => Number(x.layout) === Number(activeLayout)
+    //     const byLayout = byModel.filter(
+    //         (x) => Number(x.layout) === Number(activeLayout)
+    //     );
+    //     setSpList(byLayout.length ? byLayout : byModel);
+
+    // }, [activeLayout, selectedModel, allSp]);
+
+    useEffect(() => {
+        if (!selectedModel) {
+            setSpList(allSp);
+            return;
+        }
+
+        let filtered = allSp;
+
+        // ถ้าเลือก DM01 / DM02 → กรองด้วย typedm
+        if (selectedModel.startsWith("DM")) {
+            const dmNum = selectedModel.replace("DM", "").trim();
+            filtered = allSp.filter((sp) => sp.typedm === dmNum);
+        } else {
+            filtered = allSp.filter((sp) => sp.modelfg === selectedModel);
+        }
+
+        // ต่อด้วยกรอง layout (รูปที่ 1 / 2)
+        const byLayout = filtered.filter(
+            (sp) => Number(sp.layout) === Number(activeLayout)
         );
-        setSpList(byLayout.length ? byLayout : byModel);
-        
-    }, [activeLayout, selectedModel, allSp]);
+
+        const sorted = (byLayout.length ? byLayout : filtered).sort(
+            (a, b) => (a.tracking_number || "").localeCompare(b.tracking_number || "")
+        );
+        setSpList(sorted);
+    }, [selectedModel, activeLayout, allSp]);
 
     const diagramLayersForModel = (product?.diagram_layers || []).filter(
         (x) => !selectedModel || x.modelfg === selectedModel

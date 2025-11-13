@@ -299,6 +299,132 @@ class OrderController extends Controller
     //     ]);
     // }
 
+    //deploy
+    // public function search(string $sku): Response
+    // {
+    //     $apiUrl = env('VITE_WARRANTY_SN_API_GETDATA');
+    //     $message = '';
+    //     $result = [];
+    //     $diagramLayers = [];
+    //     $modelOptions = [];
+    //     $spList = [];
+
+    //     try {
+    //         $response = Http::timeout(15)->get($apiUrl, ['search' => $sku]);
+    //         if (!$response->successful()) {
+    //             throw new \Exception('API สินค้าหลักไม่ตอบกลับ');
+    //         }
+
+    //         $data = $response->json();
+    //         if (($data['status'] ?? '') !== 'SUCCESS') {
+    //             throw new \Exception($data['message'] ?? 'ไม่พบข้อมูลสินค้าในระบบ');
+    //         }
+
+    //         // ✅ ใช้เฉพาะข้อมูลของ SKU ที่ค้นหา
+    //         $assets   = $data['assets'] ?? [];
+    //         $dmList   = $data['dm_list'] ?? [];
+    //         $spAll    = $data['sp'] ?? [];
+    //         $pid      = $sku;
+
+    //         $asset = $assets[$pid] ?? [];
+    //         $facmodel = $asset['facmodel'] ?? $pid;
+    //         $modelOptions[] = $facmodel;
+
+    //         // 🔹 ดึงรูป Diagram เฉพาะของ SKU นั้นเอง
+    //         if (!empty($dmList[$pid])) {
+    //             foreach ($dmList[$pid] as $dmKey => $dmData) {
+    //                 for ($i = 1; $i <= 5; $i++) {
+    //                     $imgKey = "img_{$i}";
+    //                     $imgUrl = $dmData[$imgKey] ?? null;
+    //                     if (!empty($imgUrl)) {
+    //                         if (!str_contains($imgUrl, 'http')) {
+    //                             $imgUrl = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/') . '/' . ltrim($imgUrl, '/');
+    //                         }
+    //                         $diagramLayers[] = [
+    //                             'modelfg'    => $facmodel,
+    //                             'layer'      => "รูปที่ {$i}",
+    //                             'path_file'  => $imgUrl,
+    //                             'layout'     => $i,
+    //                             'typedm'     => $dmKey,
+    //                         ];
+    //                     }
+    //                 }
+    //             }
+    //         }
+
+    //         // 🔹 Flatten spare parts เฉพาะของ SKU นั้นเอง
+    //         if (!empty($spAll[$pid]) && is_array($spAll[$pid])) {
+    //             foreach ($spAll[$pid] as $dmKey => $spItems) {
+    //                 foreach ($spItems as $sp) {
+    //                     $spcode = $sp['spcode'] ?? null;
+    //                     if (!$spcode) continue;
+
+    //                     $layout = (int)($sp['layout'] ?? 1);
+    //                     $spList[] = [
+    //                         'spcode'            => $spcode,
+    //                         'spname'            => $sp['spname'] ?? '',
+    //                         'spunit'            => $sp['spunit'] ?? 'ชิ้น',
+    //                         'stdprice_per_unit' => floatval($sp['stdprice'] ?? 0),
+    //                         'price_per_unit'    => floatval($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0),
+    //                         'layout'            => $layout,
+    //                         'tracking_number'   => $sp['tracking_number'] ?? '',
+    //                         'modelfg'           => $facmodel,
+    //                         'pid'               => $pid,
+    //                         'skufg'             => $pid,
+    //                         'pname'             => $asset['pname'] ?? '',
+    //                         'imagesku'          => $asset['imagesku'][0] ?? null,
+    //                     ];
+    //                 }
+    //             }
+    //         }
+
+    //         // 🔹 เติม stock/cart สถานะในตะกร้า
+    //         $imageBase = env('VITE_IMAGE_SP');
+    //         foreach ($spList as $i => $sp) {
+    //             $spcode = $sp['spcode'];
+    //             $spList[$i]['path_file'] = $imageBase . $spcode . '.jpg';
+
+    //             $cart = Cart::query()
+    //                 ->where('sp_code', $spcode)
+    //                 ->where('is_active', false)
+    //                 ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+    //                 ->first();
+
+    //             $spList[$i]['added'] = (bool)$cart;
+    //             $spList[$i]['remark'] = 'มาจากการสั่งซื้อ';
+    //         }
+
+    //         //  รวมข้อมูลสินค้าทั้งหมดสำหรับส่งกลับหน้า React
+    //         $result = [
+    //             'pid'            => $sku,
+    //             'pname'          => $asset['pname'] ?? '',
+    //             'pbaseunit'      => $asset['pbaseunit'] ?? '',
+    //             'facmodel'       => $facmodel,
+    //             'imagesku'       => $asset['imagesku'][0] ?? null,
+    //             'sp'             => $spList,
+    //             'model_options'  => array_values(array_unique($modelOptions)),
+    //             'diagram_layers' => $diagramLayers,
+    //         ];
+    //     } catch (\Exception $e) {
+    //         $message = $e->getMessage();
+    //         $result = null;
+    //     }
+
+    //     Log::debug('✅ Order Search (Fixed SKU only)', [
+    //         'sku' => $sku,
+    //         'count_sp' => count($result['sp'] ?? []),
+    //         'count_dm' => count($result['diagram_layers'] ?? []),
+    //         'models' => $result['model_options'] ?? [],
+    //     ]);
+
+    //     return Inertia::render('Orders/OrderList', [
+    //         'message' => $message ?: null,
+    //         'sku'     => $sku,
+    //         'result'  => $result,
+    //     ]);
+    // }
+
+    //13/11/2568
     public function search(string $sku): Response
     {
         $apiUrl = env('VITE_WARRANTY_SN_API_GETDATA');
@@ -319,69 +445,73 @@ class OrderController extends Controller
                 throw new \Exception($data['message'] ?? 'ไม่พบข้อมูลสินค้าในระบบ');
             }
 
-            // ✅ ใช้เฉพาะข้อมูลของ SKU ที่ค้นหา
-            $assets   = $data['assets'] ?? [];
-            $dmList   = $data['dm_list'] ?? [];
-            $spAll    = $data['sp'] ?? [];
-            $pid      = $sku;
+            $assets = $data['assets'] ?? [];
+            $dmList = $data['dm_list'] ?? [];
+            $spAll = $data['sp'] ?? [];
+            $pid = $sku;
 
             $asset = $assets[$pid] ?? [];
             $facmodel = $asset['facmodel'] ?? $pid;
             $modelOptions[] = $facmodel;
 
-            // 🔹 ดึงรูป Diagram เฉพาะของ SKU นั้นเอง
+            $imageDmBase = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/');
+            $imageSpBase = rtrim(env('VITE_IMAGE_SP', ''), '/');
+
+            // loop ผ่าน dmList เช่น DM01, DM02
             if (!empty($dmList[$pid])) {
                 foreach ($dmList[$pid] as $dmKey => $dmData) {
+                    // เพิ่ม DM01 / DM02 เข้า modelOptions
+                    $modelOptions[] = "DM{$dmKey}";
+
+                    // loop รูป diagram
                     for ($i = 1; $i <= 5; $i++) {
                         $imgKey = "img_{$i}";
                         $imgUrl = $dmData[$imgKey] ?? null;
-                        if (!empty($imgUrl)) {
-                            if (!str_contains($imgUrl, 'http')) {
-                                $imgUrl = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/') . '/' . ltrim($imgUrl, '/');
-                            }
-                            $diagramLayers[] = [
-                                'modelfg'    => $facmodel,
-                                'layer'      => "รูปที่ {$i}",
-                                'path_file'  => $imgUrl,
-                                'layout'     => $i,
-                                'typedm'     => $dmKey,
+                        if (!$imgUrl) continue;
+
+                        if (!str_contains($imgUrl, 'http')) {
+                            $imgUrl = "{$imageDmBase}/" . ltrim($imgUrl, '/');
+                        }
+
+                        $diagramLayers[] = [
+                            'modelfg'   => "DM{$dmKey}",
+                            'layer'     => "รูปที่ {$i}",
+                            'path_file' => $imgUrl,
+                            'layout'    => $i,
+                            'typedm'    => $dmKey,
+                        ];
+                    }
+
+                    // Flatten อะไหล่เฉพาะของ DM นี้
+                    if (!empty($spAll[$pid][$dmKey])) {
+                        foreach ($spAll[$pid][$dmKey] as $sp) {
+                            $spcode = $sp['spcode'] ?? null;
+                            if (!$spcode) continue;
+
+                            $spList[] = [
+                                'spcode'            => $spcode,
+                                'spname'            => $sp['spname'] ?? '',
+                                'spunit'            => $sp['spunit'] ?? 'ชิ้น',
+                                'stdprice_per_unit' => floatval($sp['stdprice'] ?? 0),
+                                'price_per_unit'    => floatval($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0),
+                                'layout'            => (int)($sp['layout'] ?? 1),
+                                'tracking_number'   => $sp['tracking_number'] ?? '',
+                                'modelfg'           => $facmodel,
+                                'pid'               => $pid,
+                                'skufg'             => $pid,
+                                'pname'             => $asset['pname'] ?? '',
+                                'imagesku'          => $asset['imagesku'][0] ?? null,
+                                'typedm'            => $dmKey, // ผูก DM สำหรับ React กรอง
                             ];
                         }
                     }
                 }
             }
 
-            // 🔹 Flatten spare parts เฉพาะของ SKU นั้นเอง
-            if (!empty($spAll[$pid]) && is_array($spAll[$pid])) {
-                foreach ($spAll[$pid] as $dmKey => $spItems) {
-                    foreach ($spItems as $sp) {
-                        $spcode = $sp['spcode'] ?? null;
-                        if (!$spcode) continue;
-
-                        $layout = (int)($sp['layout'] ?? 1);
-                        $spList[] = [
-                            'spcode'            => $spcode,
-                            'spname'            => $sp['spname'] ?? '',
-                            'spunit'            => $sp['spunit'] ?? 'ชิ้น',
-                            'stdprice_per_unit' => floatval($sp['stdprice'] ?? 0),
-                            'price_per_unit'    => floatval($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0),
-                            'layout'            => $layout,
-                            'tracking_number'   => $sp['tracking_number'] ?? '',
-                            'modelfg'           => $facmodel,
-                            'pid'               => $pid,
-                            'skufg'             => $pid,
-                            'pname'             => $asset['pname'] ?? '',
-                            'imagesku'          => $asset['imagesku'][0] ?? null,
-                        ];
-                    }
-                }
-            }
-
-            // 🔹 เติม stock/cart สถานะในตะกร้า
-            $imageBase = env('VITE_IMAGE_SP');
+            // เติม stock/cart
             foreach ($spList as $i => $sp) {
                 $spcode = $sp['spcode'];
-                $spList[$i]['path_file'] = $imageBase . $spcode . '.jpg';
+                $spList[$i]['path_file'] = "{$imageSpBase}/{$spcode}.jpg";
 
                 $cart = Cart::query()
                     ->where('sp_code', $spcode)
@@ -393,7 +523,15 @@ class OrderController extends Controller
                 $spList[$i]['remark'] = 'มาจากการสั่งซื้อ';
             }
 
-            //  รวมข้อมูลสินค้าทั้งหมดสำหรับส่งกลับหน้า React
+            if (collect($modelOptions)->contains(fn($m) => str_starts_with($m, 'DM'))) {
+                $modelOptions = collect($modelOptions)
+                    ->filter(fn($m) => str_starts_with($m, 'DM'))
+                    ->values()
+                    ->toArray();
+            } else {
+                $modelOptions = array_values(array_unique($modelOptions));
+            }
+
             $result = [
                 'pid'            => $sku,
                 'pname'          => $asset['pname'] ?? '',
@@ -401,7 +539,8 @@ class OrderController extends Controller
                 'facmodel'       => $facmodel,
                 'imagesku'       => $asset['imagesku'][0] ?? null,
                 'sp'             => $spList,
-                'model_options'  => array_values(array_unique($modelOptions)),
+                // 'model_options'  => array_values(array_unique($modelOptions)),
+                'model_options'  => $modelOptions,
                 'diagram_layers' => $diagramLayers,
             ];
         } catch (\Exception $e) {
@@ -409,7 +548,7 @@ class OrderController extends Controller
             $result = null;
         }
 
-        Log::debug('✅ Order Search (Fixed SKU only)', [
+        Log::debug('✅ Order Search (with DM filter)', [
             'sku' => $sku,
             'count_sp' => count($result['sp'] ?? []),
             'count_dm' => count($result['diagram_layers'] ?? []),
