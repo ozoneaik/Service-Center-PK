@@ -463,7 +463,6 @@ class OrderController extends Controller
                     // เพิ่ม DM01 / DM02 เข้า modelOptions
 
                     // $modelfg = $dmData['modelfg'] ?? $facmodel;
-                    
                     $modelfg = trim($dmData['modelfg'] ?? $facmodel);
                     if ($modelfg == '') {
                         $modelfg = "DM" . str_pad($dmKey, 2, "0", STR_PAD_LEFT);
