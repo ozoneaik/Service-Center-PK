@@ -452,7 +452,7 @@ class OrderController extends Controller
 
             $asset = $assets[$pid] ?? [];
             $facmodel = $asset['facmodel'] ?? $pid;
-            $modelOptions[] = $facmodel;
+            // $modelOptions[] = $facmodel;
 
             $imageDmBase = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/');
             $imageSpBase = rtrim(env('VITE_IMAGE_SP', ''), '/');
