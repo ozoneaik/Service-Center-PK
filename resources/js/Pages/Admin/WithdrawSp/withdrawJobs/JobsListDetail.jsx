@@ -72,13 +72,13 @@ export default function JobsListDetail({ job, job_detail = [], total_amount = 0,
     // บันทึกจำนวนเฉพาะแถว
     const handleUpdateDetail = async (sp, index) => {
         const newQty = Number(detailData[index].sp_qty);
-        if(newQty || newQty <= 0){
+        if (newQty <= 0) {
             Swal.fire({
                 icon: "warning",
                 title: "แจ้งเตือน",
-                text: "จํานวนไม่สามารถเป็น 0 หรือติดลบได้",
+                text: "จำนวนต้องมากกว่า 0",
             });
-            return
+            return;
         }
 
         try {
