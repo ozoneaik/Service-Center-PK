@@ -524,7 +524,7 @@ export default function JobsListDetail({ job, job_detail = [], total_amount = 0,
                                 {auto_job && (
                                     <Box sx={{ width: { xs: "100%", md: "23%" } }}>
                                         <Typography variant="body2" color="error">
-                                            เอกสารเบิก (Auto)
+                                            เอกสารปรับปรุง (Auto)
                                         </Typography>
 
                                         <Typography
