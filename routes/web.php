@@ -147,12 +147,22 @@ Route::prefix('withdraw')->group(function () {
     Route::get('/cart-count', [WithdrawSpController::class, 'cartCount'])->name('withdrawSp.cartCount');
     Route::get('/cart-spcodes', [WithdrawSpController::class, 'cartSpcodes'])->name('withdrawSp.cartSpcodes');
 
-    Route::post('/export-pdf-cart', [WithdrawJobController::class, 'exportPdf'])->name('orders.export.pdf');
-
+    Route::post('/export-pdf-cart', [WithdrawJobController::class, 'exportPdf'])->name('orders.export.pdf_withdraw');
 
     Route::get('/discount-setting', function () {
         return Inertia::render('Admin/WithdrawSp/withdrawJobs/WithdrawDiscountSetting');
     })->name('withdrawDiscountSetting.index');
+
+    Route::delete('/cart/clear', [WithdrawSpController::class, 'clearCart'])->name('withdrawSp.cart.clear');
+
+    Route::get('/search/json', [WithdrawSpController::class, 'searchJson'])
+        ->name('withdrawSp.search.json');
+
+    Route::post('/add-detail', [WithdrawSpController::class, 'addDetail'])
+        ->name('withdrawSp.addDetail');
+
+    Route::post('/update-all', [WithdrawSpController::class, 'updateAllDetail'])
+        ->name('withdrawSp.updateAllDetail');
 });
 
 Route::prefix('withdraw-job')->group(function () {
@@ -160,8 +170,14 @@ Route::prefix('withdraw-job')->group(function () {
     Route::get('/create/{is_code_cust_id}', [WithdrawJobController::class, 'create'])->name('withdrawJob.create');
     Route::post('/store', [WithdrawJobController::class, 'store'])->name('withdrawJob.store');
     Route::delete('/withdrawSp/carts/delete', [WithdrawJobController::class, 'deleteBySpCode'])->name('withdrawSp.carts.delete');
+    Route::post('/{job_id}/delete', [WithdrawJobController::class, 'delete'])->name('withdrawJob.delete');
     Route::get('/check-stock', [WithdrawJobController::class, 'checkStock'])->name('withdrawJob.checkStock');
     Route::get('/{job_id}', [WithdrawJobController::class, 'show'])->name('withdrawJob.show');
+    Route::post('/{job_id}/complete', [WithdrawJobController::class, 'complete'])->name('withdrawJob.complete');
+
+    Route::post('/update-detail', [WithdrawJobController::class, 'updateDetail'])->name('withdrawJob.updateDetail');
+    Route::get('/{jobId}/items', [WithdrawJobController::class, 'getItems'])->name('withdrawJob.items');
+    Route::post('/job/delete-detail', [WithdrawJobController::class, 'deleteDetail'])->name('withdrawJob.deleteDetail');
 });
 
 Route::get('/Unauthorized', function () {

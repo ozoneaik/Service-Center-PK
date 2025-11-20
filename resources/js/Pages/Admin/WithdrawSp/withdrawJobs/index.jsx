@@ -3,7 +3,7 @@ import { Head, usePage } from "@inertiajs/react";
 import { Container } from "@mui/material";
 import ListPage from "./ListPage.jsx";
 
-export default function WithdrawJobsIndex({ list = [], filters = {} }) {
+export default function WithdrawJobsIndex({ list = [], filters = {}, job_id }) {
     const { auth } = usePage().props;
 
     return (
@@ -18,6 +18,7 @@ export default function WithdrawJobsIndex({ list = [], filters = {} }) {
                     list={list}
                     filters={filters}
                     auth={auth}
+                    highlightJobId={job_id}
                 />
             </Container>
         </AuthenticatedLayout>

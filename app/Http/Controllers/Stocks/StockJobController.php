@@ -27,7 +27,7 @@ class StockJobController extends Controller
     // ไปยังหน้่าจัดการส็อก
     public function index(Request $request): Response
     {
-        $query = StockJob::query();
+        $query = StockJob::query()->where('type', '!=', 'เบิก');
 
         if ($request->filled('searchJob')) {
             $query->where('stock_job_id', $request->searchJob);
@@ -40,7 +40,12 @@ class StockJobController extends Controller
         $jobs = $query
             ->where('stock_jobs.is_code_cust_id', Auth::user()->is_code_cust_id)
             ->leftJoin('users', 'users.user_code', '=', 'stock_jobs.user_code_key')
-            ->select('stock_jobs.*', 'users.name as user_name')
+            ->select(
+                'stock_jobs.*',
+                'users.name as user_name',
+                'stock_jobs.doctype',
+                'stock_jobs.ref_doc'
+            )
             ->orderBy('stock_jobs.created_at', 'desc')
             ->get();
         foreach ($jobs as $job) {
@@ -70,11 +75,15 @@ class StockJobController extends Controller
     public function edit($stock_job_id, $is_code_cust_id)
     {
 
+        $job = StockJob::query()->where('stock_job_id', $stock_job_id)->firstOrFail();
         if ($is_code_cust_id !== Auth::user()->is_code_cust_id) {
             abort(403);
         }
 
-        $job = StockJob::query()->where('stock_job_id', $stock_job_id)->firstOrFail();
+        if (in_array($job->job_status, ['deleted'])) {
+            abort(403, "เอกสารสถานะจากการเบิก {$job->job_status} ไม่อนุญาตให้แก้ไข");
+        }
+
         $new_job_id = $stock_job_id;
         $job_detail = StockJobDetail::query()->where('stock_job_id', $stock_job_id)->get();
 
@@ -190,6 +199,18 @@ class StockJobController extends Controller
                     $stock_sp->qty_sp -= $detail->sp_qty;
                     $stock_sp->save();
                 }
+                // if ($stock_sp) {
+                //     if ($job['type'] === 'เพิ่ม') {
+                //         $stock_sp->qty_sp += $detail->sp_qty;
+                //     } elseif ($job['type'] === 'ลด') {
+                //         $stock_sp->qty_sp -= $detail->sp_qty;
+                //     } elseif ($job['type'] === 'เบิก') {
+                //         // ต้องลดสต็อกเหมือนขาลด
+                //         $stock_sp->qty_sp -= $detail->sp_qty;
+                //     }
+
+                //     $stock_sp->save();
+                // }
             }
             $job->save();
             DB::commit();
@@ -353,83 +374,90 @@ class StockJobController extends Controller
         }
 
         // $details = $raw->map(function ($jd) use ($job) {
-        //     // 1) สต็อกคงเหลือปัจจุบัน
         //     $sp_count = StockSparePart::query()
         //         ->where('sp_code', $jd->sp_code)
         //         ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
         //         ->value('qty_sp') ?? 0;
 
-        //     // 2) งานปรับเพิ่ม/ลด ที่กำลัง processing (ยกเว้นเรื่องอื่น ๆ ตาม logic เดิม)
+        //     // แยก job processing ขาเพิ่ม ขาลด (ไม่รวม job ปัจจุบัน)
         //     $posJobs = StockJob::query()
         //         ->where('type', 'เพิ่ม')
         //         ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
         //         ->where('job_status', 'processing')
+        //         ->where('stock_job_id', '!=', $job->stock_job_id) 
         //         ->get();
 
         //     $negJobs = StockJob::query()
         //         ->where('type', 'ลด')
         //         ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
         //         ->where('job_status', 'processing')
+        //         ->where('stock_job_id', '!=', $job->stock_job_id)
         //         ->get();
 
         //     $pos = 0;
         //     $neg = 0;
         //     foreach ($posJobs as $j) {
-        //         $d = StockJobDetail::query()->where('stock_job_id', $j->stock_job_id)->where('sp_code', $jd->sp_code)->first();
+        //         $d = StockJobDetail::query()
+        //             ->where('stock_job_id', $j->stock_job_id)
+        //             ->where('sp_code', $jd->sp_code)
+        //             ->first();
         //         if ($d) $pos += (int)$d->sp_qty;
         //     }
         //     foreach ($negJobs as $j) {
-        //         $d = StockJobDetail::query()->where('stock_job_id', $j->stock_job_id)->where('sp_code', $jd->sp_code)->first();
+        //         $d = StockJobDetail::query()
+        //             ->where('stock_job_id', $j->stock_job_id)
+        //             ->where('sp_code', $jd->sp_code)
+        //             ->first();
         //         if ($d) $neg += (int)$d->sp_qty;
         //     }
 
-        //     // 3) งานซ่อมค้าง (pending)
+        //     // งานซ่อมค้าง
         //     $pendingJobs = JobList::query()
         //         ->where('is_code_key', Auth::user()->is_code_cust_id)
         //         ->where('status', 'pending')
         //         ->get();
+
         //     $inRepair = 0;
         //     foreach ($pendingJobs as $pj) {
-        //         $sp = SparePart::query()->where('job_id', $pj->job_id)->where('sp_code', $jd->sp_code)->first();
+        //         $sp = SparePart::query()
+        //             ->where('job_id', $pj->job_id)
+        //             ->where('sp_code', $jd->sp_code)
+        //             ->first();
         //         if ($sp) $inRepair += (int)$sp->qty;
         //     }
 
-        //     // 4) สต็อกพร้อมใช้งาน และ 5) หลังปรับ
+        //     // สต็อกพร้อมใช้งาน "ก่อน" ปรับครั้งนี้
         //     $available = (int)$sp_count - (int)($neg + $inRepair) + (int)$pos;
+
+        //     // หลังปรับ (เพิ่ม/ลด)
         //     $after = $job->type === 'เพิ่ม'
         //         ? $available + (int)$jd->sp_qty
         //         : $available - (int)$jd->sp_qty;
 
         //     $arr = $jd->toArray();
-        //     $arr['count_sp'] = $sp_count;        // สต็อกคงเหลือ
-        //     $arr['total_aready'] = $available;   // สต็อกพร้อมใช้งาน
-        //     $arr['stock_after'] = $after;        // สต็อกหลังปรับ
+        //     $arr['count_sp'] = $sp_count;
+        //     $arr['total_aready'] = $available;
+        //     $arr['stock_after'] = $after;
         //     return $arr;
         // });
 
         $details = $raw->map(function ($jd) use ($job) {
+
+            // 1) STOCK จริงจาก stock_spare_part (หลัง complete ทั้งหมดแล้ว)
             $sp_count = StockSparePart::query()
                 ->where('sp_code', $jd->sp_code)
                 ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
                 ->value('qty_sp') ?? 0;
 
-            // แยก job processing ขาเพิ่ม ขาลด (ไม่รวม job ปัจจุบัน)
+            // 2) งาน "processing" ประเภท เพิ่ม (ไม่รวมใบปัจจุบัน)
             $posJobs = StockJob::query()
                 ->where('type', 'เพิ่ม')
-                ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
-                ->where('job_status', 'processing')
-                ->where('stock_job_id', '!=', $job->stock_job_id) 
-                ->get();
-
-            $negJobs = StockJob::query()
-                ->where('type', 'ลด')
                 ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
                 ->where('job_status', 'processing')
                 ->where('stock_job_id', '!=', $job->stock_job_id)
                 ->get();
 
             $pos = 0;
-            $neg = 0;
             foreach ($posJobs as $j) {
                 $d = StockJobDetail::query()
                     ->where('stock_job_id', $j->stock_job_id)
@@ -437,6 +465,16 @@ class StockJobController extends Controller
                     ->first();
                 if ($d) $pos += (int)$d->sp_qty;
             }
+
+            // 3) งาน "processing" ประเภท ลด (ไม่รวมใบปัจจุบัน)
+            $negJobs = StockJob::query()
+                ->where('type', 'ลด')
+                ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                ->where('job_status', 'processing')
+                ->where('stock_job_id', '!=', $job->stock_job_id)
+                ->get();
+
+            $neg = 0;
             foreach ($negJobs as $j) {
                 $d = StockJobDetail::query()
                     ->where('stock_job_id', $j->stock_job_id)
@@ -445,7 +483,7 @@ class StockJobController extends Controller
                 if ($d) $neg += (int)$d->sp_qty;
             }
 
-            // งานซ่อมค้าง
+            // 4) งานซ่อมที่ pending
             $pendingJobs = JobList::query()
                 ->where('is_code_key', Auth::user()->is_code_cust_id)
                 ->where('status', 'pending')
@@ -460,24 +498,36 @@ class StockJobController extends Controller
                 if ($sp) $inRepair += (int)$sp->qty;
             }
 
-            // สต็อกพร้อมใช้งาน "ก่อน" ปรับครั้งนี้
-            $available = (int)$sp_count - (int)($neg + $inRepair) + (int)$pos;
+            if ($job->job_status === 'complete') {
+                // available = stock จริง ณ ตอนนี้
+                $available = (int)$sp_count;
 
-            // หลังปรับ (เพิ่ม/ลด)
-            $after = $job->type === 'เพิ่ม'
-                ? $available + (int)$jd->sp_qty
-                : $available - (int)$jd->sp_qty;
+                // after = stock จริง ไม่บวกเพิ่มอีก
+                $after = (int)$sp_count;
+            } else {
 
+                // ใบกำลัง processing → ใช้สูตรปกติ
+                $available = (int)$sp_count - (int)$neg - (int)$inRepair + (int)$pos;
+
+                $after = $job->type === 'เพิ่ม'
+                    ? $available + (int)$jd->sp_qty
+                    : $available - (int)$jd->sp_qty;
+            }
+
+            // ส่งค่ากลับไปยังหน้า UI
             $arr = $jd->toArray();
-            $arr['count_sp'] = $sp_count;
-            $arr['total_aready'] = $available;
+            $arr['count_sp'] = $sp_count;      
+            $arr['total_aready'] = $available; 
             $arr['stock_after'] = $after;
+
             return $arr;
         });
 
         return Inertia::render('Stores/StockSp/StockJobDetailReadonly', [
             'job' => $job,
             'job_detail' => $details,
+            'doc_type'   => $job->doctype,
+            'ref_doc'    => $job->ref_doc,
         ]);
     }
 

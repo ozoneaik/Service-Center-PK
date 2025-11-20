@@ -832,46 +832,223 @@ class OrderController extends Controller
         }
     }
 
-    //ฟังก์ชั่น Export PDF 
+    //ฟังก์ชั่น Export PDF หน้าสั่งซื้ออะไหล่
+    // public function exportPdfFromCart(Request $request)
+    // {
+    //     try {
+    //         Log::info('📥 เริ่ม Export PDF จาก Cart', $request->all());
+
+    //         $groups = $request->input('groups', []);
+    //         $address = $request->input('address', Auth::user()->store_info->address ?? '');
+    //         $custName = Auth::user()->store_info->shop_name ?? Auth::user()->name;
+
+    //         if (empty($groups)) {
+    //             throw new \Exception("ไม่พบข้อมูลสินค้าในตะกร้า");
+    //         }
+
+    //         $payload = [
+    //             "req" => "path",
+    //             "regenqu" => "Y",
+    //             "doc_title" => "ใบคำสั่งซื้อ (SO)",
+    //             "typeservice" => "SO",
+    //             "custaddr" => $address,
+    //             "custnamesc" => $custName,
+    //             "sku" => []
+    //         ];
+
+    //         foreach ($groups as $group) {
+    //             foreach ($group['list'] as $sp) {
+    //                 $payload["sku"][] = [
+    //                     "pid"   => $sp['sp_code'] ?? null,
+    //                     "name"  => $sp['sp_name'] ?? '',
+    //                     "qty"   => $sp['qty'] ?? 1,
+    //                     "unit"  => $sp['sp_unit'] ?? 'ชิ้น',
+    //                     "price" => number_format($sp['price_per_unit'] ?? 0, 2, '.', '')
+    //                 ];
+    //             }
+    //         }
+
+    //         Log::info('📤 Payload ส่งไปยัง PDF API', $payload);
+
+    //         // $response = Http::withHeaders([
+    //         //     'Content-Type' => 'application/json'
+    //         // ])->post("http://192.168.0.13/genpdf/api/gen_so", $payload);
+
+    //         // if (!$response->successful()) {
+    //         //     throw new \Exception("PDF API error: " . $response->body());
+    //         // }
+
+    //         // $body = trim($response->body());
+    //         // $pdfUrl = null;
+
+    //         // // ตรวจจับรูปแบบ URL หรือไฟล์ PDF
+    //         // if (preg_match('/\.pdf$/i', $body)) {
+    //         //     $pdfUrl = "http://192.168.0.13/genpdf/" . ltrim($body, '/');
+    //         // } else {
+    //         //     $decoded = json_decode($body, true);
+    //         //     if (is_string($decoded)) {
+    //         //         $pdfUrl = $decoded;
+    //         //     }
+    //         // }
+
+    //         // if (!$pdfUrl) {
+    //         //     throw new \Exception("ไม่สามารถตีความผลลัพธ์ PDF ได้");
+    //         // }
+
+    //         $response = Http::withHeaders([
+    //             'Content-Type' => 'application/json',
+    //         ])->post("http://192.168.0.13/genpdf/api/get_req_pdf", $payload);
+
+    //         if (!$response->successful()) {
+    //             throw new \Exception("PDF API error: " . $response->body());
+    //         }
+
+    //         $body = trim($response->body());
+    //         $pdfUrl = null;
+
+    //         // กรณี response เป็น URL เต็ม เช่น "http://qupumpkin.dyndns.org:8130/_SO20251112154625.pdf"
+    //         if (preg_match('/^https?:\/\/.*\.pdf$/i', $body)) {
+    //             $pdfUrl = $body;
+
+    //             // 🔹 กรณี response เป็นชื่อไฟล์ เช่น "_SO20251112154625.pdf"
+    //         } elseif (preg_match('/\.pdf$/i', $body)) {
+    //             $pdfUrl = "http://qupumpkin.dyndns.org:8130/" . ltrim($body, '/');
+
+    //             // 🔹 กรณี response เป็น JSON เช่น {"path":"_SO20251112154625.pdf"}
+    //         } else {
+    //             $decoded = json_decode($body, true);
+    //             if (is_array($decoded) && isset($decoded['path'])) {
+    //                 $path = $decoded['path'];
+    //                 $pdfUrl = preg_match('/^https?:\/\//i', $path)
+    //                     ? $path
+    //                     : "http://qupumpkin.dyndns.org:8130/" . ltrim($path, '/');
+    //             } elseif (is_string($decoded) && preg_match('/\.pdf$/i', $decoded)) {
+    //                 $pdfUrl = preg_match('/^https?:\/\//i', $decoded)
+    //                     ? $decoded
+    //                     : "http://qupumpkin.dyndns.org:8130/" . ltrim($decoded, '/');
+    //             }
+    //         }
+
+    //         if (!$pdfUrl) {
+    //             throw new \Exception("ไม่สามารถตีความผลลัพธ์ PDF ได้");
+    //         }
+
+    //         Log::info('✅ สำเร็จ PDF URL: ' . $pdfUrl);
+
+    //         return redirect()->route('orders.carts')->with([
+    //             'success' => 'ส่งออกใบคำสั่งซื้อเรียบร้อยแล้ว',
+    //             'pdf_url' => $pdfUrl,
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         Log::error('❌ Export PDF ล้มเหลว', [
+    //             'message' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString()
+    //         ]);
+
+    //         return redirect()->route('orders.carts')->with([
+    //             'error' => 'เกิดข้อผิดพลาดในการส่งออก PDF: ' . $e->getMessage()
+    //         ]);
+    //     }
+    // }
+
     public function exportPdfFromCart(Request $request)
     {
         try {
             Log::info('📥 เริ่ม Export PDF จาก Cart', $request->all());
 
             $groups = $request->input('groups', []);
-            $address = $request->input('address', Auth::user()->store_info->address ?? '');
-            $custName = Auth::user()->store_info->shop_name ?? Auth::user()->name;
-
             if (empty($groups)) {
                 throw new \Exception("ไม่พบข้อมูลสินค้าในตะกร้า");
             }
 
+            $store = StoreInformation::where('is_code_cust_id', Auth::user()->is_code_cust_id)->first();
+
+            $soNumber = 'SO-' . time();
+            $storeName = $store->shop_name
+                ?? Auth::user()->store_info->shop_name
+                ?? Auth::user()->name
+                ?? '-';
+            $address = $store->address ?? $request->input('address', '-');
+            $phone = $store->phone ?? $request->input('phone', '-');
+            $date = now()->format('d/m/Y');
+
             $payload = [
                 "req" => "path",
                 "regenqu" => "Y",
-                "doc_title" => "ใบคำสั่งซื้อ (SO)",
-                "typeservice" => "SO",
+                // "docno" => $soNumber,
+                "doc_title" => "ใบเสนอราคา (QU)",
+                "typeservice" => "so",
+
+                "empproc"     => Auth::user()->name ?? 'system',
+                "custsccode"  => Auth::user()->user_code ?? '-',
+                "custscname"  => Auth::user()->name ?? '-',
+
+                "custnamesc" => $storeName,
+                "custname"   => $storeName,
+                // "custscaddr" => $address,
                 "custaddr" => $address,
-                "custnamesc" => $custName,
-                "sku" => []
+                "custtel"    => $phone,
+                "date"       => $date,
+
+                "sku" => [],
             ];
+
+            $sumBefore = 0;
+            $sumDiscount = 0;
+            $sumNet = 0;
 
             foreach ($groups as $group) {
                 foreach ($group['list'] as $sp) {
+
+                    $qty = floatval($sp['qty'] ?? 1);
+                    $stdPrice = floatval($sp['price_per_unit'] ?? 0);
+                    $discountPercent = 0;
+
+                    $discountPerUnit = 0;
+                    $sellPrice = $stdPrice;
+                    $lineTotal = $sellPrice * $qty;
+
+                    $sumBefore += ($stdPrice * $qty);
+                    $sumDiscount += ($discountPerUnit * $qty);
+                    $sumNet += $lineTotal;
+
                     $payload["sku"][] = [
-                        "pid"   => $sp['sp_code'] ?? null,
-                        "name"  => $sp['sp_name'] ?? '',
-                        "qty"   => $sp['qty'] ?? 1,
-                        "unit"  => $sp['sp_unit'] ?? 'ชิ้น',
-                        "price" => number_format($sp['price_per_unit'] ?? 0, 2, '.', '')
+                        "pid"            => $sp['sp_code'],
+                        "name"           => $sp['sp_name'],
+                        "qty"            => $qty,
+                        "unit"           => $sp['sp_unit'] ?? 'ชิ้น',
+
+                        "unitprice"      => number_format($stdPrice, 2, '.', ''),
+                        "prod_discount"  => number_format($discountPercent, 2, '.', ''),
+
+                        "discount"       => number_format($discountPerUnit, 2, '.', ''),
+                        "discountamount" => number_format($discountPerUnit * $qty, 2, '.', ''),
+
+                        "sell_price"     => number_format($sellPrice, 2, '.', ''),
+
+                        "price"          => number_format($stdPrice, 2, '.', ''),
+                        "priceperunit"   => number_format($stdPrice, 2, '.', ''),
+
+                        "amount"         => number_format($lineTotal, 2, '.', ''),
+                        "netamount"      => number_format($lineTotal, 2, '.', ''),
+                        "net"            => number_format($lineTotal, 2, '.', ''),
                     ];
                 }
             }
 
-            Log::info('📤 Payload ส่งไปยัง PDF API', $payload);
+            $payload["summary"] = [
+                "price_before_discount" => number_format($sumBefore, 2, '.', ''),
+                "prod_discount"         => "0.00",
+                "discount"              => number_format($sumDiscount, 2, '.', ''),
+                "total_price"           => number_format($sumNet, 2, '.', ''),
+                "net_total"             => number_format($sumNet, 2, '.', ''),
+            ];
+
+            Log::info('📤 Payload ส่งไปยัง PDF API (Cart)', $payload);
+
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json'
-            ])->post("http://192.168.0.13/genpdf/api/gen_so", $payload);
+            ])->post("http://192.168.0.13/genpdf/api/get_req_pdf", $payload);
 
             if (!$response->successful()) {
                 throw new \Exception("PDF API error: " . $response->body());
@@ -880,13 +1057,25 @@ class OrderController extends Controller
             $body = trim($response->body());
             $pdfUrl = null;
 
-            // ตรวจจับรูปแบบ URL หรือไฟล์ PDF
-            if (preg_match('/\.pdf$/i', $body)) {
-                $pdfUrl = "http://192.168.0.13/genpdf/" . ltrim($body, '/');
+            // URL ตรง ๆ
+            if (preg_match('/^https?:\/\/.*\.pdf$/i', $body)) {
+                $pdfUrl = $body;
+
+                // ชื่อไฟล์
+            } elseif (preg_match('/\.pdf$/i', $body)) {
+                $pdfUrl = "http://qupumpkin.dyndns.org:8130/" . ltrim($body, '/');
             } else {
                 $decoded = json_decode($body, true);
-                if (is_string($decoded)) {
-                    $pdfUrl = $decoded;
+
+                if (is_array($decoded) && isset($decoded['path'])) {
+                    $path = $decoded['path'];
+                    $pdfUrl = preg_match('/^https?:\/\//i', $path)
+                        ? $path
+                        : "http://qupumpkin.dyndns.org:8130/" . ltrim($path, '/');
+                } elseif (is_string($decoded) && preg_match('/\.pdf$/i', $decoded)) {
+                    $pdfUrl = preg_match('/^https?:\/\//i', $decoded)
+                        ? $decoded
+                        : "http://qupumpkin.dyndns.org:8130/" . ltrim($decoded, '/');
                 }
             }
 
@@ -894,19 +1083,22 @@ class OrderController extends Controller
                 throw new \Exception("ไม่สามารถตีความผลลัพธ์ PDF ได้");
             }
 
-            return redirect()->route('orders.carts')->with([
-                'success' => 'ส่งออกใบคำสั่งซื้อเรียบร้อยแล้ว',
+            Log::info('✅ สำเร็จ PDF URL (Cart): ' . $pdfUrl);
+
+            return response()->json([
+                'success' => true,
                 'pdf_url' => $pdfUrl,
             ]);
         } catch (\Exception $e) {
-            Log::error('❌ Export PDF ล้มเหลว', [
+            Log::error('❌ Export PDF ล้มเหลว (Cart)', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace'   => $e->getTraceAsString()
             ]);
 
-            return redirect()->route('orders.carts')->with([
-                'error' => 'เกิดข้อผิดพลาดในการส่งออก PDF: ' . $e->getMessage()
-            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'เกิดข้อผิดพลาดในการส่งออก PDF: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -994,7 +1186,7 @@ class OrderController extends Controller
             $order_id_remove_prefix = str_replace('ORDER-', '', $order_id);
             $body = ['jobno' => $order_id_remove_prefix];
 
-            // 🔹 เริ่มต้น Log ก่อนเรียก API
+            // เริ่มต้น Log ก่อนเรียก API
             Log::info('📦 เริ่มเช็คสถานะออเดอร์', [
                 'order_id' => $order_id,
                 'endpoint' => $uri,
@@ -1003,7 +1195,7 @@ class OrderController extends Controller
 
             $response = Http::post($uri, $body);
 
-            // 🔹 Log Response ที่ได้จาก API
+            // Log Response ที่ได้จาก API
             Log::info('📩 API ตอบกลับ', [
                 'order_id' => $order_id,
                 'http_status' => $response->status(),
@@ -1018,7 +1210,7 @@ class OrderController extends Controller
                 $response_json = $response->json();
                 $externalStatus = $response_json['status'] ?? null;
 
-                // 🔹 log สถานะก่อนและหลัง
+                // log สถานะก่อนและหลัง
                 Log::info('🧾 สถานะปัจจุบันของออเดอร์', [
                     'order_id' => $order_id,
                     'status_old' => $order->status,

@@ -6,7 +6,7 @@ import { Save } from "@mui/icons-material";
 import { AlertDialog } from "@/Components/AlertDialog";
 
 export default function WithdrawDiscountSetting() {
-    const [discount, setDiscount] = useState(0);
+    const [discount, setDiscount] = useState(20);
 
     useEffect(() => {
         const saved = localStorage.getItem("withdraw_discount_percent");

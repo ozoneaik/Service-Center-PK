@@ -24,6 +24,7 @@ class WithdrawJobController extends Controller
     // แสดงรายการ Job เบิกอะไหล่
     public function index(Request $request): Response
     {
+        $highlightJobId = $request->query('job_id');
         $query = StockJob::query()
             ->leftJoin('users', 'users.user_code', '=', 'stock_jobs.user_code_key')
             ->select('stock_jobs.*', 'users.name as user_name')
@@ -65,6 +66,8 @@ class WithdrawJobController extends Controller
                 'searchJobDateFrom'  => $request->searchJobDateFrom,
                 'searchJobDateTo'    => $request->searchJobDateTo,
             ],
+
+            'highlightJobId' => $highlightJobId,
         ]);
     }
 
@@ -78,115 +81,6 @@ class WithdrawJobController extends Controller
         ]);
     }
 
-    // public function store(Request $request)
-    // {
-    //     try {
-    //         DB::beginTransaction();
-
-    //         $req = $request->all();
-    //         if (empty($req['items']) || count($req['items']) === 0) {
-    //             throw new \Exception('ไม่พบรายการอะไหล่ในใบเบิก');
-    //         }
-
-    //         $jobId = $req['job_id'] ?? 'JOB-WD' . time() . rand(100, 999);
-    //         StockJobDetail::where('stock_job_id', $jobId)->delete();
-
-    //         $storeJob = StockJob::updateOrCreate(
-    //             ['stock_job_id' => $jobId],
-    //             [
-    //                 'stock_job_id'    => $jobId,
-    //                 'is_code_cust_id' => Auth::user()->is_code_cust_id,
-    //                 'user_code_key'   => Auth::user()->user_code,
-    //                 'job_status'      => 'complete',
-    //                 'type'            => 'เบิก',
-    //             ]
-    //         );
-
-    //         $totalPrice = 0;
-
-    //         DB::table('withdraw_orders')->insert([
-    //             'withdraw_id' => $jobId,
-    //             'is_code_key' => Auth::user()->is_code_cust_id,
-    //             'user_key'    => Auth::user()->user_code,
-    //             'status'      => 'complete',
-    //             'total_price' => 0,
-    //             'remark'      => 'เบิกอะไหล่จากระบบ',
-    //             'created_at'  => Carbon::now(),
-    //             'completed_at' => Carbon::now(),
-    //         ]);
-
-    //         foreach ($req['items'] as $item) {
-    //             $qty = (int)($item['qty'] ?? 0);
-    //             $spCode = $item['sp_code'] ?? '';
-    //             $sellPrice = (float)($item['sell_price'] ?? $item['stdprice_per_unit'] ?? 0);
-    //             $stdPrice = (float)($item['stdprice_per_unit'] ?? 0);
-
-    //             $totalPrice += $qty * $sellPrice;
-
-    //             $stockSp = StockSparePart::where('sp_code', $spCode)
-    //                 ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
-    //                 ->lockForUpdate()
-    //                 ->first();
-
-    //             if (!$stockSp) throw new \Exception("ไม่พบอะไหล่ในคลัง: {$spCode}");
-    //             if ($stockSp->qty_sp < $qty) throw new \Exception("สต็อกอะไหล่ {$spCode} ไม่พอ");
-
-    //             $before = $stockSp->qty_sp;
-    //             $after  = $before - $qty;
-    //             $stockSp->update(['qty_sp' => $after]);
-
-    //             StockJobDetail::create([
-    //                 'stock_job_id'    => $jobId,
-    //                 'is_code_cust_id' => Auth::user()->is_code_cust_id,
-    //                 'user_code_key'   => Auth::user()->user_code,
-    //                 'sp_code'         => $spCode,
-    //                 'sp_name'         => $item['sp_name'] ?? '',
-    //                 'sp_qty'          => $qty,
-    //                 'sp_unit'         => $item['sp_unit'] ?? '',
-    //                 'stdprice_per_unit' => $stdPrice,
-    //                 'sell_price'        => $sellPrice,
-    //                 'before'          => $before,
-    //                 'tran'            => -$qty,
-    //                 'after'           => $after,
-    //                 'type'            => 'เบิก',
-    //                 'ref'             => $jobId,
-    //                 'actor'           => Auth::user()->name ?? 'system',
-    //                 'date'            => Carbon::now(),
-    //             ]);
-
-    //             WithdrawOrderSpList::create([
-    //                 'withdraw_id'    => $jobId,
-    //                 'sp_code'        => $spCode,
-    //                 'sp_name'        => $item['sp_name'] ?? '',
-    //                 'sku_code'       => $item['sku_code'] ?? 'UNKNOWN',
-    //                 'qty'            => $qty,
-    //                 'stdprice_per_unit' => $stdPrice,
-    //                 'sell_price'        => $sellPrice,
-    //                 'sp_unit'        => $item['sp_unit'] ?? 'ชิ้น',
-    //                 'path_file'      => env('VITE_IMAGE_SP') . ($item['sku_code'] ?? '') . '/' . ($item['sp_code'] ?? '') . '.jpg',
-    //             ]);
-    //         }
-
-    //         DB::table('withdraw_orders')
-    //             ->where('withdraw_id', $jobId)
-    //             ->update(['total_price' => $totalPrice, 'status' => 'complete']);
-
-    //         DB::table('withdraw_carts')
-    //             ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
-    //             ->where('user_code_key', Auth::user()->user_code)
-    //             ->delete();
-
-    //         DB::commit();
-
-    //         return redirect()->route('withdrawJob.index')
-    //             ->with('success', "✅ บันทึกใบเบิกอะไหล่ {$jobId} สำเร็จ");
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         Log::error('❌ WithdrawJob store failed', ['error' => $e->getMessage()]);
-    //         return redirect()->back()->with('error', $e->getMessage());
-    //     }
-    // }
-
     public function store(Request $request)
     {
         try {
@@ -197,47 +91,61 @@ class WithdrawJobController extends Controller
                 throw new \Exception('ไม่พบรายการอะไหล่ในใบเบิก');
             }
 
-            // ดึงค่าจาก payload
-            $jobId = $req['job_id'] ?? 'JOB-WD' . time() . rand(100, 999);
-            $discountPercent = (float)($req['discount_percent'] ?? 0); // ส่วนลดรวม %
+            $jobId = $req['job_id'];
+            $discountPercent = (float)($req['discount_percent'] ?? 0);
 
-            // ลบรายละเอียดเดิมหากมี
-            StockJobDetail::where('stock_job_id', $jobId)->delete();
+            $isEditing = StockJob::where('stock_job_id', $jobId)->exists();
 
-            // สร้าง/อัปเดตใบงานหลัก
-            $storeJob = StockJob::updateOrCreate(
+            // บันทึกหัว JOB
+            StockJob::updateOrCreate(
                 ['stock_job_id' => $jobId],
                 [
                     'stock_job_id'    => $jobId,
                     'is_code_cust_id' => Auth::user()->is_code_cust_id,
                     'user_code_key'   => Auth::user()->user_code,
-                    'job_status'      => 'complete',
+                    // 'job_status'      => 'process',
+                    'job_status'      => 'processing',
                     'type'            => 'เบิก',
                 ]
             );
 
+            // ถ้าเป็นการแก้ไข ให้ลบ detail เก่าออก
+            if ($isEditing) {
+                StockJobDetail::where('stock_job_id', $jobId)->delete();
+                WithdrawOrderSpList::where('withdraw_id', $jobId)->delete();
+
+                DB::table('withdraw_orders')
+                    ->where('withdraw_id', $jobId)
+                    ->update([
+                        // 'status'         => 'process',
+                        'status'         => 'processing',
+                        'total_price'    => 0,
+                        'discount_total' => 0,
+                        'updated_at'     => now(),
+                    ]);
+            } else {
+                DB::table('withdraw_orders')->insert([
+                    'withdraw_id'  => $jobId,
+                    'is_code_key'  => Auth::user()->is_code_cust_id,
+                    'user_key'     => Auth::user()->user_code,
+                    'status'       => 'processing',
+                    'total_price'  => 0,
+                    'remark'       => 'เบิกอะไหล่จากระบบ',
+                    'created_at'   => now(),
+                    'completed_at' => now(),
+                ]);
+            }
+
             $totalPrice = 0;
             $totalDiscount = 0;
 
-            // เพิ่มใบ withdraw_orders
-            DB::table('withdraw_orders')->insert([
-                'withdraw_id'  => $jobId,
-                'is_code_key'  => Auth::user()->is_code_cust_id,
-                'user_key'     => Auth::user()->user_code,
-                'status'       => 'complete',
-                'total_price'  => 0,
-                'remark'       => 'เบิกอะไหล่จากระบบ',
-                'created_at'   => Carbon::now(),
-                'completed_at' => Carbon::now(),
-            ]);
-
             foreach ($req['items'] as $item) {
-                $qty = (int)($item['qty'] ?? 0);
-                $spCode = $item['sp_code'] ?? '';
-                $sellPrice = (float)($item['sell_price'] ?? $item['stdprice_per_unit'] ?? 0);
-                $stdPrice = (float)($item['stdprice_per_unit'] ?? 0);
 
-                // คำนวณส่วนลดต่อแถว
+                $qty = (int)$item['qty'];
+                $spCode = $item['sp_code'];
+                $sellPrice = (float)$item['sell_price'];
+                $stdPrice = (float)$item['stdprice_per_unit'];
+
                 $lineTotal = $qty * $sellPrice;
                 $discountAmount = $discountPercent > 0 ? ($lineTotal * $discountPercent / 100) : 0;
                 $lineNet = $lineTotal - $discountAmount;
@@ -245,90 +153,455 @@ class WithdrawJobController extends Controller
                 $totalPrice += $lineNet;
                 $totalDiscount += $discountAmount;
 
-                // เช็ก stock
-                $stockSp = StockSparePart::where('sp_code', $spCode)
-                    ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
-                    ->lockForUpdate()
-                    ->first();
-
-                if (!$stockSp) {
-                    $stockSp = StockSparePart::create([
+                // สินค้าในสต๊อก (ยังไม่หักจนกว่าจะ complete)
+                $stock = StockSparePart::firstOrCreate(
+                    [
                         'sp_code'        => $spCode,
-                        'sku_code'       => $item['sku_code'] ?? 'UNKNOWN',
-                        'sku_name'       => $item['sku_name'] ?? 'UNKNOWN',
-                        'sp_name'        => $item['sp_name'] ?? 'UNKNOWN',
-                        'sp_unit'        => $item['sp_unit'] ?? 'ชิ้น',
-
                         'is_code_cust_id' => Auth::user()->is_code_cust_id,
-                        'qty_sp'         => 0,
-                        'user_code_key'  => Auth::user()->user_code,
-                    ]);
-                }
+                    ],
+                    [
+                        'sku_code'      => $item['sku_code'] ?? '-',
+                        'sku_name'      => $item['sku_name'] ?? $item['sp_name'],
+                        'sp_name'       => $item['sp_name'],
+                        'sp_unit'       => $item['sp_unit'],
+                        'qty_sp'        => 0,
+                        'user_code_key' => Auth::user()->user_code,
+                    ]
+                );
 
-                // if (!$stockSp) throw new \Exception("ไม่พบอะไหล่ในคลัง: {$spCode}");
-                // if ($stockSp->qty_sp < $qty) throw new \Exception("สต็อกอะไหล่ {$spCode} ไม่พอ");
+                // บันทึก detail ของ JOB
+                StockJobDetail::updateOrCreate(
+                    [
+                        'stock_job_id' => $jobId,
+                        'sp_code' => $spCode,
+                    ],
+                    [
+                        'is_code_cust_id' => Auth::user()->is_code_cust_id,
+                        'user_code_key'   => Auth::user()->user_code,
+                        'sp_name' => $item['sp_name'],
+                        'sp_qty' => $qty,
+                        'sp_unit' => $item['sp_unit'],
+                        'stdprice_per_unit' => $stdPrice,
+                        'sell_price' => $sellPrice,
+                        'discount_percent' => $discountPercent,
+                        'discount_amount' => $discountAmount,
+                        'before' => $stock->qty_sp,
+                        'tran' => 0,
+                        'after' => $stock->qty_sp - $qty,
+                        'type' => 'เบิก',
+                        'ref' => $jobId,
+                        'actor' => Auth::user()->name,
+                        'date' => now(),
+                    ]
+                );
 
-                $before = $stockSp->qty_sp;
-                $after  = $before - $qty;
-                $stockSp->update(['qty_sp' => $after]);
-
-                StockJobDetail::create([
-                    'stock_job_id'        => $jobId,
-                    'is_code_cust_id'     => Auth::user()->is_code_cust_id,
-                    'user_code_key'       => Auth::user()->user_code,
-                    'sp_code'             => $spCode,
-                    'sp_name'             => $item['sp_name'] ?? '',
-                    'sp_qty'              => $qty,
-                    'sp_unit'             => $item['sp_unit'] ?? '',
-                    'stdprice_per_unit'   => $stdPrice,
-                    'sell_price'          => $sellPrice,
-                    'discount_percent'    => $discountPercent,
-                    'discount_amount'     => $discountAmount,
-                    'before'              => $before,
-                    'tran'                => -$qty,
-                    'after'               => $after,
-                    'type'                => 'เบิก',
-                    'ref'                 => $jobId,
-                    'actor'               => Auth::user()->name ?? 'system',
-                    'date'                => Carbon::now(),
-                ]);
-
-                WithdrawOrderSpList::create([
-                    'withdraw_id'         => $jobId,
-                    'sp_code'             => $spCode,
-                    'sp_name'             => $item['sp_name'] ?? '',
-                    'sku_code'            => $item['sku_code'] ?? 'UNKNOWN',
-                    'qty'                 => $qty,
-                    'stdprice_per_unit'   => $stdPrice,
-                    'sell_price'          => $sellPrice,
-                    'discount_percent'    => $discountPercent,
-                    'discount_amount'     => $discountAmount,
-                    'sp_unit'             => $item['sp_unit'] ?? 'ชิ้น',
-                    'path_file'           => env('VITE_IMAGE_SP') . ($item['sku_code'] ?? '') . '/' . ($item['sp_code'] ?? '') . '.jpg',
-                ]);
+                // บันทึกลงตาราง withdraw_order_sp_lists
+                WithdrawOrderSpList::updateOrCreate(
+                    [
+                        'withdraw_id' => $jobId,
+                        'sp_code' => $spCode,
+                    ],
+                    [
+                        'sp_name' => $item['sp_name'],
+                        'sku_code' => $item['sku_code'],
+                        'qty' => $qty,
+                        'stdprice_per_unit' => $stdPrice,
+                        'sell_price' => $sellPrice,
+                        'discount_percent' => $discountPercent,
+                        'discount_amount' => $discountAmount,
+                        'sp_unit' => $item['sp_unit'],
+                        'path_file' => env('VITE_IMAGE_SP') . $item['sku_code'] . '/' . $spCode . '.jpg',
+                    ]
+                );
             }
 
+            // อัปเดตยอดรวม ORDER
             DB::table('withdraw_orders')
                 ->where('withdraw_id', $jobId)
                 ->update([
-                    'total_price'   => $totalPrice,
-                    'discount_total' => $totalDiscount ?? 0,
-                    'status'        => 'complete',
+                    'total_price'    => $totalPrice,
+                    'discount_total' => $totalDiscount,
                 ]);
 
-            DB::table('withdraw_carts')
-                ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+            WithdrawCart::where('is_code_cust_id', Auth::user()->is_code_cust_id)
                 ->where('user_code_key', Auth::user()->user_code)
+                ->where('is_active', false)
                 ->delete();
 
             DB::commit();
 
-            return redirect()->route('withdrawJob.index')
-                ->with('success', "✅ บันทึกใบเบิกอะไหล่ {$jobId} สำเร็จ (ส่วนลด {$discountPercent}%)");
+            return redirect()->route('withdrawJob.index', ['job_id' => $jobId])
+                ->with('success', "บันทึกใบเบิก {$jobId} สำเร็จ");
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('❌ WithdrawJob store failed', ['error' => $e->getMessage()]);
+            Log::error("WithdrawJob failed", ['err' => $e->getMessage()]);
             return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function updateDetail(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                'job_id' => 'required|string',
+                'sp_code' => 'required|string',
+                'sp_qty' => 'required|numeric|min:1',
+            ]);
+
+            $jobId = $request->job_id;
+            $spCode = $request->sp_code;
+            $qty = (int)$request->sp_qty;
+
+            $detail = StockJobDetail::where('stock_job_id', $jobId)
+                ->where('sp_code', $spCode)
+                ->firstOrFail();
+
+            // อัปเดตจำนวน
+            $detail->update([
+                'sp_qty' => $qty,
+                'discount_percent' => $request->discount_percent ?? $detail->discount_percent,
+                'discount_amount' => (($detail->sell_price ?? 0) * $qty * ($request->discount_percent ?? 0)) / 100,
+                'after'  => $detail->before - $qty,
+            ]);
+
+            // อัปเดตยอดรวม ORDER
+            $total = StockJobDetail::where('stock_job_id', $jobId)
+                ->selectRaw("SUM((sp_qty * sell_price) - discount_amount) as total")
+                ->value('total') ?? 0;
+
+            DB::table('withdraw_orders')
+                ->where('withdraw_id', $jobId)
+                ->update(['total_price' => $total]);
+
+            DB::commit();
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // public function complete($job_id)
+    // {
+    //     try {
+    //         DB::beginTransaction();
+
+    //         $job = StockJob::where('stock_job_id', $job_id)->firstOrFail();
+
+    //         if ($job->job_status !== 'processing') {
+    //             throw new \Exception("ไม่สามารถปิดงานได้ เนื่องจากสถานะไม่ใช่ processing");
+    //         }
+
+    //         $items = StockJobDetail::where('stock_job_id', $job_id)->get();
+
+    //         $errors = [];
+
+    //         // เช็คสต็อคปัจจุบันทุกรายการก่อน
+    //         foreach ($items as $item) {
+    //             $sp = StockSparePart::where('sp_code', $item->sp_code)
+    //                 ->where('is_code_cust_id', $job->is_code_cust_id)
+    //                 ->first();
+
+    //             $stockNow = $sp->qty_sp ?? 0;
+
+    //             if ($stockNow < $item->sp_qty) {
+    //                 $errors[] = [
+    //                     'sp_code' => $item->sp_code,
+    //                     'need'    => $item->sp_qty,
+    //                     'sp_name' => $item->sp_name,
+    //                     'have'    => $stockNow,
+    //                 ];
+    //             }
+    //         }
+
+
+    //         // ถ้าสต๊อคไม่พอ → สร้างเอกสาร JOB-STOCK อัตโนมัติ
+    //         if (!empty($errors)) {
+
+    //             // สร้างเลขเอกสารอัตโนมัติ
+    //             $newStockJobId = 'JOB-STOCK' . time() . rand(100, 999);
+
+    //             // บันทึกหัวเอกสาร JOB-STOCK (auto)
+    //             $stockJob = StockJob::create([
+    //                 'stock_job_id'    => $newStockJobId,
+    //                 'is_code_cust_id' => $job->is_code_cust_id,
+    //                 'user_code_key'   => $job->user_code_key,
+    //                 'job_status'      => 'processing',
+    //                 'type'            => 'เพิ่ม',
+    //                 'doctype'         => 'Auto',
+    //                 'ref_doc'         => $job_id,
+    //                 'remark'          => "Auto created by withdraw job {$job_id} (stock shortage)"
+    //             ]);
+
+    //             // เติมเฉพาะรายการที่สต๊อคไม่พอ
+    //             foreach ($errors as $item) {
+
+    //                 $need = (int)$item['need'];
+    //                 $have = (int)$item['have'];
+    //                 $requireQty = $need - $have; // จำนวนที่ต้องเติม
+
+    //                 StockJobDetail::create([
+    //                     'stock_job_id' => $newStockJobId,
+    //                     'is_code_cust_id' => $job->is_code_cust_id,
+    //                     'user_code_key' => $job->user_code_key,
+
+    //                     'sp_code' => $item['sp_code'],
+    //                     'sp_name' => $item['sp_name'],
+    //                     'sp_qty'  => $requireQty,
+    //                     'sp_unit' => 'ชิ้น',
+
+    //                     'before' => $have,
+    //                     'tran'   => 0,
+    //                     'after'  => $have + $requireQty,
+    //                 ]);
+    //             }
+
+    //             $job->update(['job_status' => 'complete']);
+
+    //             DB::table('withdraw_orders')
+    //                 ->where('withdraw_id', $job_id)
+    //                 ->update(['status' => 'complete']);
+
+    //             DB::commit();
+
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'stock_error' => true,
+    //                 'new_stock_job_id' => $newStockJobId,
+    //                 'message' => "สต๊อคไม่เพียงพอ",
+    //                 'details' => $errors
+    //             ], 422);
+    //         }
+
+    //         // ถ้าสต็อคพอทั้งหมด → เตรียมหัก stock จริง
+    //         foreach ($items as $item) {
+    //             $sp = StockSparePart::where('sp_code', $item->sp_code)
+    //                 ->where('is_code_cust_id', $job->is_code_cust_id)
+    //                 ->lockForUpdate()
+    //                 ->first();
+
+    //             $before = $sp->qty_sp;
+    //             $after  = $before - $item->sp_qty;
+
+    //             $sp->update(['qty_sp' => $after]);
+
+    //             $item->update([
+    //                 'before' => $before,
+    //                 'tran'   => -$item->sp_qty,
+    //                 'after'  => $after,
+    //             ]);
+    //         }
+
+    //         $job->update(['job_status' => 'complete']);
+
+    //         DB::table('withdraw_orders')
+    //             ->where('withdraw_id', $job_id)
+    //             ->update(['status' => 'complete']);
+
+    //         WithdrawCart::where('is_code_cust_id', $job->is_code_cust_id)
+    //             ->where('user_code_key', $job->user_code_key)
+    //             ->delete();
+
+    //         DB::commit();
+
+    //         return response()->json(['success' => true]);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
+
+    public function complete($job_id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $job = StockJob::where('stock_job_id', $job_id)->firstOrFail();
+
+            if ($job->job_status !== 'processing') {
+                throw new \Exception("ไม่สามารถปิดงานได้ เนื่องจากสถานะไม่ใช่ processing");
+            }
+
+            $items = StockJobDetail::where('stock_job_id', $job_id)->get();
+            $errors = [];
+
+            /**
+             * 1) เช็คสต็อกปัจจุบันของอะไหล่ทุกตัวในใบเบิก
+             */
+            foreach ($items as $item) {
+                $sp = StockSparePart::where('sp_code', $item->sp_code)
+                    ->where('is_code_cust_id', $job->is_code_cust_id)
+                    ->first();
+
+                $stockNow = $sp->qty_sp ?? 0;
+
+                if ($stockNow < $item->sp_qty) {
+                    $errors[] = [
+                        'sp_code' => $item->sp_code,
+                        'sp_name' => $item->sp_name,
+                        'have'    => $stockNow,
+                        'need'    => $item->sp_qty,
+                    ];
+                }
+            }
+
+            /**
+             * 2) ถ้ามีตัวไหนสต็อกไม่พอ → สร้าง JOB-STOCK (Auto)
+             *    ✅ แค่สร้างเอกสาร + detail
+             *    ❌ ยังไม่อัปเดต StockSparePart ที่นี่ (ปล่อยให้ติดลบได้)
+             */
+            if (!empty($errors)) {
+                $newStockJobId = 'JOB-STOCK' . time() . rand(100, 999);
+
+                $autoJob = StockJob::create([
+                    'stock_job_id'    => $newStockJobId,
+                    'is_code_cust_id' => $job->is_code_cust_id,
+                    'user_code_key'   => $job->user_code_key,
+                    'job_status'      => 'processing', // ยังไม่ complete
+                    'type'            => 'เพิ่ม',
+                    'doctype'         => 'Auto',
+                    'ref_doc'         => $job_id,
+                    'remark'          => "Auto created by withdraw job {$job_id} (stock shortage)",
+                ]);
+
+                foreach ($errors as $err) {
+                    $requireQty = $err['need'] - $err['have']; // จำนวนที่ต้องเติมเข้าสต็อกจริงในอนาคต
+
+                    StockJobDetail::create([
+                        'stock_job_id'    => $newStockJobId,
+                        'is_code_cust_id' => $job->is_code_cust_id,
+                        'user_code_key'   => $job->user_code_key,
+
+                        'sp_code' => $err['sp_code'],
+                        'sp_name' => $err['sp_name'],
+                        'sp_qty'  => $requireQty,
+                        'sp_unit' => 'ชิ้น',
+
+                        'before' => $err['have'],
+                        'tran'   => 0,                      // ยังไม่บวกสต็อกจริง
+                        'after'  => $err['have'] + $requireQty,
+                        'date'   => now(),
+                    ]);
+                }
+            }
+
+            /**
+             * 3) ตัดสต็อกจริงสำหรับใบเบิก (ยอมให้ติดลบได้)
+             */
+            foreach ($items as $item) {
+                $sp = StockSparePart::where('sp_code', $item->sp_code)
+                    ->where('is_code_cust_id', $job->is_code_cust_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                // ถ้าไม่มี row ใน StockSparePart ให้สร้างใหม่ (เริ่มจาก 0)
+                if (!$sp) {
+                    $sp = StockSparePart::create([
+                        'sp_code'        => $item->sp_code,
+                        'sp_name'        => $item->sp_name,
+                        'sp_unit'        => $item->sp_unit ?? 'ชิ้น',
+                        'qty_sp'         => 0,
+                        'is_code_cust_id' => $job->is_code_cust_id,
+                        'user_code_key'  => $job->user_code_key,
+                    ]);
+                }
+
+                $before = $sp->qty_sp;
+                $after  = $before - $item->sp_qty;  // ✅ ยอมให้เป็นค่าติดลบได้
+
+                // อัปเดตสต็อกจริง
+                $sp->update(['qty_sp' => $after]);
+
+                // อัปเดตรายละเอียดใน StockJobDetail
+                $item->update([
+                    'before' => $before,
+                    'tran'   => -$item->sp_qty,
+                    'after'  => $after,
+                ]);
+            }
+
+            /**
+             * 4) ปิดใบเบิก + ใบสั่งเบิก
+             */
+            $job->update(['job_status' => 'complete']);
+
+            DB::table('withdraw_orders')
+                ->where('withdraw_id', $job_id)
+                ->update(['status' => 'complete']);
+
+            WithdrawCart::where('is_code_cust_id', $job->is_code_cust_id)
+                ->where('user_code_key', $job->user_code_key)
+                ->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success'          => true,
+                'auto_job_created' => !empty($errors),
+                'shortages'        => $errors,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function deleteDetail(Request $request)
+    {
+        $validated = $request->validate([
+            'job_id' => 'required',
+            'sp_code' => 'required',
+        ]);
+
+        try {
+            WithdrawOrderSpList::where('withdraw_id', $request->job_id)
+                ->where('sp_code', $request->sp_code)
+                ->delete();
+
+            StockJobDetail::where('stock_job_id', $request->job_id)
+                ->where('sp_code', $request->sp_code)
+                ->delete();
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getItems($jobId)
+    {
+        try {
+            $items = StockJobDetail::where('stock_job_id', $jobId)
+                ->get([
+                    'sp_code',
+                    'sp_name',
+                    'sp_unit',
+                    'sp_qty',
+                    'stdprice_per_unit',
+                    'sell_price'
+                ]);
+
+            return response()->json([
+                'success' => true,
+                'items' => $items
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -388,9 +661,22 @@ class WithdrawJobController extends Controller
             ->where('stock_jobs.stock_job_id', $job_id)
             ->firstOrFail();
 
+        $autoJob = StockJob::where('ref_doc', $job_id)->first();
         $job_detail = StockJobDetail::query()
             ->where('stock_job_id', $job_id)
             ->get(['sp_code', 'sp_name', 'sp_unit', 'sp_qty', 'stdprice_per_unit', 'sell_price', 'discount_percent']);
+
+        $outOfStock = [];
+
+        foreach ($job_detail as $item) {
+            $currentQty = \App\Models\StockSparePart::where('sp_code', $item->sp_code)
+                ->where('is_code_cust_id', $job->is_code_cust_id)
+                ->value('qty_sp') ?? 0;
+
+            if ($currentQty < $item->sp_qty) {
+                $outOfStock[] = $item->sp_code;
+            }
+        }
 
         $total_amount = DB::table('withdraw_orders')
             ->where('withdraw_id', $job_id)
@@ -400,13 +686,47 @@ class WithdrawJobController extends Controller
             $total_amount = 0;
         }
 
+        $jobDiscount = StockJobDetail::where('stock_job_id', $job_id)
+            ->value('discount_percent') ?? 0;
+
         return Inertia::render('Admin/WithdrawSp/withdrawJobs/JobsListDetail', [
             'job'          => $job,
             'job_detail'   => $job_detail,
             'total_amount' => $total_amount,
+            'discount_percent' => $jobDiscount,
+            'out_of_stock_list' => $outOfStock,
+            'auto_job' => $autoJob,
         ]);
     }
 
+    public function delete($job_id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $job = StockJob::where('stock_job_id', $job_id)->firstOrFail();
+
+            $job->update([
+                'job_status' => 'deleted'
+            ]);
+
+            DB::table('withdraw_orders')
+                ->where('withdraw_id', $job_id)
+                ->update(['status' => 'deleted']);
+
+            DB::commit();
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    //ฟังก์ชั่น Export PDF หน้าเบิกอะไหล่
     public function exportPdf(Request $request)
     {
         try {
@@ -440,12 +760,12 @@ class WithdrawJobController extends Controller
                 "regenqu" => "Y",
                 "docno" => $soNumber,
                 "doc_title" => "ใบเบิกอะไหล่",
-                "typeservice" => "SO",
+                "typeservice" => "req",
 
                 "empproc"     => $request->input('empproc', Auth::user()->name ?? 'system'),
                 "custsccode"  => $request->input('custsccode', Auth::user()->user_code ?? '-'),
                 "custscname"  => $request->input('custscname', Auth::user()->name ?? '-'),
-                
+
                 "custnamesc" => $storeName,
                 "custname"   => $storeName,
                 "custscaddr" => $address,
@@ -521,9 +841,6 @@ class WithdrawJobController extends Controller
 
             Log::info('📤 Payload ส่งไปยัง PDF API', $payload);
 
-            // $response = Http::withHeaders([
-            //     'Content-Type' => 'application/json',
-            // ])->post("http://192.168.0.13/genpdf/api/gen_so", $payload);
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
             ])->post("http://192.168.0.13/genpdf/api/get_req_pdf", $payload);

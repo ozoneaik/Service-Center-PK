@@ -15,17 +15,32 @@ import StockSpDetail from "./StockSpDetail.jsx";
 
 const tableHeaders = [
     'รูปภาพอะไหล่', 'รหัสอะไหล่', 'ชื่ออะไหล่', 'หน่วย', 'สต็อกคงเหลือ',
-    'แจ้งซ่อม', 'แจ้งปรับปรุง (-)', 'แจ้งปรับปรุง (+)', 'สต็อกคงเหลือ พร้อมใช้งาน', '#'
+    'แจ้งซ่อม', 'แจ้งเบิกอะไหล่ (-)', 'แจ้งปรับปรุง (-)', 'แจ้งปรับปรุง (+)', 'สต็อกคงเหลือ พร้อมใช้งาน', '#'
 ];
 
 // function ลบ
-const different = (qty_sp = 0, rp_qty = 0, stj_add = 0, stj_remove = 0) => {
-    return qty_sp - (rp_qty + stj_remove);
-}
+// const different = (
+//     qty_sp = 0,
+//     rp_qty = 0,
+//     stj_add = 0,
+//     stj_remove = 0,
+//     withdraw_qty = 0,
+// ) => {
+//     // return qty_sp - (rp_qty + stj_remove);
+//     return qty_sp - (rp_qty + withdraw_qty + stj_remove) + stj_add;
+// }
 
+const different = (
+    qty_sp = 0,
+    rp_qty = 0,
+    stj_withdraw = 0,
+    stj_remove = 0,
+    stj_add = 0,
+) => {
+    return qty_sp - rp_qty - stj_withdraw - stj_remove + stj_add;
+};
 
-
-const TableDetail = ({ stocks, stock_job_add_type, stock_job_remove_type, setOpenStockDetail, setSpSelected }) => {
+const TableDetail = ({ stocks, stock_job_add_type, stock_job_remove_type, stock_job_withdraw_type, setOpenStockDetail, setSpSelected }) => {
 
     // รวมจำนวน (+)
     const addSummary = {};
@@ -44,6 +59,15 @@ const TableDetail = ({ stocks, stock_job_add_type, stock_job_remove_type, setOpe
             removeSummary[item.sp_code] += item.sp_qty;
         });
     });
+
+    const withdrawSummary = {};
+    stock_job_withdraw_type.forEach(job => {
+        job.list.forEach(item => {
+            if (!withdrawSummary[item.sp_code]) withdrawSummary[item.sp_code] = 0;
+            withdrawSummary[item.sp_code] += item.sp_qty;
+        });
+    });
+
     return (
         <Table>
             <TableHead>
@@ -69,6 +93,7 @@ const TableDetail = ({ stocks, stock_job_add_type, stock_job_remove_type, setOpe
                         <TableCell>{stock.sp_unit || 'อัน'}</TableCell>
                         <TableCell>{stock.qty_sp || 0}</TableCell>
                         <TableCell>{stock.rp_qty || 0}</TableCell>
+                        <TableCell>{withdrawSummary[stock.sp_code] ?? 0}</TableCell>
                         <TableCell>
                             {removeSummary[stock.sp_code] ?? 0}
                         </TableCell>
@@ -76,7 +101,22 @@ const TableDetail = ({ stocks, stock_job_add_type, stock_job_remove_type, setOpe
                             {addSummary[stock.sp_code] ?? 0}
                         </TableCell>
                         <TableCell>
-                            {different(stock.qty_sp, stock.rp_qty, addSummary[stock.sp_code] ?? 0, removeSummary[stock.sp_code] ?? 0)}
+                            {/* {different(
+                                stock.qty_sp,
+                                stock.rp_qty,
+                                addSummary[stock.sp_code] ?? 0,
+                                removeSummary[stock.sp_code] ?? 0,
+                                withdrawSummary[stock.sp_code] ?? 0
+                            )} */}
+                            {
+                                different(
+                                    stock.qty_sp,
+                                    stock.rp_qty,
+                                    withdrawSummary[stock.sp_code] ?? 0,
+                                    removeSummary[stock.sp_code] ?? 0,
+                                    addSummary[stock.sp_code] ?? 0,
+                                )
+                            }
                         </TableCell>
                         <TableCell>
                             <Button variant="contained" size="small" onClick={() => {
@@ -215,7 +255,7 @@ const MobileDetail = ({ stocks }) => {
     )
 }
 
-export default function StockSpList({ stocks, store, job_pending, stock_job_add_type, stock_job_remove_type }) {
+export default function StockSpList({ stocks, store, job_pending, stock_job_add_type, stock_job_remove_type, stock_job_withdraw_type }) {
     const isMobile = useMediaQuery('(max-width:600px)');
     const [openAddSpBill, setOpenAddSpBill] = useState(false);
     const [openAddSpBasic, setOpenAddSpBasic] = useState(false);
@@ -359,6 +399,7 @@ export default function StockSpList({ stocks, store, job_pending, stock_job_add_
                                         stocks={stocks}
                                         stock_job_add_type={stock_job_add_type}
                                         stock_job_remove_type={stock_job_remove_type}
+                                        stock_job_withdraw_type={stock_job_withdraw_type}
                                         openStockDetail={openStockDetail}
                                         setSpSelected={setSpSelected}
                                         setOpenStockDetail={setOpenStockDetail}

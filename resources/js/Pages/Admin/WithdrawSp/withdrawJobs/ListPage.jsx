@@ -23,8 +23,9 @@ import { Add, Search, ClearAll, ListAlt } from "@mui/icons-material";
 import { useState } from "react";
 import { DateFormatTh } from "@/Components/DateFormat.jsx";
 import { TableStyle } from "@/../css/TableStyle.js";
+import { useEffect } from "react";
 
-export default function ListPage({ list, filters = {}, auth }) {
+export default function ListPage({ list, filters = {}, auth, highlightJobId }) {
     const isMobile = useMediaQuery("(max-width:600px)");
 
     const jobs = list?.data || [];
@@ -35,9 +36,38 @@ export default function ListPage({ list, filters = {}, auth }) {
     const [searchJobDateFrom, setSearchJobDateFrom] = useState(filters?.searchJobDateFrom || "");
     const [searchJobDateTo, setSearchJobDateTo] = useState(filters?.searchJobDateTo || "");
 
-    const handleCreateJob = () => {
-        const is_code_cust_id = auth?.user?.is_code_cust_id;
-        router.get(route("withdrawSp.index"), { is_code_cust_id });
+    useEffect(() => {
+        if (highlightJobId) {
+            console.log("🔥 Highlight job: ", highlightJobId);
+
+            const row = document.getElementById(`job-${highlightJobId}`);
+            if (row) {
+                row.style.backgroundColor = "#FFF4C2"; // highlight สีเหลืองอ่อน
+                row.style.transition = "background-color 1s";
+
+                row.scrollIntoView({ behavior: "smooth", block: "center" });
+
+                // ค่อยๆ จางหลัง 3 วิ
+                setTimeout(() => {
+                    row.style.backgroundColor = "";
+                }, 3000);
+            }
+        }
+    }, [highlightJobId]);
+
+    const handleCreateJob = async () => {
+        try {
+            // ล้างตะกร้าเก่า
+            await axios.delete(route("withdrawSp.cart.clear"));
+
+            // ไปหน้าเลือกอะไหล่
+            router.get(route("withdrawSp.index"), {
+                // restore: 1,
+                is_code_cust_id: auth?.user?.is_code_cust_id,
+            });
+        } catch (e) {
+            console.error(e);
+        }
     };
 
     // ค้นหา / ล้างฟิลเตอร์
@@ -68,7 +98,8 @@ export default function ListPage({ list, filters = {}, auth }) {
 
     const colorByStatus = (status) => {
         if (status === "complete") return "success";
-        if (status === "Inactive") return "error";
+        if (status === "processing") return "info";
+        if (status === "deleted") return "warning";
         return "default";
     };
 
@@ -118,8 +149,9 @@ export default function ListPage({ list, filters = {}, auth }) {
                             onChange={(e) => setSearchJobStatus(e.target.value)}
                         >
                             <MenuItem value="">ทั้งหมด</MenuItem>
+                            <MenuItem value="processing">processing</MenuItem>
                             <MenuItem value="complete">complete</MenuItem>
-                            <MenuItem value="Inactive">Inactive</MenuItem>
+                            <MenuItem value="deleted">deleted</MenuItem>
                         </Select>
                     </FormControl>
 
@@ -185,13 +217,13 @@ export default function ListPage({ list, filters = {}, auth }) {
                         <TableHead>
                             <TableRow sx={TableStyle.TableHead}>
                                 <TableCell>#</TableCell>
-                                <TableCell>สถานะ</TableCell>
-                                <TableCell>วันที่ JOB</TableCell>
-                                <TableCell>เลขที่ JOB</TableCell>
-                                <TableCell>จำนวนรายการ</TableCell>
-                                <TableCell>วันที่สร้าง</TableCell>
-                                <TableCell>ผู้สร้าง</TableCell>
-                                <TableCell>วันที่-เวลา-อัปเดต</TableCell>
+                                <TableCell align="center">สถานะ</TableCell>
+                                {/* <TableCell>วันที่ JOB</TableCell> */}
+                                <TableCell align="center">เลขที่ JOB</TableCell>
+                                <TableCell align="center">จำนวนรายการ</TableCell>
+                                <TableCell align="center">วันที่สร้าง</TableCell>
+                                <TableCell align="center">ผู้สร้าง</TableCell>
+                                <TableCell align="center">วันที่-เวลา-อัปเดต</TableCell>
                                 <TableCell align="center">#</TableCell>
                             </TableRow>
                         </TableHead>
@@ -199,7 +231,7 @@ export default function ListPage({ list, filters = {}, auth }) {
                         <TableBody>
                             {jobs.length > 0 ? (
                                 jobs.map((item, index) => (
-                                    <TableRow key={item.stock_job_id ?? index}>
+                                    <TableRow key={item.stock_job_id ?? index} id={`job-${item.stock_job_id}`} >
                                         <TableCell>
                                             {/* แสดงเลข running ตามหน้า */}
                                             {((list?.current_page || 1) - 1) *
@@ -208,7 +240,7 @@ export default function ListPage({ list, filters = {}, auth }) {
                                         </TableCell>
 
                                         {/* สถานะ */}
-                                        <TableCell>
+                                        <TableCell align="center">
                                             <Chip
                                                 label={item.job_status}
                                                 color={colorByStatus(item.job_status)}
@@ -217,12 +249,12 @@ export default function ListPage({ list, filters = {}, auth }) {
                                         </TableCell>
 
                                         {/* วันที่ JOB (ใช้ created_at) */}
-                                        <TableCell>
+                                        {/* <TableCell>
                                             <DateFormatTh date={item.created_at} />
-                                        </TableCell>
+                                        </TableCell> */}
 
                                         {/* รหัส JOB */}
-                                        <TableCell>{item.stock_job_id}</TableCell>
+                                        <TableCell align="center">{item.stock_job_id}</TableCell>
 
                                         {/* จำนวนรายการ */}
                                         <TableCell align="center">
@@ -230,15 +262,15 @@ export default function ListPage({ list, filters = {}, auth }) {
                                         </TableCell>
 
                                         {/* วันที่สร้าง */}
-                                        <TableCell>
+                                        <TableCell align="center">
                                             <DateFormatTh date={item.created_at} />
                                         </TableCell>
 
                                         {/* ผู้สร้าง */}
-                                        <TableCell>{item.user_name}</TableCell>
+                                        <TableCell align="center">{item.user_name}</TableCell>
 
                                         {/* วันเวลาอัปเดตล่าสุด */}
-                                        <TableCell>
+                                        <TableCell align="center">
                                             <DateFormatTh
                                                 date={item.updated_at}
                                                 showTime={true}

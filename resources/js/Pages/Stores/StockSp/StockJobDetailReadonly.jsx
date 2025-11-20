@@ -12,10 +12,11 @@ import { useRef, useState, useCallback } from "react";
 import axios from "axios";
 import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog";
 
-export default function stockJobDetailReadonly({ job, job_detail = [] }) {
-    // States
+export default function stockJobDetailReadonly({ job, job_detail = [], doc_type, ref_doc }) {
+
     const [spList, setSpList] = useState(job_detail);
     const [jobType, setJobType] = useState(job.type);
+    const isLocked = job.job_status === 'deleted' || job.job_status === 'processing';
 
     const { flash } = usePage().props;
 
@@ -74,11 +75,47 @@ export default function stockJobDetailReadonly({ job, job_detail = [] }) {
                         <Typography fontSize={isMobile ? 18 : 20} fontWeight='bold'>
                             รายละเอียด #{job.stock_job_id}
                         </Typography>
+                        {doc_type === "Auto" && ref_doc && (
+                            <Box
+                                display="flex"
+                                alignItems="center"
+                                gap={1}
+                                mt={0.5}
+                                sx={{
+                                    padding: "6px 10px",
+                                    background: "#ffe6e6",
+                                    borderRadius: "6px",
+                                    border: "1px solid #ffb3b3",
+                                    width: "fit-content",
+                                }}
+                            >
+                                <Typography variant="body2" color="error">
+                                    เอกสารจากใบเบิก
+                                </Typography>
+
+                                <Typography
+                                    fontWeight={700}
+                                    color="error"
+                                    sx={{
+                                        cursor: "pointer",
+                                        textDecoration: "underline",
+                                    }}
+                                    onClick={() =>
+                                        router.get(route("withdrawJob.show", ref_doc))
+                                    }
+                                >
+                                    #{ref_doc}
+                                </Typography>
+                            </Box>
+                        )}
                         <Typography variant="body2">
                             <Chip label={jobType === 'เพิ่ม' ? 'ขาเพิ่ม' : 'ขาลด'} color={jobType === 'เพิ่ม' ? 'primary' : 'error'} />
                         </Typography>
                         <Chip label={`สถานะ : ${job.job_status}`} variant="outlined" />
                     </Box>
+
+
+
                     <Box display='flex' gap={2}>
                         <Button
                             variant="contained" color="error" disabled={job.job_status === 'complete'}

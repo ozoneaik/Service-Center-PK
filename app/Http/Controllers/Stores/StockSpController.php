@@ -109,6 +109,7 @@ class StockSpController extends Controller
             ->where('job_status', 'processing')
             ->where('is_code_cust_id', $is_code_cust_id)
             ->where('type', 'เพิ่ม')
+            ->where('doctype', '!=', 'Auto')
             ->get()
             ->map(function ($stj_add) {
                 $stj_add = (object)$stj_add->toArray(); // แปลงเป็น stdClass
@@ -139,6 +140,23 @@ class StockSpController extends Controller
             ->values()
             ->all();
 
+        $stock_job_withdraw_type = StockJob::query()
+            ->where('job_status', 'processing') // ใบเบิกสถานะกำลังดำเนินการ
+            ->where('is_code_cust_id', $is_code_cust_id)
+            ->where('type', 'เบิก')
+            ->get()
+            ->map(function ($stj_withdraw) {
+                $stj_withdraw = (object)$stj_withdraw->toArray();
+                $stj_withdraw->list = StockJobDetail::query()
+                    ->where('stock_job_id', $stj_withdraw->stock_job_id)
+                    ->select('sp_code', 'sp_name', 'sp_qty')
+                    ->get()
+                    ->toArray();
+                return $stj_withdraw;
+            })
+            ->values()
+            ->all();
+
 
 
         //        dd($stocks->toArray(), $store->toArray(), $job_pending->toArray(), $rp_sp->toArray(),$stj_sp->toArray());
@@ -149,7 +167,8 @@ class StockSpController extends Controller
             'status' => session('status'),
             'job_pending' => [$job_pending, $rp_sp],
             'stock_job_add_type' => $stock_job_add_type,
-            'stock_job_remove_type' => $stock_job_remove_type
+            'stock_job_remove_type' => $stock_job_remove_type,
+            'stock_job_withdraw_type' => $stock_job_withdraw_type,
         ]);
     }
 
@@ -392,7 +411,8 @@ class StockSpController extends Controller
                     'tran'       => $tran,
                     'updated_at' => $updated ? $updated->format('Y-m-d H:i:s') : null,
                     'actor'      => $r->actor,
-                    'sort_at'    => $date ? $date->timestamp : 0,
+                    // 'sort_at'    => $date ? $date->timestamp : 0,
+                    'sort_at'    => $updated ? $updated->timestamp : 0,
                 ];
             })
             ->values()
@@ -425,41 +445,35 @@ class StockSpController extends Controller
                     'tran'       => -1 * (int) $r->qty,
                     'updated_at' => $updated ? $updated->format('Y-m-d H:i:s') : null,
                     'actor'      => $r->actor,
-                    'sort_at'    => $date ? $date->timestamp : 0,
+                    // 'sort_at'    => $date ? $date->timestamp : 0,
+                    'sort_at'    => $updated ? $updated->timestamp : 0,
                 ];
             })
             ->values()
             ->toBase();
 
-        // รวม + เรียงเวลา (ทั้งสองเป็น Base แล้ว จึง merge ได้ปลอดภัย)
-        // $rows = $adjustments->concat($repairs) // จะใช้ ->merge() ก็ได้
-        //     ->sortBy('sort_at')
-        //     ->values();
+        // 1) รวมข้อมูลและเรียงตามเวลา เก่า → ใหม่
+        $rows = $adjustments
+            ->concat($repairs)
+            ->sortBy('sort_at')
+            ->values();
 
-        $rows = $adjustments->concat($repairs)->sortByDesc('sort_at')->values();
-
-        $running = (int) $currentStock;
-
+        // 2) คำนวณ before / after
+        $running = 0;
         $rows = $rows->map(function ($row) use (&$running) {
-            $row['after']  = $running;
-            $row['before'] = $row['after'] - (int)$row['tran'];
-            $running       = $row['before'];
+            $before = $running;
+            $after  = $before + (int)$row['tran'];
+
+            $row['before'] = $before;
+            $row['after']  = $after;
+
+            $running = $after;
             return $row;
         });
 
-        // เรียงกลับเป็นเก่า → ใหม่ เพื่อแสดงผล
-        $rows = $rows->sortBy('sort_at')->values();
-
-        // คำนวณ before/after ด้วย map
-        // $running = 0;
-        // $rows = $rows->map(function ($row) use (&$running) {
-        //     $before = $running;
-        //     $after  = $before + (int) $row['tran'];
-        //     $running = $after;
-        //     $row['before'] = $before;
-        //     $row['after']  = $after;
-        //     return $row;
-        // });
+        $currentStock = $rows->count() > 0
+            ? $rows->last()['after']
+            : 0;
 
         return response()->json([
             'message'         => 'พบข้อมูล',

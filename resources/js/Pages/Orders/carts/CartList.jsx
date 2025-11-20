@@ -158,31 +158,87 @@ export default function CartList({ groupSku, totalSp, flash }) {
         }, 0);
     }, [groups]);
 
+    // const handleExportPdf = async () => {
+    //     try {
+    //         setProcessing(true);
+    //         console.log("🚀 กำลังยิง API /orders/export-pdf-cart ...", { groups, address, phone });
+    //         // router.post(route('orders.export.pdf'), {
+    //         //     groups,
+    //         //     address,
+    //         //     phone
+    //         // });
+    //         const { data } = await axios.post(route('orders.export.pdf'), {
+    //             groups,
+    //             address,
+    //             phone
+    //         });
+
+    //         if (data.success && data.pdf_url) {
+    //             window.open(data.pdf_url, '_blank');
+    //         } else {
+    //             AlertDialog({ title: 'ผิดพลาด', text: 'ไม่พบไฟล์ PDF' });
+    //         }
+    //     } catch (error) {
+    //         console.error("❌ Error handleExportPdf:", error);
+    //         AlertDialog({
+    //             title: 'ผิดพลาด',
+    //             text: error.response?.data?.message || error.message
+    //         });
+    //     } finally {
+    //         setProcessing(false);
+    //     }
+    // };
+
     const handleExportPdf = async () => {
         try {
             setProcessing(true);
-            console.log("🚀 กำลังยิง API /orders/export-pdf-cart ...", { groups, address, phone });
-            // router.post(route('orders.export.pdf'), {
-            //     groups,
-            //     address,
-            //     phone
-            // });
+
             const { data } = await axios.post(route('orders.export.pdf'), {
                 groups,
                 address,
                 phone
             });
 
-            if (data.success && data.pdf_url) {
-                window.open(data.pdf_url, '_blank');
-            } else {
-                AlertDialog({ title: 'ผิดพลาด', text: 'ไม่พบไฟล์ PDF' });
+            if (!data.success) {
+                Swal.fire({
+                    icon: "error",
+                    title: "เกิดข้อผิดพลาด",
+                    text: data.message || "ไม่สามารถสร้างไฟล์ PDF ได้",
+                });
+                return;
             }
+
+            if (data.pdf_url) {
+                const pdfWindow = window.open(data.pdf_url, "_blank");
+
+                // ถ้า popup ถูกบล็อก
+                if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed === "undefined") {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "⚠️ ไม่สามารถเปิดไฟล์ PDF ได้",
+                        text: "เบราว์เซอร์ของคุณบล็อกป๊อปอัป กรุณาอนุญาตหรือคลิกปุ่มด้านล่าง",
+                        showCancelButton: true,
+                        confirmButtonText: "เปิดอีกครั้ง",
+                        cancelButtonText: "ยกเลิก",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.open(data.pdf_url, "_blank");
+                        }
+                    });
+                }
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "ผิดพลาด",
+                    text: "ระบบไม่พบ URL ของ PDF",
+                });
+            }
+
         } catch (error) {
-            console.error("❌ Error handleExportPdf:", error);
-            AlertDialog({
-                title: 'ผิดพลาด',
-                text: error.response?.data?.message || error.message
+            Swal.fire({
+                icon: "error",
+                title: "ผิดพลาด",
+                text: error.response?.data?.message || error.message,
             });
         } finally {
             setProcessing(false);

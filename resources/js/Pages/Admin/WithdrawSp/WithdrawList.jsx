@@ -40,9 +40,9 @@ const sortByTracking = (a, b) => {
     return (aTrack + "").localeCompare(bTrack + "", undefined, { numeric: true });
 };
 
-export default function WithdrawList({ count_cart, message, sku, result, job_id, is_code_cust_id }) {
+export default function WithdrawList({ count_cart, message, sku, result, is_code_cust_id }) {
     const user = usePage().props.auth.user;
-    const { restore } = usePage().props;
+    const { restore, job_id, mode } = usePage().props;
     const [allSp, setAllSp] = useState(result?.sp || []);
     const [spList, setSpList] = useState([]);
     const [searchValue, setSearchValue] = useState(sku ?? "");
@@ -58,6 +58,8 @@ export default function WithdrawList({ count_cart, message, sku, result, job_id,
     const [restored, setRestored] = useState(false);
     const isMobile = useMediaQuery("(max-width:600px)");
 
+
+
     const handleSearch = (e) => {
         e.preventDefault();
         localStorage.removeItem("withdraw_sp_state");
@@ -72,6 +74,12 @@ export default function WithdrawList({ count_cart, message, sku, result, job_id,
             }
         );
     };
+
+    useEffect(() => {
+        if (mode === "edit_items" && job_id && !restored) {
+            loadOldItems(job_id);
+        }
+    }, [mode, job_id]);
 
     useEffect(() => {
         const saved = localStorage.getItem("withdraw_sp_state");
@@ -195,8 +203,43 @@ export default function WithdrawList({ count_cart, message, sku, result, job_id,
         setSpList((prev) => prev.map((x) => (x.spcode === sp.spcode ? { ...x, added: true } : x)));
     };
 
-    const handleNext = () => router.visit(route("withdrawSp.summary"));
+    const handleNext = () => router.visit(route("withdrawSp.summary"), {
+        data: { job_id },
+        preserveScroll: true,
+    });
+
     const handleClosePreview = () => setImgPreview((p) => ({ ...p, open: false }));
+
+    const loadOldItems = async (jobId) => {
+        try {
+            // 1) ล้าง Cart ปัจจุบัน
+            await axios.delete(route("withdrawSp.cart.clear"));
+
+            // 2) โหลดรายการเก่าจาก job_id
+            const res = await axios.get(route("withdrawJob.items", jobId));
+            const items = res.data.items;
+
+            if (!items || items.length === 0) return;
+
+            // 3) เพิ่มทีละชิ้นลง Cart
+            for (const it of items) {
+                await axios.post(route("withdrawSp.addToCart"), {
+                    spcode: it.sp_code,
+                    spname: it.sp_name,
+                    spunit: it.sp_unit,
+                    qty: it.sp_qty,
+                    stdprice_per_unit: it.stdprice_per_unit,
+                    price_per_unit: it.sell_price,
+                    skufg: "EDIT",     // ระบุว่ามาจากการแก้ไข
+                    pname: it.sp_name,
+                });
+            }
+
+            console.log("โหลดข้อมูลจาก JOB เก่าใส่ Cart เรียบร้อย");
+        } catch (err) {
+            console.error("โหลดข้อมูลเก่าไม่สำเร็จ", err);
+        }
+    };
 
     return (
         <AuthenticatedLayout>

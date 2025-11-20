@@ -4,6 +4,7 @@ namespace App\Http\Controllers\WithDraws;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
+use App\Models\StockJobDetail;
 use App\Models\StoreInformation;
 use App\Models\WithdrawCart;
 use App\Models\WithdrawOrder;
@@ -28,7 +29,9 @@ class WithdrawSpController extends Controller
                 'message'   => null,
                 'sku'       => null,
                 'result'    => null,
-                'restore'   => 1, 
+                'restore'   => 1,
+                'mode'      => $request->mode,
+                'job_id'    => $request->job_id,
             ]);
         }
 
@@ -45,6 +48,261 @@ class WithdrawSpController extends Controller
             'result'    => null,
             'restore'   => 0,
         ]);
+    }
+
+    public function searchJson(Request $request)
+    {
+        $sku = $request->sku;
+        $jobId = $request->job_id;
+
+        if (!$sku) {
+            return response()->json(['error' => 'SKU required'], 422);
+        }
+
+        $apiUrl = env('VITE_WARRANTY_SN_API_GETDATA');
+
+        try {
+            $response = Http::timeout(15)->get($apiUrl, ['search' => $sku]);
+
+            if (!$response->successful()) {
+                throw new \Exception("API Error");
+            }
+
+            $data = $response->json();
+            if (($data['status'] ?? '') !== 'SUCCESS') {
+                throw new \Exception($data['message'] ?? 'ไม่พบสินค้า');
+            }
+
+            $assets = $data['assets'] ?? [];
+            $dmList = $data['dm_list'] ?? [];
+            $spAll = $data['sp'] ?? [];
+
+            $pid = $sku;
+            $asset = $assets[$pid] ?? [];
+            $facmodel = $asset['facmodel'] ?? $pid;
+
+            // ใช้ BASE URL เดียวกับ search()
+            $imageDmBase = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/');
+            $imageSpBase = rtrim(env('VITE_IMAGE_SP', ''), '/');
+
+            $diagramLayers = [];
+            $spList = [];
+            $modelOptions = [];
+
+            if (!empty($dmList[$pid])) {
+                foreach ($dmList[$pid] as $dmKey => $dmData) {
+
+                    $modelfg = trim($dmData['modelfg'] ?? $facmodel);
+                    if ($modelfg === '') {
+                        $modelfg = "DM" . str_pad($dmKey, 2, "0", STR_PAD_LEFT);
+                    }
+
+                    $modelOptions[] = $modelfg;
+
+                    // Diagram (เหมือน search())
+                    for ($i = 1; $i <= 5; $i++) {
+                        $imgUrl = $dmData["img_{$i}"] ?? null;
+                        if (!$imgUrl) continue;
+
+                        if (!str_contains($imgUrl, 'http')) {
+                            $imgUrl = "{$imageDmBase}/" . ltrim($imgUrl, '/');
+                        }
+
+                        $diagramLayers[] = [
+                            'modelfg' => $modelfg,
+                            'layer' => "รูปที่ {$i}",
+                            'path_file' => $imgUrl,
+                            'layout' => $i,
+                            'typedm' => $dmKey,
+                        ];
+                    }
+
+                    // Spare Parts (ให้เหมือน search())
+                    if (!empty($spAll[$pid][$dmKey])) {
+                        foreach ($spAll[$pid][$dmKey] as $sp) {
+
+                            $spcode = $sp['spcode'] ?? null;
+                            if (!$spcode) continue;
+
+                            $spList[] = [
+                                'spcode' => $spcode,
+                                'spname' => $sp['spname'] ?? '',
+                                'spunit' => $sp['spunit'] ?? 'ชิ้น',
+                                'stdprice_per_unit' => floatval($sp['stdprice'] ?? 0),
+                                'price_per_unit' => floatval($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0),
+                                'layout' => (int)($sp['layout'] ?? 1),
+                                'tracking_number' => $sp['tracking_number'] ?? '',
+                                'modelfg' => $modelfg,
+                                'pid' => $pid,
+                                'skufg' => $pid,
+                                'pname' => $asset['pname'] ?? '',
+                                'imagesku' => $asset['imagesku'][0] ?? null,
+                                'typedm' => $dmKey,
+                            ];
+                        }
+                    }
+                }
+            }
+
+            // เติมรูปอะไหล่ + stock + added (เหมือน search())
+            foreach ($spList as $i => $sp) {
+                $spcode = $sp['spcode'];
+
+                // path_file แบบเดียวกับ search()
+                $spList[$i]['path_file'] = "{$imageSpBase}/{$spcode}.jpg";
+
+                $stockQty = DB::table('stock_spare_parts')
+                    ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                    ->where('sp_code', $spcode)
+                    ->value('qty_sp') ?? 0;
+
+                $spList[$i]['stock_balance'] = (int)$stockQty;
+
+                // check cart like search()
+                $cart = WithdrawCart::query()
+                    ->where('sp_code', $spcode)
+                    ->where('is_active', false)
+                    ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                    ->where('user_code_key', Auth::user()->user_code)
+                    ->first();
+
+                $spList[$i]['added'] = (bool)$cart;
+
+                // check already in job
+                $exists = WithdrawOrderSpList::where('withdraw_id', $jobId)
+                    ->where('sp_code', $spcode)
+                    ->exists();
+                $spList[$i]['already_in_job'] = $exists;
+            }
+
+            return response()->json([
+                'message' => null,
+                'result' => [
+                    'pid' => $sku,
+                    'pname' => $asset['pname'] ?? '',
+                    'imagesku' => $asset['imagesku'][0] ?? null,
+                    'sp' => $spList,
+                    'model_options' => array_values(array_unique($modelOptions)),
+                    'diagram_layers' => $diagramLayers,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'result' => null,
+                'sku' => $sku,
+            ], 200);
+        }
+    }
+
+    public function addDetail(Request $request)
+    {
+        $validated = $request->validate([
+            'job_id' => 'required',
+            'sp_code' => 'required',
+            'sp_name' => 'required',
+            'sp_unit' => 'required',
+            'stdprice_per_unit' => 'required|numeric',
+            'sell_price' => 'required|numeric',
+        ]);
+
+        // ป้องกันซ้ำ
+        $exists = WithdrawOrderSpList::where('withdraw_id', $request->job_id)
+            ->where('sp_code', $request->sp_code)
+            ->first();
+
+        if ($exists) {
+            return response()->json(['message' => 'already_exists'], 200);
+        }
+
+        WithdrawOrderSpList::create([
+            'withdraw_id'        => $request->job_id,
+            'sp_code'            => $request->sp_code,
+            'sp_name'            => $request->sp_name,
+            'sp_unit'            => $request->sp_unit,
+            'stdprice_per_unit'  => $request->stdprice_per_unit,
+            'sell_price'         => $request->sell_price,
+            'sku_code'           => $request->sku_code,
+            'sp_qty'             => 1,
+        ]);
+
+        return response()->json(['message' => 'success']);
+    }
+
+    public function updateAllDetail(Request $request)
+    {
+        $validated = $request->validate([
+            'job_id' => 'required',
+            'list' => 'required|array',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($request->list as $sp) {
+
+                $exists = WithdrawOrderSpList::where('withdraw_id', $request->job_id)
+                    ->where('sp_code', $sp['sp_code'])
+                    ->exists();
+
+                if (!$exists) {
+                    WithdrawOrderSpList::create([
+                        'withdraw_id'        => $request->job_id,
+                        'sp_code'            => $sp['sp_code'],
+                        'sp_name'            => $sp['sp_name'],
+                        'sp_unit'            => $sp['sp_unit'],
+                        'stdprice_per_unit'  => $sp['stdprice_per_unit'],
+                        'sell_price'         => $sp['sell_price'],
+                        'sku_code'           => $sp['sku_code'],
+                        'sp_qty'             => $sp['sp_qty'],
+                        'discount_percent' => $sp['discount_percent'] ?? 0,
+                        'discount_amount'  => $sp['discount_amount'] ?? 0,
+                    ]);
+                }
+
+                StockJobDetail::updateOrCreate(
+                    [
+                        'stock_job_id' => $request->job_id,
+                        'sp_code' => $sp['sp_code'],
+                    ],
+                    [
+                        'is_code_cust_id' => Auth::user()->is_code_cust_id,
+                        'user_code_key'   => Auth::user()->user_code,
+
+                        'sp_name' => $sp['sp_name'],
+                        'sp_qty' => $sp['sp_qty'] ?? 1,
+                        'sp_unit' => $sp['sp_unit'],
+                        'stdprice_per_unit' => $sp['stdprice_per_unit'],
+                        'sell_price' => $sp['sell_price'],
+                        'discount_percent' => $sp['discount_percent'] ?? 0,
+                        'discount_amount'  => $sp['discount_amount'] ?? 0,
+                        'before' => 0,
+                        'tran' => 0,
+                        'after' => 0 - ($sp['sp_qty'] ?? 1),
+                        'type' => 'เบิก',
+                        'ref' => $request->job_id,
+                        'actor' => Auth::user()->name,
+                        'date' => now(),
+                    ]
+                );
+            }
+
+            DB::commit();
+            // return response()->json(['message' => 'success']);
+            $items = StockJobDetail::where('stock_job_id', $request->job_id)
+                ->orderBy('id')
+                ->get();
+
+            return response()->json([
+                'message' => 'success',
+                'items' => $items   // ← ส่งให้ React เอาไปอัปเดตทันที
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function cartCount(): JsonResponse
@@ -312,6 +570,21 @@ class WithdrawSpController extends Controller
         }
     }
 
+    public function clearCart(): JsonResponse
+    {
+        try {
+            WithdrawCart::query()
+                ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                ->where('user_code_key', Auth::user()->user_code)
+                ->where('is_active', false)
+                ->delete();
+
+            return response()->json(['status' => 'success']);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+        }
+    }
+
     public function deleteCart(int $id): JsonResponse
     {
         try {
@@ -329,125 +602,6 @@ class WithdrawSpController extends Controller
             return response()->json(['message' => 'Error occurred', 'error' => $e->getMessage()], 500);
         }
     }
-
-    // public function createOrder(Request $request): JsonResponse
-    // {
-    //     try {
-    //         if (!$request->has('groups') || empty($request->groups)) {
-    //             return response()->json([
-    //                 'status' => 'error',
-    //                 'message' => 'ไม่พบข้อมูลสินค้าในตะกร้าเบิก'
-    //             ], 400);
-    //         }
-
-    //         $groups = $request->groups;
-    //         $remark = $request->remark ?? 'เบิกอะไหล่จากระบบ';
-    //         $withdraw_id = 'WITHDRAW-' . time() . rand(1000, 9999);
-    //         $phone = $request->phone;
-    //         DB::beginTransaction();
-
-    //         $order = WithdrawOrder::create([
-    //             'withdraw_id' => $withdraw_id,
-    //             'is_code_key' => Auth::user()->is_code_cust_id,
-    //             'user_key'    => Auth::user()->user_code,
-    //             'pay_at'      => Carbon::now(),
-    //             'status'      => 'pending',
-    //             'phone'       => $phone,
-    //             'remark'      => $remark,
-    //             'address' => $request->address ?? Auth::user()->store_info->address,
-    //         ]);
-
-    //         $totalPrice = 0;
-    //         $items = [];
-
-    //         foreach ($groups as $group) {
-    //             if (empty($group['list'])) continue;
-
-    //             foreach ($group['list'] as $spItem) {
-    //                 $sp = WithdrawCart::query()
-    //                     ->where('id', $spItem['id'])
-    //                     ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
-    //                     ->where('is_active', false)
-    //                     ->first();
-
-    //                 if (!$sp) continue;
-
-    //                 // Mark ว่าใช้งานแล้ว
-    //                 $sp->update(['is_active' => true]);
-
-    //                 $qty = $spItem['qty'] ?? 1;
-    //                 $price = $spItem['price_per_unit'] ?? 0;
-    //                 $lineTotal = $qty * $price;
-    //                 $totalPrice += $lineTotal;
-
-    //                 WithdrawOrderSpList::create([
-    //                     'withdraw_id'    => $withdraw_id,
-    //                     'sp_code'        => $sp->sp_code,
-    //                     'sp_name'        => $sp->sp_name,
-    //                     'sku_code'       => $sp->sku_code,
-    //                     'qty'            => $qty,
-    //                     'price_per_unit' => $price,
-    //                     'sp_unit'        => $sp->sp_unit ?? 'ชิ้น',
-    //                     'path_file'      => env('VITE_IMAGE_SP') . ($sp->sku_code ?? '') . '/' . $sp->sp_code . '.jpg',
-    //                 ]);
-
-    //                 $items[] = "{$sp->sp_code} * {$qty}";
-    //             }
-    //         }
-
-    //         $order->update(['total_price' => $totalPrice]);
-
-    //         $receive_id = StoreInformation::query()
-    //             ->leftJoin('sale_information', 'sale_information.sale_code', '=', 'store_information.sale_id')
-    //             ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
-    //             ->select('sale_information.lark_token')
-    //             ->first();
-
-    //         $text_withdraw_id = "รหัสใบเบิก : $withdraw_id";
-    //         $text = "ศูนย์ซ่อม : " . (Auth::user()->store_info->shop_name ?? 'ไม่ทราบชื่อร้าน') .
-    //             "\n$text_withdraw_id" .
-    //             "\nแจ้งเรื่อง : เบิกอะไหล่\nรายการ:\n" . implode("\n", $items);
-
-    //         $body = [
-    //             "receive_id" => $receive_id?->lark_token ?? 'unknown',
-    //             "msg_type"   => "text",
-    //             "content"    => json_encode(["text" => $text], JSON_UNESCAPED_UNICODE),
-    //         ];
-
-    //         $response = Http::post('https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal', [
-    //             'app_id'     => env('VITE_LARK_APP_ID'),
-    //             'app_secret' => env('VITE_LARK_APP_SECRET'),
-    //         ]);
-
-    //         if ($response->successful()) {
-    //             $token = $response->json('tenant_access_token');
-    //             Http::withHeaders(['Authorization' => 'Bearer ' . $token])
-    //                 ->post('https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=open_id', $body);
-    //         }
-
-    //         DB::commit();
-
-    //         return response()->json([
-    //             'status'  => 'success',
-    //             'message' => 'สร้างใบเบิกอะไหล่เรียบร้อยแล้ว',
-    //             'order'   => [
-    //                 'withdraw_id' => $withdraw_id,
-    //                 'total_price' => $totalPrice,
-    //                 'created_at'  => $order->created_at,
-    //             ],
-    //         ], 200);
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         Log::error('❌ Withdraw order creation failed', [
-    //             'user' => Auth::id(),
-    //             'error' => $e->getMessage(),
-    //         ]);
-    //         return response()->json([
-    //             'status' => 'error',
-    //             'message' => $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
 
     public function cartSpcodes(): JsonResponse
     {
@@ -476,8 +630,9 @@ class WithdrawSpController extends Controller
         );
     }
 
-    public function summary(): Response
+    public function summary(Request $request): Response
     {
+        $job_id = $request->job_id;
         $skuImageBase = env('VITE_IMAGE_PID');
 
         $groupSku = WithdrawCart::query()
@@ -519,6 +674,7 @@ class WithdrawSpController extends Controller
             'groupSku' => $groupSku,
             'totalSp' => $totalSp,
             'is_code_cust_id' => Auth::user()->is_code_cust_id,
+            'job_id' => $job_id,
         ]);
     }
 }

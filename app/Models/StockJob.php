@@ -15,6 +15,8 @@ class StockJob extends Model
         'job_status',
         'user_code_close_job',
         'closeJobAt',
-        'type'
+        'type',
+        'doctype',
+        'ref_doc',
     ];
 }

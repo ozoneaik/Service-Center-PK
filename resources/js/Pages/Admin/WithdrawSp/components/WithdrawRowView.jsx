@@ -25,54 +25,6 @@ export default function WithdrawRowView({ spList = [], onAdded, onPreview }) {
     const [loadingId, setLoadingId] = useState(null);
     const isMobile = useMediaQuery("(max-width:900px)");
 
-    // const handleAddToCart = async (sp) => {
-    //     try {
-    //         setLoadingId(sp.spcode);
-    //         const { status } = await axios.post(route("withdrawSp.carts.add"), {
-    //             ...sp,
-    //             skufg: sp.skufg,
-    //             pname: sp.pname,
-    //             remark: "มาจากการเบิก",
-    //         });
-    //         if (status === 200) onAdded?.(sp);
-    //     } catch (e) {
-    //         alert(e?.response?.data?.message || e.message);
-    //     } finally {
-    //         setLoadingId(null);
-    //     }
-    // };
-
-    // const handleAddToCart = async (sp) => {
-    //     try {
-    //         const stockQty = Number(sp.stock_balance ?? 0);
-    //         if (stockQty <= 0) {
-    //             AlertDialog({
-    //                 title: "สต็อกไม่เพียงพอ",
-    //                 text: `สินค้า "${sp.spname}" ไม่มีสต็อกคงเหลือ ไม่สามารถเพิ่มในตะกร้าได้`,
-    //                 icon: "warning",
-    //             });
-    //             return;
-    //         }
-
-    //         setLoadingId(sp.spcode);
-
-    //         const { status } = await axios.post(route("withdrawSp.carts.add"), {
-    //             ...sp,
-    //             skufg: sp.skufg,
-    //             pname: sp.pname,
-    //             remark: "มาจากการเบิก",
-    //         });
-
-    //         if (status === 200) {
-    //             onAdded?.(sp);
-    //         }
-    //     } catch (e) {
-    //         alert(e?.response?.data?.message || e.message);
-    //     } finally {
-    //         setLoadingId(null);
-    //     }
-    // };
-
     const handleAddToCart = async (sp) => {
         try {
             setLoadingId(sp.spcode);

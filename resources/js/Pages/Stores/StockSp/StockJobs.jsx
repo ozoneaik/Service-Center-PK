@@ -2,6 +2,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import { Head, Link, router, useForm, usePage } from "@inertiajs/react";
 import {
     Alert, Button, Card, CardContent, Chip, Container, Grid2, InputAdornment, MenuItem, Paper, Select, Stack,
+    Tab,
     Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, useMediaQuery
 } from "@mui/material";
 import PasswordIcon from "@mui/icons-material/Password";
@@ -169,9 +170,11 @@ export default function StockJobs({ jobs }) {
                                             <TableCell>สถานะ</TableCell>
                                             <TableCell>รหัส job</TableCell>
                                             <TableCell>ประเภท</TableCell>
-                                            <TableCell>จำนวนรายการอะไหล่</TableCell>
-                                            <TableCell>วันที่เวลาสร้าง</TableCell>
-                                            <TableCell>ชื่อผู้สร้าง</TableCell>
+                                            <TableCell align="center">รูปแบบ</TableCell>
+                                            <TableCell align="center">เอกสารอ้างอิง</TableCell>
+                                            <TableCell align="center">จำนวนรายการอะไหล่</TableCell>
+                                            <TableCell align="center">วันที่เวลาสร้าง</TableCell>
+                                            <TableCell align="center">ชื่อผู้สร้าง</TableCell>
                                             <TableCell align="center">#</TableCell>
                                         </TableRow>
                                     </TableHead>
@@ -194,13 +197,27 @@ export default function StockJobs({ jobs }) {
                                                             color={job.type === 'เพิ่ม' ? 'primary' : 'error'}
                                                         />
                                                     </TableCell>
+                                                    <TableCell align="center">
+                                                        <Chip
+                                                            variant="outlined"
+                                                            label={job.doctype ?? "-"}
+                                                            color={job.doctype === "Auto" ? "warning" : "default"}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell align='center'>
+                                                        <Chip
+                                                            variant="outlined"
+                                                            label={job.ref_doc ?? "-"}
+                                                        />
+                                                        {/* {job.ref_doc} */}
+                                                    </TableCell>
                                                     <TableCell align='center'>
                                                         {job.total_qty}
                                                     </TableCell>
-                                                    <TableCell>
+                                                    <TableCell align="center">
                                                         <DateFormatTh date={job.created_at} />
                                                     </TableCell>
-                                                    <TableCell>
+                                                    <TableCell align="center">
                                                         {job.user_name}
                                                     </TableCell>
                                                     <TableCell>
