@@ -454,11 +454,7 @@ class WithdrawJobController extends Controller
                 }
             }
 
-            /**
-             * 2) ถ้ามีตัวไหนสต็อกไม่พอ → สร้าง JOB-STOCK (Auto)
-             *    ✅ แค่สร้างเอกสาร + detail
-             *    ❌ ยังไม่อัปเดต StockSparePart ที่นี่ (ปล่อยให้ติดลบได้)
-             */
+
             if (!empty($errors)) {
                 $newStockJobId = 'JOB-STOCK' . time() . rand(100, 999);
 
@@ -544,11 +540,19 @@ class WithdrawJobController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'success'          => true,
-                'auto_job_created' => !empty($errors),
-                'shortages'        => $errors,
-            ]);
+            // return response()->json([
+            //     'success'          => true,
+            //     'auto_job_created' => !empty($errors),
+            //     'shortages'        => $errors,
+            // ]);
+            if (!empty($errors)) {
+                return response()->json([
+                    'stock_error' => true,
+                    'details' => $errors,
+                    'new_stock_job_id' => $newStockJobId,
+                    'message' => "สต๊อคไม่เพียงพอ",
+                ], 422);
+            }
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
