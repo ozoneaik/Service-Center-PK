@@ -8,7 +8,7 @@ import {
     Chip
 } from "@mui/material";
 import { TableStyle } from "../../../../css/TableStyle";
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import axios from "axios";
 import { AlertDialog } from "@/Components/AlertDialog";
 
@@ -16,6 +16,28 @@ export default function CreateStockJob({ new_job_id, sp_list = [], job_type = 'a
     // States
     const [spList, setSpList] = useState(sp_list);
     const [jobType, setJobType] = useState(job_type);
+
+    useEffect(() => {
+        if (from === "edit" && job_type === "add" && sp_list.length > 0) {
+
+            const fixed = sp_list.map(sp => {
+                const qty = Number(sp.sp_qty || 0);
+                const available = Number(sp.total_aready || 0);
+
+                return {
+                    ...sp,
+                    sp_qty: qty,
+                    total_after_total_if_add: available + qty,
+                    total_after_total_if_remove: available - qty,
+                    _editing: false,
+                    _draftQty: qty,
+                };
+            });
+
+            setSpList(fixed);
+        }
+    }, []);
+
     const [searchResult, setSearchResult] = useState(null);
     const [searchQty, setSearchQty] = useState(1);
     const [isSearching, setIsSearching] = useState(false);

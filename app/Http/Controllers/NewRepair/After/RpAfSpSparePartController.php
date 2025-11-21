@@ -44,13 +44,13 @@ class RpAfSpSparePartController extends Controller
             // สร้างใหม่
             foreach ($spare_parts as $key => $spare_part) {
                 $claim = $spare_part['claim'] ?? false;
-                if (isset($spare_part['warranty']) && $spare_part['warranty'] === 'Y') {
+                if (isset($spare_part['warranty']) && $spare_part['warranty'] === 'Yes') {
                     $warranty = true;
-                } elseif (isset($spare_part['warranty']) && $spare_part['warranty'] === 'N') {
+                } elseif (isset($spare_part['warranty']) && $spare_part['warranty'] === 'N0') {
                     $warranty = false;
-                } elseif (isset($spare_part['sp_warranty']) && $spare_part['sp_warranty'] === 'Y') {
+                } elseif (isset($spare_part['sp_warranty']) && $spare_part['sp_warranty'] === 'Yes') {
                     $warranty = true;
-                } elseif (isset($spare_part['sp_warranty']) && $spare_part['sp_warranty'] === 'N') {
+                } elseif (isset($spare_part['sp_warranty']) && $spare_part['sp_warranty'] === 'N0') {
                     $warranty = false;
                 } else {
                     $warranty = false;
@@ -71,6 +71,7 @@ class RpAfSpSparePartController extends Controller
                     'qty' => $spare_part['qty'] ?? 0,
                     'sp_unit' => $spare_part['spunit'] ?? 'อัน',
                     'claim' => $spare_part['spcode'] === 'SV001' ? false : $claim,
+                    'fast_claim' => $spare_part['fast_claim'] ?? false,
                     'claim_remark' => ($spare_part['remark_noclaim'] ?? null) === 'เคลมด่วน' ? 'เคลมด่วน' : ($spare_part['claim_remark'] ?? null),
                     'remark' => $spare_part['remark'] ?? null,
                     'remark_noclaim' => $spare_part['remark_noclaim'] ?? null,
