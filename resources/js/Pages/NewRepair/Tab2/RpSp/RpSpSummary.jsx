@@ -214,7 +214,7 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                     remark: "",
                     price_multiple_gp: originalPricesBeforeFastAll[sp.spcode] ?? sp.price_multiple_gp,
                     // remark: sp.remark,
-                    remark: "",
+                    // remark: "",
                 };
             }
             return sp;
