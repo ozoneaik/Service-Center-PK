@@ -44,13 +44,13 @@ class RpAfSpSparePartController extends Controller
             // สร้างใหม่
             foreach ($spare_parts as $key => $spare_part) {
                 $claim = $spare_part['claim'] ?? false;
-                if (isset($spare_part['warranty']) && $spare_part['warranty'] === 'Yes') {
+                if (isset($spare_part['warranty']) && strtolower($spare_part['warranty']) === 'yes') {
                     $warranty = true;
-                } elseif (isset($spare_part['warranty']) && $spare_part['warranty'] === 'N0') {
+                } elseif (isset($spare_part['warranty']) && strtolower($spare_part['warranty']) === 'no') {
                     $warranty = false;
-                } elseif (isset($spare_part['sp_warranty']) && $spare_part['sp_warranty'] === 'Yes') {
+                } elseif (isset($spare_part['sp_warranty']) && strtolower($spare_part['sp_warranty']) === 'yes') {
                     $warranty = true;
-                } elseif (isset($spare_part['sp_warranty']) && $spare_part['sp_warranty'] === 'N0') {
+                } elseif (isset($spare_part['sp_warranty']) && strtolower($spare_part['sp_warranty']) === 'no') {
                     $warranty = false;
                 } else {
                     $warranty = false;

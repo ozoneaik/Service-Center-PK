@@ -53,8 +53,11 @@ Route::middleware('adminPermission')->group(function () {
         Route::prefix('start-up-cost')->group(function () {
             Route::get('/', [StartUpCostController::class, 'index'])->name('startUpCost.index');
             Route::get('/create', [StartUpCostController::class, 'create'])->name('startUpCost.create');
+            Route::get('/edit/{id}', [StartUpCostController::class, 'edit'])->name('startUpCost.edit');
+            Route::put('/update/{id}', [StartUpCostController::class, 'update'])->name('startUpCost.update');
             Route::post('/store', [StartUpCostController::class, 'store'])->name('startUpCost.store');
             Route::delete('/delete/{id}', [StartUpCostController::class, 'delete'])->name('startUpCost.delete');
+            Route::get('/export', [StartUpCostController::class, 'exportExcel'])->name('startUpCost.export');
         });
 
         Route::prefix('warranties')->group(function () {

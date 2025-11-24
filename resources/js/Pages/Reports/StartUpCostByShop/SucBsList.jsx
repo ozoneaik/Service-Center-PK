@@ -1,14 +1,16 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import { Head } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import {
     Container, Grid2, Table, TableCell, TableHead, TableRow,
     TableBody, Typography, useMediaQuery, Stack, Button, Card, CardContent,
-    Box, Avatar, Chip, Divider, Paper
+    Box, Avatar, Chip, Divider, Paper,
+    Autocomplete,
+    TextField
 } from "@mui/material";
 import { TableStyle } from "../../../../css/TableStyle.js";
-import React from "react";
+import React, { use } from "react";
 
-export default function SucBsList({ jobs,total_start_up_cost }) {
+export default function SucBsList({ jobs, total_start_up_cost, shops, selected_shop, current_shop_name, is_admin }) {
     const isMobile = useMediaQuery('(max-width:600px)');
 
     const TableComponent = () => (
@@ -58,8 +60,8 @@ export default function SucBsList({ jobs,total_start_up_cost }) {
                                     </Stack>
                                 </Stack>
                             </TableCell>
-                            <TableCell>
-                                <Typography variant="body2" fontWeight="bold" color="primary" align="center">
+                            <TableCell align="center">
+                                <Typography variant="body2" fontWeight="bold" color="primary">
                                     ฿{job.start_up_cost?.toLocaleString()}
                                 </Typography>
                             </TableCell>
@@ -73,7 +75,7 @@ export default function SucBsList({ jobs,total_start_up_cost }) {
                 </TableBody>
             </Table>
         </Paper>
-    )
+    );
 
     const MobileComponent = ({ job, index }) => (
         <Card elevation={2} sx={{ mb: 2 }}>
@@ -132,7 +134,7 @@ export default function SucBsList({ jobs,total_start_up_cost }) {
             <Head title={'รายงานค่าตอบแทน (ค่าเปิดเครื่องในประกัน)'} />
             <Container maxWidth={false} sx={{ bgcolor: 'grey.50', py: 3 }}>
                 <Grid2 container spacing={3}>
-                    <Grid2 size={12}>
+                    {/* <Grid2 size={12}>
                         <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
                             <Stack direction="row" spacing={2} alignItems="center">
                                 <Typography variant="body2" color="text.secondary">
@@ -143,15 +145,84 @@ export default function SucBsList({ jobs,total_start_up_cost }) {
                                 <Chip label="เสร็จสิ้น" variant="outlined" size="small" />
                             </Stack>
                         </Paper>
-                    </Grid2>
+                    </Grid2> */}
 
                     <Grid2 size={12}>
                         <Stack direction='row' justifyContent='space-between' alignItems='center'>
                             <Typography fontSize={20} fontWeight='bold'>
-                                รายงานค่าตอบแทน (ค่าเปิดเครื่องในประกัน)
+                                รายงานค่าตอบแทน (ค่าเปิดเครื่องในประกัน) ร้าน {current_shop_name}
                             </Typography>
-                            <Chip color="info" label={` รวมค่าเปิดเครื่อง: ฿ ${total_start_up_cost?.toLocaleString() || 0}`} />
+                            {/* <Chip color="info" label={` รวมค่าเปิดเครื่อง: ฿ ${total_start_up_cost?.toLocaleString() || 0}`} /> */}
                         </Stack>
+                    </Grid2>
+                    <Grid2 size={12}>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: isMobile ? "column" : "row",
+                                justifyContent: isMobile ? "flex-start" : "space-between",
+                                alignItems: isMobile ? "stretch" : "center",
+                                gap: 2,
+                                // mb: 1,
+                            }}
+                        >
+                            {/* ซ้าย: Autocomplete (Mobile = full width) */}
+                            <Box sx={{ width: isMobile ? "100%" : "260px" }}>
+                                {is_admin && (
+                                    <Autocomplete
+                                        sx={{ width: "100%" }}
+                                        options={shops}
+                                        getOptionLabel={(option) => option.shop_name}
+                                        value={shops.find((s) => s.is_code_cust_id == selected_shop) || null}
+                                        onChange={(_, newValue) =>
+                                            router.get(route('report.start-up-cost-shop.index'), {
+                                                shop: newValue?.is_code_cust_id || '',
+                                            })
+                                        }
+                                        renderInput={(params) => (
+                                            <TextField {...params} label="กรองร้านค้า สำหรับ Admin" size="small" />
+                                        )}
+                                    />
+                                )}
+                            </Box>
+
+                            {/* ขวา (Mobile: กลายเป็น Stack แนวตั้ง) */}
+                            <Stack
+                                direction={isMobile ? "column" : "row"}
+                                spacing={2}
+                                alignItems={isMobile ? "stretch" : "center"}
+                                sx={{ 
+                                    width: isMobile ? "100%" : "auto" ,
+                                    mr: isMobile ? 0 : 3,
+                                
+                                }}
+                            >
+                                <Button
+                                    fullWidth={isMobile}
+                                    variant="contained"
+                                    color="success"
+                                    onClick={() => {
+                                        window.open(
+                                            route('report.start-up-cost-shop.export', { shop: selected_shop }),
+                                            "_blank"
+                                        );
+                                    }}
+                                >
+                                    ส่งออก Excel
+                                </Button>
+
+                                <Chip
+                                    sx={{
+                                        width: isMobile ? "100%" : "auto",
+                                        textAlign: "center",
+                                        fontSize: isMobile ? 14 : "inherit",
+                                        py: isMobile ? 1 : 0,
+                                    }}
+                                    color="info"
+                                    label={`รวมค่าเปิดเครื่อง: ฿ ${total_start_up_cost?.toLocaleString() || 0}`}
+                                />
+                            </Stack>
+                        </Box>
                     </Grid2>
 
                     <Grid2 size={12}>

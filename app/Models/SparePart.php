@@ -91,8 +91,8 @@ class SparePart extends Model
                     'price_multiple_gp' => floatval($sp->price_multiple_gp),
 
                     // WARRANTY
-                    'sp_warranty' => $sp->sp_warranty ? 'Yes' : 'No',
-                    'warranty' => $sp->sp_warranty ? 'Yes' : 'No',
+                    'sp_warranty' => $sp->sp_warranty ? 'yes' : 'no',
+                    'warranty' => $sp->sp_warranty ? 'yes' : 'no',
 
                     // CLAIM STATUS
                     'claim' => (bool) $sp->claim,

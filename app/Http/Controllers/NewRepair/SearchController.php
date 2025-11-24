@@ -825,9 +825,9 @@ class SearchController extends Controller
                                 'pname'             => $asset['pname'] ?? '',
                                 'imagesku'          => $asset['imagesku'][0] ?? null,
                                 'typedm'            => $dmKey,
-                                
-                                'warranty'          => $sp['warranty'] ?? 'No',
-                                'sp_warranty'       => ($sp['warranty'] ?? 'No') === 'Yes',
+
+                                'warranty'          => strtolower($sp['warranty'] ?? 'no'),
+                                'sp_warranty'       => strtolower($sp['warranty'] ?? 'no') === 'yes',
 
                                 'stdprice_per_unit' => number_format((float)($sp['stdprice'] ?? 0), 2, '.', ''),
                                 'price_per_unit'    => number_format(

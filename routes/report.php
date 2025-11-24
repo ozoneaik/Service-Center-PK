@@ -17,6 +17,7 @@ Route::prefix('/report')->group(function(){
     Route::prefix('/start-up-cost-shop')->group(function () {
         Route::get('/', [StartUpCostByShopController::class,'index'])->name('report.start-up-cost-shop.index');
     });
+    Route::get('/report/start-up-cost-shop/export', [StartUpCostByShopController::class, 'exportExcel'])->name('report.start-up-cost-shop.export');
     /**
      * รายสรุปยอดรายรับ ศูนย์ซ่อม แยก เป็น ค่าบริการ ค่าอะไหล่ ค่าตอบแทน
      */

@@ -49,14 +49,14 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JO
     const handleSpareCheck = (spare, checked) => {
         if (checked) {
             console.log(spare)
-            const ZeroValue = (spare.warranty === 'Yes' && JOB.warranty) ? 0 : spare.price_per_unit;
+            const ZeroValue = (spare.warranty === 'yes' && JOB.warranty) ? 0 : spare.price_per_unit;
             // เพิ่มอะไหล่ใหม่ พร้อมกับ qty = 1
             setSelectedSpares(prev => [
                 ...prev, {
                     ...spare,
                     qty: 1,
                     price_multiple_gp: ZeroValue,
-                    claim: spare.warranty === 'Yes' && JOB.warranty
+                    claim: spare.warranty === 'yes' && JOB.warranty
                 }
             ]);
         } else {
@@ -144,7 +144,7 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JO
                             const imageSp = import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
                             const isSelected = isSpareSelected(sp.spcode);
                             const isOpen = openIndex === index;
-                            const GreenHighlight = (sp.warranty === 'Yes' && JOB.warranty) ? '#e8f5e8' :
+                            const GreenHighlight = (sp.warranty === 'yes' && JOB.warranty) ? '#e8f5e8' :
                                 (!sp.price_per_unit || sp.price_per_unit === '-') ? '#ffebee' : 'white';
 
                             return (
@@ -250,7 +250,7 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JO
                                     <TableRow
                                         key={index}
                                         sx={{
-                                            backgroundColor: (sp.warranty === 'Yes' && JOB.warranty) ? '#e8f5e8' :
+                                            backgroundColor: (sp.warranty === 'yes' && JOB.warranty) ? '#e8f5e8' :
                                                 (!sp.price_per_unit || sp.price_per_unit === '-') ? '#ffebee' : 'inherit'
                                         }}
                                     >

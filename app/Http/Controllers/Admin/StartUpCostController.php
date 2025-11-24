@@ -8,6 +8,10 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class StartUpCostController extends Controller
 {
@@ -82,6 +86,116 @@ class StartUpCostController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return redirect()->route('startUpCost.index')->with('error', $e->getMessage());
+        }
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $query = StartUpCost::query();
+
+        if ($request->filled('sku_code')) {
+            $query->where('sku_code', 'like', "%{$request->sku_code}%");
+        }
+        if ($request->filled('sku_name')) {
+            $query->where('sku_name', 'like', "%{$request->sku_name}%");
+        }
+
+        $rows = $query->orderBy('id', 'asc')->get();
+
+        // Header
+        $data = [[
+            'ID',
+            'SKU Code',
+            'SKU Name',
+            'หน่วย',
+            'ค่าเปิดเครื่อง',
+            'วันที่สร้าง',
+            'วันที่อัปเดต'
+        ]];
+
+        // Data rows
+        foreach ($rows as $r) {
+            $data[] = [
+                $r->id,
+                $r->sku_code,
+                $r->sku_name,
+                $r->unit,
+                $r->startup_cost,
+                $r->created_at,
+                $r->updated_at,
+            ];
+        }
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Fill data
+        foreach ($data as $rowIndex => $row) {
+            foreach ($row as $colIndex => $value) {
+
+                $colLetter = Coordinate::stringFromColumnIndex($colIndex + 1);
+                $cell = $colLetter . ($rowIndex + 1);
+
+                // SKU, PID → บังคับเป็น text
+                if ($colIndex == 1) {
+                    $sheet->setCellValueExplicit($cell, (string) $value, DataType::TYPE_STRING);
+                } else {
+                    $sheet->setCellValue($cell, $value);
+                }
+            }
+        }
+
+        // Export
+        $fileName = "StartupCost_" . date('Ymd_His') . ".xlsx";
+        $writer = new Xlsx($spreadsheet);
+
+        $filePath = storage_path($fileName);
+        $writer->save($filePath);
+
+        return response()->download($filePath)->deleteFileAfterSend(true);
+    }
+
+    public function edit($id)
+    {
+        $item = StartUpCost::findOrFail($id);
+
+        return Inertia::render('Admin/StartUpCost/SucEdit', [
+            'item' => $item
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'sku_code' => 'required',
+                'sku_name' => 'required',
+                'startup_cost' => 'required'
+            ]);
+
+            DB::beginTransaction();
+
+            $item = StartUpCost::findOrFail($id);
+
+            $item->update([
+                'image' => "https://images.dcpumpkin.com/images/product/500/" . $request->sku_code . ".jpg",
+                'barcode' => $request->sku_code,
+                'sku_code' => $request->sku_code,
+                'sku_name' => $request->sku_name,
+                'unit' => $request->unit,
+                'amount' => $request->amount,
+                'price_per_unit' => $request->price_per_unit,
+                'discount' => $request->discount,
+                'p_cat_name' => $request->p_cat_name,
+                'startup_cost' => $request->startup_cost,
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('startUpCost.index')->with('success', 'อัพเดตข้อมูลสำเร็จ');
+        } catch (Exception $e) {
+            DB::rollBack();
+            return back()->with('error', $e->getMessage());
         }
     }
 }

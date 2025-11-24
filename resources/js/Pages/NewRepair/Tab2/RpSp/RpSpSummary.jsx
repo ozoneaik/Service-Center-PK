@@ -40,7 +40,7 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
         return JOB?.warranty === true && (
             w === true ||
             w === "Y" ||
-            w === "Yes"
+            w === "yes"
         );
     };
 
@@ -66,7 +66,7 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                 ...spare,
                 price_multiple_gp: spare.price_multiple_gp ?? 0,
                 qty: spare.qty ?? 1,
-                fast_claim: !!spare.fast_claim, 
+                fast_claim: !!spare.fast_claim,
             }
         }));
     };
@@ -98,36 +98,73 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
         }
     };
 
+    // const handleFastClaimAll = () => {
+    //     // เลือกเฉพาะรายการที่อยู่ในประกันจริงๆ
+    //     const target = spSelected.filter(sp =>
+    //         isCoveredByWarranty(sp) && sp.spcode !== "SV001"
+    //     );
+
+    //     if (target.length === 0) {
+    //         AlertDialog({
+    //             text: "ไม่มีอะไหล่ที่อยู่ในประกันให้เคลมด่วนได้",
+    //             icon: "info"
+    //         });
+    //         return;
+    //     }
+
+    //     // เก็บราคาเดิมเฉพาะตัวที่เราจะปรับ
+    //     const keepOriginal = {};
+    //     target.forEach(sp => {
+    //         keepOriginal[sp.spcode] = sp.price_multiple_gp;
+    //     });
+    //     setOriginalPricesBeforeFastAll(keepOriginal);
+
+    //     // อัปเดตเฉพาะตัวที่อยู่ในประกันเท่านั้น
+    //     const updated = spSelected.map(sp => {
+    //         if (isCoveredByWarranty(sp) && sp.spcode !== "SV001") {
+    //             return {
+    //                 ...sp,
+    //                 price_multiple_gp: 0,
+    //                 fast_claim: true,
+    //                 claim: true,
+    //                 claim_remark: "เคลมด่วน",
+    //             };
+    //         }
+    //         return sp;
+    //     });
+
+    //     onUpdateSpSelected(updated);
+    // };
+
     const handleFastClaimAll = () => {
-        // เลือกเฉพาะรายการที่อยู่ในประกันจริงๆ
-        const target = spSelected.filter(sp =>
-            isCoveredByWarranty(sp) && sp.spcode !== "SV001"
-        );
+        // เลือกทุกรายการที่ไม่ใช่ SV001
+        const target = spSelected.filter(sp => sp.spcode !== "SV001");
 
         if (target.length === 0) {
             AlertDialog({
-                text: "ไม่มีอะไหล่ที่อยู่ในประกันให้เคลมด่วนได้",
+                text: "ไม่มีอะไหล่ให้เคลมด่วน",
                 icon: "info"
             });
             return;
         }
 
-        // เก็บราคาเดิมเฉพาะตัวที่เราจะปรับ
+        // เก็บราคาเดิมทุกตัว (ก่อนเคลมด่วน)
         const keepOriginal = {};
         target.forEach(sp => {
             keepOriginal[sp.spcode] = sp.price_multiple_gp;
         });
         setOriginalPricesBeforeFastAll(keepOriginal);
 
-        // อัปเดตเฉพาะตัวที่อยู่ในประกันเท่านั้น
+        // เคลมด่วนทั้งหมด (ไม่สนว่าประกันหรือไม่)
         const updated = spSelected.map(sp => {
-            if (isCoveredByWarranty(sp) && sp.spcode !== "SV001") {
+            if (sp.spcode !== "SV001") {
                 return {
                     ...sp,
                     price_multiple_gp: 0,
                     fast_claim: true,
                     claim: true,
                     claim_remark: "เคลมด่วน",
+                    remark: "",
                 };
             }
             return sp;
@@ -136,20 +173,50 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
         onUpdateSpSelected(updated);
     };
 
+    // const handleCancelFastClaimAll = () => {
+    //     const updated = spSelected.map(sp => {
+    //         if (sp.spcode === "SV001") return sp;
+    //         if (isCoveredByWarranty(sp)) {
+    //             return {
+    //                 ...sp,
+    //                 fast_claim: false,
+    //                 claim: false,
+    //                 claim_remark: "",
+    //                 price_multiple_gp: originalPricesBeforeFastAll[sp.spcode] ?? sp.price_multiple_gp,
+    //                 remark: sp.remark,
+    //             };
+    //         }
+
+    //         return sp;
+    //     });
+
+    //     onUpdateSpSelected(updated);
+
+    //     // เคลียร์ state เดิม
+    //     setEditingSpares({});
+    //     setClaimDialog(false);
+    //     setSelectedSpareForClaim(null);
+    //     setClaimData({ claim: '', claim_remark: '', remark: '' });
+
+    //     setOriginalPricesBeforeFastAll({});
+    // };
+
+    // บันทึกแถว
+
     const handleCancelFastClaimAll = () => {
         const updated = spSelected.map(sp => {
-            if (sp.spcode === "SV001") return sp;
-            if (isCoveredByWarranty(sp)) {
+            if (sp.spcode !== "SV001") {
                 return {
                     ...sp,
                     fast_claim: false,
                     claim: false,
                     claim_remark: "",
+                    remark: "",
                     price_multiple_gp: originalPricesBeforeFastAll[sp.spcode] ?? sp.price_multiple_gp,
-                    remark: sp.remark,
+                    // remark: sp.remark,
+                    remark: "",
                 };
             }
-
             return sp;
         });
 
@@ -160,11 +227,9 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
         setClaimDialog(false);
         setSelectedSpareForClaim(null);
         setClaimData({ claim: '', claim_remark: '', remark: '' });
-
         setOriginalPricesBeforeFastAll({});
     };
 
-    // บันทึกแถว
     const handleSaveEdit = (spcode) => {
         const editData = editingSpares[spcode];
         if (!editData) return;
@@ -442,7 +507,7 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                                     color="warning"
                                     onClick={handleFastClaimAll}
                                 >
-                                    เคลมด่วนในประกันทั้งหมด
+                                    เคลมด่วนทั้งหมด
                                 </Button>
                                 {hasFastClaimInWarranty && (
                                     <Button
@@ -451,7 +516,7 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                                         onClick={handleCancelFastClaimAll}
                                         sx={{ ml: 1 }}
                                     >
-                                        ยกเลิกเคลมด่วนในประกัน
+                                        ยกเลิกเคลมด่วนทั้งหมด
                                     </Button>
                                 )}
                             </Box>
@@ -843,7 +908,7 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                                     disabled={selectedSpareForClaim?.spcode === "__ALL__"}
                                 >
                                     <MenuItem value="ไม่เคลม">ไม่เคลม</MenuItem>
-                                    <MenuItem value="เคลมด่วน">เคลมด่วน</MenuItem>
+                                    <MenuItem value="เคลมด่วน" disabled>เคลมด่วน</MenuItem>
                                     <MenuItem value="เคลมสินค้านี้ซีเรียลหมดประกันตามเงื่อนไขแล้ว">
                                         เคลมสินค้านี้ซีเรียลหมดประกันตามเงื่อนไขแล้ว
                                     </MenuItem>

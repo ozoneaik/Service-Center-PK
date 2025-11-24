@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout"
-import {Head, Link, router, usePage} from "@inertiajs/react"
+import { Head, Link, router, usePage } from "@inertiajs/react"
 import {
     Alert,
     Box,
@@ -84,14 +84,46 @@ export default function SucList({StartUpCosts}) {
                                 )
                         )}
                     </Grid2>
-                    {(user.role === 'admin' && route().current('startUpCost.index')) && (
+                    {user.role === 'admin' && route().current('startUpCost.index') && (
                         <Grid2 size={12}>
-                            <Stack direction={{md: 'row', xs: 'column'}} justifyContent='space-between'>
-                                <Typography variant='h6'>รายการค่าเปิดเครื่อง</Typography>
-                                <Button variant="contained" startIcon={<AddBox/>} component={Link}
-                                        href={route('startUpCost.create')}>
-                                    สร้าง
-                                </Button>
+                            <Stack direction={{ xs: 'column', md: 'row' }} justifyContent='space-between'
+                                alignItems={{ xs: 'flex-start', md: 'center' }}
+                                spacing={2}
+                                sx={{ mb: 1 }}
+                            >
+                                <Typography variant='h6'>
+                                    รายการค่าเปิดเครื่อง
+                                </Typography>
+
+                                <Stack
+                                    direction={{ xs: 'column', sm: 'row' }}
+                                    spacing={2}
+                                >
+                                    <Button
+                                        variant="contained"
+                                        startIcon={<AddBox />}
+                                        component={Link}
+                                        href={route('startUpCost.create')}
+                                    >
+                                        สร้าง
+                                    </Button>
+
+                                    <Button
+                                        variant="contained"
+                                        color="success"
+                                        onClick={() => {
+                                            window.open(
+                                                route('startUpCost.export', {
+                                                    sku_code: startUpCosts?.filters?.sku_code,
+                                                    sku_name: startUpCosts?.filters?.sku_name
+                                                }),
+                                                "_blank"
+                                            );
+                                        }}
+                                    >
+                                        ส่งออก Excel
+                                    </Button>
+                                </Stack>
                             </Stack>
                         </Grid2>
                     )}
@@ -142,7 +174,10 @@ export default function SucList({StartUpCosts}) {
                                                         <Stack direction='row' spacing={2}>
                                                             <Button
                                                                 size="small" startIcon={<Edit/>}
-                                                                variant="outlined" color="secondary">
+                                                                variant="outlined" color="secondary"
+                                                                component={Link}
+                                                                href={route('startUpCost.edit', { id: item.id })}
+                                                            >
                                                                 แก้ไข
                                                             </Button>
                                                             <Button
