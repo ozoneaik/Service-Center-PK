@@ -36,7 +36,8 @@ const listMenu = [
         icon: <DashboardIcon sx={{ fontSize: 40 }} />,
         color: '#9C27B0',
         bgGradient: 'linear-gradient(135deg, #9C27B0 0%, #BA68C8 100%)',
-        description: 'ภาพรวมการทำงานของศูนย์ซ่อมแบบ Real-time'
+        description: 'ภาพรวมการทำงานของศูนย์ซ่อมแบบ Real-time',
+        routeUrl: 'report.summary-center-repairs.index'
     },
     {
         name: 'Dashboard สถานะการเคลมอะไหล่',

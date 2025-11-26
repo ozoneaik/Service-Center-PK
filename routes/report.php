@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Report\SummaryCenterRepairsController;
 use App\Http\Controllers\Report\StartUpCostByShopController;
 use App\Http\Controllers\Report\StartUpCostController;
 use App\Http\Controllers\Report\SummaryOfIncomeController;
@@ -29,5 +30,10 @@ Route::prefix('/report')->group(function(){
      */
     Route::prefix('/start-up-cost')->group(function (){
         Route::get('/', [StartUpCostController::class,'index'])->name('report.start-up-cost.index');
+    });
+    Route::prefix('/summary-center-repairs')->group(function () {
+        Route::get('/', [SummaryCenterRepairsController::class, 'index'])->name('report.summary-center-repairs.index');
+        Route::get('/export', [SummaryCenterRepairsController::class, 'exportExcel'])->name('report.summary-center-repairs.export');
+        Route::get('/detail', [SummaryCenterRepairsController::class, 'detail'])->name('report.summary-center-repairs.detail');
     });
 });

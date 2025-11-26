@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\Skus\SkuController;
 use App\Http\Controllers\Admin\SpController;
 use App\Http\Controllers\Admin\StartUpCostController;
+use App\Http\Controllers\Admin\SummaryCenterRepairsController;
 use App\Http\Controllers\Admin\UserManageController;
 use App\Http\Controllers\Admin\WarrantyController;
 use App\Http\Controllers\ClosedController;
@@ -60,6 +61,12 @@ Route::middleware('adminPermission')->group(function () {
             Route::get('/export', [StartUpCostController::class, 'exportExcel'])->name('startUpCost.export');
         });
 
+        Route::prefix('summary-center-repairs')->group(function () {
+            Route::get('/', [SummaryCenterRepairsController::class, 'index'])->name('admin.summary-center-repairs.index');
+            Route::get('/export', [SummaryCenterRepairsController::class, 'exportExcel'])->name('admin.summary-center-repairs.export');
+            Route::get('/detail', [SummaryCenterRepairsController::class, 'detail'])->name('admin.summary-center-repairs.detail');
+        });
+        
         Route::prefix('warranties')->group(function () {
             Route::get('/', [WarrantyController::class, 'index'])->name('admin.warranties.index');
         });
