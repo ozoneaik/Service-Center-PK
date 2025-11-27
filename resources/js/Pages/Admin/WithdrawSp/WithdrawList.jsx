@@ -263,7 +263,7 @@ export default function WithdrawList({ count_cart, message, sku, result, is_code
                         <TextField
                             required
                             fullWidth
-                            label="ค้นหารหัสสินค้า"
+                            label="ค้นหารหัสสินค้าหรือหมายเลขซีเรียล"
                             size="small"
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}

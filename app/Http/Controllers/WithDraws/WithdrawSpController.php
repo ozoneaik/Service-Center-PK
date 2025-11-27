@@ -35,10 +35,10 @@ class WithdrawSpController extends Controller
             ]);
         }
 
-        $sku = $request->query('sku');
+        $search_term = $request->query('sku');
 
-        if (!empty($sku)) {
-            return $this->search($sku);
+        if (!empty($search_term)) {
+            return $this->search($search_term);
         }
 
         return Inertia::render('Admin/WithdrawSp/Index', [
@@ -50,35 +50,217 @@ class WithdrawSpController extends Controller
         ]);
     }
 
+    //ใช้อยู่
+    // public function searchJson(Request $request)
+    // {
+    //     $sku = $request->sku;
+    //     $jobId = $request->job_id;
+
+    //     if (!$sku) {
+    //         return response()->json(['error' => 'SKU required'], 422);
+    //     }
+
+    //     $apiUrl = env('VITE_WARRANTY_SN_API_GETDATA');
+
+    //     try {
+    //         $response = Http::timeout(15)->get($apiUrl, ['search' => $sku]);
+
+    //         if (!$response->successful()) {
+    //             throw new \Exception("API Error");
+    //         }
+
+    //         $data = $response->json();
+    //         if (($data['status'] ?? '') !== 'SUCCESS') {
+    //             throw new \Exception($data['message'] ?? 'ไม่พบสินค้า');
+    //         }
+
+    //         $assets = $data['assets'] ?? [];
+    //         $dmList = $data['dm_list'] ?? [];
+    //         $spAll = $data['sp'] ?? [];
+
+    //         $pid = $sku;
+    //         $asset = $assets[$pid] ?? [];
+    //         $facmodel = $asset['facmodel'] ?? $pid;
+
+    //         // ใช้ BASE URL เดียวกับ search()
+    //         $imageDmBase = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/');
+    //         $imageSpBase = rtrim(env('VITE_IMAGE_SP', ''), '/');
+
+    //         $diagramLayers = [];
+    //         $spList = [];
+    //         $modelOptions = [];
+
+    //         if (!empty($dmList[$pid])) {
+    //             foreach ($dmList[$pid] as $dmKey => $dmData) {
+
+    //                 $modelfg = trim($dmData['modelfg'] ?? $facmodel);
+    //                 if ($modelfg === '') {
+    //                     $modelfg = "DM" . str_pad($dmKey, 2, "0", STR_PAD_LEFT);
+    //                 }
+
+    //                 $modelOptions[] = $modelfg;
+
+    //                 // Diagram (เหมือน search())
+    //                 for ($i = 1; $i <= 5; $i++) {
+    //                     $imgUrl = $dmData["img_{$i}"] ?? null;
+    //                     if (!$imgUrl) continue;
+
+    //                     if (!str_contains($imgUrl, 'http')) {
+    //                         $imgUrl = "{$imageDmBase}/" . ltrim($imgUrl, '/');
+    //                     }
+
+    //                     $diagramLayers[] = [
+    //                         'modelfg' => $modelfg,
+    //                         'layer' => "รูปที่ {$i}",
+    //                         'path_file' => $imgUrl,
+    //                         'layout' => $i,
+    //                         'typedm' => $dmKey,
+    //                     ];
+    //                 }
+
+    //                 // Spare Parts (ให้เหมือน search())
+    //                 if (!empty($spAll[$pid][$dmKey])) {
+    //                     foreach ($spAll[$pid][$dmKey] as $sp) {
+
+    //                         $spcode = $sp['spcode'] ?? null;
+    //                         if (!$spcode) continue;
+
+    //                         $spList[] = [
+    //                             'spcode' => $spcode,
+    //                             'spname' => $sp['spname'] ?? '',
+    //                             'spunit' => $sp['spunit'] ?? 'ชิ้น',
+    //                             'stdprice_per_unit' => floatval($sp['stdprice'] ?? 0),
+    //                             'price_per_unit' => floatval($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0),
+    //                             'layout' => (int)($sp['layout'] ?? 1),
+    //                             'tracking_number' => $sp['tracking_number'] ?? '',
+    //                             'modelfg' => $modelfg,
+    //                             'pid' => $pid,
+    //                             'skufg' => $pid,
+    //                             'pname' => $asset['pname'] ?? '',
+    //                             'imagesku' => $asset['imagesku'][0] ?? null,
+    //                             'typedm' => $dmKey,
+    //                         ];
+    //                     }
+    //                 }
+    //             }
+    //         }
+
+    //         // เติมรูปอะไหล่ + stock + added (เหมือน search())
+    //         foreach ($spList as $i => $sp) {
+    //             $spcode = $sp['spcode'];
+
+    //             // path_file แบบเดียวกับ search()
+    //             $spList[$i]['path_file'] = "{$imageSpBase}/{$spcode}.jpg";
+
+    //             $stockQty = DB::table('stock_spare_parts')
+    //                 ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+    //                 ->where('sp_code', $spcode)
+    //                 ->value('qty_sp') ?? 0;
+
+    //             $spList[$i]['stock_balance'] = (int)$stockQty;
+
+    //             // check cart like search()
+    //             $cart = WithdrawCart::query()
+    //                 ->where('sp_code', $spcode)
+    //                 ->where('is_active', false)
+    //                 ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+    //                 ->where('user_code_key', Auth::user()->user_code)
+    //                 ->first();
+
+    //             $spList[$i]['added'] = (bool)$cart;
+
+    //             // check already in job
+    //             $exists = WithdrawOrderSpList::where('withdraw_id', $jobId)
+    //                 ->where('sp_code', $spcode)
+    //                 ->exists();
+    //             $spList[$i]['already_in_job'] = $exists;
+    //         }
+
+    //         return response()->json([
+    //             'message' => null,
+    //             'result' => [
+    //                 'pid' => $sku,
+    //                 'pname' => $asset['pname'] ?? '',
+    //                 'imagesku' => $asset['imagesku'][0] ?? null,
+    //                 'sp' => $spList,
+    //                 'model_options' => array_values(array_unique($modelOptions)),
+    //                 'diagram_layers' => $diagramLayers,
+    //             ],
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'message' => $e->getMessage(),
+    //             'result' => null,
+    //             'sku' => $sku,
+    //         ], 200);
+    //     }
+    // }
+
     public function searchJson(Request $request)
     {
-        $sku = $request->sku;
+        $search_term = $request->sku;
         $jobId = $request->job_id;
 
-        if (!$sku) {
-            return response()->json(['error' => 'SKU required'], 422);
+        if (!$search_term) {
+            return response()->json(['error' => 'SKU/Serial required'], 422);
         }
+
+        $search_term = trim($search_term);
+
+        if (!preg_match('/^[a-zA-Z0-9\-\/_]+$/', $search_term)) {
+            $message = '⚠️ รูปแบบรหัสสินค้า/ซีเรียล ไม่ถูกต้อง. โปรดตรวจสอบว่ามีอักขระพิเศษ (เช่น จุด, ช่องว่าง) หรือไม่';
+            Log::warning('❌ searchJson Term Invalid Format', ['search_term' => $search_term]);
+
+            return response()->json([
+                'message' => $message,
+                'result' => null,
+                'sku' => $search_term,
+            ], 200); 
+        }
+        // -----------------------------------------------------
 
         $apiUrl = env('VITE_WARRANTY_SN_API_GETDATA');
 
         try {
-            $response = Http::timeout(15)->get($apiUrl, ['search' => $sku]);
+            $response = Http::timeout(15)->get($apiUrl, ['search' => $search_term]);
 
             if (!$response->successful()) {
-                throw new \Exception("API Error");
+                throw new \Exception("API สินค้าหลักไม่ตอบกลับ");
             }
 
             $data = $response->json();
             if (($data['status'] ?? '') !== 'SUCCESS') {
-                throw new \Exception($data['message'] ?? 'ไม่พบสินค้า');
+                $api_message = $data['message'] ?? 'ไม่พบข้อมูลสินค้า/ซีเรียล ในระบบ';
+                throw new \Exception("ไม่พบข้อมูลสินค้า: {$search_term}. [{$api_message}]");
             }
 
             $assets = $data['assets'] ?? [];
             $dmList = $data['dm_list'] ?? [];
             $spAll = $data['sp'] ?? [];
 
-            $pid = $sku;
+            $pid_from_api = $data['skumain'] ?? null;
+            $pid_to_use = $pid_from_api ?? $search_term;
+            $pid = $pid_to_use;
+
             $asset = $assets[$pid] ?? [];
+
+            // หากไม่เจอ asset จาก $pid_to_use ให้พยายามหาจาก $search_term
+            if (empty($asset) && isset($assets[$search_term])) {
+                $asset = $assets[$search_term];
+                $pid = $search_term;
+            }
+
+            // หากยังไม่เจออีก ให้ลองใช้ asset แรกจากผลลัพธ์
+            if (empty($asset) && !empty($assets)) {
+                $asset = reset($assets);
+                $pid = key($assets); // ใช้ key ของ asset แรกเป็น PID
+            }
+
+            if (empty($asset)) {
+                throw new \Exception("ไม่พบข้อมูลสินค้าหลัก (Asset) สำหรับ: {$search_term}");
+            }
+            // -----------------------------------------------------
+
             $facmodel = $asset['facmodel'] ?? $pid;
 
             // ใช้ BASE URL เดียวกับ search()
@@ -89,6 +271,7 @@ class WithdrawSpController extends Controller
             $spList = [];
             $modelOptions = [];
 
+            // ใช้ $pid ที่หาได้ในการวนลูป
             if (!empty($dmList[$pid])) {
                 foreach ($dmList[$pid] as $dmKey => $dmData) {
 
@@ -99,7 +282,7 @@ class WithdrawSpController extends Controller
 
                     $modelOptions[] = $modelfg;
 
-                    // Diagram (เหมือน search())
+                    // Diagram (ใช้ $pid)
                     for ($i = 1; $i <= 5; $i++) {
                         $imgUrl = $dmData["img_{$i}"] ?? null;
                         if (!$imgUrl) continue;
@@ -117,7 +300,7 @@ class WithdrawSpController extends Controller
                         ];
                     }
 
-                    // Spare Parts (ให้เหมือน search())
+                    // Spare Parts (ใช้ $pid)
                     if (!empty($spAll[$pid][$dmKey])) {
                         foreach ($spAll[$pid][$dmKey] as $sp) {
 
@@ -144,7 +327,7 @@ class WithdrawSpController extends Controller
                 }
             }
 
-            // เติมรูปอะไหล่ + stock + added (เหมือน search())
+            // เติมรูปอะไหล่ + stock + added
             foreach ($spList as $i => $sp) {
                 $spcode = $sp['spcode'];
 
@@ -158,7 +341,6 @@ class WithdrawSpController extends Controller
 
                 $spList[$i]['stock_balance'] = (int)$stockQty;
 
-                // check cart like search()
                 $cart = WithdrawCart::query()
                     ->where('sp_code', $spcode)
                     ->where('is_active', false)
@@ -168,17 +350,22 @@ class WithdrawSpController extends Controller
 
                 $spList[$i]['added'] = (bool)$cart;
 
-                // check already in job
                 $exists = WithdrawOrderSpList::where('withdraw_id', $jobId)
                     ->where('sp_code', $spcode)
                     ->exists();
                 $spList[$i]['already_in_job'] = $exists;
             }
 
+            Log::debug('✅ searchJson Success (SN Ready)', [
+                'search_term' => $search_term,
+                'result_pid'  => $pid,
+                'job_id' => $jobId
+            ]);
+
             return response()->json([
                 'message' => null,
                 'result' => [
-                    'pid' => $sku,
+                    'pid' => $pid, // ใช้ PID ที่หาได้
                     'pname' => $asset['pname'] ?? '',
                     'imagesku' => $asset['imagesku'][0] ?? null,
                     'sp' => $spList,
@@ -187,10 +374,16 @@ class WithdrawSpController extends Controller
                 ],
             ]);
         } catch (\Exception $e) {
+            Log::error('❌ searchJson API Error', [
+                'search_term' => $search_term,
+                'error' => $e->getMessage(),
+                'job_id' => $jobId
+            ]);
+
             return response()->json([
                 'message' => $e->getMessage(),
                 'result' => null,
-                'sku' => $sku,
+                'sku' => $search_term,
             ], 200);
         }
     }
@@ -320,8 +513,149 @@ class WithdrawSpController extends Controller
         }
     }
 
-    //13/11/2568
-    public function search(string $sku): Response
+    //13/11/2568 ที่ใช้อยู่
+    // public function search(string $sku): Response
+    // {
+    //     $apiUrl = env('VITE_WARRANTY_SN_API_GETDATA');
+    //     $message = '';
+    //     $result = [];
+    //     $diagramLayers = [];
+    //     $modelOptions = [];
+    //     $spList = [];
+
+    //     try {
+    //         $response = Http::timeout(15)->get($apiUrl, ['search' => $sku]);
+    //         if (!$response->successful()) {
+    //             throw new \Exception('API สินค้าหลักไม่ตอบกลับ');
+    //         }
+
+    //         $data = $response->json();
+    //         if (($data['status'] ?? '') !== 'SUCCESS') {
+    //             throw new \Exception($data['message'] ?? 'ไม่พบข้อมูลสินค้าในระบบ');
+    //         }
+
+    //         $assets = $data['assets'] ?? [];
+    //         $dmList = $data['dm_list'] ?? [];
+    //         $spAll = $data['sp'] ?? [];
+    //         $pid = $sku;
+    //         $asset = $assets[$pid] ?? [];
+    //         $facmodel = $asset['facmodel'] ?? $pid;
+
+    //         $imageDmBase = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/');
+    //         $imageSpBase = rtrim(env('VITE_IMAGE_SP', ''), '/');
+
+    //         // loop dm list
+    //         if (!empty($dmList[$pid])) {
+    //             foreach ($dmList[$pid] as $dmKey => $dmData) {
+    //                 // $dmName = strtoupper("DM{$dmKey}");
+    //                 // $modelOptions[] = $dmName; // เพิ่มชื่อ DM ใน dropdown
+
+    //                 // $modelfg = $dmData['modelfg'] ?? $facmodel;
+
+    //                 $modelfg = trim($dmData['modelfg'] ?? $facmodel);
+    //                 if ($modelfg == '') {
+    //                     $modelfg = "DM" . str_pad($dmKey, 2, "0", STR_PAD_LEFT);
+    //                 }
+    //                 $modelOptions[] = $modelfg;
+
+    //                 // Diagram
+    //                 for ($i = 1; $i <= 5; $i++) {
+    //                     $imgKey = "img_{$i}";
+    //                     $imgUrl = $dmData[$imgKey] ?? null;
+    //                     if (!$imgUrl) continue;
+
+    //                     if (!str_contains($imgUrl, 'http')) {
+    //                         $imgUrl = "{$imageDmBase}/" . ltrim($imgUrl, '/');
+    //                     }
+
+    //                     $diagramLayers[] = [
+    //                         'modelfg' => $modelfg,
+    //                         'layer' => "รูปที่ {$i}",
+    //                         'path_file' => $imgUrl,
+    //                         'layout' => $i,
+    //                         'typedm' => $dmKey,
+    //                     ];
+    //                 }
+
+    //                 // Spare Parts ตาม DM
+    //                 if (!empty($spAll[$pid][$dmKey])) {
+    //                     foreach ($spAll[$pid][$dmKey] as $sp) {
+    //                         $spcode = $sp['spcode'] ?? null;
+    //                         if (!$spcode) continue;
+
+    //                         $spList[] = [
+    //                             'spcode' => $spcode,
+    //                             'spname' => $sp['spname'] ?? '',
+    //                             'spunit' => $sp['spunit'] ?? 'ชิ้น',
+    //                             'stdprice_per_unit' => floatval($sp['stdprice'] ?? 0),
+    //                             'price_per_unit' => floatval($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0),
+    //                             'layout' => (int)($sp['layout'] ?? 1),
+    //                             'tracking_number' => $sp['tracking_number'] ?? '',
+    //                             'modelfg' => $modelfg,
+    //                             'pid' => $pid,
+    //                             'skufg' => $pid,
+    //                             'pname' => $asset['pname'] ?? '',
+    //                             'imagesku' => $asset['imagesku'][0] ?? null,
+    //                             'typedm' => $dmKey,
+    //                         ];
+    //                     }
+    //                 }
+    //             }
+    //         }
+
+    //         // เติม stock / cart
+    //         foreach ($spList as $i => $sp) {
+    //             $spcode = $sp['spcode'];
+    //             $spList[$i]['path_file'] = "{$imageSpBase}/{$spcode}.jpg";
+
+    //             $stockQty = DB::table('stock_spare_parts')
+    //                 ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+    //                 ->where('sp_code', $spcode)
+    //                 ->value('qty_sp') ?? 0;
+
+    //             $spList[$i]['stock_balance'] = (int)$stockQty;
+
+    //             $cart = WithdrawCart::query()
+    //                 ->where('sp_code', $spcode)
+    //                 ->where('is_active', false)
+    //                 ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+    //                 ->where('user_code_key', Auth::user()->user_code)
+    //                 ->first();
+
+    //             $spList[$i]['added'] = (bool)$cart;
+    //             $spList[$i]['remark'] = 'มาจากการเบิก';
+    //         }
+
+    //         $result = [
+    //             'pid' => $sku,
+    //             'pname' => $asset['pname'] ?? '',
+    //             'pbaseunit' => $asset['pbaseunit'] ?? '',
+    //             'facmodel' => $facmodel,
+    //             'imagesku' => $asset['imagesku'][0] ?? null,
+    //             'sp' => $spList,
+    //             'model_options' => array_values(array_unique($modelOptions)),
+    //             'diagram_layers' => $diagramLayers,
+    //         ];
+    //     } catch (\Exception $e) {
+    //         $message = $e->getMessage();
+    //         $result = null;
+    //     }
+
+    //     Log::debug('✅ WithdrawSp Search (DM filter ready)', [
+    //         'sku' => $sku,
+    //         'count_sp' => count($result['sp'] ?? []),
+    //         'models' => $result['model_options'] ?? [],
+    //     ]);
+
+    //     return Inertia::render('Admin/WithdrawSp/Index', [
+    //         'pageTitle' => 'เบิกอะไหล่สินค้า',
+    //         'message' => $message ?: null,
+    //         'sku' => $sku,
+    //         'result' => $result,
+    //     ]);
+    // }
+
+    public function search(string $search_term): Response
     {
         $apiUrl = env('VITE_WARRANTY_SN_API_GETDATA');
         $message = '';
@@ -331,33 +665,53 @@ class WithdrawSpController extends Controller
         $spList = [];
 
         try {
-            $response = Http::timeout(15)->get($apiUrl, ['search' => $sku]);
+            // ใช้ $search_term สำหรับค้นหาใน API (รองรับทั้ง SKU และ SN)
+            $response = Http::timeout(15)->get($apiUrl, ['search' => $search_term]);
             if (!$response->successful()) {
                 throw new \Exception('API สินค้าหลักไม่ตอบกลับ');
             }
 
             $data = $response->json();
             if (($data['status'] ?? '') !== 'SUCCESS') {
-                throw new \Exception($data['message'] ?? 'ไม่พบข้อมูลสินค้าในระบบ');
+                throw new \Exception($data['message'] ?? 'ไม่พบข้อมูลสินค้า/ซีเรียล ในระบบ');
             }
 
             $assets = $data['assets'] ?? [];
             $dmList = $data['dm_list'] ?? [];
             $spAll = $data['sp'] ?? [];
-            $pid = $sku;
+
+            // หา PID หลักจากผลลัพธ์ API (skumain) หรือใช้ $search_term
+            $pid_from_api = $data['skumain'] ?? null;
+            $pid_to_use = $pid_from_api ?? $search_term;
+            $pid = $pid_to_use;
+
+            // ค้นหา Asset ที่เกี่ยวข้อง
             $asset = $assets[$pid] ?? [];
+
+            // หากไม่เจอ asset จาก $pid_to_use ให้พยายามหาจาก $search_term
+            if (empty($asset) && isset($assets[$search_term])) {
+                $asset = $assets[$search_term];
+                $pid = $search_term;
+            }
+
+            // หากยังไม่เจออีก ให้ลองใช้ asset แรกจากผลลัพธ์
+            if (empty($asset) && !empty($assets)) {
+                $asset = reset($assets);
+                $pid = key($assets); // ใช้ key ของ asset แรกเป็น PID
+            }
+
+            if (empty($asset)) {
+                throw new \Exception('ไม่พบข้อมูลสินค้าจาก API');
+            }
+
             $facmodel = $asset['facmodel'] ?? $pid;
 
             $imageDmBase = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/');
             $imageSpBase = rtrim(env('VITE_IMAGE_SP', ''), '/');
 
-            // loop dm list
+            // loop dm list (ใช้ $pid ที่หาได้)
             if (!empty($dmList[$pid])) {
                 foreach ($dmList[$pid] as $dmKey => $dmData) {
-                    // $dmName = strtoupper("DM{$dmKey}");
-                    // $modelOptions[] = $dmName; // เพิ่มชื่อ DM ใน dropdown
-
-                    // $modelfg = $dmData['modelfg'] ?? $facmodel;
 
                     $modelfg = trim($dmData['modelfg'] ?? $facmodel);
                     if ($modelfg == '') {
@@ -434,7 +788,7 @@ class WithdrawSpController extends Controller
             }
 
             $result = [
-                'pid' => $sku,
+                'pid' => $pid, // ใช้ PID ที่หาได้
                 'pname' => $asset['pname'] ?? '',
                 'pbaseunit' => $asset['pbaseunit'] ?? '',
                 'facmodel' => $facmodel,
@@ -448,8 +802,9 @@ class WithdrawSpController extends Controller
             $result = null;
         }
 
-        Log::debug('✅ WithdrawSp Search (DM filter ready)', [
-            'sku' => $sku,
+        Log::debug('✅ WithdrawSp Search (SN Ready)', [
+            'search_term' => $search_term,
+            'result_pid'  => $pid ?? 'N/A',
             'count_sp' => count($result['sp'] ?? []),
             'models' => $result['model_options'] ?? [],
         ]);
@@ -457,7 +812,7 @@ class WithdrawSpController extends Controller
         return Inertia::render('Admin/WithdrawSp/Index', [
             'pageTitle' => 'เบิกอะไหล่สินค้า',
             'message' => $message ?: null,
-            'sku' => $sku,
+            'sku' => $search_term, // ส่งค่าที่ค้นหากลับไป (แม้จะเป็น SN)
             'result' => $result,
         ]);
     }
