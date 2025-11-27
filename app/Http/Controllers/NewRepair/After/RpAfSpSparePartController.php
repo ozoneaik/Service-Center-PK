@@ -28,11 +28,14 @@ class RpAfSpSparePartController extends Controller
 
     public function store(Request $request)
     {
-        $job_id = $request->get('job_id');
-        $serial_id = $request->get('serial_id');
-        $spare_parts = $request->get('spare_parts');
+        // $job_id = $request->get('job_id');
+        // $serial_id = $request->get('serial_id');
+        // $spare_parts = $request->get('spare_parts');
 
-
+        $job_id = $request->input('job_id');
+        $serial_id = $request->input('serial_id');
+        $spare_parts = $request->input('spare_parts', []);
+        
         try {
 
             DB::beginTransaction();

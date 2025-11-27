@@ -442,11 +442,20 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                 if (confirm) {
                     try {
                         setLoading(true);
-                        const { data } = await axios.post(route('repair.after.spare-part.store', {
-                            job_id: JOB.job_id,
-                            serial_id: JOB.serial_id,
-                            spare_parts: spSelected
-                        }));
+                        // const { data } = await axios.post(
+                        //     route('repair.after.spare-part.store', {
+                        //     job_id: JOB.job_id,
+                        //     serial_id: JOB.serial_id,
+                        //     spare_parts: spSelected
+                        // }));
+                        const { data } = await axios.post(
+                            route('repair.after.spare-part.store'),
+                            {
+                                job_id: JOB.job_id,
+                                serial_id: JOB.serial_id,
+                                spare_parts: spSelected
+                            }
+                        );
                         AlertDialog({
                             icon: 'success',
                             text: data.message,
