@@ -1,11 +1,11 @@
 import {
     Box, Button, Checkbox, CircularProgress, FormControlLabel, Grid2, Stack, TextField, useMediaQuery
 } from "@mui/material";
-import {useEffect, useState} from "react";
-import {Save} from "@mui/icons-material";
-import {AlertDialog, AlertDialogQuestion} from "@/Components/AlertDialog.js";
+import { useEffect, useState } from "react";
+import { Save } from "@mui/icons-material";
+import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
 
-export default function RpBehaviorForm({listBehavior, JOB, setStepForm}) {
+export default function RpBehaviorForm({ listBehavior, JOB, setStepForm }) {
 
     const [behaviors, setBehaviors] = useState(listBehavior || []);
     const [search, setSearch] = useState('');
@@ -20,7 +20,7 @@ export default function RpBehaviorForm({listBehavior, JOB, setStepForm}) {
     const fetchData = async () => {
         try {
             setLoading(true)
-            const {data, status} = await axios.get(route('repair.after.behaviour.index', {
+            const { data, status } = await axios.get(route('repair.after.behaviour.index', {
                 serial_id: JOB.serial_id, job_id: JOB.job_id
             }));
             const behaviors_selected = data.behaviors;
@@ -39,13 +39,13 @@ export default function RpBehaviorForm({listBehavior, JOB, setStepForm}) {
     }
 
     const handleOnChangeSearch = (e) => {
-        const {value} = e.target;
+        const { value } = e.target;
         setSearch(value);
     }
 
     const handleCheckboxChange = (index, checked) => {
         const updatedBehaviors = behaviors.map((behavior, i) =>
-            i === index ? {...behavior, selected: checked} : behavior
+            i === index ? { ...behavior, selected: checked } : behavior
         );
         setBehaviors(updatedBehaviors);
     };
@@ -58,11 +58,19 @@ export default function RpBehaviorForm({listBehavior, JOB, setStepForm}) {
                 if (confirm) {
                     try {
                         setLoadingForm(true)
-                        const {data, status} = await axios.post(route('repair.after.behaviour.store', {
-                            behaviors: behaviors_selected,
-                            job_id: JOB.job_id,
-                            serial_id: JOB.serial_id
-                        }));
+                        // const {data, status} = await axios.post(route('repair.after.behaviour.store', {
+                        //     behaviors: behaviors_selected,
+                        //     job_id: JOB.job_id,
+                        //     serial_id: JOB.serial_id
+                        // }));
+                        const { data, status } = await axios.post(
+                            route('repair.after.behaviour.store'),
+                            {
+                                behaviors: behaviors_selected,
+                                job_id: JOB.job_id,
+                                serial_id: JOB.serial_id
+                            }
+                        );
                         AlertDialog({
                             icon: 'success',
                             text: data.message,
@@ -91,7 +99,7 @@ export default function RpBehaviorForm({listBehavior, JOB, setStepForm}) {
 
     return (
         <Grid2 container spacing={2}>
-            {loading ? <CircularProgress/> : (
+            {loading ? <CircularProgress /> : (
                 <>
                     <Grid2 size={12}>
                         <TextField
@@ -109,12 +117,12 @@ export default function RpBehaviorForm({listBehavior, JOB, setStepForm}) {
                                     }
                                     // หา originalIndex จาก behaviors array เดิม
                                     const originalIndex = behaviors.findIndex(b => b.causecode === behaviour.causecode);
-                                    groups[groupKey].push({...behaviour, originalIndex});
+                                    groups[groupKey].push({ ...behaviour, originalIndex });
                                     return groups;
                                 }, {})
                             ).map(([behaviorName, groupBehaviors]) => (
                                 <div key={behaviorName}>
-                                    <h4 style={{color: '#d26c19', fontSize: '16px', fontWeight: 'bold'}}>
+                                    <h4 style={{ color: '#d26c19', fontSize: '16px', fontWeight: 'bold' }}>
                                         {behaviorName}
                                     </h4>
                                     <Stack direction='row' flexWrap='wrap' spacing={1}>
@@ -148,7 +156,7 @@ export default function RpBehaviorForm({listBehavior, JOB, setStepForm}) {
                         fullWidth={isMobile} size='large'
                         disabled={JOB.status !== 'pending'}
                         onClick={handleOnSubmit} loading={loadingForm}
-                        variant='contained' startIcon={<Save/>}
+                        variant='contained' startIcon={<Save />}
                     >
                         {JOB.status === 'success' ? 'ปิดงานซ่อมแล้ว' : 'บันทึก'}
                     </Button>

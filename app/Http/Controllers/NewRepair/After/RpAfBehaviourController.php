@@ -24,10 +24,12 @@ class RpAfBehaviourController extends Controller
 
     public function store(Request $request){
         try {
-            $job_id = $request->get('job_id');
-            $serial_id = $request->get('serial_id');
-            $behaviors = $request->get('behaviors') ?? [];
-
+            // $job_id = $request->get('job_id');
+            // $serial_id = $request->get('serial_id');
+            // $behaviors = $request->get('behaviors') ?? [];
+            $job_id = $request->input('job_id');
+            $serial_id = $request->input('serial_id');
+            $behaviors = $request->input('behaviors') ?? [];
             $keep = [];
 
             foreach($behaviors as $key=>$behavior){
