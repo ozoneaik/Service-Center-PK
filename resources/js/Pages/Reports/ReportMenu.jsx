@@ -29,7 +29,8 @@ const listMenu = [
         icon: <InventoryIcon sx={{ fontSize: 40 }} />,
         color: '#FF9800',
         bgGradient: 'linear-gradient(135deg, #FF9800 0%, #FFB74D 100%)',
-        description: 'ติดตามการใช้งานอะไหล่และสต็อกคงเหลือ'
+        description: 'ติดตามการใช้งานอะไหล่และสต็อกคงเหลือ',
+        routeUrl: 'report.summary-spare-parts.index'
     },
     {
         name: 'Dashboard สรุปงานศูนย์ซ่อม',

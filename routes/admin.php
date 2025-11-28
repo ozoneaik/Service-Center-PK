@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\Skus\SkuController;
 use App\Http\Controllers\Admin\SpController;
 use App\Http\Controllers\Admin\StartUpCostController;
 use App\Http\Controllers\Admin\SummaryCenterRepairsController;
+use App\Http\Controllers\Admin\SummaryUsedSparePartsController;
 use App\Http\Controllers\Admin\UserManageController;
 use App\Http\Controllers\Admin\WarrantyController;
 use App\Http\Controllers\ClosedController;
@@ -66,7 +67,13 @@ Route::middleware('adminPermission')->group(function () {
             Route::get('/export', [SummaryCenterRepairsController::class, 'exportExcel'])->name('admin.summary-center-repairs.export');
             Route::get('/detail', [SummaryCenterRepairsController::class, 'detail'])->name('admin.summary-center-repairs.detail');
         });
-        
+
+        Route::prefix('/summary-spare-parts')->group(function () {
+            Route::get('/', [SummaryUsedSparePartsController::class, 'index'])->name('admin.summary-spare-parts.index');
+            Route::get('/detail/{sp_code}/{shop}', [SummaryUsedSparePartsController::class, 'detail'])->name('admin.summary-spare-parts.detail');
+            Route::get('/export', [SummaryUsedSparePartsController::class, 'exportExcel'])->name('admin.summary-spare-parts.export');
+        });
+
         Route::prefix('warranties')->group(function () {
             Route::get('/', [WarrantyController::class, 'index'])->name('admin.warranties.index');
         });

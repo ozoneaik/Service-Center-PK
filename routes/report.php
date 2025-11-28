@@ -4,6 +4,7 @@ use App\Http\Controllers\Report\SummaryCenterRepairsController;
 use App\Http\Controllers\Report\StartUpCostByShopController;
 use App\Http\Controllers\Report\StartUpCostController;
 use App\Http\Controllers\Report\SummaryOfIncomeController;
+use App\Http\Controllers\Report\SummaryUsedSparePartsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -35,5 +36,10 @@ Route::prefix('/report')->group(function(){
         Route::get('/', [SummaryCenterRepairsController::class, 'index'])->name('report.summary-center-repairs.index');
         Route::get('/export', [SummaryCenterRepairsController::class, 'exportExcel'])->name('report.summary-center-repairs.export');
         Route::get('/detail', [SummaryCenterRepairsController::class, 'detail'])->name('report.summary-center-repairs.detail');
+    });
+    Route::prefix('/summary-spare-parts')->group(function () {
+        Route::get('/', [SummaryUsedSparePartsController::class, 'index'])->name('report.summary-spare-parts.index');
+        Route::get('/detail/{sp_code}/{shop}', [SummaryUsedSparePartsController::class, 'detail'])->name('report.summary-spare-parts.detail');
+        Route::get('/export', [SummaryUsedSparePartsController::class, 'exportExcel'])->name('report.summary-spare-parts.export');
     });
 });
