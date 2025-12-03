@@ -25,6 +25,8 @@ Route::prefix('/report')->group(function(){
      */
     Route::prefix('/summary-income')->group(function(){
        Route::get('/',[SummaryOfIncomeController::class,'index'])->name('report.summary-income.index');
+        Route::get('/detail/{job_id}/{is_code_key}', [SummaryOfIncomeController::class, 'detail'])->name('report.summary-income.detail');
+        Route::get('/export/all/{is_code_key}', [SummaryOfIncomeController::class, 'exportAll'])->name('report.summary-income.export-all');
     });
     /**
      * รายการค่าเปิดเครื่อง

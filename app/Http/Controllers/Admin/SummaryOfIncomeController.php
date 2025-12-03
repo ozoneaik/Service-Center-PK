@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Report;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\JobList;
@@ -10,7 +10,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Inertia\Inertia;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -18,6 +17,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SummaryOfIncomeController extends Controller
 {
+    //
     public function index(Request $request)
     {
         $shops = StoreInformation::orderBy('shop_name', 'asc')->get();
@@ -121,13 +121,12 @@ class SummaryOfIncomeController extends Controller
             ->orderBy('job_lists.created_at', 'desc')
             ->paginate(20)
             ->withQueryString();
-
-        return Inertia::render('Reports/SummaryOfIncome/SoiMain', [
+        return inertia('Admin/SummaryOfIncome/SoiList', [
             'shops' => $shops,
             'selectedShop' => $selectedShop,
             'currentShopName' => $currentShopName,
             'jobs' => $jobs,
-            'isAdmin' => false,
+            'isAdmin' => true,
             'selectedStatus' => $selectedStatus,
             'summary' => $summary,
             'start_date' => $startDate?->format('Y-m-d'),
@@ -149,14 +148,13 @@ class SummaryOfIncomeController extends Controller
                 'spare_parts.sp_name',
                 'spare_parts.price_multiple_gp',
                 'spare_parts.stdprice_per_unit',
-                'spare_parts.price_per_unit',
-                'spare_parts.sp_warranty',
+                'spare_parts.price_multiple_gp',
                 'job_lists.job_id as ref_no',
                 'job_lists.status',
                 'job_lists.created_at as date',
                 'customer_in_jobs.name as customer_name',
                 'job_lists.close_job_by as updated_by',
-                DB::raw("'repair' as type"),
+                DB::raw("'repair' as type")
             )->orderBy('spare_parts.updated_at', 'desc')->get()->toBase();
 
         return response()->json([
@@ -261,6 +259,7 @@ class SummaryOfIncomeController extends Controller
             'อัพเดทเมื่อ',
             'ผู้ทำรายการ'
         ];
+
         $sheet->fromArray($headers, null, 'A1');
         $sheet->getStyle('A1:N1')->getFont()->setBold(true);
         $rowNumber = 2;

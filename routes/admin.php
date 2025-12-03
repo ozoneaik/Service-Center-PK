@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\Skus\SkuController;
 use App\Http\Controllers\Admin\SpController;
 use App\Http\Controllers\Admin\StartUpCostController;
 use App\Http\Controllers\Admin\SummaryCenterRepairsController;
+use App\Http\Controllers\Admin\SummaryOfIncomeController;
 use App\Http\Controllers\Admin\SummaryUsedSparePartsController;
 use App\Http\Controllers\Admin\UserManageController;
 use App\Http\Controllers\Admin\WarrantyController;
@@ -72,6 +73,11 @@ Route::middleware('adminPermission')->group(function () {
             Route::get('/', [SummaryUsedSparePartsController::class, 'index'])->name('admin.summary-spare-parts.index');
             Route::get('/detail/{sp_code}/{shop}', [SummaryUsedSparePartsController::class, 'detail'])->name('admin.summary-spare-parts.detail');
             Route::get('/export', [SummaryUsedSparePartsController::class, 'exportExcel'])->name('admin.summary-spare-parts.export');
+        });
+        Route::prefix('/summary-income')->group(function () {
+            Route::get('/', [SummaryOfIncomeController::class, 'index'])->name('admin.summary-income.index');
+            Route::get('/detail/{job_id}/{is_code_key}', [SummaryOfIncomeController::class, 'detail'])->name('admin.summary-income.detail');
+            Route::get('/export/all/{is_code_key}', [SummaryOfIncomeController::class, 'exportAll'])->name('admin.summary-income.export-all');
         });
 
         Route::prefix('warranties')->group(function () {
