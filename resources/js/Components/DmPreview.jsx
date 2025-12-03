@@ -191,6 +191,8 @@ export default function DmPreview({
           path_file: x?.path_file || x?.img_url || null,
           layout: Number(x?.layout || i + 1),
           typedm: x?.typedm || dm_type,
+          pdf_path: x?.pdf_path || null,
+          manual_pdf_path: x?.manual_pdf_path || null,
         })).filter(x => !!x.path_file);
 
         if (!active) return;
@@ -287,8 +289,8 @@ export default function DmPreview({
         startIcon={<Download />}
         fullWidth
         onClick={() => {
-          if (cur?.path_file) window.open(cur.path_file, "_blank");
-          else alert("ยังไม่มีไฟล์ให้ดาวน์โหลด");
+          if (cur?.pdf_path) window.open(cur.pdf_path, "_blank");
+          else alert("ยังไม่มีไฟล์เอกสารไดอะแกรมให้ดาวน์โหลด");
         }}
       >
         ดาวน์โหลดไดอะแกรม

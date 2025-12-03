@@ -464,6 +464,8 @@ class SearchController extends Controller
                                 'path_file' => $imgUrl,
                                 'layout'    => $i,
                                 'typedm'    => $dmKey,
+                                'pdf_path'  => $dmData['pdf_path'] ?? null,
+                                'manual_pdf_path' => $dmData['manual_pdf_path'] ?? null,
                             ];
                         }
 
