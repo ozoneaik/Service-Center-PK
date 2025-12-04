@@ -44,7 +44,11 @@ export function getMenuHeaders(user) {
             name: 'รายงานศูนย์บริการ',
             routeUrl: 'report.menu',
             target: '_blank'
-        }
+        },
+        {
+            name: 'ประวัติซ่อม',
+            routeUrl: 'repair.sale.index'
+        },
     ];
 }
 

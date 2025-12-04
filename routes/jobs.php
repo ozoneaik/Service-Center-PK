@@ -10,6 +10,8 @@ use App\Http\Controllers\NewRepair\After\RpAfSummaryController;
 use App\Http\Controllers\NewRepair\Before\RpBfController;
 use App\Http\Controllers\NewRepair\JobController;
 use App\Http\Controllers\NewRepair\SearchController;
+use App\Http\Controllers\SaleRepair\JobForSaleController;
+use App\Http\Controllers\SaleRepair\SaleRepairController;
 use App\Http\Controllers\SendJob\sendJobController;
 use Illuminate\Support\Facades\Route;
 
@@ -61,6 +63,16 @@ Route::prefix('repair')->group(function () {
             });
         });
     });
+});
+
+Route::prefix('repair-sale')->group(function () {
+    Route::get('/', [SaleRepairController::class, 'index'])->name('repair.sale.index');
+    Route::get('/create', [SaleRepairController::class, 'create'])->name('repair.sale.create');
+    Route::post('/search', [SaleRepairController::class, 'search'])->name('repair.sale.search');
+
+    Route::post('/search-job', [JobController::class, 'searchJob'])->name('repair.sale.search.job');
+    Route::post('/store', [JobForSaleController::class, 'storeJob'])->name('repair.sale.store');
+    Route::post('/store-from-pid', [JobController::class, 'storeJobFromPid'])->name('repair.sale.store.from.pid');
 });
 
 Route::prefix('send-job')->group(function () {

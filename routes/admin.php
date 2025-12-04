@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DiagramController;
 use App\Http\Controllers\Admin\JobFromServiceController;
 use App\Http\Controllers\Admin\SaleController;
+use App\Http\Controllers\Admin\SaleManageController;
 use App\Http\Controllers\Admin\Skus\SkuController;
 use App\Http\Controllers\Admin\SpController;
 use App\Http\Controllers\Admin\StartUpCostController;
@@ -123,6 +124,14 @@ Route::middleware('adminPermission')->group(function () {
             Route::get('/edit/{user_code}', [UserManageController::class, 'edit'])->name('userManage.edit');
             Route::put('/update', [UserManageController::class, 'update'])->name('userManage.update');
             Route::delete('/delete/{user_code}', [UserManageController::class, 'delete'])->name('userManage.delete');
+        });
+
+        Route::prefix('users-manage-sale')->group(function () {
+            Route::get('/search', [SaleManageController::class, 'search'])->name('sale.search');
+            Route::get('/create-sale', [SaleManageController::class, 'createSale'])->name('saleManage.createSale');
+            Route::post('/store-sale', [SaleManageController::class, 'storeSale'])->name('saleManage.storeSale');
+            Route::get('/edit/{user_code}', [SaleManageController::class, 'edit'])->name('saleManage.edit');
+            Route::put('/update/{user_code}', [SaleManageController::class, 'updateSale'])->name('saleManage.updateSale');
         });
     });
 });

@@ -21,6 +21,19 @@ use Inertia\Response;
 
 class UserManageController extends Controller
 {
+    
+    // public function list(): Response
+    // {
+    //     $list = [];
+    //     $groups = StoreInformation::query()->select('is_code_cust_id', 'shop_name')->groupBy('is_code_cust_id', 'shop_name')->get();
+    //     foreach ($groups as $key => $group) {
+    //         $list[$key]['is_code_cust_id'] = $group->is_code_cust_id;
+    //         $list[$key]['shop_name'] = $group->shop_name;
+    //         $list[$key]['users'] = User::query()->where('is_code_cust_id', $group->is_code_cust_id)->get();
+    //     }
+    //     return Inertia::render('Admin/Users/UserList', ['list' => $list]);
+    // }
+
     public function list(): Response
     {
         $list = [];
@@ -30,7 +43,17 @@ class UserManageController extends Controller
             $list[$key]['shop_name'] = $group->shop_name;
             $list[$key]['users'] = User::query()->where('is_code_cust_id', $group->is_code_cust_id)->get();
         }
-        return Inertia::render('Admin/Users/UserList', ['list' => $list]);
+
+        // เซลล์
+        $sale_users = User::query()->where('role', 'sale')->whereNull('is_code_cust_id')->get();
+        if ($sale_users->isNotEmpty()) {
+            $list[] = [
+                'is_code_cust_id' => 'SALE_USERS_GROUP',
+                'shop_name' => 'พนักงานขาย (Sale)',
+                'users' => $sale_users,
+            ];
+        }
+        return Inertia::render('Admin/Users/UserList2', ['list' => $list]);
     }
 
     public function create(): Response
