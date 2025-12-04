@@ -285,23 +285,23 @@ class SummaryOfIncomeController extends Controller
 
                 // ตรวจสอบว่ารายการอะไหล่นี้คือค่าบริการหรือไม่
                 $is_service_fee_item = $item->sp_code === 'SV001';
-                $date = $firstRow && $item->job_date
+                $date = $item->job_date
                     ? Carbon::parse($item->job_date)->format('d/m/Y')
                     : '';
 
                 // $sheet->setCellValue('A' . $rowNumber, $firstRow ? optional($item->job_date)->format('d/m/Y') : '');
                 $sheet->setCellValue('A' . $rowNumber, $date);
-                $sheet->setCellValue('B' . $rowNumber, $firstRow ? $item->job_id : '');
-                $sheet->setCellValue('C' . $rowNumber, $firstRow ? $status_thai : '');
-                $sheet->setCellValue('D' . $rowNumber, $firstRow ? ($item->warranty ? 'Yes' : 'No') : '');
-                $sheet->setCellValue('E' . $rowNumber, $firstRow ? $item->pid : '');
+                $sheet->setCellValue('B' . $rowNumber, $item->job_id ?? '');
+                $sheet->setCellValue('C' . $rowNumber, $status_thai ?? '');
+                $sheet->setCellValue('D' . $rowNumber, ($item->warranty ? 'Yes' : 'No') ?? '');
+                $sheet->setCellValue('E' . $rowNumber, $item->pid ?? '');
 
                 // รายละเอียดอะไหล่/บริการ
                 $sheet->setCellValue('F' . $rowNumber, $item->sp_code);
                 $sheet->setCellValue('G' . $rowNumber, $item->sp_name);
                 $sheet->setCellValue('H' . $rowNumber, (float) $item->price_multiple_gp); // ราคาขายของอะไหล่/บริการ
 
-                $sheet->setCellValue('I' . $rowNumber, $firstRow ? $item->customer_name : '');
+                $sheet->setCellValue('I' . $rowNumber, $item->customer_name ?? '');
                 $sheet->setCellValue('J' . $rowNumber, (int) $item->qty);
 
                 // แสดงค่าบริการรวม (total_service_fee) และค่าตอบแทนรวม (startup_cost) เฉพาะแถวแรกของ Job ID
