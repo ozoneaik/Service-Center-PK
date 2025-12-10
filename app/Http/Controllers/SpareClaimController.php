@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class SpareClaimController extends Controller
 {
@@ -277,5 +279,83 @@ class SpareClaimController extends Controller
         return Inertia::render('SpareClaim/PendingClaim', [
             'list' => $list
         ]);
+    }
+
+    //เพิ่มฟังก์ชั่น Check Status Order
+    public function checkStatusClaim(Request $request): JsonResponse
+    {
+        $claim_id = $request->input('claim_id');
+        if (empty($claim_id)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Claim ID ไม่ถูกต้อง'
+            ], 400);
+        }
+        try {
+            DB::beginTransaction();
+            $uri = env('VITE_API_CHECK_ORDER');
+            $claim_id_remove_prefix = str_replace('C-', '', $claim_id);
+            $body = [
+                'jobno' => $claim_id_remove_prefix,
+                'type' => 'claim'
+            ];
+            Log::info('📦 เริ่มเช็คสถานะออเดอร์', [
+                'claim_id' => $claim_id,
+                'endpoint' => $uri,
+                'request_body' => $claim_id_remove_prefix
+            ]);
+
+            $response = Http::post($uri, $body);
+            Log::info('API Resposne', [
+                'claim_id' => $claim_id,
+                'http_status' => $response->status(),
+                'raw_body' => $response->body(),
+            ]);
+
+            if ($response->successful() && $response->status() == 200) {
+                $claim = Claim::query()->where('claim_id', $claim_id)->first();
+                if (!$claim) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'ไม่พบรหัส id ที่ต้องการ update'
+                    ], 400);
+                }
+                $response_json = $response->json();
+                $externalStatus = $response_json['status'] ?? null;
+                Log::info('สถานะปัจจุบันการเคลม', [
+                    'claim_id' => $claim_id,
+                    'status_old' => $claim->status,
+                    'status_from_api' => $externalStatus,
+                ]);
+
+                if ($externalStatus) {
+                    $claim->status = $externalStatus;
+                    $claim->save();
+
+                    Log::info('Update Status SuccessFully', [
+                        'claim_id' => $claim_id,
+                        'status' => $claim->status
+                    ]);
+                }
+
+                DB::commit();
+                return response()->json([
+                    'status' => 'success',
+                    'data' => ['status' => $claim->status]
+                ]);
+            } else {
+                throw new \Exception('API ไม่สําเร็จ');
+            }
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            Log::error('❌ ตรวจสอบสถานะล้มเหลว', [
+                'claim_id' => $claim_id,
+                'error' => $exception->getMessage(),
+            ]);
+            return response()->json([
+                'status' => 'error',
+                'message' => $exception->getMessage()
+            ], 400);
+        }
     }
 }

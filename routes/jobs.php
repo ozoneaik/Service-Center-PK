@@ -83,6 +83,14 @@ Route::prefix('send-job')->group(function () {
 
     Route::get('/group-detail/{job_group}', [sendJobController::class, 'groupDetail'])->name('sendJobs.groupDetail');
     Route::get('/print/{job_group}', [sendJobController::class, 'printJobList'])->name('sendJobs.printJobList');
+
+    //feature send job 
+    Route::get('/success', [sendJobController::class, 'successJobList'])->name('sendJobs.successJobList');
+    Route::post('/search', [sendJobController::class, 'searchSendJobs'])->name('sendJobs.search');
+    Route::post('/all-list', [sendJobController::class, 'getAllSendJobs'])->name('sendJobs.allList');
+    Route::post('/finish', [sendJobController::class, 'finishSendJob'])->name('sendJobs.finish');
+    Route::post('/history', [sendJobController::class, 'historySuccessJobs'])->name('sendJobs.history');
+    Route::post('/check-status', [sendJobController::class, 'checkJobStatus'])->name('sendJobs.checkJobStatus');
 });
 
 Route::get('/genReCieveSpPdf/{job_id}',[genQuPdfController::class,'genReCieveSpPdf'])->name('genReCieveSpPdf');

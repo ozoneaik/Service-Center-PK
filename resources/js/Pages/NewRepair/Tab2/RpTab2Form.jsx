@@ -69,6 +69,14 @@ export default function RpTab2Form({ productDetail, JOB, setMainStep, MainStep, 
                 serial_id: JOB.serial_id,
                 job_id: JOB.job_id
             }));
+
+            //Check Step When Send Status Success
+            if (JOB.status === 'success') {
+                setSubremark1(data.subremark1);
+                setStepForm(4);
+                return;
+            }
+
             setSubremark1(data.subremark1)
             if (data.subremark1) {
                 setStepForm(1)
@@ -236,7 +244,12 @@ export default function RpTab2Form({ productDetail, JOB, setMainStep, MainStep, 
                         <Grid2 size={12}>
                             <Card variant='outlined' sx={{ backgroundColor: '#d9d9d9' }}>
                                 <CardContent>
-                                    <HeaderTitle headTitle='สรุปจบงาน' />
+                                    {/* <HeaderTitle headTitle='สรุปจบงาน' /> */}
+                                    <HeaderTitle
+                                        headTitle={JOB.group_job !== null && JOB.status === 'success'
+                                            ? `จบงานจากการรับงานส่งกลับจากพัมคิน ฯ (เลขที่อ้างอิง (Group Job) : ${JOB.group_job})` : 'สรุปจบงาน'}
+                                    />
+                                    
                                     {/*content here*/}
                                     <RpSummary setJOB={setJOB} setMainStep={setMainStep} JOB={JOB}
                                         productDetail={productDetail} />

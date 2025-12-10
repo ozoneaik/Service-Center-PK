@@ -15,6 +15,17 @@ const steps = [
     'จัดส่งสำเร็จ'
 ];
 
+const getActiveStep = (status) => {
+    switch (status) {
+        case 'pending':
+            return 0;
+        case 'approved':
+            return 1;
+        default:
+            return 0;
+    }
+}
+
 export default function HistoryClaimNewDetail({ list, claim_id, claim }) {
     const isMobile = useMediaQuery('(max-width:600px)');
     console.log(list);
@@ -22,6 +33,7 @@ export default function HistoryClaimNewDetail({ list, claim_id, claim }) {
     const handleError = (e) => {
         e.target.src = defaultImage;
     }
+    const activeStep = getActiveStep(claim.status);
 
     return (
         <AuthenticatedLayout>
@@ -44,7 +56,7 @@ export default function HistoryClaimNewDetail({ list, claim_id, claim }) {
                         </Stack>
                     </Grid2>
                     <Grid2 size={12}>
-                        <Stepper activeStep={0} alternativeLabel>
+                        <Stepper activeStep={activeStep} alternativeLabel>
                             {steps.map((label) => (
                                 <Step key={label}>
                                     <StepLabel>{label}</StepLabel>

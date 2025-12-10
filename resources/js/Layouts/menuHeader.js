@@ -18,6 +18,10 @@ export function getMenuHeaders(user) {
                 {
                     name: 'ออกเอกสารส่งกลับ พัมคินฯ',
                     routeUrl: 'sendJobs.docJobList'
+                },
+                {
+                    name: 'รับงานส่งกลับจากพัมคินฯ',
+                    routeUrl: 'sendJobs.successJobList'
                 }
             ]
         },

@@ -231,7 +231,7 @@ export default function SenJobList({jobs}) {
                     ) : (
                         /* Desktop View */
                         <Grid2 size={12}>
-                            <Card variant='outlined' sx={{overflow: 'auto'}}>
+                            <Card variant='outlined' sx={{overflow: 'auto', maxHeight: 750  }}>
                                 <Table>
                                     <TableHead>
                                         <TableRow sx={TABLE_HEADER_STYLE}>

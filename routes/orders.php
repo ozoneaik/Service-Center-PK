@@ -10,7 +10,8 @@ Route::prefix('orders')->group(function () {
     Route::get('/history-detail/{order_id}', [OrderController::class, 'historyDetail'])->name('orders.historyDetail');
     Route::get('/success/{message}', [OrderController::class, 'orderSuccess'])->name('orders.success');
 
-    Route::get('/check-status/{order_id}', [OrderController::class,'checkStatusOrder'])->name('orders.checkStatusOrder');
+    // Route::get('/check-status/{order_id}', [OrderController::class,'checkStatusOrder'])->name('orders.checkStatusOrder');
+    Route::post('/check-status', [OrderController::class, 'checkStatusOrder'])->name('orders.checkStatusOrder');
     // Route::get('/all-status-orders', [OrderController::class, 'getAllStatusOrders']);
     // Route::post('/update-status', [OrderController::class, 'updateOrderStatusFromNode']);
 

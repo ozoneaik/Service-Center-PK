@@ -24,6 +24,7 @@ export default function OrderHistoryDetail({ order, listSp, customer }) {
 
     const activeStatus = (orderStatus) => {
         switch (orderStatus) {
+            case "pending":
             case "กำลังรอรับคำสั่งซื้อ":
                 return 0;
             case "รับคำสั่งซื้อ":
@@ -60,7 +61,11 @@ export default function OrderHistoryDetail({ order, listSp, customer }) {
             setLoading(true);
             console.log("🚀 กำลังเรียก API checkStatusOrder...", { order_id });
 
-            const { data, status } = await axios.get(route('orders.checkStatusOrder', { order_id }));
+            // const { data, status } = await axios.get(route('orders.checkStatusOrder', { order_id }));
+            const { data, status } = await axios.post(
+                route('orders.checkStatusOrder'),
+                { order_id }
+            );
 
             console.group("📦 [CHECK ORDER STATUS]");
             console.log("HTTP Status:", status);

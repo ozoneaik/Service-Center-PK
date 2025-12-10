@@ -14,8 +14,15 @@ import { TableStyle } from "../../../css/TableStyle"
 import { showDefaultImage } from "@/utils/showImage.js";
 
 const statusLabels = {
-    pending: 'กำลังดำเนินการซ่อม', success: 'ปิดการซ่อมแล้ว',
-    canceled: 'ยกเลิกการซ่อมแล้ว', send: 'ส่งไปยังศูนย์ซ่อม PK'
+    pending: 'กำลังดำเนินการซ่อม',
+    success: 'ปิดการซ่อมแล้ว',
+    canceled: 'ยกเลิกการซ่อมแล้ว',
+    send: 'ส่งไปยังศูนย์ซ่อม PK',
+    'รับคำสั่งซื้อ': 'รับสินค้าแล้ว',
+    'กำลังดำเนินการจัดเตรียมสินค้า': 'กำลังดำเนินการจัดเตรียมสินค้า',
+    'อยู่ระหว่างการจัดส่ง': 'อยู่ระหว่างการจัดส่ง',
+    'จัดส่งสำเร็จ': 'จัดส่งสำเร็จ',
+    'ยกเลิกคำสั่งซื้อ': 'ยกเลิกการส่งซ่อม',
 };
 const DrawerHeader = styled('div')(({ theme }) => ({
     display: 'flex', alignItems: 'center',

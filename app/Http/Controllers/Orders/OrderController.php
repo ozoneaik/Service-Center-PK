@@ -973,8 +973,87 @@ class OrderController extends Controller
     //     }
     // }
 
-    public function checkStatusOrder($order_id): JsonResponse
+    // อันเก่าเป็น GET
+    // public function checkStatusOrder($order_id): JsonResponse
+    // {
+    //     try {
+    //         DB::beginTransaction();
+    //         $uri = env('VITE_API_CHECK_ORDER');
+    //         $order_id_remove_prefix = str_replace('ORDER-', '', $order_id);
+    //         $body = ['jobno' => $order_id_remove_prefix];
+
+    //         // เริ่มต้น Log ก่อนเรียก API
+    //         Log::info('📦 เริ่มเช็คสถานะออเดอร์', [
+    //             'order_id' => $order_id,
+    //             'endpoint' => $uri,
+    //             'request_body' => $body
+    //         ]);
+
+    //         $response = Http::post($uri, $body);
+
+    //         // Log Response ที่ได้จาก API
+    //         Log::info('📩 API ตอบกลับ', [
+    //             'order_id' => $order_id,
+    //             'http_status' => $response->status(),
+    //             'raw_body' => $response->body(),
+    //         ]);
+
+    //         if ($response->successful() && $response->status() === 200) {
+    //             $order = Order::query()->where('order_id', $order_id)->first();
+
+    //             if (!$order) throw new \Exception('ไม่พบ order_id นี้ในระบบ');
+
+    //             $response_json = $response->json();
+    //             $externalStatus = $response_json['status'] ?? null;
+
+    //             // log สถานะก่อนและหลัง
+    //             Log::info('🧾 สถานะปัจจุบันของออเดอร์', [
+    //                 'order_id' => $order_id,
+    //                 'status_old' => $order->status,
+    //                 'status_from_api' => $externalStatus,
+    //             ]);
+
+    //             if ($externalStatus) {
+    //                 $order->status = $externalStatus;
+    //                 $order->save();
+
+    //                 Log::info('✅ อัปเดตสถานะสำเร็จ', [
+    //                     'order_id' => $order_id,
+    //                     'status_new' => $order->status,
+    //                 ]);
+    //             }
+
+    //             DB::commit();
+
+    //             return response()->json([
+    //                 'status' => 'success',
+    //                 'data' => ['status' => $order->status]
+    //             ]);
+    //         } else {
+    //             throw new \Exception('API ภายนอกไม่ตอบกลับหรือเกิดข้อผิดพลาด');
+    //         }
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         Log::error('❌ ตรวจสอบสถานะล้มเหลว', [
+    //             'order_id' => $order_id,
+    //             'error' => $e->getMessage(),
+    //         ]);
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => $e->getMessage(),
+    //         ], 400);
+    //     }
+    // }
+
+    public function checkStatusOrder(Request $request): JsonResponse
     {
+        $order_id = $request->input('order_id');
+        if (empty($order_id)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'ไม่พบ order_id ใน Request Body'
+            ], 400);
+        }
         try {
             DB::beginTransaction();
             $uri = env('VITE_API_CHECK_ORDER');
