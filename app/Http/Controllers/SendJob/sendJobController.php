@@ -264,7 +264,8 @@ class sendJobController extends Controller
             $updatedCount = JobList::query()
                 ->whereIn('job_id', $jobIds)
                 ->where('is_code_key', Auth::user()->is_code_cust_id)
-                ->where('status', 'จัดส่งสำเร็จ')
+                // ->where('status', 'จัดส่งสำเร็จ')
+                ->where('status', 'send')
                 ->update([
                     'status' => 'success',
                     'close_job_at' => $now,

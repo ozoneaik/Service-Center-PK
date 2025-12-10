@@ -306,7 +306,7 @@ export default function SuccessSendJobs() {
         const selectedJobs = jobs.filter(job => selectedJobIds.includes(job.job_id));
 
         return selectedJobs.some(job =>
-            job.status === 'จัดส่งสำเร็จ'
+            job.status === 'send'
         );
     };
 
@@ -900,9 +900,9 @@ export default function SuccessSendJobs() {
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รหัสสินค้า (PID)</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อสินค้า</th>
                                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th>
-                                            {(currentView === 'close_current' || currentView === 'all_current') && (
+                                            {/* {(currentView === 'close_current' || currentView === 'all_current') && (
                                                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ตรวจสอบสถานะ</th>
-                                            )}
+                                            )} */}
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วันที่{currentView === 'history' ? 'ปิดงาน' : 'ส่งซ่อม'}</th>
                                         </tr>
                                     </thead>
@@ -963,7 +963,7 @@ export default function SuccessSendJobs() {
                                                             {displayStatus}
                                                         </span>
                                                     </td>
-                                                    {(currentView === 'close_current' || currentView === 'all_current') && (
+                                                    {/* {(currentView === 'close_current' || currentView === 'all_current') && (
                                                         <td className="px-6 py-4 whitespace-nowrap text-center">
                                                             {(job.status === 'send' ||
                                                                 job.status === 'รับคำสั่งซื้อ' ||
@@ -995,7 +995,7 @@ export default function SuccessSendJobs() {
                                                                 <span className="text-gray-400">-</span>
                                                             )}
                                                         </td>
-                                                    )}
+                                                    )} */}
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                         {new Date(currentView === 'history' ? job.updated_at : job.created_at).toLocaleString()}
                                                     </td>
