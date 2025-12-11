@@ -64,7 +64,6 @@ class SummaryOfIncomeController extends Controller
                 "),
                 DB::raw("
                     SUM(
-                        DISTINCT
                         CASE 
                             WHEN job_lists.warranty = true AND job_lists.status = 'success'
                             THEN COALESCE(start_up_costs.startup_cost, 0)
