@@ -426,10 +426,18 @@ export default function SoiList() {
                         .map((link, i) => (
                             <button
                                 key={i}
-                                onClick={() => link.url && router.get(link.url, {}, {
-                                    preserveState: true,
-                                    preserveScroll: true
-                                })}
+                                onClick={() => link.url && router.get(
+                                    link.url,
+                                    {
+                                        shop: shopValue?.is_code_cust_id || "",
+                                        status: statusValue?.value || "",
+                                        start_date: startDate,
+                                        end_date: endDate
+                                    },
+                                    {
+                                        preserveState: true,
+                                        preserveScroll: true
+                                    })}
                                 className={`px-3 py-1 border rounded text-sm transition duration-150 ease-in-out
                                     ${link.active ? "bg-blue-600 text-white shadow-md" : "bg-gray-200 hover:bg-gray-300"}
                                 `}
@@ -442,7 +450,12 @@ export default function SoiList() {
                         onClick={() =>
                             router.get(
                                 jobs.next_page_url,
-                                {},
+                                {
+                                    shop: shopValue?.is_code_cust_id || "",
+                                    status: statusValue?.value || "",
+                                    start_date: startDate,
+                                    end_date: endDate
+                                },
                                 { preserveState: true, preserveScroll: true }
                             )
                         }
