@@ -20,7 +20,10 @@ class SummaryUsedSparePartsController extends Controller
     //
     public function index(Request $request)
     {
-        $shops = StoreInformation::orderBy('shop_name', 'asc')->get();
+        $exclude_shops = ['67132'];
+        $shops = StoreInformation::whereNotIn('is_code_cust_id', $exclude_shops)
+            ->select('is_code_cust_id', 'shop_name')
+            ->orderBy('shop_name', 'asc')->get();
         $defaultShop = Auth::user()->is_code_cust_id;
         $selectedShop = $request->query('shop', $defaultShop);
         $search = $request->query('search');

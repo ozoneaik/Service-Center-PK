@@ -23,7 +23,11 @@ class StartUpCostByShopController extends Controller
         $shop = $selected_shop ?? Auth::user()->is_code_cust_id;
 
         // รายชื่อร้านทั้งหมด
-        $shops = StoreInformation::select('is_code_cust_id', 'shop_name')->get();
+        $exclude_shops = ['67132'];
+        $shops = StoreInformation::whereNotIn('is_code_cust_id', $exclude_shops)
+            ->select('is_code_cust_id', 'shop_name')
+            ->get();
+        // $shops = StoreInformation::select('is_code_cust_id', 'shop_name')->get();
         $current_shop_name = StoreInformation::where('is_code_cust_id', Auth::user()->is_code_cust_id)
             ->value('shop_name');
 
@@ -86,6 +90,8 @@ class StartUpCostByShopController extends Controller
             'ชื่อสินค้า',
             'Serial',
             'ค่าเปิดเครื่อง (บาท)',
+            'วันที่เปิดเครื่อง',
+            'วันที่อัพเดท',
         ];
 
         foreach ($jobs as $index => $job) {
@@ -100,7 +106,9 @@ class StartUpCostByShopController extends Controller
                 $job->pid,
                 $job->p_name,
                 $job->serial_id,
-                $start_up_cost
+                $start_up_cost,
+                $job->created_at,
+                $job->updated_at
             ];
         }
 

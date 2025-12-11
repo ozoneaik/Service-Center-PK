@@ -20,7 +20,11 @@ class SummaryOfIncomeController extends Controller
     //
     public function index(Request $request)
     {
-        $shops = StoreInformation::orderBy('shop_name', 'asc')->get();
+        $exclude_shops = ['67132'];
+        $shops = StoreInformation::whereNotIn('is_code_cust_id', $exclude_shops)
+            ->select('is_code_cust_id', 'shop_name')
+            ->orderBy('shop_name', 'asc')->get();
+        // $shops = StoreInformation::orderBy('shop_name', 'asc')->get();
         $defaultShop = Auth::user()->is_code_cust_id;
         $selectedShop = $request->query('shop', $defaultShop);
         $currentShopName = StoreInformation::where('is_code_cust_id', $selectedShop)
@@ -52,7 +56,8 @@ class SummaryOfIncomeController extends Controller
             ->leftJoin('start_up_costs', 'start_up_costs.sku_code', '=', 'job_lists.pid')
             ->select(
                 DB::raw('COUNT(DISTINCT job_lists.job_id) as total_jobs'),
-                DB::raw('SUM(COALESCE(spare_parts.price_multiple_gp, 0)) as total_sale_price'),
+                // DB::raw('SUM(COALESCE(spare_parts.price_multiple_gp, 0)) as total_sale_price'),
+                DB::raw("SUM(CASE WHEN spare_parts.sp_code != 'SV001' THEN COALESCE(spare_parts.price_multiple_gp, 0) ELSE 0 END) as total_sale_price"),
                 DB::raw("
                     SUM(
                         CASE 
@@ -89,8 +94,10 @@ class SummaryOfIncomeController extends Controller
                 'job_lists.created_at',
                 'job_lists.warranty',
                 'job_lists.pid',
-                DB::raw('COUNT(spare_parts.id) as spare_count'),
-                DB::raw('SUM(COALESCE(spare_parts.price_multiple_gp,0)) as total_sale_price'),
+                // DB::raw('COUNT(spare_parts.id) as spare_count'),
+                DB::raw("COUNT(CASE WHEN spare_parts.sp_code != 'SV001' THEN spare_parts.id END) as spare_count"),
+                // DB::raw('SUM(COALESCE(spare_parts.price_multiple_gp,0)) as total_sale_price'),
+                DB::raw("SUM(CASE WHEN spare_parts.sp_code != 'SV001' THEN COALESCE(spare_parts.price_multiple_gp, 0) ELSE 0 END) as total_sale_price"),
                 DB::raw('SUM(COALESCE(spare_parts.stdprice_per_unit,0)) as total_std_price'),
                 DB::raw('SUM(COALESCE(spare_parts.price_per_unit,0)) as total_price_per_unit'),
                 DB::raw("
@@ -140,6 +147,7 @@ class SummaryOfIncomeController extends Controller
             ->leftjoin('customer_in_jobs', 'customer_in_jobs.job_id', '=', 'spare_parts.job_id')
             ->where('spare_parts.job_id', $job_id)
             ->where('job_lists.is_code_key', $is_code_key)
+            ->where('spare_parts.sp_code', '!=', 'SV001')
             ->select(
                 'spare_parts.qty',
                 'spare_parts.updated_at',
@@ -177,7 +185,11 @@ class SummaryOfIncomeController extends Controller
         // 1. สร้าง Subquery เพื่อคำนวณค่ารวมต่อ Job ID (Service Fee, Startup Cost)
         $jobSummaryQuery = JobList::query()
             ->where('job_lists.is_code_key', $is_code_key)
-            ->when($selectedStatus !== '', fn($q) => $q->where('job_lists.status', $selectedStatus))
+            ->when(
+                $selectedStatus !== '',
+                fn($q) => $q->where('job_lists.status', $selectedStatus),
+                fn($q) => $q->whereIn('job_lists.status', ['success', 'canceled'])
+            )
             ->when($startDate, fn($q) => $q->whereDate('job_lists.created_at', '>=', $startDate))
             ->when($endDate, fn($q) => $q->whereDate('job_lists.created_at', '<=', $endDate))
             ->leftJoin('spare_parts', 'spare_parts.job_id', '=', 'job_lists.job_id')
@@ -208,7 +220,11 @@ class SummaryOfIncomeController extends Controller
 
         $jobs = JobList::query()
             ->where('job_lists.is_code_key', $is_code_key)
-            ->when($selectedStatus !== '', fn($q) => $q->where('job_lists.status', $selectedStatus))
+            ->when(
+                $selectedStatus !== '',
+                fn($q) => $q->where('job_lists.status', $selectedStatus),
+                fn($q) => $q->whereIn('job_lists.status', ['success', 'canceled'])
+            )
             ->when($startDate, fn($q) => $q->whereDate('job_lists.created_at', '>=', $startDate))
             ->when($endDate, fn($q) => $q->whereDate('job_lists.created_at', '<=', $endDate))
             ->leftJoin('spare_parts', 'spare_parts.job_id', '=', 'job_lists.job_id')
