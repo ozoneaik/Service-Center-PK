@@ -329,7 +329,8 @@ class SpareClaimController extends Controller
                             $query->whereRaw('1 = 0');
                         }
                     } else {
-                        $shopIds = $shops->pluck('is_code_cust_id')->toArray();
+                        // $shopIds = $shops->pluck('is_code_cust_id')->toArray();
+                        $shopIds = collect($shops)->pluck('is_code_cust_id')->toArray();
                         if (!empty($shopIds)) {
                             $query->whereIn('user_id', $shopIds);
                         } else {
