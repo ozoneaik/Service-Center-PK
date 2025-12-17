@@ -10,6 +10,7 @@ Route::prefix('spare-claim')->group(function () {
     Route::get('/history/detail/{claim_id}', [SpareClaimController::class, 'historyDetail'])->name('spareClaim.historyDetail');
     Route::get('/pending', [SpareClaimController::class, 'pendingShow'])->name('spareClaim.pending');
     Route::post('/store', [SpareClaimController::class, 'store'])->name('spareClaim.store');
+    Route::post('/receive-update', [SpareClaimController::class, 'updateReceiveStatus'])->name('spareClaim.updateReceiveStatus');
 });
 
 

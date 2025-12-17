@@ -19,6 +19,10 @@ class StartUpCostByShopController extends Controller
 {
     public function index(Request $request)
     {
+        if (Auth::user()->role === 'acc') {
+            return redirect()->route('report.start-up-cost-shop.index');
+        }
+
         $selected_shop = $request->query('shop');
         $shop = $selected_shop ?? Auth::user()->is_code_cust_id;
 
@@ -28,7 +32,7 @@ class StartUpCostByShopController extends Controller
             ->select('is_code_cust_id', 'shop_name')
             ->get();
         // $shops = StoreInformation::select('is_code_cust_id', 'shop_name')->get();
-        $current_shop_name = StoreInformation::where('is_code_cust_id', Auth::user()->is_code_cust_id)
+        $current_shop_name = StoreInformation::where('is_code_cust_id', $shop)
             ->value('shop_name');
 
         $jobs = JobList::query()
@@ -66,7 +70,8 @@ class StartUpCostByShopController extends Controller
                 'shops' => $shops,
                 'selected_shop' => $shop,
                 'current_shop_name' => $current_shop_name,
-                'is_admin' => Auth::user()->role === 'admin'
+                'is_admin' => Auth::user()->role === 'admin',
+                'is_acc' => Auth::user()->role === 'acc',
             ]
         );
     }

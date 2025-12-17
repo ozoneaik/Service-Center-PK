@@ -7,6 +7,7 @@ import {
     IconButton, InputAdornment, InputLabel, MenuItem,
     FormGroup,
     Checkbox,
+    Menu,
 } from "@mui/material";
 import {
     AccountCircle, AdminPanelSettings, AlternateEmail,
@@ -18,7 +19,7 @@ import LoginIcon from '@mui/icons-material/Login';
 
 export default function UserStore({list_menu}) {
 
-    const {flash} = usePage().props;
+    const {flash, auth } = usePage().props;
     const {data, setData, post, processing, errors, reset, clearErrors} = useForm({
         user_code: "", name: "", email: "", role: "service",
         password: "", password_confirmation: "", admin_that_branch: false, access_menu: []
@@ -208,6 +209,12 @@ export default function UserStore({list_menu}) {
                                                     }
                                                     variant='outlined'>
                                                     <MenuItem value="service">เซอร์วิส (Service)</MenuItem>
+                                                    {auth?.user?.role === 'admin' && (
+                                                        <MenuItem value="acc">ACC (Accountant)</MenuItem>
+                                                    )}
+                                                    {auth?.user?.role === 'admin' && (
+                                                        <MenuItem value="sale">เซลล์ (Sale)</MenuItem>
+                                                    )}
                                                 </Select>
                                                 {errors.role && <FormHelperText>{errors.role}</FormHelperText>}
                                             </FormControl>

@@ -28,6 +28,7 @@ export default function OrderHistoryDetail({ order, listSp, customer }) {
             case "กำลังรอรับคำสั่งซื้อ":
                 return 0;
             case "รับคำสั่งซื้อ":
+            case "กำลังเปิดคำสั่งซื้อ":
                 return 1;
             case "กำลังดำเนินการจัดเตรียมสินค้า":
                 return 2;

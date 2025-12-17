@@ -32,6 +32,12 @@ class JobList extends Model
         'print_updated_at',
         'counter_print',
         'repair_man_id',
-        'insurance_expire'
+        'insurance_expire',
+        'stuc_status',
+        'stuc_doc_no',
+        'created_ct_doc_by',
+        'created_ct_doc_at',
+        'updated_ct_doc_by',
+        'cn_doc',
     ];
 }

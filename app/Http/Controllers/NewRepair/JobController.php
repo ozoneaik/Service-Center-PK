@@ -9,6 +9,7 @@ use App\Models\CustomerInJob;
 use App\Models\FileUpload;
 use App\Models\JobList;
 use App\Models\SparePart;
+use App\Models\StartUpCost;
 use App\Models\StockJobDetail;
 use App\Models\StockSparePart;
 use App\Models\Symptom;
@@ -224,6 +225,21 @@ class JobController extends Controller
                     $sub_step = 3;
                     throw new \Exception('สภาพสินค้าหลังซ่อม');
                 }
+
+                //ตรวจสอบสินค้าอยู่ในประกันหรือไม่
+                $is_warranty = $check_job_status->warranty;
+
+                //ตรวจสอบว่าสินค้า (pid) มีอยู่ในตาราง start_up_costs หรือไม่
+                $has_startup_cost = StartUpCost::query()
+                    ->where('sku_code', $check_job_status->pid)
+                    ->exists();
+
+                if ($is_warranty && $has_startup_cost) {
+                    $check_job_status->stuc_status = 'Y';
+                } else {
+                    $check_job_status->stuc_status = 'N';
+                }
+
                 // อัพเดทสถานะ job เป็น ปิดงานซ่อม
                 $check_job_status->status = 'success';
                 $check_job_status->repair_man_id = $check_repair_man_id;

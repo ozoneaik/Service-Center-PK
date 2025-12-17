@@ -10,5 +10,7 @@ class Claim extends Model
         'claim_id',
         'user_id',
         'status',
+        'receive_status',
+        'receive_by'
     ];
 }

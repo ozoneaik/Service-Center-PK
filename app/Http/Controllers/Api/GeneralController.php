@@ -35,6 +35,8 @@ class GeneralController extends Controller
                 'job_lists.p_sub_cat_name',
                 'job_lists.fac_model',
                 'job_lists.status',
+                'job_lists.warranty',
+                'job_lists.insurance_expire',
                 'job_lists.user_key',
                 'job_lists.is_code_key',
                 'store_information.shop_name',
@@ -76,6 +78,7 @@ class GeneralController extends Controller
             if (isset($detail)) {
                 $detail = $detail->toArray();
                 $customer_remark = CustomerInJob::query()->where('job_id', $detail['job_id'])->first();
+                $detail['customer_name'] = $customer_remark['name'] ?? null;
                 if ($customer_remark['subremark1']) {
                     $detail['customer_quote_before_repair'] = 'เสนอราคาก่อนซ่อม';
                 } else {

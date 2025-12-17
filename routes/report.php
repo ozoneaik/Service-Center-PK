@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Report\SummaryCenterRepairsController;
 use App\Http\Controllers\Report\StartUpCostByShopController;
+use App\Http\Controllers\Report\StartUpCostByShopController2;
 use App\Http\Controllers\Report\StartUpCostController;
 use App\Http\Controllers\Report\SummaryOfIncomeController;
 use App\Http\Controllers\Report\SummaryUsedSparePartsController;
@@ -17,9 +18,19 @@ Route::prefix('/report')->group(function(){
      * รายงานค่าตอบแทน (ค่าเปิดเครื่องในประกัน)
      */
     Route::prefix('/start-up-cost-shop')->group(function () {
-        Route::get('/', [StartUpCostByShopController::class,'index'])->name('report.start-up-cost-shop.index');
+        Route::get('/', [StartUpCostByShopController2::class, 'index'])->name('report.start-up-cost-shop.index');
+        Route::get('/export', [StartUpCostByShopController2::class, 'exportExcel'])->name('report.start-up-cost-shop.export');
+        Route::get('/create-doc', [StartUpCostByShopController2::class, 'createDoc'])->name('report.start-up-cost-shop.create-doc');
+        Route::post('/store-doc', [StartUpCostByShopController2::class, 'storeDoc'])->name('report.start-up-cost-shop.store-doc');
+        Route::get('/docs', [StartUpCostByShopController2::class, 'docList'])->name('report.start-up-cost-shop.doc-list');
+        Route::get('/doc/{doc_no}', [StartUpCostByShopController2::class, 'showDoc'])->name('report.start-up-cost-shop.show-doc');
     });
-    Route::get('/report/start-up-cost-shop/export', [StartUpCostByShopController::class, 'exportExcel'])->name('report.start-up-cost-shop.export');
+
+    Route::prefix('/start-up-cost-shop2')->group(function () {
+        Route::get('/', [StartUpCostByShopController::class, 'index'])->name('report.start-up-cost-shop2.index');
+        Route::get('/export', [StartUpCostByShopController::class, 'exportExcel'])->name('report.start-up-cost-shop2.export');
+    });
+
     /**
      * รายสรุปยอดรายรับ ศูนย์ซ่อม แยก เป็น ค่าบริการ ค่าอะไหล่ ค่าตอบแทน
      */

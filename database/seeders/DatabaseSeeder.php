@@ -63,7 +63,11 @@ class DatabaseSeeder extends Seeder
             ['menu_name' => 'รับงานส่งกลับจากพัมคินฯ', 'group' => 11, 'main_menu' => false, 'redirect_route' => 'sendJobs.successJobList'],
             
             ['menu_name' => 'ลงทะเบียนรับประกันสินค้า', 'group' => 4, 'main_menu' => true, 'redirect_route' => 'warranty.index'],
-            ['menu_name' => 'แจ้งเคลมอะไหล่และตรวจสอบสถานะเคลม', 'group' => 5, 'main_menu' => true, 'redirect_route' => 'spareClaim.index'],
+            ['menu_name' => 'แจ้งเคลมอะไหล่และตรวจสอบสถานะเคลม', 'group' => 5, 'main_menu' => true, 'redirect_route' => null],
+            ['menu_name' => 'การจัดการเคลมอะไหล่', 'group' => 5, 'main_menu' => false, 'redirect_route' => 'spareClaim.index'],
+            ['menu_name' => 'ประวัติเคลม', 'group' => 5, 'main_menu' => false, 'redirect_route' => 'spareClaim.history'],
+
+
             ['menu_name' => 'สั่งซื้ออะไหล่และตรวจสอบไดอะแกรม', 'group' => 6, 'main_menu' => true, 'redirect_route' => 'orders.list'],
 
             ['menu_name' => 'เบิกอะไหล่สินค้า', 'group' => 7, 'main_menu' => true, 'redirect_route' => null],

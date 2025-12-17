@@ -10,7 +10,7 @@ import {
 import { TableStyle } from "../../../../css/TableStyle.js";
 import React, { use } from "react";
 
-export default function SucBsList({ jobs, total_start_up_cost, shops, selected_shop, current_shop_name, is_admin }) {
+export default function SucBsList({ jobs, total_start_up_cost, shops, selected_shop, current_shop_name, is_admin, is_acc }) {
     const isMobile = useMediaQuery('(max-width:600px)');
 
     const TableComponent = () => (
@@ -168,6 +168,9 @@ export default function SucBsList({ jobs, total_start_up_cost, shops, selected_s
                         >
                             {/* ซ้าย: Autocomplete (Mobile = full width) */}
                             <Box sx={{ width: isMobile ? "100%" : "260px" }}>
+
+                                {/* ให้สิทธิ์ admin และ acc */}
+                                {/* {is_admin || is_acc && ( */}
                                 {is_admin && (
                                     <Autocomplete
                                         sx={{ width: "100%" }}
@@ -175,7 +178,7 @@ export default function SucBsList({ jobs, total_start_up_cost, shops, selected_s
                                         getOptionLabel={(option) => option.shop_name}
                                         value={shops.find((s) => s.is_code_cust_id == selected_shop) || null}
                                         onChange={(_, newValue) =>
-                                            router.get(route('report.start-up-cost-shop.index'), {
+                                            router.get(route('report.start-up-cost-shop2.index'), {
                                                 shop: newValue?.is_code_cust_id || '',
                                             })
                                         }
@@ -203,7 +206,7 @@ export default function SucBsList({ jobs, total_start_up_cost, shops, selected_s
                                     color="success"
                                     onClick={() => {
                                         window.open(
-                                            route('report.start-up-cost-shop.export', { shop: selected_shop }),
+                                            route('report.start-up-cost-shop2.export', { shop: selected_shop }),
                                             "_blank"
                                         );
                                     }}

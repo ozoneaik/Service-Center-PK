@@ -1,13 +1,17 @@
 import {
     Box,Button, Card, CardContent,Grid2,Stack,useMediaQuery,
-    Table,TableBody,TableCell,TableHead,TableRow, Typography,Checkbox
+    Table,TableBody,TableCell,TableHead,TableRow, Typography,Checkbox,
+    Paper,
+    Autocomplete,
+    TextField
 } from "@mui/material";
 import PreviewIcon from "@mui/icons-material/Preview";
 import {useEffect, useState} from "react";
 import DialogDetail from "@/Pages/SpareClaim/DialogDetail.jsx";
 import {AlertDialog} from "@/Components/AlertDialog.js";
+import { router } from "@inertiajs/react";
 
-export default function AlreadyClaim({spareParts}) {
+export default function AlreadyClaim({spareParts, shops, filters, isAdmin }) {
     const [open, setOpen] = useState(false);
     const [detail, setDetail] = useState();
 
@@ -15,8 +19,16 @@ export default function AlreadyClaim({spareParts}) {
     const [selected, setSelected] = useState(spareParts.map(item => ({
         ...item,
         checked: false,
-        detail: item.detail.map(detailItem => ({...detailItem, checked: false}))
+        detail: item.detail.map(detailItem => ({...detailItem, checked: false }))
     })));
+
+    useEffect(() => {
+        setSelected(spareParts.map(item => ({
+            ...item,
+            checked: false, // หรือจะเก็บค่า checked เดิมไว้ถ้าต้องการ (แต่ปกติ filter เปลี่ยน ของในตารางก็เปลี่ยน น่าจะ reset checked ดีกว่า)
+            detail: item.detail.map(detailItem => ({ ...detailItem, checked: false }))
+        })));
+    }, [spareParts]);
 
     const [loading, setLoading] = useState(false);
 

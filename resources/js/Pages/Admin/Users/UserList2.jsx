@@ -193,7 +193,7 @@ export default function UserList2({ list }) {
                                     <MenuItem value="admin">Admin</MenuItem>
                                     <MenuItem value="service">Service</MenuItem> {/* เปลี่ยน 'user' เป็น 'service' */}
                                     <MenuItem value="dealer">Dealer</MenuItem>
-                                    <MenuItem value="sale">Sale</MenuItem> {/* 🆕 เพิ่ม Sale */}
+                                    {/* <MenuItem value="sale">Sale</MenuItem> 🆕 เพิ่ม Sale */}
                                 </Select>
                             </FormControl>
 
@@ -231,8 +231,8 @@ export default function UserList2({ list }) {
                                 เพิ่มผู้ใช้
                             </Button>
 
-                            {/* ปุ่มสำหรับสร้างผู้ใช้ Sale: แก้ไข route name */}
-                            {/* <Button variant='outlined' color="secondary" component={Link} href={route('saleManage.createSale')}>
+                            {/* ปุ่มสำหรับสร้างผู้ใช้ Sale: แก้ไข route name
+                            <Button variant='outlined' color="secondary" component={Link} href={route('saleManage.createSale')}>
                                 เพิ่มผู้ใช้ (Sale)
                             </Button> */}
                         </Box>

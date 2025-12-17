@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ClaimRequest;
 use App\Models\Claim;
 use App\Models\ClaimDetail;
+use App\Models\ClaimFileUpload;
 use App\Models\JobList;
 use App\Models\logStamp;
 use App\Models\SparePart;
@@ -18,55 +19,106 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class SpareClaimController extends Controller
 {
+    // ปรับปรุงฟังก์ชัน index เพื่อรวมเคลมด่วนและเคลมปกติ (วิว)
     // public function index(): Response
     // {
     //     $isCodeKey = Auth::user()->is_code_cust_id;
 
-    //     $spareParts = SparePart::query()
+    //     //  1. เคลมด่วน (pending)
+    //     $urgentParts = SparePart::query()
     //         ->leftJoin('job_lists', 'spare_parts.job_id', '=', 'job_lists.job_id')
-    //         ->select('spare_parts.*')
-    //         ->where('spare_parts.status', 'pending')
+    //         ->select('spare_parts.*', 'job_lists.status as job_status')
     //         ->where('spare_parts.claim', true)
     //         ->where('spare_parts.claim_remark', 'เคลมด่วน')
+    //         ->where('spare_parts.status', 'pending')
     //         ->where('job_lists.is_code_key', $isCodeKey)
+    //         ->orderByDesc('spare_parts.created_at')
     //         ->get();
 
-    //     $grouped = collect($spareParts)->groupBy('sp_code')->map(function ($items, $sp_code) {
+    //     // 2. เคลมปกติ (ไม่ใช่เคลมด่วน แต่ job ปิดงานแล้ว) 
+    //     $normalParts = SparePart::query()
+    //         ->leftJoin('job_lists', 'spare_parts.job_id', '=', 'job_lists.job_id')
+    //         ->select('spare_parts.*', 'job_lists.status as job_status')
+    //         ->where('spare_parts.claim', true)
+    //         ->where(function ($q) {
+    //             $q->whereNull('spare_parts.claim_remark')
+    //                 ->orWhere('spare_parts.claim_remark', '!=', 'เคลมด่วน');
+    //         })
+    //         ->where('spare_parts.status', 'pending')
+    //         ->where('job_lists.status', 'success')
+    //         ->where('job_lists.is_code_key', $isCodeKey)
+    //         ->orderByDesc('spare_parts.created_at')
+    //         ->get();
+
+    //     // รวมทั้งสองประเภท
+    //     $allParts = $urgentParts->merge($normalParts);
+
+    //     // Group ตาม sp_code
+    //     $grouped = collect($allParts)->groupBy('sp_code')->map(function ($items, $sp_code) {
+    //         $first = $items->first();
     //         return [
     //             'sp_code' => $sp_code,
-    //             'sp_name' => $items->first()->sp_name,
-    //             'sp_unit' => $items->first()->sp_unit,
+    //             'sp_name' => $first->sp_name,
+    //             'sp_unit' => $first->sp_unit,
     //             'qty'     => $items->sum('qty'),
+    //             'type'    => $first->claim_remark === 'เคลมด่วน' ? 'เคลมด่วน' : 'เคลมปกติ',
     //             'detail'  => $items->values(),
     //         ];
     //     })->values();
 
-    //     return Inertia::render('SpareClaim/ClaimMain', ['spareParts' => $grouped]);
+    //     return Inertia::render('SpareClaim/ClaimMain', [
+    //         'spareParts' => $grouped,
+    //     ]);
     // }
 
-    // ปรับปรุงฟังก์ชัน index เพื่อรวมเคลมด่วนและเคลมปกติ (วิว)
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $isCodeKey = Auth::user()->is_code_cust_id;
+        $user = Auth::user();
+        $shops = [];
+        $selectedShop = null;
+
+        // ตรวจสอบสิทธิ์: ถ้าเป็น Admin
+        if ($user->role === 'admin') {
+            // 1. ดึงรายชื่อร้านค้าทั้งหมดมาให้เลือก
+            $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
+                ->orderBy('shop_name')
+                ->get();
+
+            // 2. รับค่าจาก Filter (ถ้ามี)
+            $selectedShop = $request->query('shop');
+        } else {
+            // ถ้าเป็น User ธรรมดา ให้ล็อคดูได้แค่ร้านตัวเอง
+            $selectedShop = $user->is_code_cust_id;
+        }
+
+        // ฟังก์ชันช่วย Query (เพื่อลด Code ซ้ำ)
+        $applyShopFilter = function ($query) use ($selectedShop) {
+            // ถ้ามีค่าร้านค้า (Admin เลือก หรือเป็น User ธรรมดา) ให้กรอง
+            // ถ้า Admin ไม่เลือก ($selectedShop = null) จะดึงทั้งหมด
+            if ($selectedShop) {
+                $query->where('job_lists.is_code_key', $selectedShop);
+            }
+        };
 
         //  1. เคลมด่วน (pending)
         $urgentParts = SparePart::query()
             ->leftJoin('job_lists', 'spare_parts.job_id', '=', 'job_lists.job_id')
-            ->select('spare_parts.*', 'job_lists.status as job_status')
+            ->select('spare_parts.*', 'job_lists.status as job_status', 'job_lists.is_code_key')
             ->where('spare_parts.claim', true)
             ->where('spare_parts.claim_remark', 'เคลมด่วน')
             ->where('spare_parts.status', 'pending')
-            ->where('job_lists.is_code_key', $isCodeKey)
+            ->tap($applyShopFilter) // ใช้ tap เรียกฟังก์ชันกรอง
             ->orderByDesc('spare_parts.created_at')
             ->get();
 
         // 2. เคลมปกติ (ไม่ใช่เคลมด่วน แต่ job ปิดงานแล้ว) 
         $normalParts = SparePart::query()
             ->leftJoin('job_lists', 'spare_parts.job_id', '=', 'job_lists.job_id')
-            ->select('spare_parts.*', 'job_lists.status as job_status')
+            ->select('spare_parts.*', 'job_lists.status as job_status', 'job_lists.is_code_key')
             ->where('spare_parts.claim', true)
             ->where(function ($q) {
                 $q->whereNull('spare_parts.claim_remark')
@@ -74,7 +126,7 @@ class SpareClaimController extends Controller
             })
             ->where('spare_parts.status', 'pending')
             ->where('job_lists.status', 'success')
-            ->where('job_lists.is_code_key', $isCodeKey)
+            ->tap($applyShopFilter) // ใช้ tap เรียกฟังก์ชันกรอง
             ->orderByDesc('spare_parts.created_at')
             ->get();
 
@@ -96,61 +148,13 @@ class SpareClaimController extends Controller
 
         return Inertia::render('SpareClaim/ClaimMain', [
             'spareParts' => $grouped,
+            'shops' => $shops, // ส่งรายการร้านค้าไป Frontend
+            'filters' => [ // ส่งค่าที่เลือกปัจจุบันไป Frontend
+                'shop' => $selectedShop,
+            ],
+            'isAdmin' => $user->role === 'admin' // ส่งสถานะแอดมินไป
         ]);
     }
-
-    // public function index(): Response
-    // {
-    //     $isCodeKey = Auth::user()->is_code_cust_id;
-
-    //     // 1. เคลมด่วน
-    //     $urgentParts = SparePart::query()
-    //         ->leftJoin('job_lists', 'spare_parts.job_id', '=', 'job_lists.job_id')
-    //         ->select('spare_parts.*', 'job_lists.status as job_status')
-    //         ->where(function ($q) {
-    //             $q->where('spare_parts.claim_remark', 'เคลมด่วน')
-    //                 ->orWhere('spare_parts.remark_noclaim', 'เคลมด่วน');
-    //         })
-    //         ->where('spare_parts.status', 'pending')
-    //         ->where('job_lists.is_code_key', $isCodeKey)
-    //         ->get();
-
-    //     // 2. เคลมปกติ (รวมทั้ง claim = true และ claim = false)
-    //     $normalParts = SparePart::query()
-    //         ->leftJoin('job_lists', 'spare_parts.job_id', '=', 'job_lists.job_id')
-    //         ->select('spare_parts.*', 'job_lists.status as job_status')
-    //         ->where(function ($q) {
-    //             $q->whereNull('spare_parts.claim_remark')
-    //                 ->orWhere('spare_parts.claim_remark', '!=', 'เคลมด่วน');
-    //         })
-    //         ->where('spare_parts.status', 'pending')   // ยังไม่เคลม
-    //         ->where('job_lists.status', 'success')     // ปิดงานแล้ว
-    //         ->where('job_lists.is_code_key', $isCodeKey)
-    //         ->whereIn('spare_parts.claim', [true, false])
-    //         ->get();
-
-    //     // รวมสองชุดเข้าด้วยกัน
-    //     $allParts = $urgentParts->merge($normalParts);
-
-    //     // Group ตาม sp_code
-    //     $grouped = collect($allParts)->groupBy('sp_code')->map(function ($items, $sp_code) {
-    //         $first = $items->first();
-    //         return [
-    //             'sp_code' => $sp_code,
-    //             'sp_name' => $first->sp_name,
-    //             'sp_unit' => $first->sp_unit,
-    //             'qty'     => $items->sum('qty'),
-    //             'type'    => $first->claim_remark === 'เคลมด่วน' || $first->remark_noclaim === 'เคลมด่วน'
-    //                 ? 'เคลมด่วน'
-    //                 : 'เคลมปกติ',
-    //             'detail'  => $items->values(),
-    //         ];
-    //     })->values();
-
-    //     return Inertia::render('SpareClaim/ClaimMain', [
-    //         'spareParts' => $grouped,
-    //     ]);
-    // }
 
     public function store(ClaimRequest $request): JsonResponse
     {
@@ -230,17 +234,237 @@ class SpareClaimController extends Controller
         }
     }
 
-    public function historyShow(): Response
+    // public function historyShow(): Response
+    // {
+    //     $history = Claim::query()
+    //         ->where('user_id', Auth::user()->is_code_cust_id)->orderByDesc('created_at')->get();
+    //     foreach ($history as $h) {
+    //         $h['list'] = ClaimDetail::query()
+    //             ->where('claim_details.claim_id', $h->claim_id)
+    //             ->get();
+    //     }
+    //     return Inertia::render('SpareClaim/HistoryClaimNew', [
+    //         'history' => $history
+    //     ]);
+    // }
+
+    public function historyShow(Request $request): Response
     {
-        $history = Claim::query()->where('user_id', Auth::user()->is_code_cust_id)->orderByDesc('created_at')->get();
+        $user = Auth::user();
+        $shops = [];
+        $areas = [];
+        $selectedShop = null;
+        $selectedArea = null;
+        $selectedReceiveStatus = $request->query('receive_status');
+        $selectedStatus = $request->query('status');
+        $isSale = session('is_sales_rep', false) || $user->role === 'sale';
+
+        // ตรวจสอบสิทธิ์ Admin
+        if ($user->role === 'admin') {
+            $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
+                ->orderBy('shop_name')
+                ->get();
+            $selectedShop = $request->query('shop');
+        } else if ($isSale) {
+            try {
+                $apiShops = $this->fetchShopsForSale($user->user_code);
+                $collectionShops = collect($apiShops);
+
+                // ตรวจสอบว่ามีร้านใน API ที่ไม่มีในฐานข้อมูล
+                $apiCustIds = $collectionShops->pluck('cust_id')->toArray();
+                $existingInDb = StoreInformation::whereIn('is_code_cust_id', $apiCustIds)
+                    ->pluck('is_code_cust_id')
+                    ->toArray();
+                $collectionShops = $collectionShops->whereIn('cust_id', $existingInDb);
+
+                $areas = $collectionShops->map(function ($item) {
+                    return [
+                        'code' => $item['sale_area_code'],
+                        'name' => $item['sale_area_name']
+                    ];
+                })->unique('code')->values();
+                $shops = $collectionShops->map(function ($item) {
+                    return [
+                        'is_code_cust_id' => $item['cust_id'],
+                        'shop_name' => $item['cust_name'],
+                        'sale_name' => $item['sale_name'] ?? '-',
+                        'sale_area_code' => $item['sale_area_code'],
+                        'sale_area_name' => $item['sale_area_name']
+                    ];
+                })->values();
+                $selectedShop = $request->query('shop');
+                $selectedArea = $request->query('area');
+                if ($selectedShop && !$shops->contains('is_code_cust_id', $selectedShop)) {
+                    $selectedShop = null;
+                }
+            } catch (\Exception $e) {
+                Log::error("Failed to fetch sales shops: " . $e->getMessage());
+                $shops = [];
+            }
+        } else {
+            $selectedShop = $user->is_code_cust_id;
+        }
+
+        $history = Claim::query()
+            ->when($selectedReceiveStatus, function ($query, $status) {
+                $query->where('receive_status', $status);
+            })
+            ->when($selectedStatus, function ($query, $status) {
+                $query->where('status', $status);
+            })
+            ->when(true, function ($query) use ($user, $isSale, $selectedShop, $selectedArea, $shops, $request) {
+                if ($user->role === 'admin') {
+                    if ($selectedShop) $query->where('user_id', $selectedShop);
+                } elseif ($isSale) {
+                    if ($selectedShop) {
+                        $query->where('user_id', $selectedShop);
+                    } elseif ($selectedArea) {
+                        $shopIdsInArea = $shops->where('sale_area_code', $selectedArea)
+                            ->pluck('is_code_cust_id')
+                            ->toArray();
+
+                        if (!empty($shopIdsInArea)) {
+                            $query->whereIn('user_id', $shopIdsInArea);
+                        } else {
+                            $query->whereRaw('1 = 0');
+                        }
+                    } else {
+                        $shopIds = $shops->pluck('is_code_cust_id')->toArray();
+                        if (!empty($shopIds)) {
+                            $query->whereIn('user_id', $shopIds);
+                        } else {
+                            $query->whereRaw('1 = 0');
+                        }
+                    }
+                } else {
+                    $query->where('user_id', $selectedShop);
+                }
+            })
+            ->orderByDesc('created_at')
+            ->get();
+
         foreach ($history as $h) {
             $h['list'] = ClaimDetail::query()
                 ->where('claim_details.claim_id', $h->claim_id)
                 ->get();
+
+            if ($h->receive_status === 'Y') {
+                // ดึงรูปภาพทั้งหมด (get) แทนรูปเดียว (first)
+                $evidences = ClaimFileUpload::where('claim_id', $h->claim_id)->get();
+
+                $h['receive_evidence'] = [
+                    // map ให้เป็น array ของ url
+                    'images' => $evidences->map(function ($file) {
+                        return asset('storage/' . $file->file_path);
+                    }),
+                    // remark เอามาจากอันล่าสุด หรือจะเอามาทั้งหมดก็ได้
+                    'remark' => $evidences->first()->remark ?? ''
+                ];
+            }
         }
+
         return Inertia::render('SpareClaim/HistoryClaimNew', [
-            'history' => $history
+            'history' => $history,
+            'shops' => $shops,
+            'areas' => $areas,
+            'filters' => [
+                'shop' => $selectedShop,
+                'area' => $selectedArea,
+                'receive_status' => $selectedReceiveStatus,
+                'status' => $selectedStatus,
+            ],
+            'isAdmin' => $user->role === 'admin' || $isSale
         ]);
+    }
+
+    private function fetchShopsForSale($saleCode)
+    {
+        $authUrl = 'https://pkapi.pumpkin.tools/api/auth/login';
+        $authResponse = Http::post($authUrl, [
+            'username' => 'B68263',
+            'password' => 'Par@68263',
+        ]);
+
+        if (!$authResponse->successful()) {
+            throw new \Exception('Failed to login to external API');
+        }
+
+        $token = $authResponse->json()['access_token'];
+        $dataUrl = 'https://pkapi.pumpkin.tools/api/getCustInSales';
+
+        $shopResponse = Http::withToken($token)
+            ->asMultipart()
+            ->post($dataUrl, [
+                'sale_code' => $saleCode, // รหัสเซลล์ที่ต้องการค้นหา
+                // 'search' => '' // ส่งค่าว่างหรือตัดออกถ้าไม่ใช้
+            ]);
+
+        if (!$shopResponse->successful()) {
+            throw new \Exception('Failed to fetch customers from external API');
+        }
+
+        $result = $shopResponse->json();
+
+        // ตรวจสอบ status จาก Response Body
+        if (isset($result['status']) && $result['status'] == true) {
+            return $result['data'];
+        }
+
+        return [];
+    }
+
+    public function updateReceiveStatus(Request $request)
+    {
+        $request->validate([
+            'claim_id' => 'required|exists:claims,claim_id',
+            'images' => 'required|array',
+            'images.*' => 'image|max:10240',
+            'remark' => 'nullable|string'
+        ]);
+
+        try {
+            DB::beginTransaction();
+            $claim = Claim::where('claim_id', $request->claim_id)->first();
+            if (!$claim) {
+                throw new \Exception('ไม่พบข้อมูล Claim ID');
+            }
+            $claim->update([
+                'receive_status' => 'Y',
+                'receive_by' => Auth::user()->user_code,
+                'updated_at' => now()
+            ]);
+
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $file) {
+                    $originalName = $file->getClientOriginalName();
+                    // เพิ่ม random string กันชื่อซ้ำ
+                    $fileName = 'receive_' . $request->claim_id . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('uploads/claims', $fileName, 'public');
+
+                    ClaimFileUpload::create([
+                        'claim_id' => $request->claim_id,
+                        'file_path' => $path,
+                        'file_name' => $originalName,
+                        'remark' => $request->remark // ใช้ remark เดียวกันทุกรูป หรือจะแยกก็ได้
+                    ]);
+                }
+            }
+
+            DB::commit();
+            return redirect()->back();
+            // return response()->json([
+            //     'status' => 'success',
+            //     'message' => 'บันทึกการรับอะไหล่เรียบร้อยแล้ว'
+            // ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error receiving claim: " . $e->getMessage());
+            // return response()->json([
+            //     'status' => 'error',
+            //     'message' => 'เกิดข้อผิดพลาด: ' . $e->getMessage()
+            // ], 500);
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+        }
     }
 
     public function historyDetail($claim_id): Response

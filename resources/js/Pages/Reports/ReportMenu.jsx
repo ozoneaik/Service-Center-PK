@@ -4,8 +4,9 @@ import {
     Assessment as AssessmentIcon, PieChart as PieChartIcon, Inventory as InventoryIcon, Dashboard as DashboardIcon,
     BugReport as BugReportIcon, Settings as SettingsIcon, TrendingUp as TrendingUpIcon, Article
 } from "@mui/icons-material";
-import { Head, router } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import { AlertDialog } from "@/Components/AlertDialog.js";
+import { useMemo } from "react";
 
 const listMenu = [
     {
@@ -125,7 +126,7 @@ function ActionsButton({ item }) {
 
 
 export default function ReportMenu() {
-
+    const { auth } = usePage().props;
     const handleRedirect = (routeUrl = null) => {
         if (routeUrl === null) {
             AlertDialog({
@@ -136,12 +137,45 @@ export default function ReportMenu() {
         }
         router.get(route(routeUrl));
     }
+
+    // const filteredListMenu = useMemo(() => {
+    //     return listMenu.filter(item => {
+    //         if (auth?.user?.role === 'acc') {
+    //             return item.routeUrl === 'report.start-up-cost-shop.index';
+    //         }
+    //         return true;
+    //     });
+    // }, [auth?.user?.role]);
+
+    const filteredListMenu = useMemo(() => {
+        const items = listMenu.filter(item => {
+            if (auth?.user?.role === 'acc') {
+                return item.routeUrl === 'report.start-up-cost-shop.index';
+            }
+            return true;
+        });
+        return items.map(item => {
+            if (item.routeUrl === 'report.start-up-cost-shop.index') {
+                const isNormalUser = auth?.user?.role !== 'admin' && auth?.user?.role !== 'acc';
+                if (isNormalUser) {
+                    return {
+                        ...item,
+                        routeUrl: 'report.start-up-cost-shop2.index'
+                    };
+                }
+            }
+            return item;
+        });
+
+    }, [auth?.user?.role]);
+
     return (
         <AuthenticatedLayout>
             <Head title='เมนูรายงาน' />
             <Container maxWidth="xl" sx={{ py: 4 }}>
                 <Grid2 container spacing={3}>
-                    {listMenu.map((item, index) => (
+                    {/* {listMenu.map((item, index) => ( */}
+                    {filteredListMenu.map((item, index) => (
                         <Grid2 size={{ xs: 12, sm: 6, lg: 4 }} key={index}>
                             <Fade onClick={() => handleRedirect(item.routeUrl)} in={true} timeout={500 + (index * 100)}>
                                 <Card

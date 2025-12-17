@@ -48,11 +48,13 @@ class UserController extends Controller
         try {
             DB::beginTransaction();
             $data = $request;
+            $roleToSave = $data['role'] ?? 'service';
             $user = User::query()->create([
                 'user_code' => $data['user_code'],
                 'name' => $data['name'],
                 'is_code_cust_id' => Auth::user()->is_code_cust_id,
-                'role' => 'service',
+                // 'role' => 'service',
+                'role' => $roleToSave,
                 'admin_that_branch' => $data['admin_that_branch'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password'])

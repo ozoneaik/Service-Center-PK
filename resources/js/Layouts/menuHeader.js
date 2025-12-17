@@ -29,9 +29,22 @@ export function getMenuHeaders(user) {
             name: 'ลงทะเบียนรับประกันสินค้า',
             routeUrl: 'warranty.index'
         },
+        // {
+        //     name: 'แจ้งเคลมอะไหล่และตรวจสอบสถานะเคลม',
+        //     routeUrl: 'spareClaim.index'
+        // },
         {
             name: 'แจ้งเคลมอะไหล่และตรวจสอบสถานะเคลม',
-            routeUrl: 'spareClaim.index'
+            childs: [
+                {
+                    name: 'การจัดการเคลมอะไหล่',
+                    routeUrl: 'spareClaim.index'
+                },
+                {
+                    name: 'ประวัติเคลม',
+                    routeUrl: 'spareClaim.history'
+                }
+            ]
         },
         {
             name: 'สั่งซื้ออะไหล่และตรวจสอบไดอะแกรม',
