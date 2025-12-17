@@ -13,6 +13,7 @@ use App\Models\StartUpCost;
 use App\Models\StockJobDetail;
 use App\Models\StockSparePart;
 use App\Models\Symptom;
+use App\Services\SendMessageService;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
@@ -270,6 +271,54 @@ class JobController extends Controller
                 throw new \Exception('ไม่สามารถปิดจ็อบได้');
             }
             DB::commit();
+
+            // เริ่มการส่ง SMS
+            try {
+                if (isset($check_customer) && !empty($check_customer->phone)) {
+
+                    $user = Auth::user();
+
+                    // ค่า Default
+                    $shop_name = 'Pumpkin';
+
+                    // ตรวจสอบว่า User มีข้อมูล Store Information หรือไม่
+                    if ($user && $user->store_info) {
+                        if (!empty($user->store_info->shop_name)) {
+                            $shop_name = $user->store_info->shop_name;
+                        }
+                    }
+
+                    // กำหนดค่า Config
+                    $sms_account = env('SMS_ACCOUNT');
+                    $sms_password = env('SMS_PASSWORD');
+
+                    // เตรียมข้อความ
+                    $message = "PSC {$shop_name} ได้ซ่อมสินค้าของท่านเรียบร้อย เลขที่อ้างอิง {$job_id}";
+                    $category = 'General';
+                    $sender_name = '';
+
+                    // เรียกใช้งาน Service
+                    $sms_result = SendMessageService::sendMessage(
+                        $sms_account,
+                        $sms_password,
+                        $check_customer->phone,
+                        $message,
+                        '',
+                        $category,
+                        $sender_name
+                    );
+
+                    if ($sms_result['result']) {
+                        Log::info("SMS Sent Success After Repair Job: {$job_id}, TaskID: " . $sms_result['task_id']);
+                    } else {
+                        Log::error("SMS Sent Failed After Repair Job: {$job_id}, Error: " . ($sms_result['error'] ?? 'Unknown Error'));
+                    }
+                }
+            } catch (\Exception $smsException) {
+                Log::error("SMS Exception Job: {$job_id} - " . $smsException->getMessage());
+            }
+            // -------------------------------------------------------------
+
             return response()->json([
                 'job_id' => $job_id,
                 'serial_id' => $serial_id,

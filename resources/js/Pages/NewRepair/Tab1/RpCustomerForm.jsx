@@ -1,15 +1,47 @@
 import {
-    Checkbox, FormControl, FormControlLabel, FormGroup, FormLabel, Stack, TextField
+    Checkbox, CircularProgress, FormControl, FormControlLabel, FormGroup, FormLabel, InputAdornment, Stack, TextField
 } from "@mui/material";
+import { useState } from "react";
 
 export default function RpCustomerForm({data, setData,form1Saved}) {
+    const [loadingPhone, setLoadingPhone] = useState(false);
+    // const handleChange = (e) => {
+    //     const {name, value} = e.target;
+    //     setData('customer', {
+    //         ...data.customer,
+    //         [name]: value
+    //     })
+    // }
 
-    const handleChange = (e) => {
-        const {name, value} = e.target;
-        setData('customer', {
+    const handleChange = async (e) => {
+        const { name, value } = e.target;
+
+        let newData = {
             ...data.customer,
             [name]: value
-        })
+        };
+        setData('customer', newData);
+
+        if (name === 'phone' && value.length === 10) {
+            setLoadingPhone(true);
+            try {
+                const res = await axios.get(route('repair.check.phone'), {
+                    params: { phone: value }
+                });
+
+                if (res.data.found) {
+                    setData('customer', {
+                        ...newData,
+                        name: res.data.name || '',
+                        address: res.data.address || ''
+                    });
+                }
+            } catch (error) {
+                console.error("Error checking phone:", error);
+            } finally {
+                setLoadingPhone(false);
+            }
+        }
     }
 
     const handleChecked = (e) => {
@@ -30,6 +62,15 @@ export default function RpCustomerForm({data, setData,form1Saved}) {
                     id='phone' name='phone' size='small'
                     placeholder='ตัวอย่าง : 081-234-5678' type='number'
                     required onChange={handleChange}
+                    slotProps={{
+                        input: {
+                            endAdornment: loadingPhone ? (
+                                <InputAdornment position="end">
+                                    <CircularProgress size={20} />
+                                </InputAdornment>
+                            ) : null,
+                        },
+                    }}
                 />
             </FormControl>
 
@@ -41,6 +82,7 @@ export default function RpCustomerForm({data, setData,form1Saved}) {
                     id='name' name='name' size='small'
                     placeholder='ตัวอย่าง : มานี มานะ'
                     required onChange={handleChange}
+                    disabled={loadingPhone || form1Saved}
                 />
             </FormControl>
 
@@ -54,6 +96,7 @@ export default function RpCustomerForm({data, setData,form1Saved}) {
                     id='address' name='address' size='small'
                     placeholder='ตัวอย่าง : บ้าน x ซอย x แขวง x กทม xxxxx'
                     onChange={handleChange}
+                    disabled={loadingPhone || form1Saved}
                 />
             </FormControl>
 

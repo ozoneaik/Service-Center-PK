@@ -33,6 +33,7 @@ Route::prefix('repair')->group(function () {
            Route::get('/',[RpBfController::class,'index'])->name('repair.before.index');
            Route::post('/',[RpBfController::class,'store'])->name('repair.before.store');
            Route::post('/work-receipt',[RpBfController::class,'WorkReceipt'])->name('repair.before.work.receipt');
+           Route::get('/check-phone', [RpBfController::class, 'checkPhone'])->name('repair.check.phone');
         });
 
         Route::prefix('after-repair')->group(function () {
