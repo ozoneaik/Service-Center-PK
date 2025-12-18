@@ -197,7 +197,7 @@ const ReceiveModal = ({
 };
 // --------------------------------------------------------
 
-export default function HistoryClaimNew({ history, shops, filters, isAdmin, areas }) {
+export default function HistoryClaimNew({ history, shops, filters, isAdmin, areas, currentSale, userRole }) {
     const isMobile = useMediaQuery('(max-width:600px)');
 
     const [openModal, setOpenModal] = useState(false);
@@ -408,6 +408,14 @@ export default function HistoryClaimNew({ history, shops, filters, isAdmin, area
                 {isAdmin && (
                     <Grid2 size={12}>
                         <Paper elevation={0} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                            {/* {currentSale && (
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: '#f1f8e9', color: '#33691e', py: 1, px: 2, borderRadius: 1, border: '1px solid #c5e1a5', width: '100%', mb: 1 }}>
+                                    <Info fontSize="small" />
+                                    <Typography variant="body2">
+                                        เซลล์: <strong>{currentSale.name}</strong> | รหัสเซลล์: <strong>{currentSale.code}</strong>
+                                    </Typography>
+                                </Box>
+                            )} */}
                             <Typography variant="body2" fontWeight="bold" sx={{ minWidth: 'fit-content' }}>🔍 กรองข้อมูล :</Typography>
                             {areas && areas.length > 0 && (
                                 <Box sx={{ minWidth: '200px' }}>
@@ -431,7 +439,7 @@ export default function HistoryClaimNew({ history, shops, filters, isAdmin, area
                                     renderInput={(params) => <TextField {...params} label="ค้นหาชื่อร้าน หรือ รหัสลูกค้า" placeholder="พิมพ์เพื่อค้นหา..." />}
                                 />
                             </Box>
-                            {selectedShopData && (
+                            {selectedShopData && userRole !== 'admin' && (
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: '#e3f2fd', color: '#01579b', py: 1, px: 2, borderRadius: 1, border: '1px solid #90caf9' }}>
                                     <Info fontSize="small" />
                                     <Typography variant="body2">

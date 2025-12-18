@@ -253,112 +253,92 @@ class SpareClaimController extends Controller
         $user = Auth::user();
         $shops = [];
         $areas = [];
-        $selectedShop = null;
-        $selectedArea = null;
+        $selectedShop = $request->query('shop');
+        $selectedArea = $request->query('area');
         $selectedReceiveStatus = $request->query('receive_status');
         $selectedStatus = $request->query('status');
-        $isSale = session('is_sales_rep', false) || $user->role === 'sale';
 
-        // ตรวจสอบสิทธิ์ Admin
+        $isSale = session('is_sales_rep', false) || $user->role === 'sale';
+        $currentSale = null;
+
         if ($user->role === 'admin') {
             $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
                 ->orderBy('shop_name')
                 ->get();
-            $selectedShop = $request->query('shop');
         } else if ($isSale) {
             try {
                 $apiShops = $this->fetchShopsForSale($user->user_code);
                 $collectionShops = collect($apiShops);
 
-                // ตรวจสอบว่ามีร้านใน API ที่ไม่มีในฐานข้อมูล
+                // เก็บข้อมูล Sale จาก API เพื่อแสดงผล Info
+                $saleData = $collectionShops->first();
+                $currentSale = [
+                    'name' => $saleData['sale_name'] ?? $user->name,
+                    'code' => $user->user_code
+                ];
+
+                // กรองเฉพาะร้านที่มีอยู่ในฐานข้อมูลของเรา
                 $apiCustIds = $collectionShops->pluck('cust_id')->toArray();
                 $existingInDb = StoreInformation::whereIn('is_code_cust_id', $apiCustIds)
                     ->pluck('is_code_cust_id')
                     ->toArray();
                 $collectionShops = $collectionShops->whereIn('cust_id', $existingInDb);
 
-                $areas = $collectionShops->map(function ($item) {
-                    return [
-                        'code' => $item['sale_area_code'],
-                        'name' => $item['sale_area_name']
-                    ];
-                })->unique('code')->values();
-                $shops = $collectionShops->map(function ($item) {
-                    return [
+                // จัดฟอร์แมตข้อมูลสำหรับ Area และ Shops
+                $areas = $collectionShops->map(fn($item) => [
+                    'code' => $item['sale_area_code'],
+                    'name' => $item['sale_area_name']
+                ])->unique('code')->values();
+
+                $shops = $collectionShops->map(fn($item) => [
                         'is_code_cust_id' => $item['cust_id'],
                         'shop_name' => $item['cust_name'],
                         'sale_name' => $item['sale_name'] ?? '-',
                         'sale_area_code' => $item['sale_area_code'],
                         'sale_area_name' => $item['sale_area_name']
-                    ];
-                })->values();
-                $selectedShop = $request->query('shop');
-                $selectedArea = $request->query('area');
-                if ($selectedShop && !$shops->contains('is_code_cust_id', $selectedShop)) {
-                    $selectedShop = null;
-                }
+                ])->values();
             } catch (\Exception $e) {
                 Log::error("Failed to fetch sales shops: " . $e->getMessage());
-                $shops = [];
             }
         } else {
             $selectedShop = $user->is_code_cust_id;
         }
 
         $history = Claim::query()
-            ->when($selectedReceiveStatus, function ($query, $status) {
-                $query->where('receive_status', $status);
-            })
-            ->when($selectedStatus, function ($query, $status) {
-                $query->where('status', $status);
-            })
-            ->when(true, function ($query) use ($user, $isSale, $selectedShop, $selectedArea, $shops, $request) {
+            ->when($selectedReceiveStatus, fn($q, $s) => $q->where('receive_status', $s))
+            ->when($selectedStatus, fn($q, $s) => $q->where('status', $s))
+            ->where(function ($query) use ($user, $isSale, $selectedShop, $selectedArea, $shops) {
                 if ($user->role === 'admin') {
-                    if ($selectedShop) $query->where('user_id', $selectedShop);
+                    if ($selectedShop) {
+                        $query->where('user_id', $selectedShop);
+                    } else {
+                        $query->where('user_id', $user->is_code_cust_id);
+                    }
                 } elseif ($isSale) {
                     if ($selectedShop) {
                         $query->where('user_id', $selectedShop);
                     } elseif ($selectedArea) {
-                        $shopIdsInArea = $shops->where('sale_area_code', $selectedArea)
-                            ->pluck('is_code_cust_id')
-                            ->toArray();
-
-                        if (!empty($shopIdsInArea)) {
-                            $query->whereIn('user_id', $shopIdsInArea);
-                        } else {
-                            $query->whereRaw('1 = 0');
-                        }
+                        $shopIdsInArea = collect($shops)->where('sale_area_code', $selectedArea)->pluck('is_code_cust_id')->toArray();
+                        $query->whereIn('user_id', $shopIdsInArea ?: ['none']);
                     } else {
-                        // $shopIds = $shops->pluck('is_code_cust_id')->toArray();
-                        $shopIds = collect($shops)->pluck('is_code_cust_id')->toArray();
-                        if (!empty($shopIds)) {
-                            $query->whereIn('user_id', $shopIds);
-                        } else {
-                            $query->whereRaw('1 = 0');
-                        }
+                        // DEFAULT สำหรับ SALE: ถ้าไม่เลือก Filter ให้เห็นเฉพาะร้านที่ตัวเองดูแล
+                        $myShopIds = collect($shops)->pluck('is_code_cust_id')->toArray();
+                        $query->whereIn('user_id', $myShopIds ?: ['none']);
                     }
                 } else {
-                    $query->where('user_id', $selectedShop);
+                    // User ทั่วไป
+                    $query->where('user_id', $user->is_code_cust_id);
                 }
             })
             ->orderByDesc('created_at')
             ->get();
 
         foreach ($history as $h) {
-            $h['list'] = ClaimDetail::query()
-                ->where('claim_details.claim_id', $h->claim_id)
-                ->get();
-
+            $h['list'] = ClaimDetail::where('claim_id', $h->claim_id)->get();
             if ($h->receive_status === 'Y') {
-                // ดึงรูปภาพทั้งหมด (get) แทนรูปเดียว (first)
                 $evidences = ClaimFileUpload::where('claim_id', $h->claim_id)->get();
-
                 $h['receive_evidence'] = [
-                    // map ให้เป็น array ของ url
-                    'images' => $evidences->map(function ($file) {
-                        return asset('storage/' . $file->file_path);
-                    }),
-                    // remark เอามาจากอันล่าสุด หรือจะเอามาทั้งหมดก็ได้
+                    'images' => $evidences->map(fn($f) => asset('storage/' . $f->file_path)),
                     'remark' => $evidences->first()->remark ?? ''
                 ];
             }
@@ -368,12 +348,14 @@ class SpareClaimController extends Controller
             'history' => $history,
             'shops' => $shops,
             'areas' => $areas,
+            'currentSale' => $currentSale,
             'filters' => [
                 'shop' => $selectedShop,
                 'area' => $selectedArea,
                 'receive_status' => $selectedReceiveStatus,
                 'status' => $selectedStatus,
             ],
+            'userRole' => $user->role,
             'isAdmin' => $user->role === 'admin' || $isSale
         ]);
     }
