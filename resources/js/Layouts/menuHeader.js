@@ -37,11 +37,11 @@ export function getMenuHeaders(user) {
             name: 'แจ้งเคลมอะไหล่และตรวจสอบสถานะเคลม',
             childs: [
                 {
-                    name: 'การจัดการเคลมอะไหล่',
+                    name: 'แจ้งเคลมอะไหล่',
                     routeUrl: 'spareClaim.index'
                 },
                 {
-                    name: 'ประวัติเคลม',
+                    name: 'ตรวจสอบสถานะเคลม',
                     routeUrl: 'spareClaim.history'
                 }
             ]

@@ -138,7 +138,9 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
 
     const handleFastClaimAll = () => {
         // เลือกทุกรายการที่ไม่ใช่ SV001
-        const target = spSelected.filter(sp => sp.spcode !== "SV001");
+        const target = spSelected.filter(sp =>
+            isCoveredByWarranty(sp) && sp.spcode !== "SV001"
+        );
 
         if (target.length === 0) {
             AlertDialog({
@@ -157,7 +159,7 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
 
         // เคลมด่วนทั้งหมด (ไม่สนว่าประกันหรือไม่)
         const updated = spSelected.map(sp => {
-            if (sp.spcode !== "SV001") {
+            if (isCoveredByWarranty(sp) && sp.spcode !== "SV001") {
                 return {
                     ...sp,
                     price_multiple_gp: 0,
@@ -205,16 +207,16 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
 
     const handleCancelFastClaimAll = () => {
         const updated = spSelected.map(sp => {
-            if (sp.spcode !== "SV001") {
+            // คืนค่าเฉพาะตัวที่อยู่ในประกัน และไม่ใช่ SV001
+            if (isCoveredByWarranty(sp) && sp.spcode !== "SV001") {
                 return {
                     ...sp,
                     fast_claim: false,
                     claim: false,
                     claim_remark: "",
                     remark: "",
+                    // คืนราคาเดิมที่เก็บไว้ หรือถ้าไม่มีให้ใช้ราคาปัจจุบัน (กัน error)
                     price_multiple_gp: originalPricesBeforeFastAll[sp.spcode] ?? sp.price_multiple_gp,
-                    // remark: sp.remark,
-                    // remark: "",
                 };
             }
             return sp;
@@ -917,7 +919,7 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                                     disabled={selectedSpareForClaim?.spcode === "__ALL__"}
                                 >
                                     <MenuItem value="ไม่เคลม">ไม่เคลม</MenuItem>
-                                    <MenuItem value="เคลมด่วน" disabled>เคลมด่วน</MenuItem>
+                                    <MenuItem value="เคลมด่วน">เคลมด่วน</MenuItem>
                                     <MenuItem value="เคลมสินค้านี้ซีเรียลหมดประกันตามเงื่อนไขแล้ว">
                                         เคลมสินค้านี้ซีเรียลหมดประกันตามเงื่อนไขแล้ว
                                     </MenuItem>

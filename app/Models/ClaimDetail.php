@@ -18,6 +18,7 @@ class ClaimDetail extends Model
         'claim_date',
         'claim_qty',
         'claim_unit',
-        'status'
+        'status',
+        'rc_qty',
     ];
 }

@@ -255,7 +255,7 @@ class SpareClaimController extends Controller
         $areas = [];
         $selectedShop = $request->query('shop');
         $selectedArea = $request->query('area');
-        $selectedReceiveStatus = $request->query('receive_status');
+        $selectedReceiveStatus = $request->query('receive_status', 'N');
         $selectedStatus = $request->query('status');
 
         $isSale = session('is_sales_rep', false) || $user->role === 'sale';
@@ -291,11 +291,11 @@ class SpareClaimController extends Controller
                 ])->unique('code')->values();
 
                 $shops = $collectionShops->map(fn($item) => [
-                        'is_code_cust_id' => $item['cust_id'],
-                        'shop_name' => $item['cust_name'],
-                        'sale_name' => $item['sale_name'] ?? '-',
-                        'sale_area_code' => $item['sale_area_code'],
-                        'sale_area_name' => $item['sale_area_name']
+                    'is_code_cust_id' => $item['cust_id'],
+                    'shop_name' => $item['cust_name'],
+                    'sale_name' => $item['sale_name'] ?? '-',
+                    'sale_area_code' => $item['sale_area_code'],
+                    'sale_area_name' => $item['sale_area_name']
                 ])->values();
             } catch (\Exception $e) {
                 Log::error("Failed to fetch sales shops: " . $e->getMessage());
@@ -305,7 +305,9 @@ class SpareClaimController extends Controller
         }
 
         $history = Claim::query()
-            ->when($selectedReceiveStatus, fn($q, $s) => $q->where('receive_status', $s))
+            ->when($selectedReceiveStatus && $selectedReceiveStatus !== 'all', function ($q) use ($selectedReceiveStatus) {
+                return $q->where('receive_status', $selectedReceiveStatus);
+            })
             ->when($selectedStatus, fn($q, $s) => $q->where('status', $s))
             ->where(function ($query) use ($user, $isSale, $selectedShop, $selectedArea, $shops) {
                 if ($user->role === 'admin') {
@@ -335,11 +337,24 @@ class SpareClaimController extends Controller
 
         foreach ($history as $h) {
             $h['list'] = ClaimDetail::where('claim_id', $h->claim_id)->get();
+
             if ($h->receive_status === 'Y') {
-                $evidences = ClaimFileUpload::where('claim_id', $h->claim_id)->get();
+                $evidences = ClaimFileUpload::where('claim_id', $h->claim_id)
+                    ->orderBy('created_at') // เรียงตามเวลาเพื่อให้รู้ลำดับ
+                    ->get();
+
                 $h['receive_evidence'] = [
                     'images' => $evidences->map(fn($f) => asset('storage/' . $f->file_path)),
-                    'remark' => $evidences->first()->remark ?? ''
+                    'remark_list' => $evidences
+                        ->filter(fn($e) => !empty($e->remark)) // กรองค่าว่างทิ้ง
+                        ->values() // reset index
+                        ->map(function ($e, $index) {
+                            return [
+                                'round' => $index + 1, // ลำดับครั้ง (นับเฉพาะครั้งที่มี remark)
+                                'text' => $e->remark,
+                                'date' => $e->created_at->format('d/m/Y H:i') // วันที่เวลา
+                            ];
+                        })
                 ];
             }
         }
@@ -400,6 +415,9 @@ class SpareClaimController extends Controller
     {
         $request->validate([
             'claim_id' => 'required|exists:claims,claim_id',
+            'items' => 'required|array', // รับ array ของรายการที่เลือก
+            'items.*.id' => 'required', // id ของ claim_details
+            'items.*.qty' => 'required|numeric|min:1', // จำนวนที่รับ
             'images' => 'required|array',
             'images.*' => 'image|max:10240',
             'remark' => 'nullable|string'
@@ -411,41 +429,55 @@ class SpareClaimController extends Controller
             if (!$claim) {
                 throw new \Exception('ไม่พบข้อมูล Claim ID');
             }
+
+            // 1. อัปเดตจำนวนที่รับ (Received Qty) ของแต่ละรายการ
+            foreach ($request->items as $item) {
+                $detail = ClaimDetail::where('id', $item['id'])->first();
+                if ($detail) {
+                    // เปลี่ยนชื่อฟิลด์ตรงนี้
+                    $detail->update(['rc_qty' => $item['qty']]);
+                }
+            }
+
+            // 2. คำนวณสถานะรวมของเอกสาร (Logic Active/Partial/Complete)
+            $allDetails = ClaimDetail::where('claim_id', $request->claim_id)->get();
+            $totalQty = $allDetails->sum('qty');
+            $totalReceived = $allDetails->sum('rc_qty');
+
+            $status = 'N'; // Active (Default)
+            if ($totalReceived >= $totalQty) {
+                $status = 'Y'; // Complete (ครบทุกชิ้น)
+            } elseif ($totalReceived > 0) {
+                $status = 'P'; // Partial (บางส่วน)
+            }
+
+            // 3. อัปเดตสถานะหลักที่ตาราง claims
             $claim->update([
-                'receive_status' => 'Y',
+                'receive_status' => $status,
                 'receive_by' => Auth::user()->user_code,
                 'updated_at' => now()
             ]);
 
+            // 4. จัดการรูปภาพ (เหมือนเดิม)
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $file) {
-                    $originalName = $file->getClientOriginalName();
-                    // เพิ่ม random string กันชื่อซ้ำ
                     $fileName = 'receive_' . $request->claim_id . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                     $path = $file->storeAs('uploads/claims', $fileName, 'public');
 
                     ClaimFileUpload::create([
                         'claim_id' => $request->claim_id,
                         'file_path' => $path,
-                        'file_name' => $originalName,
-                        'remark' => $request->remark // ใช้ remark เดียวกันทุกรูป หรือจะแยกก็ได้
+                        'file_name' => $file->getClientOriginalName(),
+                        'remark' => $request->remark
                     ]);
                 }
             }
 
             DB::commit();
             return redirect()->back();
-            // return response()->json([
-            //     'status' => 'success',
-            //     'message' => 'บันทึกการรับอะไหล่เรียบร้อยแล้ว'
-            // ]);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Error receiving claim: " . $e->getMessage());
-            // return response()->json([
-            //     'status' => 'error',
-            //     'message' => 'เกิดข้อผิดพลาด: ' . $e->getMessage()
-            // ], 500);
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
     }
