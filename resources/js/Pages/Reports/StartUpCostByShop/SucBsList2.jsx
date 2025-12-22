@@ -19,6 +19,7 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import HistoryIcon from '@mui/icons-material/History';
 export default function SucBsList2({
     jobs,
+    all_selectable_ids,
     total_start_up_cost,
     shops,
     selected_shop,
@@ -38,10 +39,7 @@ export default function SucBsList2({
     // --- Checkbox Logic ---
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelected = jobs.data
-                .filter((n) => !n.stuc_doc_no)
-                .map((n) => n.job_id);
-            setSelected(newSelected);
+            setSelected(all_selectable_ids);
             return;
         }
         setSelected([]);
@@ -160,6 +158,7 @@ export default function SucBsList2({
         const rowCount = jobs.data.length;
         const numSelected = selected.length;
         const selectableCount = jobs.data.filter(j => !j.stuc_doc_no).length;
+        const totalSelectableCount = all_selectable_ids.length;
         return (
             <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
                 <Box sx={{ width: '100%', overflowX: 'auto' }}>
@@ -170,11 +169,11 @@ export default function SucBsList2({
                                     {(is_admin || is_acc) && (
                                         <Checkbox
                                             color="primary"
-                                            indeterminate={numSelected > 0 && numSelected < selectableCount}
-                                            checked={selectableCount > 0 && numSelected === selectableCount}
+                                            indeterminate={numSelected > 0 && numSelected < totalSelectableCount}
+                                            checked={totalSelectableCount > 0 && numSelected === totalSelectableCount}
                                             onChange={handleSelectAllClick}
                                             inputProps={{ 'aria-label': 'select all jobs' }}
-                                            disabled={selectableCount === 0}
+                                            disabled={totalSelectableCount === 0}
                                         />
                                     )}
 
@@ -494,7 +493,10 @@ export default function SucBsList2({
                                 }}>
                                     {selected.length > 0 && (
                                         <>
-                                            <Chip label={`เลือก ${selected.length} รายการ`} color="primary" variant="soft" />
+                                            <Chip label={`เลือก ${selected.length} / ${all_selectable_ids.length} รายการ`}
+                                                color="default"
+                                                variant="soft"
+                                            />
 
                                             {/* ปุ่มสร้างเอกสาร (แสดงเฉพาะเมื่อมีการเลือก) */}
                                             <Button

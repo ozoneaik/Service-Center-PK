@@ -94,7 +94,7 @@ class StartUpCostByShopController2 extends Controller
             }
         }
 
-        $jobs = (clone $query)->orderBy('created_at', 'desc')->paginate(15);
+        $jobs = (clone $query)->orderBy('created_at', 'desc')->paginate(10);
         $jobs_all = (clone $query)->orderBy('created_at', 'desc')->get();
 
         foreach ($jobs as $key => $job) {
@@ -108,10 +108,16 @@ class StartUpCostByShopController2 extends Controller
             $total_start_up_cost += $start_up_cost ? (float) $start_up_cost->startup_cost : 0;
         }
 
+        $all_selectable_ids = (clone $query)
+            ->whereNull('stuc_doc_no')
+            ->pluck('job_id')
+            ->toArray();
+
         return Inertia::render(
             'Reports/StartUpCostByShop/SucBsList2',
             [
                 'jobs' => $jobs,
+                'all_selectable_ids' => $all_selectable_ids,
                 'total_start_up_cost' => $total_start_up_cost,
                 'shops' => $shops,
                 'selected_shop' => $selected_shop ?? $shop,
