@@ -160,7 +160,7 @@ export default function ReportMenu() {
                 if (isNormalUser) {
                     return {
                         ...item,
-                        routeUrl: 'report.start-up-cost-shop2.index'
+                        routeUrl: 'report.g-start-up-cost-shop.index'
                     };
                 }
             }

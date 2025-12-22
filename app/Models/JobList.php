@@ -39,5 +39,6 @@ class JobList extends Model
         'created_ct_doc_at',
         'updated_ct_doc_by',
         'cn_doc',
+        'stuc_cover_doc_no',
     ];
 }

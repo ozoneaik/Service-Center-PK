@@ -33,12 +33,14 @@ export default function SucBsList2({
     const [selected, setSelected] = useState([]);
     const [startDate, setStartDate] = useState(filters?.start_date || '');
     const [endDate, setEndDate] = useState(filters?.end_date || '');
-    const [status, setStatus] = useState(filters?.status || 'Y');
+    const [status, setStatus] = useState(filters?.status || 'WaitCN');
 
     // --- Checkbox Logic ---
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelected = jobs.data.map((n) => n.job_id);
+            const newSelected = jobs.data
+                .filter((n) => !n.stuc_doc_no)
+                .map((n) => n.job_id);
             setSelected(newSelected);
             return;
         }
@@ -90,7 +92,7 @@ export default function SucBsList2({
             shop: selected_shop,
             start_date: '',
             end_date: '',
-            status: 'Y',
+            status: 'WaitCN',
             page: 1,
         });
     };
@@ -132,128 +134,151 @@ export default function SucBsList2({
     };
 
     //แปลงสถานะ เป็น ชื่อสถานะ
-    const getStatusName = (status) => {
-        if (status === 'Y') return 'รอจ่าย';
+    const getStatusName = (job) => {
+        if (job.stuc_status === 'P') {
+            return <span style={{ color: 'green' }}>ตัดชำระแล้ว</span>;
+        }
+        if (job.stuc_status === 'Y') {
+            if (job.cn_doc) {
+                return <span style={{ color: 'blue' }}>สร้าง CN แล้ว</span>;
+            }
+            if (job.stuc_doc_no) {
+                return <span style={{ color: 'orange' }}>รอสร้าง CN</span>;
+            }
+            return <span style={{ color: 'gray' }}>รอสร้าง Job</span>;
+        }
+        return <span style={{ color: 'gray' }}>รอสร้าง Job</span>;
     }
+
+    const shopOptions = [
+        { is_code_cust_id: 'all', shop_name: '--- ร้านค้าทั้งหมด (ALL) ---' },
+        ...shops
+    ];
 
     // --- Desktop Table Component ---
     const TableComponent = () => {
         const rowCount = jobs.data.length;
         const numSelected = selected.length;
-
+        const selectableCount = jobs.data.filter(j => !j.stuc_doc_no).length;
         return (
             <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-                <Table stickyHeader>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell padding="checkbox" sx={{ ...TableStyle.TableHead, width: 50 }}>
-                                {(is_admin || is_acc) && (
-                                    <Checkbox
-                                        color="primary"
-                                        indeterminate={numSelected > 0 && numSelected < rowCount}
-                                        checked={rowCount > 0 && numSelected === rowCount}
-                                        onChange={handleSelectAllClick}
-                                        inputProps={{ 'aria-label': 'select all jobs' }}
-                                    />
-                                )}
-
-                            </TableCell>
-                            <TableCell sx={TableStyle.TableHead}>ลำดับ</TableCell>
-                            <TableCell sx={TableStyle.TableHead}>หมายเลข Job</TableCell>
-                            <TableCell sx={TableStyle.TableHead}>ข้อมูลสินค้า</TableCell>
-                            <TableCell sx={TableStyle.TableHead} align="center">ค่าเปิดเครื่อง</TableCell>
-                            <TableCell sx={TableStyle.TableHead} align="center">สถานะ</TableCell>
-                            <TableCell sx={TableStyle.TableHead} align="center">วันที่ปิดงาน</TableCell>
-                            <TableCell sx={TableStyle.TableHead} align="center">#</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {jobs.data.length > 0 ? jobs.data.map((job, index) => {
-                            const isItemSelected = isSelected(job.job_id);
-                            const labelId = `enhanced-table-checkbox-${index}`;
-
-                            return (
-                                <TableRow
-                                    key={job.job_id || index}
-                                    hover
-                                    role="checkbox"
-                                    aria-checked={isItemSelected}
-                                    selected={isItemSelected}
-                                    sx={{ cursor: 'pointer' }}
-                                    onClick={(event) => handleClick(event, job.job_id)}
-                                >
-                                    <TableCell padding="checkbox">
-                                        {(is_admin || is_acc) && (<Checkbox
+                <Box sx={{ width: '100%', overflowX: 'auto' }}>
+                    <Table stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell padding="checkbox" sx={{ ...TableStyle.TableHead, width: 50 }}>
+                                    {(is_admin || is_acc) && (
+                                        <Checkbox
                                             color="primary"
-                                            checked={isItemSelected}
-                                            inputProps={{ 'aria-labelledby': labelId }}
-                                        />)}
+                                            indeterminate={numSelected > 0 && numSelected < selectableCount}
+                                            checked={selectableCount > 0 && numSelected === selectableCount}
+                                            onChange={handleSelectAllClick}
+                                            inputProps={{ 'aria-label': 'select all jobs' }}
+                                            disabled={selectableCount === 0}
+                                        />
+                                    )}
 
-                                    </TableCell>
-                                    <TableCell>
-                                        <Chip label={jobs.from + index} variant="outlined" size="small" />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2" fontWeight="medium" mb={1}>
-                                            {job.job_id}
-                                        </Typography>
-                                        <Chip label='ปิดงานซ่อมแล้ว' color="success" size="small" variant="outlined" />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Stack direction='row' spacing={2} alignItems='center'>
-                                            <Avatar
-                                                src={job.image_sku}
-                                                variant="rounded"
-                                                sx={{ width: 50, height: 50, bgcolor: 'grey.200' }}
-                                                onError={(e) => e.target.src = '/images/default-product.png'}
-                                            />
-                                            <Stack spacing={0.5}>
-                                                <Typography variant="body2" fontWeight="medium">
-                                                    {job.p_name}
-                                                </Typography>
-                                                <Stack direction="row" spacing={1}>
-                                                    <Typography variant="caption" color="text.secondary">
-                                                        PID: {job.pid}
+                                </TableCell>
+                                <TableCell sx={TableStyle.TableHead}>ลำดับ</TableCell>
+                                <TableCell sx={TableStyle.TableHead}>หมายเลข Job</TableCell>
+                                <TableCell sx={TableStyle.TableHead}>ข้อมูลสินค้า</TableCell>
+                                <TableCell sx={TableStyle.TableHead} align="center">ค่าเปิดเครื่อง</TableCell>
+                                <TableCell sx={TableStyle.TableHead} align="center">สถานะ</TableCell>
+                                <TableCell sx={TableStyle.TableHead} align="center">วันที่ปิดงาน</TableCell>
+                                <TableCell sx={TableStyle.TableHead} align="center">#</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {jobs.data.length > 0 ? jobs.data.map((job, index) => {
+                                const isItemSelected = isSelected(job.job_id);
+                                const labelId = `enhanced-table-checkbox-${index}`;
+                                const hasDoc = !!job.stuc_doc_no;
+                                return (
+                                    <TableRow
+                                        key={job.job_id || index}
+                                        hover
+                                        role="checkbox"
+                                        aria-checked={isItemSelected}
+                                        selected={isItemSelected}
+                                        sx={{
+                                            cursor: hasDoc ? 'default' : 'pointer',
+                                            bgcolor: hasDoc ? 'action.hover' : 'inherit'
+                                        }}
+                                        onClick={(event) => !hasDoc && handleClick(event, job.job_id)}
+                                    >
+                                        <TableCell padding="checkbox">
+                                            {(is_admin || is_acc) && (<Checkbox
+                                                color="primary"
+                                                checked={isItemSelected}
+                                                inputProps={{ 'aria-labelledby': labelId }}
+                                                disabled={hasDoc}
+                                            />)}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip label={jobs.from + index} variant="outlined" size="small" />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2" fontWeight="medium" mb={1}>
+                                                {job.job_id}
+                                            </Typography>
+                                            <Chip label='ปิดงานซ่อมแล้ว' color="success" size="small" variant="outlined" />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Stack direction='row' spacing={2} alignItems='center'>
+                                                <Avatar
+                                                    src={job.image_sku}
+                                                    variant="rounded"
+                                                    sx={{ width: 50, height: 50, bgcolor: 'grey.200' }}
+                                                    onError={(e) => e.target.src = '/images/default-product.png'}
+                                                />
+                                                <Stack spacing={0.5}>
+                                                    <Typography variant="body2" fontWeight="medium">
+                                                        {job.p_name}
                                                     </Typography>
-                                                    <Typography variant="caption" color="text.secondary">|</Typography>
-                                                    <Typography variant="caption" color="text.secondary">
-                                                        SN: {job.serial_id}
-                                                    </Typography>
+                                                    <Stack direction="row" spacing={1}>
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            PID: {job.pid}
+                                                        </Typography>
+                                                        <Typography variant="caption" color="text.secondary">|</Typography>
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            SN: {job.serial_id}
+                                                        </Typography>
+                                                    </Stack>
                                                 </Stack>
                                             </Stack>
-                                        </Stack>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Typography variant="body1" fontWeight="bold" color="primary">
-                                            ฿{job.start_up_cost?.toLocaleString()}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Typography variant="body1" fontWeight="bold" color="success">
-                                            {getStatusName(job.stuc_status)}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Typography variant="body2">
-                                            {new Date(job.updated_at).toLocaleDateString('th-TH')}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Button variant="outlined" size="small" onClick={(e) => e.stopPropagation()}>
-                                            รายละเอียด
-                                        </Button>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Typography variant="body1" fontWeight="bold" color="primary">
+                                                ฿{job.start_up_cost?.toLocaleString()}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Typography variant="body1" fontWeight="bold" color="success">
+                                                {getStatusName(job)}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Typography variant="body2">
+                                                {new Date(job.updated_at).toLocaleDateString('th-TH')}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Button variant="outlined" size="small" onClick={(e) => e.stopPropagation()}>
+                                                รายละเอียด
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            }) : (
+                                <TableRow>
+                                    <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                                        <Typography color="text.secondary">ไม่พบข้อมูล</Typography>
                                     </TableCell>
                                 </TableRow>
-                            );
-                        }) : (
-                            <TableRow>
-                                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
-                                    <Typography color="text.secondary">ไม่พบข้อมูล</Typography>
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                            )}
+                        </TableBody>
+                    </Table>
+                </Box>
             </Paper>
         );
     }
@@ -295,7 +320,11 @@ export default function SucBsList2({
                                 ฿{job.start_up_cost?.toLocaleString()}
                             </Typography>
                         </Box>
-                        <Button variant="contained" size="small" onClick={() => { }}>
+                        <Button
+                            variant="contained"
+                            size="small"
+                            onClick={() => alert('รายละเอียดอยู่ระหว่างในการพัฒนา')}
+                        >
                             รายละเอียด
                         </Button>
                     </Stack>
@@ -364,14 +393,13 @@ export default function SucBsList2({
                                         <Autocomplete
                                             size="small"
                                             sx={{ width: isMobile ? "100%" : 250 }}
-                                            options={shops}
+                                            options={shopOptions}
                                             getOptionLabel={(option) => option.shop_name}
-                                            value={shops.find((s) => s.is_code_cust_id == selected_shop) || null}
+                                            value={shopOptions.find((s) => s.is_code_cust_id == selected_shop) || null}
                                             onChange={(_, newValue) => handleSearch(newValue?.is_code_cust_id || '')}
                                             renderInput={(params) => <TextField {...params} label="เลือกร้านค้า" />}
                                         />
                                     )}
-
                                     {/* <Stack direction="row" spacing={1} alignItems="center" width={isMobile ? "100%" : "auto"}>
                                         <TextField
                                             label="เริ่มวันที่"
@@ -407,7 +435,7 @@ export default function SucBsList2({
                                         <Typography>-</Typography>
                                         <TextField
                                             label="ถึงเดือน"
-                                            type="month" // <--- เปลี่ยนเป็น month
+                                            type="month"
                                             size="small"
                                             value={endDate ? endDate.substring(0, 7) : ''}
                                             onChange={(e) => setEndDate(e.target.value)}
@@ -425,8 +453,10 @@ export default function SucBsList2({
                                         onChange={(e) => setStatus(e.target.value)}
                                         sx={{ width: isMobile ? "100%" : 150 }}
                                     >
-                                        <MenuItem value="Y">รอจ่าย (Y)</MenuItem>
-                                        <MenuItem value="P">จ่ายแล้ว (P)</MenuItem>
+                                        <MenuItem value="WaitJob">รอสร้าง Job</MenuItem>
+                                        <MenuItem value="WaitCN">รอสร้าง CN</MenuItem>
+                                        <MenuItem value="HasCN">สร้าง CN แล้ว</MenuItem>
+                                        <MenuItem value="Paid">ตัดชำระแล้ว</MenuItem>
                                         <MenuItem value="All">ทั้งหมด</MenuItem>
                                     </TextField>
 
@@ -486,7 +516,7 @@ export default function SucBsList2({
                                         onClick={handleExport}
                                         fullWidth={isMobile}
                                     >
-                                        Export Excel
+                                        ส่งออก Excel
                                     </Button>
 
                                     <Paper

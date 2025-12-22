@@ -20,7 +20,8 @@ class StoreInformation extends Model
         'digit_code',
         'line_id',
         'footer_text',
-        'footer_description'
+        'footer_description',
+        'is_active',
     ];
 
     public function gp(): HasOne

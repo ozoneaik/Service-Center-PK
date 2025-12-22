@@ -1,14 +1,16 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import { Head, useForm } from "@inertiajs/react";
-import { Container, Paper, Typography, Button, Table, TableHead, TableBody, TableRow, TableCell, Box, Chip, Stack, Tooltip, IconButton, Snackbar, Alert } from "@mui/material";
+import { Container, Paper, Typography, Button, Table, TableHead, TableBody, TableRow, TableCell, Box, Chip, Stack, Tooltip, IconButton, Snackbar, Alert, Divider } from "@mui/material";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useState } from "react";
-export default function CreateDoc({ selected_jobs, total_cost, preview_doc_no, start_date }) {
+
+export default function CreateDoc({ preview_data, total_cost, preview_cover_doc_no, start_date }) {
     const [openSnackbar, setOpenSnackbar] = useState(false);
+
+    // ส่งข้อมูลกลับไป Backend ทั้งก้อน เพื่อความชัวร์ในการ Group
     const { data, setData, post, processing } = useForm({
-        job_ids: selected_jobs.map(j => j.job_id),
+        shop_groups: preview_data,
         start_date: start_date,
-        note: '', 
     });
 
     const handleSubmit = (e) => {
@@ -17,35 +19,8 @@ export default function CreateDoc({ selected_jobs, total_cost, preview_doc_no, s
     };
 
     const handleCopy = () => {
-        if (!preview_doc_no) return;
-
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(preview_doc_no)
-                .then(() => setOpenSnackbar(true))
-                .catch(() => fallbackCopy(preview_doc_no));
-        } else {
-            fallbackCopy(preview_doc_no);
-        }
-    };
-
-    const fallbackCopy = (text) => {
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = 0;
-
-        document.body.appendChild(textarea);
-        textarea.focus();
-        textarea.select();
-
-        try {
-            document.execCommand('copy');
-            setOpenSnackbar(true);
-        } catch (err) {
-            console.error('Fallback copy failed', err);
-        }
-
-        document.body.removeChild(textarea);
+        if (!preview_cover_doc_no) return;
+        navigator.clipboard.writeText(preview_cover_doc_no).then(() => setOpenSnackbar(true));
     };
 
     return (
@@ -53,64 +28,79 @@ export default function CreateDoc({ selected_jobs, total_cost, preview_doc_no, s
             <Head title="สร้างเอกสารเบิกค่าเปิดเครื่อง" />
             <Container maxWidth="lg" sx={{ py: 4 }}>
                 <Paper sx={{ p: 4 }}>
-                    {/* Header ส่วนหัวกระดาษ */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                        <Typography variant="h5" fontWeight="bold" color="text.primary">
-                            ยืนยันการสร้างเอกสาร 
-                        </Typography>
-                        <Box sx={{ textAlign: 'right' }}>
-                            <Typography variant="body2" color="text.secondary">เลขที่เอกสาร</Typography>
-                            <Stack direction="row" alignItems="center" spacing={1} mt={0.5}>
-                                <Chip
-                                    label={preview_doc_no}
-                                    color="primary"
-                                    variant="filled"
-                                    sx={{ fontWeight: 'bold', fontSize: '1rem', px: 1 }}
-                                />
-                                <Tooltip title="คัดลอกเลขที่เอกสาร">
-                                    <IconButton
-                                        size="small"
-                                        onClick={handleCopy}
-                                        sx={{
-                                            bgcolor: 'action.hover',
-                                            '&:hover': { bgcolor: 'action.selected' }
-                                        }}
-                                    >
-                                        <ContentCopyIcon fontSize="small" />
+                    {/* Header */}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                        <Box>
+                            <Typography variant="h5" fontWeight="bold" color="text.primary">
+                                ยืนยันการสร้างเอกสาร
+                            </Typography>
+                            {/* <Typography variant="body2" color="text.secondary" mt={1}>
+                                รายการนี้จะถูกแยกเอกสาร CT ตามร้านค้า โดยมีเลขใบปะหน้าคลุม
+                            </Typography> */}
+                        </Box>
+
+                        <Box sx={{ textAlign: 'right', bgcolor: '#f5f5f5', p: 2, borderRadius: 2 }}>
+                            <Typography variant="caption" color="text.secondary">เลขที่เอกสาร (Cover)</Typography>
+                            <Stack direction="row" alignItems="center" spacing={1}>
+                                <Typography variant="h6" fontWeight="bold" color="primary">
+                                    {preview_cover_doc_no}
+                                </Typography>
+                                <Tooltip title="คัดลอก">
+                                    <IconButton size="small" onClick={handleCopy}>
+                                        <ContentCopyIcon fontSize="inherit" />
                                     </IconButton>
                                 </Tooltip>
                             </Stack>
                         </Box>
                     </Box>
-                    <Snackbar
-                        open={openSnackbar}
-                        autoHideDuration={2000}
-                        onClose={() => setOpenSnackbar(false)}
-                        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                    >
-                        <Alert onClose={() => setOpenSnackbar(false)} severity="success" sx={{ width: '100%' }}>
-                            คัดลอกเลขที่เอกสารแล้ว
-                        </Alert>
+
+                    <Snackbar open={openSnackbar} autoHideDuration={2000} onClose={() => setOpenSnackbar(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+                        <Alert severity="success">คัดลอกแล้ว</Alert>
                     </Snackbar>
-                    <Table sx={{ mt: 2 }}>
-                        <TableHead>
+
+                    {/* Table แสดงแยกรายร้าน */}
+                    <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                        <TableHead sx={{ bgcolor: 'grey.100' }}>
                             <TableRow>
-                                <TableCell>Job ID</TableCell>
-                                <TableCell>สินค้า</TableCell>
-                                <TableCell align="right">ค่าเปิดเครื่อง</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>เลขที่ CT</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>ร้านค้า</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 'bold' }}>จำนวน Job</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>ค่าเปิดเครื่อง</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {selected_jobs.map((job) => (
-                                <TableRow key={job.id}>
-                                    <TableCell>{job.job_id}</TableCell>
-                                    <TableCell>{job.p_name}</TableCell>
-                                    <TableCell align="right">{job.start_up_cost?.toLocaleString()}</TableCell>
+                            {preview_data.map((row) => (
+                                <TableRow key={row.shop_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                    <TableCell component="th" scope="row">
+                                        <Chip label={row.doc_no} size="small" color="default" variant="outlined" />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Typography variant="body2" fontWeight="medium">{row.shop_name}</Typography>
+                                        <Typography variant="caption" color="text.secondary">Code: {row.shop_id}</Typography>
+                                    </TableCell>
+                                    <TableCell align="center">{row.job_count}</TableCell>
+                                    <TableCell align="right">
+                                        <Typography variant="body2" fontWeight="bold" color="primary">
+                                            {row.total_cost?.toLocaleString()}
+                                        </Typography>
+                                    </TableCell>
                                 </TableRow>
                             ))}
-                            <TableRow>
-                                <TableCell colSpan={2} align="right" sx={{ fontWeight: 'bold' }}>รวมทั้งสิ้น</TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>{total_cost?.toLocaleString()}</TableCell>
+                            {/* Grand Total */}
+                            <TableRow sx={{ bgcolor: 'info.lighter' }}>
+                                <TableCell colSpan={2} align="right">
+                                    <Typography variant="subtitle1" fontWeight="bold">รวมทั้งหมด</Typography>
+                                </TableCell>
+                                <TableCell align="center">
+                                    <Typography variant="subtitle1" fontWeight="bold">
+                                        {preview_data.reduce((sum, item) => sum + item.job_count, 0)}
+                                    </Typography>
+                                </TableCell>
+                                <TableCell align="right">
+                                    <Typography variant="h6" fontWeight="bold" color="primary.main">
+                                        ฿{total_cost?.toLocaleString()}
+                                    </Typography>
+                                </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
@@ -122,8 +112,9 @@ export default function CreateDoc({ selected_jobs, total_cost, preview_doc_no, s
                             color="primary"
                             onClick={handleSubmit}
                             disabled={processing}
+                            size="large"
                         >
-                            ยืนยันสร้างเอกสาร
+                            ยืนยันสร้างเอกสาร ({preview_data.length} ใบ)
                         </Button>
                     </Box>
                 </Paper>

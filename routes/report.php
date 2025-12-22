@@ -23,12 +23,14 @@ Route::prefix('/report')->group(function(){
         Route::get('/create-doc', [StartUpCostByShopController2::class, 'createDoc'])->name('report.start-up-cost-shop.create-doc');
         Route::post('/store-doc', [StartUpCostByShopController2::class, 'storeDoc'])->name('report.start-up-cost-shop.store-doc');
         Route::get('/docs', [StartUpCostByShopController2::class, 'docList'])->name('report.start-up-cost-shop.doc-list');
+        Route::post('/check-cn', [StartUpCostByShopController2::class, 'checkCnStatus'])->name('report.start-up-cost-shop.check-cn');
         Route::get('/doc/{doc_no}', [StartUpCostByShopController2::class, 'showDoc'])->name('report.start-up-cost-shop.show-doc');
+        Route::get('/export-doc-list', [StartUpCostByShopController2::class, 'exportDocList'])->name('report.start-up-cost-shop.export-doc-list');
     });
 
-    Route::prefix('/start-up-cost-shop2')->group(function () {
-        Route::get('/', [StartUpCostByShopController::class, 'index'])->name('report.start-up-cost-shop2.index');
-        Route::get('/export', [StartUpCostByShopController::class, 'exportExcel'])->name('report.start-up-cost-shop2.export');
+    Route::prefix('/g-start-up-cost-shop')->group(function () {
+        Route::get('/', [StartUpCostByShopController::class, 'index'])->name('report.g-start-up-cost-shop.index');
+        Route::get('/export', [StartUpCostByShopController::class, 'exportExcel'])->name('report.g-start-up-cost-shop.export');
     });
 
     /**
