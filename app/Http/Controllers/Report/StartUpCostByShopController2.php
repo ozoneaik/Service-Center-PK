@@ -42,6 +42,8 @@ class StartUpCostByShopController2 extends Controller
             ->select('is_code_cust_id', 'shop_name')
             ->get();
 
+        $activeShopIds = $shops->pluck('is_code_cust_id')->toArray();
+
         if ($is_all_shops) {
             $current_shop_name = 'ทั้งหมด';
         } else {
@@ -55,7 +57,11 @@ class StartUpCostByShopController2 extends Controller
             ->where('stuc_status', 'Y');
 
         if (!$is_all_shops) {
+            // กรณีเลือกร้านเดียว
             $query->where('is_code_key', $shop);
+        } else {
+            // กรณีเลือกทั้งหมด: ให้ดึงมาเฉพาะ Job ของร้านที่ Active เท่านั้น
+            $query->whereIn('is_code_key', $activeShopIds);
         }
 
         switch ($status) {
@@ -129,6 +135,8 @@ class StartUpCostByShopController2 extends Controller
         $status = $request->query('status');
         $is_all_shops = $shop === 'all';
 
+        $activeShopIds = StoreInformation::where('is_active', 'Y')->pluck('is_code_cust_id')->toArray();
+
         $query = JobList::query()
             ->where('status', 'success')
             ->where('warranty', true)
@@ -136,6 +144,8 @@ class StartUpCostByShopController2 extends Controller
 
         if (!$is_all_shops) {
             $query->where('is_code_key', $shop);
+        } else {
+            $query->whereIn('is_code_key', $activeShopIds);
         }
 
         switch ($status) {
@@ -401,6 +411,8 @@ class StartUpCostByShopController2 extends Controller
             ->select('is_code_cust_id', 'shop_name')
             ->get();
 
+        $activeShopIds = $shops->pluck('is_code_cust_id')->toArray();
+
         if ($is_all_shops) {
             $current_shop_name = 'ทั้งหมด';
         } else {
@@ -416,6 +428,9 @@ class StartUpCostByShopController2 extends Controller
         // กรองร้านค้าถ้าไม่ได้เลือก All
         if (!$is_all_shops) {
             $query->where('is_code_key', $shop);
+        } else {
+            // กรองเฉพาะเอกสารของร้านที่ Active
+            $query->whereIn('is_code_key', $activeShopIds);
         }
 
         switch ($status) {
@@ -485,12 +500,16 @@ class StartUpCostByShopController2 extends Controller
         $status = $request->query('status');
         $is_all_shops = $shop === 'all';
 
+        $activeShopIds = StoreInformation::where('is_active', 'Y')->pluck('is_code_cust_id')->toArray();
+
         // สร้าง Query
         $query = JobList::query()
             ->whereNotNull('stuc_doc_no');
 
         if (!$is_all_shops) {
             $query->where('is_code_key', $shop);
+        } else {
+            $query->whereIn('is_code_key', $activeShopIds);
         }
 
         switch ($status) {
