@@ -8,4 +8,5 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote')->hourly();
 
-Schedule::command('stuc:check-status')->hourly();
+// Schedule::command('stuc:check-status')->hourly();
+Schedule::command('stuc:check-status')->twiceDaily(0, 12);
