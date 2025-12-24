@@ -21,7 +21,7 @@ class SSOController extends Controller
 
         // 2. ยิง API กลับไปตรวจสอบที่ "ระบบจำลอง (System 1)"
         try {
-            $response = Http::post('http://localhost:9000/api_verify.php', [
+            $response = Http::post('http://192.168.9.32:9000/api_verify.php', [
                 'token' => $token
             ]);
         } catch (\Exception $e) {
