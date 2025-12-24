@@ -299,7 +299,7 @@ export default function JobFromServiceDetail({jobDetail}) {
                                 </TableHead>
                                 <TableBody>
                                     {jobDetail.sp.map((part) => {
-                                        const imagePath = import.meta.env.VITE_IMAGE_SP + `new/${part.sp_code}.jpg`
+                                        const imagePath = import.meta.env.VITE_IMAGE_SP_NEW + `new/${part.sp_code}.jpg`
                                         return (
                                             <TableRow key={part.id}>
                                                 <TableCell>

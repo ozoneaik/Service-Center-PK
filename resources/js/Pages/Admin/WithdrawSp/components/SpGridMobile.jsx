@@ -6,7 +6,7 @@ import { showDefaultImage } from "@/utils/showImage";
 import { AlertDialog } from "@/Components/AlertDialog";
 
 const DEFAULT_SP_IMG =
-  (import.meta.env.VITE_IMAGE_SP || "https://images.dcpumpkin.com/images/product/500/") + "default.jpg";
+  (import.meta.env.VITE_IMAGE_SP_NEW || "https://images.dcpumpkin.com/images/product/500/") + "default.jpg";
 
 export default function SpGridMobile({ spList = [], onAdded, onPreview }) {
   const [loadingId, setLoadingId] = useState(null);

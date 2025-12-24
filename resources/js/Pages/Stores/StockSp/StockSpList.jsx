@@ -82,7 +82,7 @@ const TableDetail = ({ stocks, stock_job_add_type, stock_job_remove_type, stock_
                     <TableRow key={index}>
                         <TableCell>
                             <img
-                                width={80} src={import.meta.env.VITE_IMAGE_SP + stock.sp_code + ".jpg"} alt="no image"
+                                width={80} src={import.meta.env.VITE_IMAGE_SP_NEW + stock.sp_code + ".jpg"} alt="no image"
                                 onError={(e) => {
                                     e.target.src = import.meta.env.VITE_IMAGE_DEFAULT
                                 }}
@@ -170,7 +170,7 @@ const MobileDetail = ({ stocks }) => {
                                         width="100%"
                                         height="100%"
                                         style={{ objectFit: 'cover' }}
-                                        src={import.meta.env.VITE_IMAGE_SP + stock.sp_code + ".jpg"}
+                                        src={import.meta.env.VITE_IMAGE_SP_NEW + stock.sp_code + ".jpg"}
                                         alt="no image"
                                         onError={(e) => {
                                             e.target.src = import.meta.env.VITE_IMAGE_DEFAULT

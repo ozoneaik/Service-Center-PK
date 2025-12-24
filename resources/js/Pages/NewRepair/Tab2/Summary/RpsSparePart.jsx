@@ -31,7 +31,7 @@ export default function RpsSparePart({spare_parts,JOB}) {
             {isMobile ? (
                 <Stack spacing={1}>
                     {spare_parts?.map((sp, index) => {
-                        const imageSp = import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
+                        const imageSp = import.meta.env.VITE_IMAGE_SP_NEW + sp.spcode + '.jpg';
                         const greenHighlight = (sp.warranty === 'Y' && JOB.warranty) ? '#e8f5e8' : 'white';
                         return (
                             <Card key={index} variant='outlined' sx={{backgroundColor : greenHighlight}}>
@@ -87,7 +87,7 @@ export default function RpsSparePart({spare_parts,JOB}) {
                         </TableHead>
                         <TableBody>
                             {spare_parts?.map((sp, index) => {
-                                const imageSp = import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
+                                const imageSp = import.meta.env.VITE_IMAGE_SP_NEW + sp.spcode + '.jpg';
                                 const greenHighlight = (sp.warranty === 'Y' && JOB.warranty) ? '#e8f5e8' : 'white';
                                 return (
                                     <TableRow key={index} sx={{backgroundColor : greenHighlight}}>

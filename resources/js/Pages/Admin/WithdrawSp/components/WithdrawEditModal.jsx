@@ -14,7 +14,7 @@ import { router } from "@inertiajs/react";
 import { showDefaultImage } from "@/utils/showImage";
 
 const DEFAULT_SP_IMG =
-    (import.meta.env.VITE_IMAGE_SP || "https://images.dcpumpkin.com/images/product/500/") + "default.jpg";
+    (import.meta.env.VITE_IMAGE_SP_NEW || "https://images.dcpumpkin.com/images/product/500/") + "default.jpg";
 
 export default function WithdrawEditModal({ open, onClose, jobId, jobDiscount, onAdded }) {
 

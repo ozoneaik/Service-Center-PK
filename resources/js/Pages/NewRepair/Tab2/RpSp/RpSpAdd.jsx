@@ -141,7 +141,7 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JO
                         )}
 
                         {listSparePart.map((sp, index) => {
-                            const imageSp = import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
+                            const imageSp = import.meta.env.VITE_IMAGE_SP_NEW + sp.spcode + '.jpg';
                             const isSelected = isSpareSelected(sp.spcode);
                             const isOpen = openIndex === index;
                             const GreenHighlight = (sp.warranty === 'yes' && JOB.warranty) ? '#e8f5e8' :
@@ -243,7 +243,7 @@ export default function RpSpAdd({ listSparePart, onAddSpare, spSelected = [], JO
                                 </TableRow>
                             )}
                             {listSparePart.map((sp, index) => {
-                                const imageSp = import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
+                                const imageSp = import.meta.env.VITE_IMAGE_SP_NEW + sp.spcode + '.jpg';
                                 const isSelected = isSpareSelected(sp.spcode);
 
                                 return (

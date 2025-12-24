@@ -70,7 +70,7 @@ export default function HistoryClaimNewDetail({ list, claim_id, claim }) {
                     <Grid2 size={12}>
                         <Stack spacing={2}>
                             {list.map((item, index) => {
-                                const spImage = import.meta.env.VITE_IMAGE_SP + item.sp_code + '.jpg';
+                                const spImage = import.meta.env.VITE_IMAGE_SP_NEW + item.sp_code + '.jpg';
                                 const defaultImage = import.meta.env.VITE_IMAGE_PID;
                                 return (
                                     <Card key={index} variant='outlined'>

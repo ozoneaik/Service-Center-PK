@@ -15,6 +15,7 @@ use App\Http\Controllers\LogController;
 use App\Http\Controllers\ManageBranchController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SSOController;
 use App\Http\Controllers\Stores\PrinterIpController;
 use App\Http\Controllers\Stores\RepairManController;
 use App\Http\Controllers\Stores\UserController;
@@ -33,6 +34,7 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', [SearchController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/sso/login', [SSOController::class, 'login'])->name('sso.login');
 
 Route::middleware('auth')->group(function () {
 

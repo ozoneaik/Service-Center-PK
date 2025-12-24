@@ -265,7 +265,7 @@ class WithdrawSpController extends Controller
 
             // ใช้ BASE URL เดียวกับ search()
             $imageDmBase = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/');
-            $imageSpBase = rtrim(env('VITE_IMAGE_SP', ''), '/');
+            $imageSpBase = rtrim(env('VITE_IMAGE_SP_NEW', ''), '/');
 
             $diagramLayers = [];
             $spList = [];
@@ -709,7 +709,7 @@ class WithdrawSpController extends Controller
             $facmodel = $asset['facmodel'] ?? $pid;
 
             $imageDmBase = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/');
-            $imageSpBase = rtrim(env('VITE_IMAGE_SP', ''), '/');
+            $imageSpBase = rtrim(env('VITE_IMAGE_SP_NEW', ''), '/');
 
             // loop dm list (ใช้ $pid ที่หาได้)
             if (!empty($dmList[$pid])) {

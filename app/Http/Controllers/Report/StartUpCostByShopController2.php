@@ -449,6 +449,9 @@ class StartUpCostByShopController2 extends Controller
             case 'Paid': // ตัดจ่ายแล้ว
                 $query->where('stuc_status', 'P');
                 break;
+            case 'Cancel':
+                $query->where('stuc_status', 'C');
+                break;
             case 'All':
             default:
                 break;
@@ -497,6 +500,53 @@ class StartUpCostByShopController2 extends Controller
                 'status' => $status
             ]
         ]);
+    }
+
+    public function cancelDoc(Request $request)
+    {
+        $doc_no = $request->input('doc_no');
+
+        if (!$doc_no) {
+            return redirect()->back()->with('error', 'ไม่พบเลขที่เอกสาร');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // ตรวจสอบก่อนว่ามีเอกสารนี้ไหม และสถานะอนุญาตให้ยกเลิกไหม (เช่น ต้องยังไม่ Paid)
+            $jobsToCheck = JobList::where('stuc_doc_no', $doc_no)->get();
+
+            if ($jobsToCheck->isEmpty()) {
+                return redirect()->back()->with('error', 'ไม่พบข้อมูล Job ในเอกสารนี้');
+            }
+
+            // เช็คว่ามีบาง Job จ่ายเงินไปแล้วหรือยัง (ถ้าจ่ายแล้วห้ามยกเลิก)
+            // หรือถ้ามี CN แล้วจะยอมให้ยกเลิกไหม? (สมมติว่าถ้ามี CN แล้ว ห้ามยกเลิก ต้องไปแก้ที่ ERP ก่อน)
+            $hasPaid = $jobsToCheck->contains('stuc_status', 'P');
+            $hasCN = $jobsToCheck->whereNotNull('cn_doc')->count() > 0;
+
+            if ($hasPaid) {
+                return redirect()->back()->with('error', 'เอกสารนี้มีการตัดชำระเงินแล้ว ไม่สามารถยกเลิกได้');
+            }
+
+            JobList::where('stuc_doc_no', $doc_no)
+                ->update([
+                    'stuc_status' => 'Y',
+                    'stuc_doc_no' => null,       
+                    'stuc_cover_doc_no' => null, 
+                    'cn_doc' => null,            
+                    'created_ct_doc_by' => null, 
+                    'created_ct_doc_at' => null, 
+                    'updated_at' => now()
+                ]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', "ยกเลิกเอกสาร $doc_no เรียบร้อยแล้ว");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'เกิดข้อผิดพลาด: ' . $e->getMessage());
+        }
     }
 
     public function exportDocList(Request $request)

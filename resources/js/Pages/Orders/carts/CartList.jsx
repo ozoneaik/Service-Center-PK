@@ -68,7 +68,7 @@ const ListSp = ({ sps, sku_code, setGroups, groups }) => {
         <>
             {SpPreview && <SpPreviewImage open={SpPreview} setOpen={setSpPreview} imagePath={SpImage} />}
             {sps.map((sp, index) => {
-                const sp_image = `${import.meta.env.VITE_IMAGE_SP}/${sp.sp_code}.jpg`;
+                const sp_image = `${import.meta.env.VITE_IMAGE_SP_NEW}/${sp.sp_code}.jpg`;
                 return (
                     <React.Fragment key={index}>
                         <Stack direction='row' width='100%' justifyContent='space-between' alignItems='center'>

@@ -210,7 +210,7 @@ class WithdrawJobController extends Controller
                         'discount_percent' => $discountPercent,
                         'discount_amount' => $discountAmount,
                         'sp_unit' => $item['sp_unit'],
-                        'path_file' => env('VITE_IMAGE_SP') . $item['sku_code'] . '/' . $spCode . '.jpg',
+                        'path_file' => env('VITE_IMAGE_SP_NEW') . $item['sku_code'] . '/' . $spCode . '.jpg',
                     ]
                 );
             }

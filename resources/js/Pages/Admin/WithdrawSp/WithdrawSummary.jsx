@@ -64,7 +64,7 @@ export default function WithdrawSummary({ groupSku = [], totalSp = 0, is_code_cu
     const getImageSrc = (item) => {
         if (item.path_file) return item.path_file;
         const base =
-            import.meta.env.VITE_IMAGE_SP || "https://images.pumpkin.tools/SKUS/SP/offn/";
+            import.meta.env.VITE_IMAGE_SP_NEW || "https://images.pumpkin.tools/SKUS/SP/offn/";
         const sp = item.sp_code || "";
         return sp ? `${base}${sp}.jpg` : `${base}default.jpg`;
     };

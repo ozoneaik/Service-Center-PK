@@ -52,7 +52,7 @@ export default function SkuDetail(props) {
                         </TableHead>
                         <TableBody>
                             {detail.map((sp, index) => {
-                                const skuImage = import.meta.env.VITE_IMAGE_SP + sp.skusp + '.jpg';
+                                const skuImage = import.meta.env.VITE_IMAGE_SP_NEW + sp.skusp + '.jpg';
                                 const imageError = import.meta.env.VITE_IMAGE_DEFAULT;
                                 return (
                                     <TableRow key={index}>

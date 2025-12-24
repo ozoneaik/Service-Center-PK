@@ -537,7 +537,7 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                             // Mobile View - Card Layout
                             <Stack spacing={2}>
                                 {spSelected.map((sp, index) => {
-                                    const imageSp = import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
+                                    const imageSp = import.meta.env.VITE_IMAGE_SP_NEW + sp.spcode + '.jpg';
                                     const isEditing = editingSpares[sp.spcode];
                                     const price_per_unit = parseFloat(sp.price_per_unit || 0);
                                     const price_multiple_gp = parseFloat(sp.price_multiple_gp || 0);
@@ -822,7 +822,7 @@ export default function RpSpSummary({ spSelected, setShowSummary, onUpdateSpSele
                                 </TableHead>
                                 <TableBody>
                                     {spSelected.map((sp, index) => {
-                                        const imageSp = import.meta.env.VITE_IMAGE_SP + sp.spcode + '.jpg';
+                                        const imageSp = import.meta.env.VITE_IMAGE_SP_NEW + sp.spcode + '.jpg';
                                         const isEditing = editingSpares[sp.spcode];
                                         const price_per_unit = parseFloat(sp.price_per_unit || 0);
                                         const price_multiple_gp = parseFloat(sp.price_multiple_gp || 0);

@@ -100,7 +100,7 @@ class OrderController extends Controller
 
             $facmodel = $asset['facmodel'] ?? $pid;
             $imageDmBase = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/');
-            $imageSpBase = rtrim(env('VITE_IMAGE_SP', ''), '/');
+            $imageSpBase = rtrim(env('VITE_IMAGE_SP_NEW', ''), '/');
 
             // loop ผ่าน dmList 
             if (!empty($dmList[$pid])) {
@@ -527,7 +527,7 @@ class OrderController extends Controller
                         $itemTotalPrice = $qty * $pricePerUnit;
                         $totalOrderPrice += $itemTotalPrice;
                         $skuCode = $group['sku_code'] ?? $sp['sku_code'];
-                        $pathFile = env('VITE_IMAGE_SP') . $skuCode . "/" . $sp['sp_code'] . ".jpg";
+                        $pathFile = env('VITE_IMAGE_SP_NEW') . $skuCode . "/" . $sp['sp_code'] . ".jpg";
                         $orderSpList = OrderSpList::query()->create([
                             'order_id' => $order_id,
                             'sp_code' => $sp['sp_code'],

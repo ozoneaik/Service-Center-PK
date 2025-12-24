@@ -16,7 +16,7 @@ import StoreIcon from '@mui/icons-material/Store';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SyncIcon from '@mui/icons-material/Sync'; // <--- 1. เพิ่ม Import ไอคอน Sync
-
+import CancelIcon from '@mui/icons-material/Cancel';
 export default function DocList({ docs, shops, selected_shop, current_shop_name, is_admin, is_acc, filters }) {
     const isMobile = useMediaQuery('(max-width:900px)');
     const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -115,8 +115,24 @@ export default function DocList({ docs, shops, selected_shop, current_shop_name,
         document.body.removeChild(textarea);
     };
 
+    const handleCancelDoc = (doc_no) => {
+        if (!confirm(`ยืนยันการยกเลิกเอกสาร ${doc_no} ? \n(รายการ Job จะถูกปรับสถานะเป็น Cancel)`)) {
+            return;
+        }
+
+        router.post(route('report.start-up-cost-shop.cancel-doc'), {
+            doc_no: doc_no
+        }, {
+            onSuccess: () => setOpenSnackbar(true),
+            onError: (err) => alert('เกิดข้อผิดพลาด')
+        });
+    };
+
     const getStatusChip = (doc) => {
         const { stuc_status, cn_doc } = doc;
+        // if (stuc_status === 'C') { // [NEW] สถานะ Cancel
+        //     return <Chip label="ยกเลิกแล้ว" color="error" size="small" variant="filled" />;
+        // }
         if (stuc_status === 'P') {
             return <Chip label="ตัดชำระแล้ว" color="success" size="small" variant="filled" />;
         } else if (stuc_status === 'Y') {
@@ -257,6 +273,20 @@ export default function DocList({ docs, shops, selected_shop, current_shop_name,
                                     >
                                         รายละเอียด
                                     </Button>
+                                    {(doc.stuc_status !== 'P' && doc.stuc_status !== 'C' && !doc.cn_doc && is_admin) && (
+                                        <Tooltip title="ยกเลิกเอกสาร">
+                                            <IconButton
+                                                size="small"
+                                                color="error"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleCancelDoc(doc.stuc_doc_no);
+                                                }}
+                                            >
+                                                <CancelIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+                                    )}
                                 </TableCell>
                             </TableRow>
                         )) : (
@@ -395,6 +425,7 @@ export default function DocList({ docs, shops, selected_shop, current_shop_name,
                                         <MenuItem value="WaitCN">รอสร้าง CN</MenuItem>
                                         <MenuItem value="HasCN">สร้าง CN แล้ว</MenuItem>
                                         <MenuItem value="Paid">ตัดชำระแล้ว</MenuItem>
+                                        {/* <MenuItem value="Cancel">ยกเลิกแล้ว</MenuItem> */}
                                     </TextField>
                                 </Stack>
 

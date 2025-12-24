@@ -57,7 +57,7 @@ export default function ItemRow({ index, item, group, discountPercent, outOfStoc
     };
 
     const img = item.path_file ||
-        (import.meta.env.VITE_IMAGE_SP || "https://images.pumpkin.tools/SKUS/SP/offn/") +
+        (import.meta.env.VITE_IMAGE_SP_NEW || "https://images.pumpkin.tools/SKUS/SP/offn/") +
         (item.sp_code || "default") + ".jpg";
 
     const total = editQty * editPrice;

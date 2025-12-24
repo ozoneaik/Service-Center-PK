@@ -174,7 +174,7 @@ export default function OrderHistoryDetail({ order, listSp, customer }) {
                                         <CardMedia
                                             component="img"
                                             height="80"
-                                            image={`${import.meta.env.VITE_IMAGE_SP}/${item.sp_code}.jpg`}
+                                            image={`${import.meta.env.VITE_IMAGE_SP_NEW}/${item.sp_code}.jpg`}
                                             alt={item.sp_name}
                                             onError={(e) => {
                                                 e.target.src = import.meta.env.VITE_IMAGE_DEFAULT

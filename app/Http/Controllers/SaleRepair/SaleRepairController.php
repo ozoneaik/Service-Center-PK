@@ -140,7 +140,7 @@ class SaleRepairController extends Controller
             }
 
             $imageDmBase = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/');
-            $imageSpBase = rtrim(env('VITE_IMAGE_SP', ''), '/');
+            $imageSpBase = rtrim(env('VITE_IMAGE_SP_NEW', ''), '/');
 
             // -------------------- ข้อมูลประกัน (ภาพรวม) --------------------
             $warranty_expire  = $data['warrantyexpire']   ?? false;

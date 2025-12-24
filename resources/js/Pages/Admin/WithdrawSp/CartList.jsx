@@ -53,7 +53,7 @@ function ListSp({ sps = [], groups = [], setGroups }) {
     return (
         <>
             {(sps || []).map((sp, idx) => {
-                const img = sp.path_file || (import.meta.env.VITE_IMAGE_SP + sp.sp_code + ".jpg");
+                const img = sp.path_file || (import.meta.env.VITE_IMAGE_SP_NEW + sp.sp_code + ".jpg");
                 const qty = Number(sp.qty || 1);
                 const price = Number(sp.price_per_unit || 0);
                 const lineTotal = qty * price;

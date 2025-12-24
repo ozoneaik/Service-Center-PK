@@ -26,6 +26,7 @@ Route::prefix('/report')->group(function(){
         Route::post('/check-cn', [StartUpCostByShopController2::class, 'checkCnStatus'])->name('report.start-up-cost-shop.check-cn');
         Route::get('/doc/{doc_no}', [StartUpCostByShopController2::class, 'showDoc'])->name('report.start-up-cost-shop.show-doc');
         Route::get('/export-doc-list', [StartUpCostByShopController2::class, 'exportDocList'])->name('report.start-up-cost-shop.export-doc-list');
+        Route::post('/cancel-doc', [StartUpCostByShopController2::class, 'cancelDoc'])->name('report.start-up-cost-shop.cancel-doc');
     });
 
     Route::prefix('/g-start-up-cost-shop')->group(function () {
