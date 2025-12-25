@@ -123,6 +123,7 @@ export const TableDetail = ({ jobs, handleShowDetail, url }) => {
 
 const FilterForm = ({ handleFilterChange, filters, setFilters, searchJobs }) => {
     const isMobile = useMediaQuery('(max-width:700px)');
+    const { url } = usePage();
     return (
         <Grid2 container spacing={2}>
             <Grid2 size={{ md: 4, xs: 12 }}>
@@ -258,7 +259,10 @@ const FilterForm = ({ handleFilterChange, filters, setFilters, searchJobs }) => 
                         color="success"
                         onClick={() => {
                             const query = new URLSearchParams(filters).toString();
-                            window.open(route("history.export") + "?" + query, "_blank");
+                            const exportRoute = url.startsWith("/admin/history-job")
+                                ? route("admin.history.export")
+                                : route("history.export");
+                            window.open(exportRoute + "?" + query, "_blank");
                         }}
                     >
                         ส่งออก Excel

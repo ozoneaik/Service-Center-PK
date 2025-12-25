@@ -203,7 +203,7 @@ const ReceiveModal = ({
                             </TableHead>
                             <TableBody>
                                 {selectedClaim?.list?.map((detail, index) => {
-                                    const spImage = import.meta.env.VITE_IMAGE_SP_NEW_NEW + detail.sp_code + '.jpg';
+                                    const spImage = import.meta.env.VITE_IMAGE_SP_NEW + detail.sp_code + '.jpg';
                                     const receivedPreviously = detail.rc_qty || 0;
                                     const isFullyReceived = receivedPreviously >= detail.qty;
                                     const isChecked = selectedItems[detail.id] || false;
