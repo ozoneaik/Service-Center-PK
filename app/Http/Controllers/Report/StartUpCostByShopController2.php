@@ -560,38 +560,51 @@ class StartUpCostByShopController2 extends Controller
 
         // สร้าง Query
         $query = JobList::query()
-            ->whereNotNull('stuc_doc_no');
+            ->join('store_information', 'job_lists.is_code_key', '=', 'store_information.is_code_cust_id')
+            ->leftJoin('sale_information', 'store_information.sale_id', '=', 'sale_information.sale_code')
+            ->whereNotNull('job_lists.stuc_doc_no');
 
         if (!$is_all_shops) {
-            $query->where('is_code_key', $shop);
+            $query->where('job_lists.is_code_key', $shop);
         } else {
-            $query->whereIn('is_code_key', $activeShopIds);
+            $query->whereIn('job_lists.is_code_key', $activeShopIds);
         }
 
         switch ($status) {
             case 'WaitCN':
-                $query->where('stuc_status', 'Y')->whereNull('cn_doc');
+                $query->where('job_lists.stuc_status', 'Y')->whereNull('job_lists.cn_doc');
                 break;
             case 'HasCN':
-                $query->where('stuc_status', 'Y')->whereNotNull('cn_doc');
+                $query->where('job_lists.stuc_status', 'Y')->whereNotNull('job_lists.cn_doc');
                 break;
             case 'Paid':
-                $query->where('stuc_status', 'P');
+                $query->where('job_lists.stuc_status', 'P');
                 break;
         }
 
-        // ดึงข้อมูล
         $docs = $query->select(
-            'stuc_doc_no',
-            'stuc_cover_doc_no',
-            'is_code_key',
-            'stuc_status',
-            'cn_doc',
-            DB::raw('MAX(created_ct_doc_at) as created_at'),
-            DB::raw('MAX(created_ct_doc_by) as created_by'),
+            'job_lists.stuc_doc_no',
+            'job_lists.stuc_cover_doc_no',
+            'job_lists.is_code_key',
+            'job_lists.stuc_status',
+            'job_lists.cn_doc',
+            'store_information.is_code_cust_id as shop_code', // รหัสร้านค้า (จาก Table ร้านค้า)
+            'sale_information.sale_code', // รหัสเซลล์
+            'sale_information.name', // ชื่อเซลล์
+            DB::raw('MAX(job_lists.created_ct_doc_at) as created_at'),
+            DB::raw('MAX(job_lists.created_ct_doc_by) as created_by'),
             DB::raw('COUNT(*) as job_count')
         )
-            ->groupBy('stuc_doc_no', 'stuc_cover_doc_no', 'is_code_key', 'stuc_status', 'cn_doc')
+            ->groupBy(
+                'job_lists.stuc_doc_no',
+                'job_lists.stuc_cover_doc_no',
+                'job_lists.is_code_key',
+                'job_lists.stuc_status',
+                'job_lists.cn_doc',
+                'store_information.is_code_cust_id', // ต้อง Group By เพิ่ม
+                'sale_information.sale_code',         // ต้อง Group By เพิ่ม
+                'sale_information.name'          // ต้อง Group By เพิ่ม
+            )
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -607,7 +620,10 @@ class StartUpCostByShopController2 extends Controller
         $exportData[] = [
             'เลขที่เอกสาร (Cover)',
             'เลขที่เอกสาร CT',
-            'ร้านค้า',
+            'รหัสร้านค้า',       // เพิ่ม Header
+            'ชื่อร้านค้า',
+            'รหัสเซลล์',         // เพิ่ม Header
+            'ชื่อเซลล์',         // เพิ่ม Header
             'เลขที่เอกสาร CN',
             'วันที่สร้าง',
             'จำนวนรายการ',
@@ -636,7 +652,10 @@ class StartUpCostByShopController2 extends Controller
             $exportData[] = [
                 $doc->stuc_cover_doc_no,
                 $doc->stuc_doc_no,
-                $shopMap[$doc->is_code_key] ?? $doc->is_code_key,
+                $doc->shop_code,                    // แสดงรหัสร้านค้า
+                $shopMap[$doc->is_code_key] ?? $doc->is_code_key, // แสดงชื่อร้านค้า
+                $doc->sale_code,                    // แสดงรหัสเซลล์
+                $doc->name,                    // แสดงชื่อเซลล์
                 $doc->cn_doc,
                 $doc->created_at,
                 $doc->job_count,
