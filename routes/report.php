@@ -6,6 +6,7 @@ use App\Http\Controllers\Report\StartUpCostByShopController2;
 use App\Http\Controllers\Report\StartUpCostController;
 use App\Http\Controllers\Report\SummaryOfIncomeController;
 use App\Http\Controllers\Report\SummaryUsedSparePartsController;
+use App\Http\Controllers\Report\WithdrawReportController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -57,5 +58,10 @@ Route::prefix('/report')->group(function(){
         Route::get('/', [SummaryUsedSparePartsController::class, 'index'])->name('report.summary-spare-parts.index');
         Route::get('/detail/{sp_code}/{shop}', [SummaryUsedSparePartsController::class, 'detail'])->name('report.summary-spare-parts.detail');
         Route::get('/export', [SummaryUsedSparePartsController::class, 'exportExcel'])->name('report.summary-spare-parts.export');
+    });
+
+    Route::prefix('/withdraw-report')->group(function () {
+        Route::get('/', [WithdrawReportController::class, 'index'])->name('report.withdraw-report.index');
+        Route::get('/export', [WithdrawReportController::class, 'export'])->name('report.withdraw-report.export');
     });
 });

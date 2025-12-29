@@ -23,58 +23,6 @@ use Illuminate\Support\Facades\Storage;
 
 class SpareClaimController extends Controller
 {
-    // ปรับปรุงฟังก์ชัน index เพื่อรวมเคลมด่วนและเคลมปกติ (วิว)
-    // public function index(): Response
-    // {
-    //     $isCodeKey = Auth::user()->is_code_cust_id;
-
-    //     //  1. เคลมด่วน (pending)
-    //     $urgentParts = SparePart::query()
-    //         ->leftJoin('job_lists', 'spare_parts.job_id', '=', 'job_lists.job_id')
-    //         ->select('spare_parts.*', 'job_lists.status as job_status')
-    //         ->where('spare_parts.claim', true)
-    //         ->where('spare_parts.claim_remark', 'เคลมด่วน')
-    //         ->where('spare_parts.status', 'pending')
-    //         ->where('job_lists.is_code_key', $isCodeKey)
-    //         ->orderByDesc('spare_parts.created_at')
-    //         ->get();
-
-    //     // 2. เคลมปกติ (ไม่ใช่เคลมด่วน แต่ job ปิดงานแล้ว) 
-    //     $normalParts = SparePart::query()
-    //         ->leftJoin('job_lists', 'spare_parts.job_id', '=', 'job_lists.job_id')
-    //         ->select('spare_parts.*', 'job_lists.status as job_status')
-    //         ->where('spare_parts.claim', true)
-    //         ->where(function ($q) {
-    //             $q->whereNull('spare_parts.claim_remark')
-    //                 ->orWhere('spare_parts.claim_remark', '!=', 'เคลมด่วน');
-    //         })
-    //         ->where('spare_parts.status', 'pending')
-    //         ->where('job_lists.status', 'success')
-    //         ->where('job_lists.is_code_key', $isCodeKey)
-    //         ->orderByDesc('spare_parts.created_at')
-    //         ->get();
-
-    //     // รวมทั้งสองประเภท
-    //     $allParts = $urgentParts->merge($normalParts);
-
-    //     // Group ตาม sp_code
-    //     $grouped = collect($allParts)->groupBy('sp_code')->map(function ($items, $sp_code) {
-    //         $first = $items->first();
-    //         return [
-    //             'sp_code' => $sp_code,
-    //             'sp_name' => $first->sp_name,
-    //             'sp_unit' => $first->sp_unit,
-    //             'qty'     => $items->sum('qty'),
-    //             'type'    => $first->claim_remark === 'เคลมด่วน' ? 'เคลมด่วน' : 'เคลมปกติ',
-    //             'detail'  => $items->values(),
-    //         ];
-    //     })->values();
-
-    //     return Inertia::render('SpareClaim/ClaimMain', [
-    //         'spareParts' => $grouped,
-    //     ]);
-    // }
-
     public function index(Request $request): Response
     {
         $user = Auth::user();

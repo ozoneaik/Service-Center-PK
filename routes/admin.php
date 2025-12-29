@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\SummaryOfIncomeController;
 use App\Http\Controllers\Admin\SummaryUsedSparePartsController;
 use App\Http\Controllers\Admin\UserManageController;
 use App\Http\Controllers\Admin\WarrantyController;
+use App\Http\Controllers\Admin\WithdrawReportController;
 use App\Http\Controllers\ClosedController;
 use App\Http\Controllers\NotificationNewController;
 use App\Http\Controllers\ScoreMasterController;
@@ -132,6 +133,11 @@ Route::middleware('adminPermission')->group(function () {
             Route::post('/store-sale', [SaleManageController::class, 'storeSale'])->name('saleManage.storeSale');
             Route::get('/edit/{user_code}', [SaleManageController::class, 'edit'])->name('saleManage.edit');
             Route::put('/update/{user_code}', [SaleManageController::class, 'updateSale'])->name('saleManage.updateSale');
+        });
+
+        Route::prefix('withdraw-report')->group(function () {
+            Route::get('/', [WithdrawReportController::class, 'index'])->name('admin.withdraw-report.index');
+            Route::get('/export', [WithdrawReportController::class, 'export'])->name('admin.withdraw-report.export');
         });
     });
 });

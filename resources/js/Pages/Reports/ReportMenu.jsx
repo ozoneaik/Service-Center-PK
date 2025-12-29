@@ -56,6 +56,14 @@ const listMenu = [
         description: 'จัดการและตรวจสอบรายการค่าเปิดเครื่อง',
         routeUrl: 'report.start-up-cost.index'
     },
+    {
+        name: 'รายงานการเบิกอะไหล่',
+        icon: <Article sx={{ fontSize: 40 }} />,
+        color: '#607D8B',
+        bgGradient: 'linear-gradient(135deg, #607D8B 0%, #90A4AE 100%)',
+        description: 'รายงานการเบิกอะไหล่',
+        routeUrl: 'report.withdraw-report.index'
+    }
     // {
     //     name: 'ออกใบเสนอราคา',
     //     icon: <Article sx={{ fontSize: 40 }} />,
