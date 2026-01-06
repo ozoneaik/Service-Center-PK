@@ -9,6 +9,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class JobForSaleController extends Controller
@@ -160,6 +161,57 @@ class JobForSaleController extends Controller
                 'message' => 'ไม่สามารถสร้างงานซ่อมได้ error from database',
                 'error' => $e->getMessage() . 'in Line => ' . $e->getLine() . ' in file => ' . $e->getFile(),
             ], 400);
+        }
+    }
+
+    public function getCustomersUnderSale(Request $request)
+    {
+        try {
+            $loginResponse = Http::post('https://pkapi.pumpkin.tools/api/auth/login', [
+                'username' => 'B68263',
+                'password' => 'Par@68263'
+            ]);
+
+            if ($loginResponse->failed()) {
+                throw new \Exception('API Login Failed: ' . $loginResponse->body());
+            }
+
+            $token = $loginResponse->json()['access_token'];
+
+            $saleCode = Auth::user()->user_code;
+            Log::info("Searching customers for Sale Code: " . $saleCode);
+
+            // Payload
+            $payload = ['sale_code' => $saleCode];
+            if (!empty($request->search)) {
+                $payload['search'] = $request->search;
+            }
+
+            $customerResponse = Http::withToken($token)
+                ->asMultipart()
+                ->post('https://pkapi.pumpkin.tools/api/getCustInSales', $payload);
+
+            if ($customerResponse->failed()) {
+                if ($customerResponse->status() === 404) {
+                    return response()->json([
+                        'status' => 'success',
+                        'data' => [] // ส่ง array ว่างกลับไป
+                    ]);
+                }
+
+                Log::error('API Error Response: ' . $customerResponse->body());
+                throw new \Exception('Get Customer Failed: ' . $customerResponse->status());
+            }
+
+            $apiResult = $customerResponse->json();
+            
+            return response()->json([
+                'status' => 'success',
+                'data' => $apiResult['data'] ?? []
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Get Customer Error: ' . $e->getMessage());
+            return response()->json(['message' => $e->getMessage()], 500);
         }
     }
 }

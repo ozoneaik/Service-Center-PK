@@ -71,9 +71,10 @@ Route::prefix('repair-sale')->group(function () {
     Route::get('/create', [SaleRepairController::class, 'create'])->name('repair.sale.create');
     Route::post('/search', [SaleRepairController::class, 'search'])->name('repair.sale.search');
 
-    Route::post('/search-job', [JobController::class, 'searchJob'])->name('repair.sale.search.job');
+    Route::post('/search-job', [JobForSaleController::class, 'searchJob'])->name('repair.sale.search.job');
     Route::post('/store', [JobForSaleController::class, 'storeJob'])->name('repair.sale.store');
-    Route::post('/store-from-pid', [JobController::class, 'storeJobFromPid'])->name('repair.sale.store.from.pid');
+    Route::post('/store-from-pid', [JobForSaleController::class, 'storeJobFromPid'])->name('repair.sale.store.from.pid');
+    Route::post('/get-customers', [JobForSaleController::class, 'getCustomersUnderSale'])->name('repair.sale.get.customers');
 });
 
 Route::prefix('send-job')->group(function () {
