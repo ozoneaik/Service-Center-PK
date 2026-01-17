@@ -104,16 +104,32 @@ class OrderController extends Controller
 
             // loop ผ่าน dmList 
             if (!empty($dmList[$pid])) {
-                foreach ($dmList[$pid] as $dmKey => $dmData) {
-                    // โค้ดส่วนจัดการ Diagram Layers และ Model Options
-                    // ...
-                    $modelfg = trim($dmData['modelfg'] ?? '');
-                    if ($modelfg === '') {
-                        $modelfg = "DM" . str_pad($dmKey, 2, "0", STR_PAD_LEFT);
-                    }
-                    $modelOptions[] = $modelfg;
 
-                    // loop รูป diagram
+                $allRawModels = collect($dmList[$pid])->map(fn($item) => trim($item['modelfg'] ?? ''))->toArray();
+                $hasDuplicateModel = count($allRawModels) !== count(array_unique($allRawModels));
+
+                foreach ($dmList[$pid] as $dmKey => $dmData) {
+                    $rawModelfg = trim($dmData['modelfg'] ?? '');
+
+                    // 2. ตรรกะการตัดสินใจเลือก displayName แบบแยกกรณี
+                    if ($hasDuplicateModel) {
+                        // กรณีที่ 1: มีชื่อรุ่นซ้ำกันในรายการ (เช่น J-S4540 มี 2 DM)
+                        // ให้เติม (DMxx) ต่อท้ายทุกอันเพื่อความชัดเจน
+                        $displayName = ($rawModelfg ?: $facmodel) . " (DM" . str_pad($dmKey, 2, "0", STR_PAD_LEFT) . ")";
+                    } else {
+                        // กรณีที่ 2: ชื่อรุ่นในแต่ละ DM ไม่ซ้ำกันเลย
+                        if ($rawModelfg !== '') {
+                            // ถ้ามีชื่อรุ่นระบุมา ให้ใช้ชื่อนั้นเพียวๆ (จะไม่ติด DM01 แล้ว)
+                            $displayName = $rawModelfg;
+                        } else {
+                            // ถ้าไม่มีชื่อรุ่นระบุมาเลย ให้ใช้ facmodel + DM ต่อท้าย (กันชื่อว่าง)
+                            $displayName = $facmodel . " (DM" . str_pad($dmKey, 2, "0", STR_PAD_LEFT) . ")";
+                        }
+                    }
+
+                    $modelOptions[] = $displayName;
+
+                    // --- ใช้ $displayName ใน Diagram Layers ---
                     for ($i = 1; $i <= 5; $i++) {
                         $imgKey = "img_{$i}";
                         $imgUrl = $dmData[$imgKey] ?? null;
@@ -122,10 +138,10 @@ class OrderController extends Controller
                         if (!str_contains($imgUrl, 'http')) {
                             $imgUrl = "{$imageDmBase}/" . ltrim($imgUrl, '/');
                         }
-
+                        $imgUrl = $imgUrl . "?v=" . time();
                         $diagramLayers[] = [
-                            'pid'       => $pid, // ใช้ $pid ที่ได้มา
-                            'modelfg'   => $modelfg,
+                            'pid'       => $pid,
+                            'modelfg'   => $displayName, // สำคัญ: ต้องตรงกับ modelOptions
                             'layer'     => "รูปที่ {$i}",
                             'path_file' => $imgUrl,
                             'layout'    => $i,
@@ -135,7 +151,7 @@ class OrderController extends Controller
                         ];
                     }
 
-                    // Flatten อะไหล่เฉพาะของ DM นี้
+                    // --- ใช้ $displayName ใน Parts List (spList) ---
                     if (!empty($spAll[$pid][$dmKey])) {
                         foreach ($spAll[$pid][$dmKey] as $sp) {
                             $spcode = $sp['spcode'] ?? null;
@@ -149,7 +165,7 @@ class OrderController extends Controller
                                 'price_per_unit'    => floatval($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0),
                                 'layout'            => (int)($sp['layout'] ?? 1),
                                 'tracking_number'   => $sp['tracking_number'] ?? '',
-                                'modelfg'           => $modelfg,
+                                'modelfg'           => $displayName, // สำคัญ: ใช้สำหรับกรองใน React
                                 'pid'               => $pid,
                                 'skufg'             => $pid,
                                 'pname'             => $asset['pname'] ?? '',
@@ -164,7 +180,8 @@ class OrderController extends Controller
             // เติม stock/cart
             foreach ($spList as $i => $sp) {
                 $spcode = $sp['spcode'];
-                $spList[$i]['path_file'] = "{$imageSpBase}/{$spcode}.jpg";
+                // $spList[$i]['path_file'] = "{$imageSpBase}/{$spcode}.jpg";
+                $spList[$i]['path_file'] = "{$imageSpBase}/{$spcode}.jpg" . "?v=" . time();
 
                 $cart = Cart::query()
                     ->where('sp_code', $spcode)
@@ -176,15 +193,14 @@ class OrderController extends Controller
                 $spList[$i]['remark'] = 'มาจากการสั่งซื้อ';
             }
 
-
-            if (collect($modelOptions)->contains(fn($m) => str_starts_with($m, 'DM'))) {
-                $modelOptions = collect($modelOptions)
-                    ->filter(fn($m) => str_starts_with($m, 'DM'))
-                    ->values()
-                    ->toArray();
-            } else {
-                $modelOptions = array_values(array_unique($modelOptions));
-            }
+            // if (collect($modelOptions)->contains(fn($m) => str_starts_with($m, 'DM'))) {
+            //     $modelOptions = collect($modelOptions)
+            //         ->filter(fn($m) => str_starts_with($m, 'DM'))
+            //         ->values()
+            //         ->toArray();
+            // } else {
+            //     $modelOptions = array_values(array_unique($modelOptions));
+            // }
 
             $result = [
                 'pid'           => $pid, // ใช้ PID ที่หาได้
