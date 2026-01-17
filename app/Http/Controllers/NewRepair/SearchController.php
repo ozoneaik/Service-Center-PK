@@ -774,11 +774,21 @@ class SearchController extends Controller
                     }
                 }
 
+                // ---------- ข้อมูลประกันเฉพาะตัวสินค้า ----------
+                $pcatid            = $assetItem['pcatid']            ?? '';
+                $pCatName          = $assetItem['pCatName']          ?? '';
+                $pSubCatName       = $assetItem['pSubCatName']       ?? '';
+
+                $modelOptions = array_values(array_unique(array_filter($modelOptions)));
+
                 $skuItems[] = [
                     'pid'                => $pidItem,
                     'pname'              => $assetItem['pname'] ?? '',
                     'facmodel'           => $facmodel,
                     'pbaseunit'          => $assetItem['pbaseunit'] ?? 'ชิ้น',
+                    'pcatid'             => $pcatid,
+                    'pCatName'           => $pCatName,
+                    'pSubCatName'        => $pSubCatName,
                     'imagesku'           => $assetItem['imagesku'][0] ?? null,
                     'diagram_layers'     => $diagramLayers,
                     'sp'                 => $spListAll,
