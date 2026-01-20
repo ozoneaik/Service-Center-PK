@@ -3,9 +3,11 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { Head, Link, usePage, router } from "@inertiajs/react";
 import {
     Box, Button, Card, CardContent, Chip, Container, Divider, Drawer, Grid2, MenuItem, Pagination, Paper, Select,
-    Stack, Table, TableBody, TableCell, TableRow, TableHead, TextField, Typography, useMediaQuery, useTheme
+    Stack, Table, TableBody, TableCell, TableRow, TableHead, TextField, Typography, useMediaQuery, useTheme,
+    Snackbar,
+    Alert
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ListDetailModal } from "@/Pages/HistoryPage/ListDetailModal.jsx";
 import { ChevronLeft, FilterList, ManageHistory, LocalPhone, Person, Search, Print, FileUpload } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
@@ -342,7 +344,21 @@ const MobileDetail = ({ jobs, handleShowDetail, url }) => {
 export default function HistoryMain({ jobs }) {
     console.log(jobs);
 
-    const { url } = usePage();
+    // const { url } = usePage();
+    const { url, props } = usePage();
+
+    const { flash } = props;
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    useEffect(() => {
+        if (flash?.error) {
+            setErrorMessage(flash.error);
+            setSnackbarOpen(true);
+        }
+    }, [flash]);
+
+    const handleCloseSnackbar = () => setSnackbarOpen(false);
+
     const isMobile = useMediaQuery('(max-width:700px)');
     const [filters, setFilters] = useState({
         serial_id: "", job_id: "",
@@ -430,6 +446,16 @@ export default function HistoryMain({ jobs }) {
                         </Grid2>
                     </Grid2>
                 </Container>
+                <Snackbar
+                    open={snackbarOpen}
+                    autoHideDuration={6000}
+                    onClose={handleCloseSnackbar}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
+                    <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
+                        {errorMessage}
+                    </Alert>
+                </Snackbar>
             </AuthenticatedLayout>
         </>
     )
