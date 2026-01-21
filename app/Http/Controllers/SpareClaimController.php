@@ -327,8 +327,8 @@ class SpareClaimController extends Controller
     {
         $authUrl = 'https://pkapi.pumpkin.tools/api/auth/login';
         $authResponse = Http::post($authUrl, [
-            'username' => 'B68263',
-            'password' => 'Par@68263',
+            'username' => 'B63333',
+            'password' => '!Nut#63333',
         ]);
 
         if (!$authResponse->successful()) {
