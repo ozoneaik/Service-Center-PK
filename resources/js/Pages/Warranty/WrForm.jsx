@@ -51,9 +51,16 @@ export default function WrForm() {
             }
 
         } catch (error) {
+            const serverMessage = error.response?.data?.message;
+            const errorMessage = serverMessage || error.message || "เกิดข้อผิดพลาด";
+
+            console.log("Message to show:", errorMessage);
+
             AlertDialog({
-                title: 'เกิดข้อผิดพลาด',
-                message: error.response?.data.message || error.message
+                icon: 'error',       
+                title: 'แจ้งเตือน',
+                text: errorMessage,
+                message: errorMessage
             });
         } finally {
             setLoading(false);

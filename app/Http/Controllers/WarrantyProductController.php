@@ -110,6 +110,10 @@ class WarrantyProductController extends Controller
                 throw new \Exception($data['message'] ?? 'ไม่พบหมายเลขซีเรียลในระบบ');
             }
 
+            if (($data['search_type'] ?? '') !== 'serial') {
+                throw new \Exception('ระบบอนุญาตให้ค้นหาด้วยหมายเลขซีเรียล (Serial) เท่านั้น');
+            }
+
             $assets = $data['assets'] ?? [];
             $pid = $data['skumain'] ?? array_key_first($assets);
             $asset = $assets[$pid] ?? [];
