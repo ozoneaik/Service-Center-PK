@@ -1,15 +1,18 @@
+import React, { useEffect, useState } from "react";
 import {
     Accordion, AccordionDetails, AccordionSummary,
     Alert, Box, Button, CircularProgress,
-    Grid2, IconButton, InputAdornment, Paper, Stack, Tab, TableCell, TableContainer, Tabs, TextField, Typography, useMediaQuery, useTheme
+    Grid2, IconButton, InputAdornment, Paper, Stack, Tab,
+    TableCell, TableContainer, Tabs, TextField, Typography,
+    useMediaQuery, useTheme, Table, TableBody, TableHead, TableRow
 } from "@mui/material";
-import { useEffect, useState } from "react";
-import RpTab2Form from "@/Pages/NewRepair/Tab2/RpTab2Form.jsx";
-import RpTab1Form from "@/Pages/NewRepair/Tab1/RpTab1Form.jsx";
-import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
-import { Add, ArrowBack, Edit, ExpandMore, Search } from "@mui/icons-material"; // เพิ่ม ArrowBack
+import {
+    Add, ArrowBack, Edit, ExpandMore, Search
+} from "@mui/icons-material";
 import axios from "axios";
-import { Table, TableBody, TableHead, TableRow } from "@mui/material"; // ใช้ Table ของ MUI เพื่อความเข้ากันได้
+import RpTab1SaleForm from "./RpTab1SaleForm";
+import RpSummaryForm from "./RpSummaryForm";
+import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
 
 function CustomTabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -20,99 +23,154 @@ function CustomTabPanel(props) {
             id={`simple-tabpanel-${index}`}
             aria-labelledby={`simple-tab-${index}`}
             {...other}
+            style={{ display: value === index ? 'block' : 'none' }}
         >
-            {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
+            <Box sx={{ py: 3 }}>{children}</Box>
         </div>
     )
 }
 
 export default function RepairSaleMain({ productDetail, serial_id }) {
-    console.log(productDetail);
-
-    const [message, setMessage] = useState('ไม่สามารถกระทำการใดๆ');
+    // --- States ---
+    const [message, setMessage] = useState('');
     const [tabValue, setTabValue] = useState(0);
     const [searchingJob, setSearchingJob] = useState(false);
+
+    // [เพิ่ม] State เช็คว่าไม่พบ Job (เพื่อให้แสดงปุ่มสร้างใหม่)
+    const [jobNotFound, setJobNotFound] = useState(false);
+
+    // Job Data
     const [JOB, setJOB] = useState();
     const [jobFromPids, setJobFromPids] = useState([]);
     const [selectJobFormPid, setSelectJobFormPid] = useState({ job_id: null });
+
+    // Flow Control
     const [form1Saved, setForm1Saved] = useState(false);
     const [propSn, setPropSn] = useState(serial_id);
+    const [MainStep, setMainStep] = useState({ step: 'before', sub_step: 0 });
+
+    // Customer Selection (For Sale)
     const [isSelectingCustomer, setIsSelectingCustomer] = useState(false);
-    
     const [customerList, setCustomerList] = useState([]);
     const [loadingCust, setLoadingCust] = useState(false);
-    const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [actionMode, setActionMode] = useState('normal');
 
     const isMobile = useMediaQuery('(max-width:600px)');
 
-    const { palette } = useTheme();
-
-    const [MainStep, setMainStep] = useState({
-        step: 'before',
-        sub_step: 0
-    });
+    useEffect(() => {
+        if (JOB?.status_mj === 'wait' || JOB?.status_mj === 'process' || JOB?.status_mj === 'complete') {
+            setForm1Saved(true);
+        }
+    }, [JOB]);
 
     useEffect(() => {
         if (MainStep.step === 'before') {
-            setTabValue(0)
+            setTabValue(0);
         } else {
-            setTabValue(1)
+            setTabValue(1);
         }
     }, [MainStep]);
 
     useEffect(() => {
-        if (form1Saved) setTabValue(1)
+        if (form1Saved) setTabValue(1);
     }, [form1Saved]);
 
     useEffect(() => {
-        fetchData(propSn).finally(() => setSearchingJob(false))
+        fetchData(propSn).finally(() => setSearchingJob(false));
     }, []);
+
+    const handleRefresh = () => {
+        fetchData(propSn);
+    };
+
     const fetchData = async (sn) => {
         try {
-            setSearchingJob(true)
-            const { data, status } = await axios.post(route('repair.sale.search.job', {
-                serial_id: sn, pid: productDetail.pid,
+            setSearchingJob(true);
+            setJobNotFound(false); // Reset
+            setMessage('');
+            setJOB(null);
+
+            const { data } = await axios.post(route('repair.sale.search.job', {
+                serial_id: sn,
+                pid: productDetail.pid,
                 job_id: productDetail.job_id || null
             }));
-            console.log('search job data', data, propSn);
+
+            // กรณีค้นหาด้วย 9999 (PID)
             if (data.search_by === 'pid') {
                 setJobFromPids(data.jobs);
                 return;
             }
-            setJOB(data.job.job_detail)
-            setPropSn(sn)
-        } catch (error) {
-            if (error.status === 404 && error.response.data?.found === false) {
-                // ถ้าไม่เจอ Job ให้เด้งไปหน้าเลือกลูกค้าเลย (ถ้าต้องการ)
-                // fetchCustomers(); 
-                // setActionMode('normal'); // หรือโหมดที่เหมาะสม
-                // setIsSelectingCustomer(true);
+
+            // กรณีเจอ Job และมีข้อมูล
+            if (data.found && data.job?.job_detail) {
+                setJOB(data.job.job_detail);
+                setPropSn(sn);
             }
-            setMessage(error.response.data?.message)
+            // กรณีไม่เจอ Job (API ส่ง found: false กลับมา)
+            else {
+                setJobNotFound(true);
+                setMessage(data.message || 'ไม่พบประวัติการแจ้งซ่อม');
+            }
+        } catch (error) {
+            setMessage(error.response?.data?.message || 'เกิดข้อผิดพลาดในการดึงข้อมูล');
+            setJobNotFound(false);
+        } finally {
+            setSearchingJob(false);
         }
-    }
+    };
 
     const fetchCustomers = async (search = '') => {
         setLoadingCust(true);
         try {
             const { data } = await axios.post(route('repair.sale.get.customers'), { search });
-            // [Note] อย่าลืมตรวจสอบ Key 'data' จาก Backend (ว่าเป็น data.data หรือ data เฉยๆ)
             setCustomerList(Array.isArray(data.data) ? data.data : []);
         } catch (error) {
             console.error(error);
             const serverMsg = error.response?.data?.message;
-            AlertDialog({ text: serverMsg || 'ไม่สามารถดึงข้อมูลร้านค้าได้ กรุณาตรวจสอบ Console' });
+            AlertDialog({ text: serverMsg || 'ไม่สามารถดึงข้อมูลร้านค้าได้' });
         } finally {
             setLoadingCust(false);
         }
     };
 
-    const handleSelectCustomer = (customer) => {
-        setSelectedCustomer(customer);
-        setIsSelectingCustomer(false); 
+    // --- Event Handlers ---
 
+    const handleChange = (event, newValue) => {
+        setTabValue(newValue);
+    };
+
+    const handleOnSelectJob = (job) => {
+        if (job.job_id === selectJobFormPid?.job_id) {
+            setSelectJobFormPid({ job_id: null });
+            return;
+        }
+        setSelectJobFormPid(job);
+        fetchData(job.serial_id).finally(() => setSearchingJob(false));
+    };
+
+    const storeJobFromPid = () => {
+        setActionMode('create_new');
+        setIsSelectingCustomer(true);
+        fetchCustomers();
+    };
+
+    // [เพิ่ม] ฟังก์ชันสำหรับเปิดหน้าเลือกลูกค้า กรณีสร้างงานจาก SN ปกติ
+    const handleCreateNewJobForSn = () => {
+        setActionMode('normal'); // หรือโหมดอื่นตาม Logic backend
+        setIsSelectingCustomer(true);
+        fetchCustomers();
+    };
+
+    const handleCancelSelection = () => {
+        setIsSelectingCustomer(false);
+        setCustomerList([]);
+        setSearchTerm('');
+    };
+
+    const handleSelectCustomer = (customer) => {
+        setIsSelectingCustomer(false);
         if (actionMode === 'create_new') {
             confirmStoreJobFromPid(customer);
         } else {
@@ -120,9 +178,8 @@ export default function RepairSaleMain({ productDetail, serial_id }) {
         }
     };
 
+    // --- Action Confirmation ---
     const confirmCreateJob = (customerInfo) => {
-        if (!customerInfo) return;
-
         AlertDialogQuestion({
             title: 'ยืนยันการแจ้งซ่อม',
             text: `ยืนยันการเปิดงานซ่อมให้: ${customerInfo.cust_name} หรือไม่?`,
@@ -130,14 +187,16 @@ export default function RepairSaleMain({ productDetail, serial_id }) {
                 if (confirm) {
                     const product_format = productFormat(productDetail);
                     try {
-                        // [Note] ตรวจสอบ Key cust_id vs cust_code ให้ตรงกับ API ล่าสุด
                         await axios.post(route('repair.sale.store', {
                             serial_id: propSn,
                             productDetail: product_format,
-                            customer_code: customerInfo.cust_id || customerInfo.cust_code, 
-                            customer_name: customerInfo.cust_name
+                            customer_code: customerInfo.cust_id || customerInfo.cust_code,
+                            customer_name: customerInfo.cust_name,
+                            shop_under_sale_id: customerInfo.cust_id || customerInfo.cust_code,
+                            shop_under_sale_name: customerInfo.cust_name,
+                            shop_under_sale_phone: customerInfo.contact_phone || customerInfo.tel || customerInfo.phone
                         }));
-                        fetchData(propSn).finally(() => setSearchingJob(false));
+                        fetchData(propSn);
                     } catch (error) {
                         const errorMsg = error.response?.data?.message || error.message;
                         AlertDialog({ text: errorMsg });
@@ -145,7 +204,7 @@ export default function RepairSaleMain({ productDetail, serial_id }) {
                 }
             }
         });
-    }
+    };
 
     const confirmStoreJobFromPid = (customerInfo) => {
         AlertDialogQuestion({
@@ -156,59 +215,24 @@ export default function RepairSaleMain({ productDetail, serial_id }) {
                 try {
                     setSearchingJob(true);
                     const product_format = productFormat(productDetail);
-
-                    // [Note] ตรวจสอบ Key cust_id vs cust_code ให้ตรงกับ API ล่าสุด
-                    const { data, status } = await axios.post(route('repair.sale.store.from.pid', {
+                    const { data } = await axios.post(route('repair.sale.store.from.pid', {
                         productDetail: product_format,
                         customer_code: customerInfo.cust_id || customerInfo.cust_code,
-                        customer_name: customerInfo.cust_name
+                        customer_name: customerInfo.cust_name,
+                        shop_under_sale_id: customerInfo.cust_id || customerInfo.cust_code,
+                        shop_under_sale_name: customerInfo.cust_name,
+                        shop_under_sale_phone: customerInfo.contact_phone || customerInfo.tel || customerInfo.phone
                     }));
 
                     fetchData(data.serial_id).finally(() => setSearchingJob(false));
                 } catch (error) {
-                    const errorMsg = error.response?.data?.message || error.message;
-                    AlertDialog({ text: errorMsg })
-                } finally {
                     setSearchingJob(false);
+                    const errorMsg = error.response?.data?.message || error.message;
+                    AlertDialog({ text: errorMsg });
                 }
             }
-        })
-    }
-
-    const handleChange = (event, newValue) => {
-        setTabValue(newValue);
-    }
-
-    function a11yProps(index) {
-        return {
-            id: `simple-tab-${index}`,
-            'aria-controls': `simple-tabpanel-${index}`,
-        };
-    }
-
-    const handleOnSelectJob = (job) => {
-        if (job.job_id === selectJobFormPid?.job_id) {
-            setSelectJobFormPid({ job_id: null });
-            return;
-        }
-        // setPropSn(job.serial_id);
-        setSelectJobFormPid(job)
-        fetchData(job.serial_id).finally(() => setSearchingJob(false));
-    }
-
-    const storeJobFromPid = () => {
-        setActionMode('create_new');
-        // [แก้ไข 3] เปิดหน้าเลือก Table แทน Modal
-        setIsSelectingCustomer(true); 
-        fetchCustomers(); 
-    }
-    
-    // ฟังก์ชันสำหรับปุ่ม "ย้อนกลับ" จากหน้าตาราง
-    const handleCancelSelection = () => {
-        setIsSelectingCustomer(false);
-        setCustomerList([]);
-        setSearchTerm('');
-    }
+        });
+    };
 
     const productFormat = (productDetail) => {
         return {
@@ -228,10 +252,19 @@ export default function RepairSaleMain({ productDetail, serial_id }) {
         }
     }
 
+    function a11yProps(index) {
+        return {
+            id: `simple-tab-${index}`,
+            'aria-controls': `simple-tabpanel-${index}`,
+        };
+    }
+
+    // --- Render ---
     return (
         <Grid2 container spacing={2}>
             {searchingJob ? (<CircularProgress sx={{ mx: 'auto', mt: 4 }} />) : (
                 <>
+                    {/* Mode: Selecting Customer (Table View) */}
                     {isSelectingCustomer ? (
                         <Grid2 size={12}>
                             <Paper sx={{ p: 2 }}>
@@ -276,7 +309,7 @@ export default function RepairSaleMain({ productDetail, serial_id }) {
                                                 <TableRow sx={{ bgcolor: '#eee' }}>
                                                     <TableCell sx={{ fontWeight: 'bold' }}>รหัสลูกค้า</TableCell>
                                                     <TableCell sx={{ fontWeight: 'bold' }}>ชื่อลูกค้า</TableCell>
-                                                    <TableCell sx={{ fontWeight: 'bold' }}>ที่อยู่ (อำเภอ/จังหวัด)</TableCell>
+                                                    <TableCell sx={{ fontWeight: 'bold' }}>ที่อยู่</TableCell>
                                                     <TableCell sx={{ fontWeight: 'bold' }}>เบอร์โทรศัพท์</TableCell>
                                                     <TableCell sx={{ fontWeight: 'bold' }} align="center">#</TableCell>
                                                 </TableRow>
@@ -284,17 +317,13 @@ export default function RepairSaleMain({ productDetail, serial_id }) {
                                             <TableBody>
                                                 {customerList.length > 0 ? customerList.map((cust, index) => (
                                                     <TableRow key={index} hover>
-                                                        {/* ตรวจสอบ Key ตาม API จริง (cust_id / cust_code) */}
                                                         <TableCell>{cust.cust_id || cust.cust_code}</TableCell>
                                                         <TableCell>{cust.cust_name}</TableCell>
-                                                        <TableCell>
-                                                            {cust.amphoe || cust.amphur} {cust.province}
-                                                        </TableCell>
+                                                        <TableCell>{cust.amphoe || cust.amphur} {cust.province}</TableCell>
                                                         <TableCell>{cust.contact_phone || cust.tel || cust.phone}</TableCell>
                                                         <TableCell align="center">
                                                             <Button
-                                                                variant="contained"
-                                                                size="small"
+                                                                variant="contained" size="small"
                                                                 onClick={() => handleSelectCustomer(cust)}
                                                             >
                                                                 เลือก
@@ -316,41 +345,45 @@ export default function RepairSaleMain({ productDetail, serial_id }) {
                         </Grid2>
                     ) : (
                         <>
+                            {/* Mode: Display Job Info / Form */}
                             {(JOB && propSn !== '9999') ? (
                                 <Grid2 size={12}>
                                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                         <Tabs value={tabValue} onChange={handleChange} aria-label='tabs-for-repair'>
-                                            <Tab label='บันทึกข้อมูลแจ้งซ่อม' {...a11yProps(0)} />
-                                            <Tab disabled={!form1Saved} label='บันทึกการซ่อม' {...a11yProps(1)} />
+                                            <Tab label='1. บันทึกข้อมูลแจ้งซ่อม' {...a11yProps(0)} />
+                                            <Tab label='2. สรุปและส่งงาน' {...a11yProps(1)} />
                                         </Tabs>
                                     </Box>
 
                                     <CustomTabPanel index={0} value={tabValue}>
-                                        <RpTab1Form
+                                        <RpTab1SaleForm
                                             setMainStep={setMainStep} setTabValue={setTabValue}
-                                            JOB={JOB} setJOB={setJOB} form1Saved={form1Saved} setForm1Saved={setForm1Saved}
+                                            JOB={JOB} setJOB={setJOB}
+                                            form1Saved={form1Saved} setForm1Saved={setForm1Saved}
+                                            onSaved={handleRefresh}
                                         />
                                     </CustomTabPanel>
 
                                     <CustomTabPanel index={1} value={tabValue}>
-                                        <RpTab2Form
-                                            MainStep={MainStep}
-                                            setMainStep={setMainStep}
-                                            JOB={JOB} setJOB={setJOB}
-                                            productDetail={productDetail} serial_id={serial_id}
+                                        <RpSummaryForm
+                                            JOB={JOB}
+                                            productDetail={productDetail}
+                                            setTabValue={setTabValue}
                                         />
                                     </CustomTabPanel>
                                 </Grid2>
                             ) : (propSn === '9999') ? (
+                                // Mode: 9999 (PID Search) -> Show List
                                 <>
                                     <Grid2 size={12}>
-                                        <Typography fontWeight='bold'>
-                                            เลือกรายการจ็อบที่ต้องการบันทึกข้อมูล หรือ สร้าง job ใหม่
+                                        <Typography fontWeight='bold' sx={{ mb: 2 }}>
+                                            เลือกรายการจ็อบที่ต้องการบันทึกข้อมูล หรือ สร้าง JOB ใหม่
                                         </Typography>
                                     </Grid2>
                                     <Grid2 size={12}>
-                                        {jobFromPids.map((job, index) => {
-                                            return (
+                                        {jobFromPids
+                                            .filter(job => job.job_id && job.job_id.startsWith('MJ'))
+                                            .map((job, index) => (
                                                 <Accordion key={index}>
                                                     <AccordionSummary
                                                         expandIcon={<ExpandMore />}
@@ -369,34 +402,50 @@ export default function RepairSaleMain({ productDetail, serial_id }) {
                                                         <Typography>S/N : {job.serial_id}</Typography>
                                                         <Typography>รหัส Job : {job.job_id}</Typography>
                                                         <Typography>สินค้า : {job.pid} {job.p_name}</Typography>
-                                                        <br />
-                                                        <Button
-                                                            fullWidth variant='contained' startIcon={<Edit />}
-                                                            onClick={() => handleOnSelectJob(job)}
-                                                        >
-                                                            เลือก
-                                                        </Button>
+                                                        <Box mt={2}>
+                                                            <Button
+                                                                fullWidth variant='contained' startIcon={<Edit />}
+                                                                onClick={() => handleOnSelectJob(job)}
+                                                            >
+                                                                เลือกรายการนี้
+                                                            </Button>
+                                                        </Box>
                                                     </AccordionDetails>
                                                 </Accordion>
-                                            )
-                                        })}
+                                            ))}
                                     </Grid2>
                                     <Grid2 size={12}>
-                                        <Stack direction='row' justifyContent='end'>
+                                        <Stack direction='row' justifyContent='end' mt={2}>
                                             <Button
                                                 variant="contained" startIcon={<Add />}
                                                 onClick={storeJobFromPid}
+                                                color="success"
                                             >
                                                 สร้าง JOB ใหม่
                                             </Button>
                                         </Stack>
                                     </Grid2>
                                 </>
-
                             ) : (
-                                <Alert sx={{ width: '100%', mb: 2 }} severity='info'>
-                                    {message}
-                                </Alert>
+                                // [ใหม่] กรณีค้นหาไม่เจอ (SN ปกติ) ให้แสดงปุ่มเปิดงานซ่อมใหม่
+                                <Grid2 size={12}>
+                                    <Alert sx={{ width: '100%', mb: 2 }} severity='info'>
+                                        {message}
+                                    </Alert>
+
+                                    {jobNotFound && (
+                                        <Stack direction="row" justifyContent="center">
+                                            <Button
+                                                variant="contained"
+                                                color="primary"
+                                                startIcon={<Add />}
+                                                onClick={handleCreateNewJobForSn}
+                                            >
+                                                เปิดงานซ่อมใหม่ (สำหรับ {serial_id})
+                                            </Button>
+                                        </Stack>
+                                    )}
+                                </Grid2>
                             )}
                         </>
                     )}

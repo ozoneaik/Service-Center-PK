@@ -33,6 +33,7 @@ class RpAfQuController extends Controller
     {
         try {
             $job_id = $request->get('job_id');
+            $job = JobList::query()->where('job_id', $job_id)->first();
             $spare_parts = SparePart::findByJobId($job_id);
             if (count($spare_parts) === 0) {
                 throw new \Exception('ไม่สามารถสร้างใบ qu ได้เนืองจาก ไม่พบรายการสินค้า');
@@ -42,11 +43,23 @@ class RpAfQuController extends Controller
                     $spare_parts_format[$key]['pid'] = $spare_part['spcode'];
                     $spare_parts_format[$key]['name'] = $spare_part['spname'];
                     $spare_parts_format[$key]['price'] = $spare_part['price_multiple_gp'];
-                    if ($spare_part['spcode'] === 'SV001' || $spare_part['price_multiple_gp'] == 0) {
-                        $spare_parts_format[$key]['prod_discount'] = 0;
+
+                    // if ($spare_part['spcode'] === 'SV001' || $spare_part['price_multiple_gp'] == 0) {
+                    //     $spare_parts_format[$key]['prod_discount'] = 0;
+                    // } else {
+                    //     $spare_parts_format[$key]['prod_discount'] = 20;
+                    // }
+
+                    if ($job->created_job_from === 'sale') {
+                        $spare_parts_format[$key]['prod_discount'] = 40;
                     } else {
-                        $spare_parts_format[$key]['prod_discount'] = 20;
+                        if ($spare_part['spcode'] === 'SV001' || $spare_part['price_multiple_gp'] == 0) {
+                            $spare_parts_format[$key]['prod_discount'] = 0;
+                        } else {
+                            $spare_parts_format[$key]['prod_discount'] = 20;
+                        }
                     }
+
                     $spare_parts_format[$key]['unit'] = $spare_part['sp_unit'] ?? 'อัน';
                     $spare_parts_format[$key]['qty'] = $spare_part['qty'];
                 }

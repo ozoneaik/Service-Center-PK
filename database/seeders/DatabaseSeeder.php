@@ -54,8 +54,15 @@ class DatabaseSeeder extends Seeder
         }
 
         $menu_system = [
-            ['menu_name' => 'แจ้งซ่อม', 'group' => 1, 'main_menu' => true, 'redirect_route' => 'repair.index'],
-            ['menu_name' => 'ประวัติซ่อม', 'group' => 2, 'main_menu' => true, 'redirect_route' => 'history.index'],
+
+            ['menu_name' => 'แจ้งซ่อม', 'group' => 1, 'main_menu' => true, 'redirect_route' => null],
+            ['menu_name' => 'แจ้งซ่อม', 'group' => 1, 'main_menu' => false, 'redirect_route' => 'repair.index'],
+            ['menu_name' => 'เซลล์แจ้งซ่อม', 'group' => 1, 'main_menu' => false, 'redirect_route' => 'repair.sale.index'],
+
+            ['menu_name' => 'ประวัติซ่อม', 'group' => 2, 'main_menu' => true, 'redirect_route' => null],
+            ['menu_name' => 'ประวัติการซ่อม', 'group' => 2, 'main_menu' => false, 'redirect_route' => 'history.index'],
+            ['menu_name' => 'รับงานเซลล์แจ้งซ่อม', 'group' => 2, 'main_menu' => false, 'redirect_route' => 'repair.receive.index'],
+
             ['menu_name' => 'ส่งซ่อมไปยังพัมคินฯ', 'group' => 3, 'main_menu' => true, 'redirect_route' => null],
             ['menu_name' => 'ส่งต่อเคสซ่อมไปยังพัมคินฯ', 'group' => 3, 'main_menu' => false, 'redirect_route' => 'sendJobs.list'],
             ['menu_name' => 'ออกเอกสารส่งกลับ พัมคินฯ', 'group' => 3, 'main_menu' => false, 'redirect_route' => 'sendJobs.docJobList'],
@@ -82,7 +89,8 @@ class DatabaseSeeder extends Seeder
             ['menu_name' => 'จัดการเครื่องปริ้นต์', 'group' => 9, 'main_menu' => false, 'redirect_route' => 'printerIp.index'],
             ['menu_name' => 'จัดการช่างซ่อม', 'group' => 9, 'main_menu' => false, 'redirect_route' => 'repairMan.index'],
             //เพิ่มแจ้งซ่อมสำหรับเซลล์
-            ['menu_name' => 'เซลล์แจ้งซ่อม', 'group' => 10, 'main_menu' => false, 'redirect_route' => 'repair.sale.index'],
+            // ['menu_name' => 'เซลล์แจ้งซ่อม', 'group' => 10, 'main_menu' => true, 'redirect_route' => 'repair.sale.index'],
+            // ['menu_name' => 'รับงานเซลล์แจ้งซ่อม', 'group' => 12, 'main_menu' => true, 'redirect_route' => 'repair.receive.index']
         ];
 
         foreach ($menu_system as $menu) {

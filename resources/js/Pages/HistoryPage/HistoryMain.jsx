@@ -219,7 +219,23 @@ const FilterForm = ({ handleFilterChange, filters, setFilters, searchJobs }) => 
                     InputLabelProps={{ shrink: true }}
                 />
             </Grid2>
-            <Grid2 size={{ md: 2, xs: 12 }}>
+            <Grid2 size={{ md: 1, xs: 12 }}>
+                <Select
+                    variant='outlined'
+                    fullWidth={!isMobile}
+                    value={filters.created_job_from || 'select'}
+                    onChange={handleFilterChange}
+                    name="created_job_from"
+                    size="small"
+                >
+                    <MenuItem disabled value={'select'}>งานซ่อมจาก</MenuItem>
+                    <MenuItem value={''}>ทั้งหมด</MenuItem>
+                    <MenuItem value={'sale'}>เซลล์</MenuItem>
+                    {/* หากต้องการกรองงานทั่วไปด้วย */}
+                    {/* <MenuItem value={'admin'}>ศูนย์บริการ</MenuItem> */}
+                </Select>
+            </Grid2>
+            <Grid2 size={{ md: 1, xs: 12 }}>
                 <Stack direction="row" spacing={1}>
                     <Button
                         onClick={searchJobs}
@@ -238,6 +254,7 @@ const FilterForm = ({ handleFilterChange, filters, setFilters, searchJobs }) => 
                                 phone: "",
                                 name: "",
                                 status: "",
+                                created_job_from: "",
                                 date_start: "",
                                 date_end: ""
                             });
@@ -364,6 +381,7 @@ export default function HistoryMain({ jobs }) {
         serial_id: "", job_id: "",
         phone: "", name: "",
         status: "",
+        created_job_from: "",
         date_start: "", date_end: ""
     });
 

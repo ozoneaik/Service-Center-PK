@@ -2,10 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class JobList extends Model
+class JobSaleList extends Model
 {
+    use HasFactory;
+
+    /**
+     * ระบุชื่อตารางให้ชัดเจน
+     */
+    protected $table = 'job_sale_lists';
+
     protected $fillable = [
         'job_id',
         'pid',
@@ -38,12 +46,12 @@ class JobList extends Model
         'created_ct_doc_by',
         'created_ct_doc_at',
         'updated_ct_doc_by',
+        'updated_ct_doc_at',
         'cn_doc',
         'stuc_cover_doc_no',
         'status_mj',
         'shop_under_sale_id',
         'shop_under_sale_name',
-        'shop_under_sale_phone',
-        'created_job_from',
+        'shop_under_sale_phone'
     ];
 }

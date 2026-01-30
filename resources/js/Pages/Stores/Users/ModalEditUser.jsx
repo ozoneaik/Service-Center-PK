@@ -3,11 +3,13 @@ import {
     Dialog, DialogContent, DialogTitle, TextField, Button,
     FormControlLabel, Checkbox, Box, Grid2, Typography, InputAdornment, Stack, Divider
 } from "@mui/material";
-import {router} from '@inertiajs/react';
+import {router, usePage} from '@inertiajs/react';
 import LoginIcon from "@mui/icons-material/Login";
 import {AccountCircle, AlternateEmail, Password, Edit} from "@mui/icons-material";
 
 export default function ModalEditUser({open, setOpen, user, onSave, listMenu}) {
+    const { auth } = usePage().props; 
+    const currentUserRole = auth.user.role;
     const [userData, setUserData] = useState({
         user_code: '', name: '', email: '', role: '', admin_that_branch: false,
         password: '', password_confirmation: '', access_menu: []
@@ -201,7 +203,7 @@ export default function ModalEditUser({open, setOpen, user, onSave, listMenu}) {
                             <Grid2 size={12}>
                                 <Typography variant="subtitle2" sx={{mb: 1}}>สิทธิ์การเข้าถึงเมนู</Typography>
                                 <Box display='flex' flexWrap='wrap'>
-                                    {listMenu.map((item, index) => (
+                                    {/* {listMenu.map((item, index) => (
                                         <FormControlLabel
                                             key={index}
                                             label={item.menu_name}
@@ -212,7 +214,30 @@ export default function ModalEditUser({open, setOpen, user, onSave, listMenu}) {
                                                 />
                                             }
                                         />
-                                    ))}
+                                    ))} */}
+                                    {listMenu.map((item, index) => {
+                                        // [แก้ไข] เพิ่ม Logic การตรวจสอบสิทธิ์
+                                        // ตรวจสอบว่าเป็นเมนู "เซลล์แจ้งซ่อม" หรือไม่ (เช็คจากชื่อ หรือ redirect_route ตาม Seeder)
+                                        const isSaleRepairMenu = item.menu_name === 'เซลล์แจ้งซ่อม' || item.redirect_route === 'repair.sale.index';
+
+                                        // ถ้าเป็นเมนูเซลล์แจ้งซ่อม และ คนที่ Login ไม่ใช่ Admin -> ให้ข้ามไปเลย (ไม่แสดง)
+                                        if (isSaleRepairMenu && currentUserRole !== 'admin') {
+                                            return null;
+                                        }
+
+                                        return (
+                                            <FormControlLabel
+                                                key={index}
+                                                label={item.menu_name}
+                                                control={
+                                                    <Checkbox
+                                                        checked={isMenuChecked(item.id)}
+                                                        onChange={(e) => handleMenuChange(item.id, e.target.checked)}
+                                                    />
+                                                }
+                                            />
+                                        );
+                                    })}
                                 </Box>
                             </Grid2>
                         )}

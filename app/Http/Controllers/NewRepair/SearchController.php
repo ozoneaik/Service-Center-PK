@@ -8,6 +8,7 @@ use App\Models\WarrantyProduct;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -17,6 +18,16 @@ class SearchController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = Auth::user();
+        if ($user->role !== 'service' && $user->role !== 'admin') {
+            // กรณีที่ 1: แสดงหน้า Error 403 Forbidden
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
+
+            // หรือ กรณีที่ 2: ดีดกลับไปหน้า Dashboard พร้อมข้อความแจ้งเตือน (เลือกใช้อย่างใดอย่างหนึ่ง)
+            /*
+            return to_route('dashboard')->with('error', 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
+            */
+        }
         if (isset($request->job_id)) {
             $data = $this->searchFromHistory($request->job_id);
             return Inertia::render('NewRepair/Repair', ['DATA' => $data]);

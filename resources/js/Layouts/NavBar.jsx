@@ -55,16 +55,27 @@ export default function NavBar({user,accessMenu}) {
                 </div>
             );
         }
+        const url = menu.routerUrl ? route(menu.routerUrl) : '#';
+        const isActive = menu.routerUrl ? route().current(menu.routerUrl) : false;
 
         return (
             <NavLink
                 key={index}
-                href={route(menu.routerUrl)}
-                active={route().current(menu.routerUrl)}
+                href={url}
+                active={isActive}
                 target={menu.target || '_self'}
+                className={!menu.routerUrl ? 'pointer-events-none cursor-default' : ''}
             >
                 {menu.name}
             </NavLink>
+            // <NavLink
+            //     key={index}
+            //     href={route(menu.routerUrl)}
+            //     active={route().current(menu.routerUrl)}
+            //     target={menu.target || '_self'}
+            // >
+            //     {menu.name}
+            // </NavLink>
         );
     };
 

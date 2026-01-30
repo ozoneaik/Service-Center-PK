@@ -10,6 +10,7 @@ use App\Http\Controllers\NewRepair\After\RpAfSummaryController;
 use App\Http\Controllers\NewRepair\Before\RpBfController;
 use App\Http\Controllers\NewRepair\JobController;
 use App\Http\Controllers\NewRepair\SearchController;
+use App\Http\Controllers\ReceiveRepair\ReceiveRepairController;
 use App\Http\Controllers\SaleRepair\JobForSaleController;
 use App\Http\Controllers\SaleRepair\SaleRepairController;
 use App\Http\Controllers\SendJob\sendJobController;
@@ -75,6 +76,19 @@ Route::prefix('repair-sale')->group(function () {
     Route::post('/store', [JobForSaleController::class, 'storeJob'])->name('repair.sale.store');
     Route::post('/store-from-pid', [JobForSaleController::class, 'storeJobFromPid'])->name('repair.sale.store.from.pid');
     Route::post('/get-customers', [JobForSaleController::class, 'getCustomersUnderSale'])->name('repair.sale.get.customers');
+
+    Route::post('/store-job', [JobForSaleController::class, 'storeDetail'])->name('repair.sale.store.detail');
+
+    Route::post('/search-service-centers', [SaleRepairController::class, 'searchServiceCenters'])->name('repair.sale.search.service.centers');
+
+    Route::post('/confirm-send', [JobForSaleController::class, 'confirmSendJob'])->name('repair.sale.confirm.send');
+    Route::post('/cancel', [JobForSaleController::class, 'cancelJob'])->name('repair.sale.cancel');
+});
+
+Route::prefix('receive-repair')->middleware(['auth'])->group(function () {
+    Route::get('/', [ReceiveRepairController::class, 'index'])->name('repair.receive.index');
+    Route::post('/accept', [ReceiveRepairController::class, 'acceptJob'])->name('repair.receive.accept');
+    Route::get('/{job_id}', [ReceiveRepairController::class, 'show'])->name('repair.receive.show');
 });
 
 Route::prefix('send-job')->group(function () {

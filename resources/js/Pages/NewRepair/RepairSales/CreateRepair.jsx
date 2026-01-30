@@ -12,6 +12,7 @@ import { PathDetail } from "@/Components/PathDetail";
 import RpMain from "../RpMain";
 import ListHistoryRepair from "@/Pages/HistoryRepair/ListHistoryRepair";
 import RepairSaleMain from "./RepairSaleMain";
+import axios from "axios";
 const menuNames = {
     1: 'แจ้งซ่อม',
     2: 'ดูประวัติการซ่อม',
@@ -34,26 +35,80 @@ export default function CreateRepair({ DATA }) {
 
     const scrollRef = useRef(null);
 
+    // [เพิ่ม] Auto-load เมื่อมี job_id ส่งมาใน URL
     useEffect(() => {
-        if (menuSel !== 0) {
+        const params = new URLSearchParams(window.location.search);
+        const jobIdParam = params.get('job_id');
+        if (jobIdParam) {
+            setSN(jobIdParam); // set ค่าให้ input
+            executeSearch(jobIdParam, ''); // สั่งค้นหาทันที
+        }
+    }, []);
+
+    useEffect(() => {
+        if (menuSel !== 0 && scrollRef.current) {
             scrollRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [menuSel]);
 
-    const handleSearch = async (e) => {
-        e.preventDefault();
+    const executeSearch = async (snValue, pidValue) => {
         setLoading(true);
         setDetail(null);
-        if (SN.startsWith('JOB-')) {
-            router.get(route('repair.sale.index', { job_id: SN }));
-        } else {
-            try {
-                const { data, status } = await axios.post(route('repair.sale.search'), { SN, PID });
+        setMenuSel(0);
 
-                // flag combo: รองรับทั้งของใหม่/เก่า
+        try {
+            // CASE 1: ค้นหาด้วย Job ID (MJ-XXXXX)
+            if (snValue.trim().toUpperCase().startsWith('MJ-')) {
+                const jobId = snValue.trim();
+                const res = await axios.post(route('repair.sale.search.job'), { job_id: jobId });
+
+                if (res.data.found && res.data.job && res.data.job.job_detail) {
+                    const jobData = res.data.job.job_detail;
+
+                    // Map ข้อมูล
+                    const jobDetailFormatted = {
+                        pid: jobData.pid,
+                        pname: jobData.p_name,
+                        p_name: jobData.p_name,
+                        pbaseunit: jobData.p_base_unit,
+                        pCatName: jobData.p_cat_name,
+                        pSubCatName: jobData.p_sub_cat_name,
+                        facmodel: jobData.fac_model,
+                        imagesku: jobData.image_sku,
+                        warrantyperiod: jobData.warranty_period,
+                        warrantycondition: jobData.warranty_condition,
+                        warrantynote: jobData.warranty_note,
+                        warranty: jobData.warranty,
+                        expire_date: jobData.insurance_expire,
+                        serial_id: jobData.serial_id,
+                        serial: jobData.serial_id,
+                        job_id: jobData.job_id,
+                        status_mj: jobData.status_mj,
+
+                        shop_under_sale_name: jobData.shop_under_sale_name,
+                        shop_under_sale_id: jobData.shop_under_sale_id,
+                        shop_under_sale_phone: jobData.shop_under_sale_phone,
+                        is_code_cust_id: jobData.is_code_cust_id,
+                        service_center_name: jobData.service_center_name,
+                        cust_name: jobData.cust_name,
+                        cust_phone: jobData.cust_phone,
+                        cust_address: jobData.cust_address,
+                        delivery_type: jobData.delivery_type,
+                        remark: jobData.remark,
+                        symptom: jobData.symptom
+                    };
+
+                    setDetail(jobDetailFormatted);
+                    setMenuSel(1); // เปิดหน้าแจ้งซ่อม
+                } else {
+                    throw new Error('ไม่พบข้อมูล Job ที่ระบุ');
+                }
+            }
+            // CASE 2: ค้นหาด้วย SN/PID (Logic เดิม)
+            else {
+                const { data } = await axios.post(route('repair.sale.search'), { SN: snValue, PID: pidValue });
                 const combo_set = data.data.combo_set ?? data.is_combo ?? false;
-
-                const insurance_expire = data.data.data_from_api.insurance_expire || null;
+                const insurance_expire = data.data.data_from_api?.insurance_expire || null;
                 const buy_date = data.data.buy_date || null;
                 const addWarranty = data.data.warranty_expire;
                 const expire_date = data.data.expire_date || insurance_expire || null;
@@ -78,31 +133,44 @@ export default function CreateRepair({ DATA }) {
                     };
                     setDetail(sku_item);
                 }
-
-                setSN('');
-                setPID('');
-            } catch (error) {
-                const errorMessage = error.response.data.message;
-                const errorStatus = error.status;
-                AlertDialog({
-                    title: 'เกิดข้อผิดพลาด',
-                    text: ErrorMessage({ status: errorStatus, message: errorMessage })
-                });
-            } finally {
-                setMiniSize(false);
-                setLoading(false);
-                setMenuSel(0);
-                setShowPidForm(false);
+                // ถ้าค้นหาด้วย SN ปกติ ให้ล้างช่องค้นหา
+                if (!snValue.startsWith('MJ-')) {
+                    setSN('');
+                    setPID('');
+                }
             }
         }
-    }
+        catch (error) {
+            console.error("Search Error:", error);
+            const errorMessage = error.response?.data?.message || error.message || 'เกิดข้อผิดพลาด';
+            const errorStatus = error.response?.status || 'Error';
+
+            // ถ้าเป็นการโหลดอัตโนมัติจาก URL แล้วไม่เจอ อาจจะไม่ต้อง Alert แรงมาก หรือ redirect กลับ
+            AlertDialog({
+                title: 'ข้อความแจ้งเตือน',
+                text: ErrorMessage({ status: errorStatus, message: errorMessage })
+            });
+        }
+        finally {
+            setMiniSize(false);
+            setLoading(false);
+            setShowPidForm(false);
+        }
+    };
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        executeSearch(SN, PID);
+    };
 
     return (
         <AuthenticatedLayout>
-            <Head title={'แจ้งซ่อม'} />
+            <Head title={'เซลล์แจ้งซ่อม'} />
             <section className="pb-5">
                 <div className="p-3">
-                    <h2 className="text-lg font-medium text-gray-900">แจ้งซ่อมสำหรับเซลล์</h2>
+                    <button onClick={() => window.location.href = route('repair.sale.index')} className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-6 rounded-lg flex items-center justify-center w-full md:w-auto transition duration-150 ease-in-out">
+                        กลับหน้ารายการเซลล์แจ้งซ่อม
+                    </button>
                 </div>
                 {openSelSku &&
                     <SelectSku

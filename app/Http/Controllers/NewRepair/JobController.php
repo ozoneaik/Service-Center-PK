@@ -8,6 +8,7 @@ use App\Models\Behavior;
 use App\Models\CustomerInJob;
 use App\Models\FileUpload;
 use App\Models\JobList;
+use App\Models\JobSaleList;
 use App\Models\SparePart;
 use App\Models\StartUpCost;
 use App\Models\StockJobDetail;
@@ -246,7 +247,13 @@ class JobController extends Controller
                 $check_job_status->repair_man_id = $check_repair_man_id;
                 $check_job_status->close_job_at = Carbon::now();
                 $check_job_status->close_job_by = Auth::user()->user_code;
+                $check_job_status->status_mj = 'complete';
                 $check_job_status->save();
+
+                JobSaleList::where('job_id', $job_id)->update([
+                    'status_mj' => 'complete',
+                    'status' => 'success'
+                ]);
 
                 // --- หักสต็อกจาก StockSparePart เมื่อปิดงานซ่อม ---
                 $spareParts = SparePart::query()

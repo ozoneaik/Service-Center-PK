@@ -70,6 +70,10 @@ class HistoryRepairController extends Controller
             $query->whereDate('job_lists.created_at', '<=', $request->date_end);
         }
 
+        if ($request->filled('created_job_from')) {
+            $query->where('job_lists.created_job_from', $request->created_job_from);
+        }
+
         $jobs = $query->orderBy('job_lists.created_at', 'desc')->paginate(10);
         return Inertia::render('HistoryPage/HistoryMain', ['jobs' => $jobs]);
     }
@@ -191,6 +195,10 @@ class HistoryRepairController extends Controller
             $query->whereDate('job_lists.created_at', '>=', $request->date_start);
         } elseif ($request->filled('date_end')) {
             $query->whereDate('job_lists.created_at', '<=', $request->date_end);
+        }
+
+        if ($request->filled('created_job_from')) {
+            $query->where('job_lists.created_job_from', $request->created_job_from);
         }
 
         $jobs = $query->orderBy('job_lists.created_at', 'desc')->get();
