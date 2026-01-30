@@ -291,8 +291,17 @@ class SpareClaimController extends Controller
                     ->orderBy('created_at') // เรียงตามเวลาเพื่อให้รู้ลำดับ
                     ->get();
 
+                $remarkText = $evidences
+                    ->filter(fn($e) => !empty($e->remark))
+                    ->unique('remark')
+                    ->map(function ($e) {
+                        return "[" . $e->created_at->format('d/m/Y H:i') . "] : " . $e->remark;
+                    })
+                    ->implode("\n");
+
                 $h['receive_evidence'] = [
                     'images' => $evidences->map(fn($f) => asset('storage/' . $f->file_path)),
+                    'remark' => $remarkText,
                     'remark_list' => $evidences
                         ->filter(fn($e) => !empty($e->remark)) // กรองค่าว่างทิ้ง
                         ->values() // reset index
