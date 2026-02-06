@@ -9,6 +9,9 @@ use App\Models\ClaimFileUpload;
 use App\Models\JobList;
 use App\Models\logStamp;
 use App\Models\SparePart;
+use App\Models\SpareReturnDetail;
+use App\Models\SpareReturnFile;
+use App\Models\SpareReturnHeader;
 use App\Models\StoreInformation;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -182,17 +185,158 @@ class SpareClaimController extends Controller
         }
     }
 
-    // public function historyShow(): Response
+    // public function historyShow(Request $request): Response
     // {
-    //     $history = Claim::query()
-    //         ->where('user_id', Auth::user()->is_code_cust_id)->orderByDesc('created_at')->get();
-    //     foreach ($history as $h) {
-    //         $h['list'] = ClaimDetail::query()
-    //             ->where('claim_details.claim_id', $h->claim_id)
+    //     $user = Auth::user();
+    //     $shops = [];
+    //     $areas = [];
+    //     $selectedShop = $request->query('shop');
+    //     $selectedArea = $request->query('area');
+    //     $selectedReceiveStatus = $request->query('receive_status', 'all');
+    //     $selectedStatus = $request->query('status');
+    //     $selectedAccStatus = $request->query('acc_status');
+    //     $isSale = session('is_sales_rep', false) || $user->role === 'sale';
+    //     $currentSale = null;
+
+    //     // 1. จัดการข้อมูล Master Data (Shops/Areas) ตามสิทธิ์
+    //     if ($user->role === 'admin') {
+    //         $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
+    //             ->orderBy('shop_name')
     //             ->get();
+    //     } else if ($isSale) {
+    //         try {
+    //             $apiShops = $this->fetchShopsForSale($user->user_code);
+    //             $collectionShops = collect($apiShops);
+
+    //             $saleData = $collectionShops->first();
+    //             $currentSale = [
+    //                 'name' => $saleData['sale_name'] ?? $user->name,
+    //                 'code' => $user->user_code
+    //             ];
+
+    //             $apiCustIds = $collectionShops->pluck('cust_id')->toArray();
+    //             $existingInDb = StoreInformation::whereIn('is_code_cust_id', $apiCustIds)
+    //                 ->pluck('is_code_cust_id')
+    //                 ->toArray();
+    //             $collectionShops = $collectionShops->whereIn('cust_id', $existingInDb);
+
+    //             $areas = $collectionShops->map(fn($item) => [
+    //                 'code' => $item['sale_area_code'],
+    //                 'name' => $item['sale_area_name']
+    //             ])->unique('code')->values();
+
+    //             $shops = $collectionShops->map(fn($item) => [
+    //                 'is_code_cust_id' => $item['cust_id'],
+    //                 'shop_name' => $item['cust_name'],
+    //                 'sale_name' => $item['sale_name'] ?? '-',
+    //                 'sale_area_code' => $item['sale_area_code'],
+    //                 'sale_area_name' => $item['sale_area_name']
+    //             ])->values();
+    //         } catch (\Exception $e) {
+    //             Log::error("Failed to fetch sales shops: " . $e->getMessage());
+    //         }
+    //     } else {
+    //         $selectedShop = $user->is_code_cust_id;
     //     }
+
+    //     // 2. Query ข้อมูล Claim History
+    //     $history = Claim::query()
+    //         ->when($selectedReceiveStatus && $selectedReceiveStatus !== 'all', function ($q) use ($selectedReceiveStatus) {
+    //             return $q->where('receive_status', $selectedReceiveStatus);
+    //         })
+    //         ->when($selectedStatus, fn($q, $s) => $q->where('status', $s))
+    //         ->when($selectedAccStatus, function ($q) use ($selectedAccStatus) {
+    //             // เชื่อมไปยังตาราง spare_return_headers
+    //             return $q->whereHas('returnHeaders', function ($subQuery) use ($selectedAccStatus) {
+    //                 $subQuery->where('status', $selectedAccStatus);
+    //             });
+    //         })
+    //         ->where(function ($query) use ($user, $isSale, $selectedShop, $selectedArea, $shops) {
+    //             if ($user->role === 'admin') {
+    //                 if ($selectedShop) {
+    //                     $query->where('user_id', $selectedShop);
+    //                 } else {
+    //                     $query->where('user_id', $user->is_code_cust_id);
+    //                 }
+    //             } elseif ($isSale) {
+    //                 if ($selectedShop) {
+    //                     $query->where('user_id', $selectedShop);
+    //                 } elseif ($selectedArea) {
+    //                     $shopIdsInArea = collect($shops)->where('sale_area_code', $selectedArea)->pluck('is_code_cust_id')->toArray();
+    //                     $query->whereIn('user_id', $shopIdsInArea ?: ['none']);
+    //                 } else {
+    //                     $myShopIds = collect($shops)->pluck('is_code_cust_id')->toArray();
+    //                     $query->whereIn('user_id', $myShopIds ?: ['none']);
+    //                 }
+    //             } else {
+    //                 $query->where('user_id', $user->is_code_cust_id);
+    //             }
+    //         })
+    //         ->orderByDesc('created_at')
+    //         ->paginate(10)
+    //         ->withQueryString();
+    //     // ->get();
+
+    //     // 3. ปรับแต่งข้อมูลรายแถว (Map Data)
+    //     foreach ($history as $h) {
+    //         // ดึงรายการอะไหล่ในใบเคลม
+    //         $h['list'] = ClaimDetail::where('claim_id', $h->claim_id)->get();
+
+    //         // --- [NEW] ดึงสถานะจากฝั่งบัญชี (Account Status) ---
+    //         // หาใบส่งคืนล่าสุดที่อ้างอิงถึง Claim ID นี้
+    //         $accReturn = SpareReturnHeader::where('claim_id', $h->claim_id)
+    //             ->orderByDesc('created_at')
+    //             ->first();
+
+    //         $h['acc_status'] = $accReturn ? $accReturn->status : null; // active, complete, partial
+    //         $h['acc_receive_date'] = $accReturn ? $accReturn->account_receive_date : null;
+    //         $h['acc_job_no'] = $accReturn ? $accReturn->return_job_no : null;
+
+    //         // จัดการข้อมูลหลักฐานการรับของเซลล์ (กรณีสถานะไม่ใช่ N)
+    //         if ($h->receive_status !== 'N') {
+    //             $evidences = ClaimFileUpload::where('claim_id', $h->claim_id)
+    //                 ->orderBy('created_at')
+    //                 ->get();
+
+    //             $remarkText = $evidences
+    //                 ->filter(fn($e) => !empty($e->remark))
+    //                 ->unique('remark')
+    //                 ->map(function ($e) {
+    //                     return "[" . $e->created_at->format('d/m/Y H:i') . "] : " . $e->remark;
+    //                 })
+    //                 ->implode("\n");
+
+    //             $h['receive_evidence'] = [
+    //                 'images' => $evidences->map(fn($f) => asset('storage/' . $f->file_path)),
+    //                 'remark' => $remarkText,
+    //                 'remark_list' => $evidences
+    //                     ->filter(fn($e) => !empty($e->remark))
+    //                     ->values()
+    //                     ->map(function ($e, $index) {
+    //                         return [
+    //                             'round' => $index + 1,
+    //                             'text' => $e->remark,
+    //                             'date' => $e->created_at->format('d/m/Y H:i')
+    //                         ];
+    //                     })
+    //             ];
+    //         }
+    //     }
+
     //     return Inertia::render('SpareClaim/HistoryClaimNew', [
-    //         'history' => $history
+    //         'history' => $history,
+    //         'shops' => $shops,
+    //         'areas' => $areas,
+    //         'currentSale' => $currentSale,
+    //         'filters' => [
+    //             'shop' => $selectedShop,
+    //             'area' => $selectedArea,
+    //             'receive_status' => $selectedReceiveStatus,
+    //             'status' => $selectedStatus,
+    //             'acc_status' => $selectedAccStatus,
+    //         ],
+    //         'userRole' => $user->role,
+    //         'isAdmin' => $user->role === 'admin' || $isSale
     //     ]);
     // }
 
@@ -203,12 +347,15 @@ class SpareClaimController extends Controller
         $areas = [];
         $selectedShop = $request->query('shop');
         $selectedArea = $request->query('area');
-        $selectedReceiveStatus = $request->query('receive_status', 'N');
+        $selectedReceiveStatus = $request->query('receive_status', 'all');
         $selectedStatus = $request->query('status');
+        // เพิ่มการรับค่า Filter สถานะบัญชี
+        $selectedAccStatus = $request->query('acc_status');
 
         $isSale = session('is_sales_rep', false) || $user->role === 'sale';
         $currentSale = null;
 
+        // 1. จัดการข้อมูล Master Data ตามสิทธิ์ (Admin / Sale / User)
         if ($user->role === 'admin') {
             $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
                 ->orderBy('shop_name')
@@ -217,22 +364,17 @@ class SpareClaimController extends Controller
             try {
                 $apiShops = $this->fetchShopsForSale($user->user_code);
                 $collectionShops = collect($apiShops);
-
-                // เก็บข้อมูล Sale จาก API เพื่อแสดงผล Info
                 $saleData = $collectionShops->first();
                 $currentSale = [
                     'name' => $saleData['sale_name'] ?? $user->name,
                     'code' => $user->user_code
                 ];
-
-                // กรองเฉพาะร้านที่มีอยู่ในฐานข้อมูลของเรา
                 $apiCustIds = $collectionShops->pluck('cust_id')->toArray();
                 $existingInDb = StoreInformation::whereIn('is_code_cust_id', $apiCustIds)
                     ->pluck('is_code_cust_id')
                     ->toArray();
                 $collectionShops = $collectionShops->whereIn('cust_id', $existingInDb);
 
-                // จัดฟอร์แมตข้อมูลสำหรับ Area และ Shops
                 $areas = $collectionShops->map(fn($item) => [
                     'code' => $item['sale_area_code'],
                     'name' => $item['sale_area_name']
@@ -252,11 +394,18 @@ class SpareClaimController extends Controller
             $selectedShop = $user->is_code_cust_id;
         }
 
+        // 2. Query ข้อมูล Claim History พร้อมเงื่อนไขการกรอง
         $history = Claim::query()
             ->when($selectedReceiveStatus && $selectedReceiveStatus !== 'all', function ($q) use ($selectedReceiveStatus) {
                 return $q->where('receive_status', $selectedReceiveStatus);
             })
             ->when($selectedStatus, fn($q, $s) => $q->where('status', $s))
+            // กรองตามสถานะบัญชี (ตรวจสอบข้ามตาราง spare_return_headers)
+            ->when($selectedAccStatus, function ($q) use ($selectedAccStatus) {
+                return $q->whereHas('returnHeaders', function ($subQuery) use ($selectedAccStatus) {
+                    $subQuery->where('status', $selectedAccStatus);
+                });
+            })
             ->where(function ($query) use ($user, $isSale, $selectedShop, $selectedArea, $shops) {
                 if ($user->role === 'admin') {
                     if ($selectedShop) {
@@ -271,24 +420,43 @@ class SpareClaimController extends Controller
                         $shopIdsInArea = collect($shops)->where('sale_area_code', $selectedArea)->pluck('is_code_cust_id')->toArray();
                         $query->whereIn('user_id', $shopIdsInArea ?: ['none']);
                     } else {
-                        // DEFAULT สำหรับ SALE: ถ้าไม่เลือก Filter ให้เห็นเฉพาะร้านที่ตัวเองดูแล
                         $myShopIds = collect($shops)->pluck('is_code_cust_id')->toArray();
                         $query->whereIn('user_id', $myShopIds ?: ['none']);
                     }
                 } else {
-                    // User ทั่วไป
                     $query->where('user_id', $user->is_code_cust_id);
                 }
             })
             ->orderByDesc('created_at')
-            ->get();
+            ->paginate(10) // ทำ Pagination หน้าละ 10 รายการ
+            ->withQueryString();
 
-        foreach ($history as $h) {
-            $h['list'] = ClaimDetail::where('claim_id', $h->claim_id)->get();
+        // 3. ปรับแต่งข้อมูล (Map ข้อมูลที่จำเป็นลงในแต่ละแถว)
+        $history->through(function ($h) {
+            // ดึงรายการสินค้า และ Map ยอดรับจริงจากฝั่งบัญชี (account_rc_qty)
+            $h['list'] = ClaimDetail::where('claim_id', $h->claim_id)->get()->map(function ($detail) {
+                $accDetail = SpareReturnDetail::where('claim_detail_id', $detail->id)
+                    ->select('account_rc_qty')
+                    ->orderByDesc('created_at')
+                    ->first();
+                $detail->account_rc_qty = $accDetail ? $accDetail->account_rc_qty : 0;
+                return $detail;
+            });
 
-            if ($h->receive_status === 'Y') {
+            // ดึงหัวเอกสารส่งคืนล่าสุด (SpareReturnHeader) เพื่อเอาสถานะและหมายเหตุบัญชี
+            $accReturn = SpareReturnHeader::where('claim_id', $h->claim_id)
+                ->orderByDesc('created_at')
+                ->first();
+
+            $h['acc_status'] = $accReturn ? $accReturn->status : null; // active, complete, partial
+            $h['acc_remark'] = $accReturn ? $accReturn->remark : null;
+            $h['acc_job_no'] = $accReturn ? $accReturn->return_job_no : null;
+            $h['acc_receive_date'] = $accReturn ? $accReturn->account_receive_date : null;
+
+            // ดึงหลักฐานรูปภาพที่เซลล์เป็นคนถ่ายตอนรับของ (receive_evidence)
+            if ($h->receive_status !== 'N') {
                 $evidences = ClaimFileUpload::where('claim_id', $h->claim_id)
-                    ->orderBy('created_at') // เรียงตามเวลาเพื่อให้รู้ลำดับ
+                    ->orderBy('created_at')
                     ->get();
 
                 $remarkText = $evidences
@@ -303,18 +471,19 @@ class SpareClaimController extends Controller
                     'images' => $evidences->map(fn($f) => asset('storage/' . $f->file_path)),
                     'remark' => $remarkText,
                     'remark_list' => $evidences
-                        ->filter(fn($e) => !empty($e->remark)) // กรองค่าว่างทิ้ง
-                        ->values() // reset index
+                        ->filter(fn($e) => !empty($e->remark))
+                        ->values()
                         ->map(function ($e, $index) {
                             return [
-                                'round' => $index + 1, // ลำดับครั้ง (นับเฉพาะครั้งที่มี remark)
+                                'round' => $index + 1,
                                 'text' => $e->remark,
-                                'date' => $e->created_at->format('d/m/Y H:i') // วันที่เวลา
+                                'date' => $e->created_at->format('d/m/Y H:i')
                             ];
                         })
                 ];
             }
-        }
+            return $h;
+        });
 
         return Inertia::render('SpareClaim/HistoryClaimNew', [
             'history' => $history,
@@ -326,6 +495,7 @@ class SpareClaimController extends Controller
                 'area' => $selectedArea,
                 'receive_status' => $selectedReceiveStatus,
                 'status' => $selectedStatus,
+                'acc_status' => $selectedAccStatus,
             ],
             'userRole' => $user->role,
             'isAdmin' => $user->role === 'admin' || $isSale
@@ -368,13 +538,84 @@ class SpareClaimController extends Controller
         return [];
     }
 
+    // public function updateReceiveStatus(Request $request)
+    // {
+    //     $request->validate([
+    //         'claim_id' => 'required|exists:claims,claim_id',
+    //         'items' => 'required|array', // รับ array ของรายการที่เลือก
+    //         'items.*.id' => 'required', // id ของ claim_details
+    //         'items.*.qty' => 'required|numeric|min:1', // จำนวนที่รับ
+    //         'images' => 'required|array',
+    //         'images.*' => 'image|max:10240',
+    //         'remark' => 'nullable|string'
+    //     ]);
+
+    //     try {
+    //         DB::beginTransaction();
+    //         $claim = Claim::where('claim_id', $request->claim_id)->first();
+    //         if (!$claim) {
+    //             throw new \Exception('ไม่พบข้อมูล Claim ID');
+    //         }
+
+    //         // 1. อัปเดตจำนวนที่รับ (Received Qty) ของแต่ละรายการ
+    //         foreach ($request->items as $item) {
+    //             $detail = ClaimDetail::where('id', $item['id'])->first();
+    //             if ($detail) {
+    //                 // เปลี่ยนชื่อฟิลด์ตรงนี้
+    //                 $detail->update(['rc_qty' => $item['qty']]);
+    //             }
+    //         }
+
+    //         // 2. คำนวณสถานะรวมของเอกสาร (Logic Active/Partial/Complete)
+    //         $allDetails = ClaimDetail::where('claim_id', $request->claim_id)->get();
+    //         $totalQty = $allDetails->sum('qty');
+    //         $totalReceived = $allDetails->sum('rc_qty');
+
+    //         $status = 'N'; // Active (Default)
+    //         if ($totalReceived >= $totalQty) {
+    //             $status = 'Y'; // Complete (ครบทุกชิ้น)
+    //         } elseif ($totalReceived > 0) {
+    //             $status = 'P'; // Partial (บางส่วน)
+    //         }
+
+    //         // 3. อัปเดตสถานะหลักที่ตาราง claims
+    //         $claim->update([
+    //             'receive_status' => $status,
+    //             'receive_by' => Auth::user()->user_code,
+    //             'updated_at' => now()
+    //         ]);
+
+    //         // 4. จัดการรูปภาพ (เหมือนเดิม)
+    //         if ($request->hasFile('images')) {
+    //             foreach ($request->file('images') as $file) {
+    //                 $fileName = 'receive_' . $request->claim_id . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+    //                 $path = $file->storeAs('uploads/claims', $fileName, 'public');
+
+    //                 ClaimFileUpload::create([
+    //                     'claim_id' => $request->claim_id,
+    //                     'file_path' => $path,
+    //                     'file_name' => $file->getClientOriginalName(),
+    //                     'remark' => $request->remark
+    //                 ]);
+    //             }
+    //         }
+
+    //         DB::commit();
+    //         return redirect()->back();
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         Log::error("Error receiving claim: " . $e->getMessage());
+    //         return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+    //     }
+    // }
+
     public function updateReceiveStatus(Request $request)
     {
         $request->validate([
             'claim_id' => 'required|exists:claims,claim_id',
-            'items' => 'required|array', // รับ array ของรายการที่เลือก
+            'items' => 'required|array',
             'items.*.id' => 'required', // id ของ claim_details
-            'items.*.qty' => 'required|numeric|min:1', // จำนวนที่รับ
+            'items.*.qty' => 'required|numeric|min:1', // จำนวนที่รับในรอบนี้
             'images' => 'required|array',
             'images.*' => 'image|max:10240',
             'remark' => 'nullable|string'
@@ -382,56 +623,107 @@ class SpareClaimController extends Controller
 
         try {
             DB::beginTransaction();
-            $claim = Claim::where('claim_id', $request->claim_id)->first();
+
+            // 1. ตรวจสอบ Claim หลัก และ Lock
+            $claim = Claim::where('claim_id', $request->claim_id)->lockForUpdate()->first();
             if (!$claim) {
                 throw new \Exception('ไม่พบข้อมูล Claim ID');
             }
 
-            // 1. อัปเดตจำนวนที่รับ (Received Qty) ของแต่ละรายการ
+            $shortClaimId = str_replace('C-', '', $request->claim_id); // ตัด C- ออกถ้ามี
+            $returnJobNo = 'RT-' . $shortClaimId . '-' . rand(1000, 9999);
+
+            $returnHeader = SpareReturnHeader::create([
+                'return_job_no' => $returnJobNo,
+                'claim_id' => $claim->claim_id,
+                'receive_by_sale' => Auth::user()->user_code,
+                'status' => 'active', // รอให้บัญชีตรวจสอบ
+                // 'remark' => $request->remark
+                'remark' => ''
+            ]);
+
+            $hasUpdate = false;
+
+            // 3. วนลูปสินค้าเพื่อบันทึก Detail และอัปเดตยอดสะสม
             foreach ($request->items as $item) {
-                $detail = ClaimDetail::where('id', $item['id'])->first();
+                $detail = ClaimDetail::where('id', $item['id'])->lockForUpdate()->first();
+
                 if ($detail) {
-                    // เปลี่ยนชื่อฟิลด์ตรงนี้
-                    $detail->update(['rc_qty' => $item['qty']]);
+                    $qtyToReceive = $item['qty']; // จำนวนที่รับในรอบนี้
+                    $newTotalRcQty = $detail->rc_qty + $qtyToReceive; // ยอดสะสมเดิม + ยอดใหม่
+
+                    // ป้องกันการรับเกิน
+                    if ($newTotalRcQty > $detail->qty) {
+                        throw new \Exception("รายการ {$detail->sp_code} รับเกินจำนวนที่เคลม (รับแล้ว {$detail->rc_qty}, จะรับเพิ่ม {$qtyToReceive}, ยอดเต็ม {$detail->qty})");
+                    }
+
+                    // A. อัปเดตยอดสะสมในตารางหลัก (ClaimDetail)
+                    $detail->update(['rc_qty' => $newTotalRcQty]);
+
+                    // B. สร้างรายการในใบรับคืน (SpareReturnDetail)
+                    SpareReturnDetail::create([
+                        'return_header_id' => $returnHeader->id,
+                        'claim_detail_id' => $detail->id,
+                        'sp_code' => $detail->sp_code,
+                        'sp_name' => $detail->sp_name,
+                        'qty' => $qtyToReceive,
+                        'unit' => $detail->unit
+                    ]);
+
+                    $hasUpdate = true;
                 }
             }
 
-            // 2. คำนวณสถานะรวมของเอกสาร (Logic Active/Partial/Complete)
+            if (!$hasUpdate) {
+                throw new \Exception("ไม่มีรายการสินค้าที่ถูกบันทึก");
+            }
+
+            // 4. คำนวณสถานะรวมของเอกสาร Claim (Logic Active/Partial/Complete)
             $allDetails = ClaimDetail::where('claim_id', $request->claim_id)->get();
             $totalQty = $allDetails->sum('qty');
             $totalReceived = $allDetails->sum('rc_qty');
 
-            $status = 'N'; // Active (Default)
+            $status = 'N'; // Active
             if ($totalReceived >= $totalQty) {
-                $status = 'Y'; // Complete (ครบทุกชิ้น)
+                $status = 'Y'; // Complete
             } elseif ($totalReceived > 0) {
-                $status = 'P'; // Partial (บางส่วน)
+                $status = 'P'; // Partial
             }
 
-            // 3. อัปเดตสถานะหลักที่ตาราง claims
+            // อัปเดตสถานะหลักที่ตาราง claims
             $claim->update([
                 'receive_status' => $status,
-                'receive_by' => Auth::user()->user_code,
+                'receive_by' => Auth::user()->user_code, // อัปเดตคนล่าสุดที่ทำรายการ
                 'updated_at' => now()
             ]);
 
-            // 4. จัดการรูปภาพ (เหมือนเดิม)
+            // 5. จัดการรูปภาพ
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $file) {
-                    $fileName = 'receive_' . $request->claim_id . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                    $path = $file->storeAs('uploads/claims', $fileName, 'public');
+                    $fileName = 'return_' . $returnJobNo . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('uploads/returns', $fileName, 'public');
 
+                    // A. บันทึกเข้าตารางใหม่ (ผูกกับ Job Return)
+                    // SpareReturnFile::create([
+                    //     'return_header_id' => $returnHeader->id,
+                    //     'file_path' => $path,
+                    //     'file_name' => $file->getClientOriginalName(),
+                    //     'file_type' => $file->getClientOriginalExtension(),
+                    // ]);
+
+                    // B. บันทึกเข้า ClaimFileUpload ของเดิม (Backup / Backward Compatibility)
                     ClaimFileUpload::create([
                         'claim_id' => $request->claim_id,
                         'file_path' => $path,
                         'file_name' => $file->getClientOriginalName(),
+                        // 'remark' => "Ref Job: $returnJobNo | " . $request->remark
                         'remark' => $request->remark
                     ]);
                 }
             }
 
             DB::commit();
-            return redirect()->back();
+            return redirect()->back()->with('success', "สร้างใบรับคืนเลขที่ $returnJobNo สำเร็จ");
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Error receiving claim: " . $e->getMessage());

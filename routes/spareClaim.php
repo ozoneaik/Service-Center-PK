@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountingReturnController;
 use App\Http\Controllers\ClaimSpManage\ClaimSpController;
 use App\Http\Controllers\SpareClaimController;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,10 @@ Route::prefix('spare-claim')->group(function () {
     Route::post('/receive-update', [SpareClaimController::class, 'updateReceiveStatus'])->name('spareClaim.updateReceiveStatus');
 });
 
+Route::prefix('accounting/spare-return')->name('accounting.return.')->group(function () {
+    Route::get('/', [AccountingReturnController::class, 'index'])->name('index');
+    Route::post('/confirm', [AccountingReturnController::class, 'confirm'])->name('confirm');
+});
 
 Route::middleware('adminPermission')->group(function(){
     Route::prefix('admin')->group(function(){

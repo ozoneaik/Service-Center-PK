@@ -219,9 +219,14 @@ export default function ModalEditUser({open, setOpen, user, onSave, listMenu}) {
                                         // [แก้ไข] เพิ่ม Logic การตรวจสอบสิทธิ์
                                         // ตรวจสอบว่าเป็นเมนู "เซลล์แจ้งซ่อม" หรือไม่ (เช็คจากชื่อ หรือ redirect_route ตาม Seeder)
                                         const isSaleRepairMenu = item.menu_name === 'เซลล์แจ้งซ่อม' || item.redirect_route === 'repair.sale.index';
+                                        const isAccReceive = item.menu_name === 'บัญชีรับอะไหล่' || item.redirect_route === 'accounting.return.index';
 
                                         // ถ้าเป็นเมนูเซลล์แจ้งซ่อม และ คนที่ Login ไม่ใช่ Admin -> ให้ข้ามไปเลย (ไม่แสดง)
                                         if (isSaleRepairMenu && currentUserRole !== 'admin') {
+                                            return null;
+                                        }
+
+                                        if (isAccReceive && currentUserRole !== 'admin') {
                                             return null;
                                         }
 
