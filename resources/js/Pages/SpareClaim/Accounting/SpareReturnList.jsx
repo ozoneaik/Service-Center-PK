@@ -41,9 +41,13 @@ const AccountVerifyRow = ({
     receiveQuantities,
     handleChangeGroupQty,
     handleItemQtyChange,
-    status
+    status,
+    setPreviewImage
 }) => {
     const [open, setOpen] = useState(false);
+
+    const spImage = import.meta.env.VITE_IMAGE_SP_NEW + group.sp_code + '.jpg';
+    const imageNotFound = (e) => { e.currentTarget.src = import.meta.env.VITE_IMAGE_DEFAULT; }
 
     // --- คำนวณยอดคงเหลือของ Group ---
     const groupTotalReceived = group.total_rc_account || 0;
@@ -64,6 +68,25 @@ const AccountVerifyRow = ({
                     <IconButton aria-label="expand row" size="small" onClick={() => setOpen(!open)}>
                         {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
                     </IconButton>
+                </TableCell>
+                <TableCell width="80px" align="center">
+                    <Box
+                        onClick={() => setPreviewImage(spImage)}
+                        sx={{
+                            width: 50, height: 50, borderRadius: 1, border: '1px solid #eee',
+                            overflow: 'hidden', display: 'flex', alignItems: 'center',
+                            justifyContent: 'center', bgcolor: 'white',
+                            cursor: 'pointer', // ให้เปลี่ยนเป็นรูปมือ
+                            '&:hover': { transform: 'scale(1.1)', transition: '0.2s' } // เพิ่ม effect เล็กน้อย
+                        }}
+                    >
+                        <img
+                            src={spImage}
+                            onError={imageNotFound}
+                            alt={group.sp_code}
+                            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                        />
+                    </Box>
                 </TableCell>
                 <TableCell>
                     <Typography variant="body2" fontWeight="bold">{group.sp_code}</Typography>
@@ -187,6 +210,7 @@ export default function SpareReturnList({ jobs, filterStatus }) {
     const [isDragging, setIsDragging] = useState(false);
 
     const [anchorEl, setAnchorEl] = useState(null);
+    const [previewImage, setPreviewImage] = useState(null);
 
     const handlePopoverOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -630,7 +654,7 @@ export default function SpareReturnList({ jobs, filterStatus }) {
                                         <Typography variant="body2" color="text.secondary">
                                             - คุณสามารถค้นหาได้จาก เลขที่ใบเคลม, เลข JOB หรือ เลขใบ RT<br />
                                             - คุณสามารถตรวจสอบรายการรอตรวจสอบที่แท็บ<b> รายการรอตรวจสอบ </b><br />
-                                            - คุณสามารถดูประวัติการตรวจสอบที่แท็บ<b> กลุ่มประวัติการตรวจสอบ </b> และคุณสามารถรับอะไหล่เพิ่มในเอกสารที่รับไม่ครบได้ในแท็บนี้ได้
+                                            - คุณสามารถดูประวัติการตรวจสอบที่แท็บ<b> กลุ่มประวัติการตรวจสอบ </b> และคุณสามารถรับอะไหล่เพิ่มในเอกสารที่ <b> รับไม่ครบ </b>ได้ในแท็บนี้ได้
                                         </Typography>
                                     </Box>
                                 </Popover>
@@ -740,6 +764,7 @@ export default function SpareReturnList({ jobs, filterStatus }) {
                                             <TableHead sx={{ bgcolor: '#f5f5f5' }}>
                                                 <TableRow>
                                                     <TableCell width="40px" />
+                                                    <TableCell align="center">รูปภาพ</TableCell>
                                                     <TableCell>รหัสสินค้า / ชื่อ</TableCell>
                                                     <TableCell align="center">หน่วย</TableCell>
                                                     <TableCell align="center">จำนวนส่งมา</TableCell>
@@ -756,6 +781,7 @@ export default function SpareReturnList({ jobs, filterStatus }) {
                                                         handleChangeGroupQty={handleChangeGroupQty}
                                                         handleItemQtyChange={handleItemQtyChange}
                                                         status={selectedJob.status}
+                                                        setPreviewImage={setPreviewImage}
                                                     />
                                                 ))}
                                             </TableBody>
@@ -877,6 +903,26 @@ export default function SpareReturnList({ jobs, filterStatus }) {
                             </Button>
                         )}
                     </DialogActions>
+                </Dialog>
+                <Dialog
+                    open={Boolean(previewImage)}
+                    onClose={() => setPreviewImage(null)}
+                    maxWidth="md"
+                    sx={{ '& .MuiDialog-paper': { bgcolor: 'transparent', boxShadow: 'none' }, zIndex: 10000 }} // ให้ zIndex สูงกว่า Dialog ตรวจรับ
+                >
+                    <Box position="relative">
+                        <IconButton
+                            onClick={() => setPreviewImage(null)}
+                            sx={{ position: 'absolute', right: 0, top: 0, color: 'white', bgcolor: 'rgba(0,0,0,0.5)', m: 1 }}
+                        >
+                            <Close />
+                        </IconButton>
+                        <img
+                            src={previewImage}
+                            alt="Preview"
+                            style={{ maxWidth: '100%', maxHeight: '80vh', display: 'block', borderRadius: 8, border: '2px solid white' }}
+                        />
+                    </Box>
                 </Dialog>
             </div>
         </AuthenticatedLayout>
