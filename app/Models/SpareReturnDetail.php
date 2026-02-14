@@ -37,4 +37,9 @@ class SpareReturnDetail extends Model
     {
         return $this->belongsTo(ClaimDetail::class, 'claim_detail_id');
     }
+
+    public function transactions()
+    {
+        return $this->hasMany(SpareReturnTransaction::class, 'return_detail_id');
+    }
 }

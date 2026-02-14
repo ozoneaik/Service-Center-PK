@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SpareReturnDetail;
 use App\Models\SpareReturnFile;
 use App\Models\SpareReturnHeader;
+use App\Models\SpareReturnTransaction;
 use Illuminate\Http\Request;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
@@ -14,54 +15,6 @@ use Inertia\Inertia;
 
 class AccountingReturnController extends Controller
 {
-    // public function index(Request $request): Response
-    // {
-    //     //เช็คเงื่อนไขให้เข้าหน้านี้ได้แค่ acc และ admin
-    //     $user = Auth::user();
-    //     abort_unless(in_array($user->role, ['admin', 'acc']), 403, 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
-
-    //     $status = $request->query('status', 'active');
-
-    //     $jobs = SpareReturnHeader::query()
-    //         // ดึงความสัมพันธ์ files และระบุให้ชัดเจนในภายหลัง
-    //         ->with(['details', 'claim', 'files'])
-    //         ->when($status !== 'all', function ($q) use ($status) {
-    //             if ($status === 'complete') {
-    //                 $q->whereIn('status', ['complete', 'partial']);
-    //             } else {
-    //                 $q->where('status', $status);
-    //             }
-    //         })
-    //         ->orderByDesc('created_at')
-    //         ->get()
-    //         ->map(function ($job) {
-    //             // แยก Remark: ปกติคุณเก็บต่อกันด้วย " | " เราจะแยกมันออก
-    //             $remarks = explode(' | ', $job->remark);
-
-    //             $job->sales_remark = $remarks[0] ?? '-';
-    //             // กรองหา remark ที่มีคำว่า [บัญชีตอบกลับ:]
-    //             $job->acc_remark = collect($remarks)->first(fn($r) => str_contains($r, '[บัญชีตอบกลับ:]')) ?? '-';
-    //             $job->acc_remark = str_replace('[บัญชีตอบกลับ:] ', '', $job->acc_remark);
-
-    //             $job->sales_files = $job->files->filter(
-    //                 fn($f) =>
-    //                 $f->created_at < $job->account_receive_date || !$job->account_receive_date
-    //             )->values(); // เพิ่ม values()
-
-    //             $job->acc_files = $job->files->filter(
-    //                 fn($f) =>
-    //                 $job->account_receive_date && $f->created_at >= $job->account_receive_date
-    //             )->values();
-
-    //             return $job;
-    //         });
-
-    //     return Inertia::render('SpareClaim/Accounting/SpareReturnList', [
-    //         'jobs' => $jobs,
-    //         'filterStatus' => $status
-    //     ]);
-    // }
-
     public function index(Request $request): Response
     {
         $user = Auth::user();
@@ -71,7 +24,7 @@ class AccountingReturnController extends Controller
 
         $jobs = SpareReturnHeader::query()
             // โหลด details, claim.files (claim_file_uploads), และ files (spare_return_files)
-            ->with(['details', 'claim.files', 'files'])
+            ->with(['details.originalClaimDetail', 'claim.files', 'files'])
             ->when($status !== 'all', function ($q) use ($status) {
                 if ($status === 'complete') {
                     $q->whereIn('status', ['complete', 'partial']);
@@ -106,7 +59,78 @@ class AccountingReturnController extends Controller
         ]);
     }
 
-    // บันทึกยืนยันการรับของ
+    // public function confirm(Request $request)
+    // {
+    //     $request->validate([
+    //         'return_header_id' => 'required|exists:spare_return_headers,id',
+    //         'items' => 'required|array',
+    //         'items.*.detail_id' => 'required|exists:spare_return_details,id',
+    //         'items.*.receive_qty' => 'required|integer|min:0',
+    //     ]);
+
+    //     try {
+    //         DB::beginTransaction();
+    //         $header = SpareReturnHeader::findOrFail($request->return_header_id);
+
+    //         $currentTotalSent = 0;
+    //         $currentTotalReceivedAcc = 0;
+
+    //         foreach ($request->items as $item) {
+    //             $detail = SpareReturnDetail::where('id', $item['detail_id'])
+    //                 ->where('return_header_id', $header->id)
+    //                 ->first();
+
+    //             if ($detail) {
+    //                 // *** จุดสำคัญ: บวกยอดใหม่เข้าไปในยอดสะสมเดิม (account_rc_qty) ***
+    //                 $newAccumulatedQty = $detail->account_rc_qty + $item['receive_qty'];
+
+    //                 if ($newAccumulatedQty > $detail->qty) {
+    //                     throw new \Exception("รหัสสินค้า {$detail->sp_code} รับเกินจำนวนที่ส่งมา (ยอดเดิม: {$detail->account_rc_qty}, เพิ่ม: {$item['receive_qty']})");
+    //                 }
+
+    //                 $detail->update(['account_rc_qty' => $newAccumulatedQty]);
+
+    //                 // คำนวณยอดรวมทั้งใบเพื่อหา Status
+    //                 $currentTotalSent += $detail->qty;
+    //                 $currentTotalReceivedAcc += $newAccumulatedQty;
+    //             }
+    //         }
+
+    //         // เช็ค Status ใหม่: ถ้าผลรวมสะสมครบแล้วให้เป็น complete ถ้ายังไม่ครบให้เป็น partial
+    //         $finalStatus = ($currentTotalReceivedAcc >= $currentTotalSent) ? 'complete' : 'partial';
+
+    //         $timestamp = now()->format('d/m/Y H:i');
+    //         $addRemark = "\n[{$timestamp} รับเพิ่ม]: " . ($request->remark ?: '-');
+
+    //         $header->update([
+    //             'status' => $finalStatus,
+    //             'receive_by_account' => Auth::user()->user_code,
+    //             'account_receive_date' => now(),
+    //             'remark' => $header->remark . $addRemark
+    //         ]);
+
+    //         // จัดการอัปโหลดไฟล์ (โค้ดเดิมของคุณ)
+    //         if ($request->hasFile('files')) {
+    //             foreach ($request->file('files') as $file) {
+    //                 $fileName = 'acc_return_' . $header->return_job_no . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+    //                 $path = $file->storeAs('uploads/returns', $fileName, 'public');
+    //                 SpareReturnFile::create([
+    //                     'return_header_id' => $header->id,
+    //                     'file_path' => $path,
+    //                     'file_name' => $file->getClientOriginalName(),
+    //                     'file_type' => $file->getClientOriginalExtension(),
+    //                 ]);
+    //             }
+    //         }
+
+    //         DB::commit();
+    //         return redirect()->back()->with('success', 'บันทึกสำเร็จ');
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+    //     }
+    // }
+
     public function confirm(Request $request)
     {
         // Validate ข้อมูล
@@ -115,7 +139,7 @@ class AccountingReturnController extends Controller
             'items' => 'required|array',
             'items.*.detail_id' => 'required|exists:spare_return_details,id',
             'items.*.receive_qty' => 'required|integer|min:0',
-            'is_full_receive' => 'required|boolean',
+            'is_full_receive' => 'required|boolean', 
             'remark' => 'nullable|string',
             'files' => 'nullable|array',
             'files.*' => 'image|max:10240'
@@ -125,36 +149,69 @@ class AccountingReturnController extends Controller
             DB::beginTransaction();
 
             $header = SpareReturnHeader::findOrFail($request->return_header_id);
+            $userCode = Auth::user()->user_code ?? 'System'; // ปรับตามฟิลด์จริงของ User Model
 
-            // 1. วนลูปอัปเดตยอดรับจริง
+            // 1. วนลูปจัดการรายการสินค้า
             foreach ($request->items as $item) {
+                // ถ้า qty เป็น 0 ข้ามไปเลย (ไม่ต้องบันทึก transaction)
+                if ($item['receive_qty'] <= 0) {
+                    continue;
+                }
+
                 $detail = SpareReturnDetail::where('id', $item['detail_id'])
                     ->where('return_header_id', $header->id)
+                    ->lockForUpdate() // ล็อกแถวป้องกัน race condition
                     ->first();
 
                 if ($detail) {
+                    // คำนวณยอดสะสมใหม่
+                    $newAccumulatedQty = $detail->account_rc_qty + $item['receive_qty'];
+
+                    // Validation: ห้ามรับเกินยอดส่ง
+                    if ($newAccumulatedQty > $detail->qty) {
+                        throw new \Exception("รหัสสินค้า {$detail->sp_code} : ยอดรับรวม ($newAccumulatedQty) เกินจำนวนที่ส่งมา ({$detail->qty})");
+                    }
+
+                    // [NEW] บันทึก Transaction ประวัติการรับครั้งนี้
+                    SpareReturnTransaction::create([
+                        'return_header_id' => $header->id,
+                        'return_detail_id' => $detail->id,
+                        'qty' => $item['receive_qty'], // จำนวนที่รับเพิ่มในครั้งนี้
+                        'recorded_by' => $userCode,
+                        'remark' => $request->remark // บันทึกหมายเหตุลง transaction ด้วย (ถ้าต้องการ)
+                    ]);
+
+                    // อัปเดตยอดสะสมที่ Detail
                     $detail->update([
-                        'account_rc_qty' => $item['receive_qty']
+                        'account_rc_qty' => $newAccumulatedQty
                     ]);
                 }
             }
 
-            // 2. กำหนดสถานะงาน
-            $finalStatus = $request->is_full_receive ? 'complete' : 'partial';
+            // 2. คำนวณสถานะรวมใหม่ (Query ผลรวมจริงจาก DB เพื่อความแม่นยำ)
+            $stats = SpareReturnDetail::where('return_header_id', $header->id)
+                ->selectRaw('SUM(qty) as total_sent, SUM(account_rc_qty) as total_received')
+                ->first();
 
-            // เตรียมข้อความ Remark
-            $systemRemark = $request->is_full_receive ? "" : " | [ตอบกลับจากระบบ]: ปิดงานยอดไม่ครบ";
-            $accRemark = $request->remark ? " | [บัญชีตอบกลับ:] " . $request->remark : "";
+            // ถ้า ยอดรับรวม >= ยอดส่งรวม ให้ถือว่าจบงาน (Complete)
+            // ถ้ายังไม่ครบ ให้เป็น Partial
+            $finalStatus = ($stats->total_received >= $stats->total_sent) ? 'complete' : 'partial';
 
-            // 3. อัปเดต Header
+            // 3. เตรียม Remark สำหรับ Header (ต่อท้ายของเดิม)
+            $timestamp = now()->format('d/m/Y H:i');
+            $actionText = ($finalStatus === 'complete') ? 'ปิดงานรับครบ' : 'รับเพิ่ม';
+            // $newRemark = $request->remark ? "\n[{$timestamp} {$actionText}]: " . $request->remark : "";
+            $newRemark = $request->remark ? "\n[{$timestamp}: " . $request->remark : "";
+
+            // 4. อัปเดต Header
             $header->update([
                 'status' => $finalStatus,
-                'receive_by_account' => Auth::user()->user_code,
+                'receive_by_account' => $userCode, // คนล่าสุดที่ทำรายการ
                 'account_receive_date' => now(),
-                'remark' => $header->remark . $systemRemark . $accRemark
+                'remark' => $header->remark . $newRemark
             ]);
 
-            // 4. [NEW] จัดการอัปโหลดไฟล์ (ถ้ามี)
+            // 5. จัดการอัปโหลดไฟล์ (ถ้ามี)
             if ($request->hasFile('files')) {
                 foreach ($request->file('files') as $file) {
                     $fileName = 'acc_return_' . $header->return_job_no . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
@@ -171,7 +228,7 @@ class AccountingReturnController extends Controller
 
             DB::commit();
 
-            return redirect()->back()->with('success', 'บันทึกการรับคืนสินค้าเรียบร้อยแล้ว');
+            return redirect()->back()->with('success', "บันทึกการรับสินค้าเรียบร้อยแล้ว (สถานะ: $finalStatus)");
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Accounting Confirm Error: " . $e->getMessage());

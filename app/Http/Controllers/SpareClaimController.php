@@ -354,6 +354,7 @@ class SpareClaimController extends Controller
 
         $isSale = session('is_sales_rep', false) || $user->role === 'sale';
         $currentSale = null;
+        $searchTerm = $request->query('search');
 
         // 1. จัดการข้อมูล Master Data ตามสิทธิ์ (Admin / Sale / User)
         if ($user->role === 'admin') {
@@ -396,6 +397,19 @@ class SpareClaimController extends Controller
 
         // 2. Query ข้อมูล Claim History พร้อมเงื่อนไขการกรอง
         $history = Claim::query()
+            ->when($searchTerm, function ($q) use ($searchTerm) {
+                $q->where(function ($sub) use ($searchTerm) {
+                    // ค้นหาจากเลขที่ใบเคลมหลัก
+                    $sub->where('claim_id', 'like', "%{$searchTerm}%")
+                        // ค้นหาลึกลงไปในรายการอะไหล่ ว่ามี Job ID นี้หรือไม่
+                        ->orWhereHas('list', function ($detailQuery) use ($searchTerm) {
+                            $detailQuery->where('job_id', 'like', "%{$searchTerm}%");
+                        })
+                        ->orWhereHas('returnHeaders', function ($returnQuery) use ($searchTerm) {
+                            $returnQuery->where('return_job_no', 'like', "%{$searchTerm}%");
+                        });
+                });
+            })
             ->when($selectedReceiveStatus && $selectedReceiveStatus !== 'all', function ($q) use ($selectedReceiveStatus) {
                 return $q->where('receive_status', $selectedReceiveStatus);
             })
@@ -496,6 +510,7 @@ class SpareClaimController extends Controller
                 'receive_status' => $selectedReceiveStatus,
                 'status' => $selectedStatus,
                 'acc_status' => $selectedAccStatus,
+                'search' => $searchTerm,
             ],
             'userRole' => $user->role,
             'isAdmin' => $user->role === 'admin' || $isSale

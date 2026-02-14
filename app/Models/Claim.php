@@ -25,4 +25,9 @@ class Claim extends Model
     {
         return $this->hasMany(SpareReturnHeader::class, 'claim_id', 'claim_id');
     }
+    public function list()
+    {
+        // สมมติว่า Claim เชื่อมกับ ClaimDetail
+        return $this->hasMany(ClaimDetail::class, 'claim_id', 'claim_id');
+    }
 }
