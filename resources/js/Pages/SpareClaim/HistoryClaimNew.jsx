@@ -493,8 +493,13 @@ export default function HistoryClaimNew({ history, shops, filters, isAdmin, area
     });
     const [processing, setProcessing] = useState(false);
     const [search, setSearch] = useState(filters?.search || '');
+    const [shopSearch, setShopSearch] = useState(filters?.shop || '');
 
     const [anchorEl, setAnchorEl] = useState(null);
+
+    useEffect(() => {
+        setShopSearch(filters?.shop || '');
+    }, [filters?.shop]);
 
     const handlePopoverOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -603,39 +608,70 @@ export default function HistoryClaimNew({ history, shops, filters, isAdmin, area
         { label: 'Complete (รับครบ)', value: 'complete' },
     ];
 
+    // const handleFilterChange = (key, value) => {
+    //     // สร้าง Object ฟิลเตอร์พื้นฐานจากค่าปัจจุบัน
+    //     let newFilters = {
+    //         shop: filters?.shop || '',
+    //         area: filters?.area || '',
+    //         receive_status: filters?.receive_status || 'all',
+    //         status: filters?.status || '',
+    //         acc_status: filters?.acc_status || '',
+    //         [key]: value
+    //     };
+
+    //     // --- Logic เพิ่มเติมสำหรับการเลือก "ร้านค้า" ---
+    //     if (key === 'shop') {
+    //         if (value) {
+    //             // ค้นหาข้อมูลร้านค้าที่เลือกจากลิสต์ shops
+    //             const selectedShop = shops.find(s => s.is_code_cust_id === value);
+    //             if (selectedShop && selectedShop.sale_area_code) {
+    //                 // ถ้าเจอร้านค้า และร้านนั้นมีรหัสเขตการขาย ให้ Update เขตการขายตามทันที
+    //                 newFilters.area = selectedShop.sale_area_code;
+    //             }
+    //         }
+    //     }
+
+    //     // Logic เดิม: ถ้าเลือก "เขตการขาย" ใหม่ ให้ล้างค่าร้านค้าเดิมทิ้ง
+    //     if (key === 'area') {
+    //         newFilters.shop = '';
+    //     }
+
+    //     // ส่ง Request ไปที่ Backend
+    //     router.get(route('spareClaim.history'), newFilters, {
+    //         preserveState: true,
+    //         preserveScroll: true,
+    //         replace: true
+    //     });
+    // };
+
     const handleFilterChange = (key, value) => {
-        // สร้าง Object ฟิลเตอร์พื้นฐานจากค่าปัจจุบัน
+        // ใช้กระจาย filters เดิมออกมาก่อน แล้วทับด้วยค่าใหม่ที่ส่งมา
         let newFilters = {
-            shop: filters?.shop || '',
-            area: filters?.area || '',
-            receive_status: filters?.receive_status || 'all',
-            status: filters?.status || '',
-            acc_status: filters?.acc_status || '',
+            ...filters,
             [key]: value
         };
 
-        // --- Logic เพิ่มเติมสำหรับการเลือก "ร้านค้า" ---
-        if (key === 'shop') {
-            if (value) {
-                // ค้นหาข้อมูลร้านค้าที่เลือกจากลิสต์ shops
-                const selectedShop = shops.find(s => s.is_code_cust_id === value);
-                if (selectedShop && selectedShop.sale_area_code) {
-                    // ถ้าเจอร้านค้า และร้านนั้นมีรหัสเขตการขาย ให้ Update เขตการขายตามทันที
-                    newFilters.area = selectedShop.sale_area_code;
-                }
+        // ล้างหน้า (Reset Page) กลับไปหน้า 1 เสมอเมื่อมีการกรองใหม่
+        // (Inertia จะจัดการเรื่อง Page อัตโนมัติถ้าเราส่ง Object ฟิลเตอร์ไป)
+
+        // Logic สำหรับร้านค้า (กรณี Admin/Sale เลือกจากลิสต์)
+        if (key === 'shop' && value && shops.length > 0) {
+            const selectedShop = shops.find(s => s.is_code_cust_id === value);
+            if (selectedShop && selectedShop.sale_area_code) {
+                newFilters.area = selectedShop.sale_area_code;
             }
         }
 
-        // Logic เดิม: ถ้าเลือก "เขตการขาย" ใหม่ ให้ล้างค่าร้านค้าเดิมทิ้ง
         if (key === 'area') {
             newFilters.shop = '';
+            if (userRole === 'acc') setShopSearch('');
         }
 
-        // ส่ง Request ไปที่ Backend
         router.get(route('spareClaim.history'), newFilters, {
             preserveState: true,
-            preserveScroll: true,
-            replace: true
+            replace: true,
+            // เพิ่มบรรทัดนี้เพื่อให้หน้าจอเลื่อนกลับไปด้านบน
+            preserveScroll: false
         });
     };
 
@@ -643,6 +679,8 @@ export default function HistoryClaimNew({ history, shops, filters, isAdmin, area
     const canReceive = userRole === 'admin' || userRole === 'sale' || isAcc;
     const canSee = userRole === 'admin' || userRole === 'sale' || userRole === 'acc';
     const handleClearFilters = () => {
+        setShopSearch(''); // ล้างค่าในช่องกรอกรหัสร้าน
+        setSearch('');     // ล้างค่าในช่องค้นหาเลขที่เอกสาร
         router.get(route('spareClaim.history'), {
             shop: '',
             area: '',
@@ -841,7 +879,7 @@ export default function HistoryClaimNew({ history, shops, filters, isAdmin, area
                                 />
                             </Box>
                         )}
-                        {(userRole !== 'service' && userRole !== 'acc') && (
+                        {/* {(userRole !== 'service' && userRole !== 'acc') && (
                             <Box sx={{ minWidth: '250px' }}>
                                 <Autocomplete
                                     options={filters?.area ? shops.filter(s => s.sale_area_code === filters.area) : (shops || [])}
@@ -851,6 +889,48 @@ export default function HistoryClaimNew({ history, shops, filters, isAdmin, area
                                     size="small"
                                     renderInput={(params) => <TextField {...params} label="ค้นหาชื่อร้าน หรือ รหัสลูกค้า" placeholder="พิมพ์เพื่อค้นหา..." />}
                                 />
+                            </Box>
+                        )} */}
+
+                        {/* ส่วนการกรองร้านค้า */}
+                        {(userRole !== 'service') && (
+                            <Box sx={{ minWidth: '250px' }}>
+                                {userRole === 'acc' ? (
+                                    // สำหรับ Accounting: ใช้ TextField เพื่อกรอกรหัสร้านค้าโดยตรง
+                                    <TextField
+                                        label="กรอกรหัสร้านค้า (IS-CODE)"
+                                        placeholder="เช่น 001415XXX"
+                                        size="small"
+                                        fullWidth
+                                        value={shopSearch}
+                                        onChange={(e) => setShopSearch(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                // ต้องใช้ค่า shopSearch จาก State ปัจจุบัน
+                                                handleFilterChange('shop', shopSearch);
+                                            }
+                                        }}
+                                        slotProps={{
+                                            input: {
+                                                endAdornment: (
+                                                    <IconButton size="small" onClick={() => handleFilterChange('shop', shopSearch)}>
+                                                        <Search />
+                                                    </IconButton>
+                                                ),
+                                            },
+                                        }}
+                                    />
+                                ) : (
+                                    // สำหรับ Admin/Sale: ใช้ Autocomplete เหมือนเดิม
+                                    <Autocomplete
+                                        options={filters?.area ? shops.filter(s => s.sale_area_code === filters.area) : (shops || [])}
+                                        getOptionLabel={(option) => `[${option.is_code_cust_id}] ${option.shop_name}`}
+                                        value={shops?.find(s => s.is_code_cust_id === filters?.shop) || null}
+                                        onChange={(e, newValue) => handleFilterChange('shop', newValue ? newValue.is_code_cust_id : '')}
+                                        size="small"
+                                        renderInput={(params) => <TextField {...params} label="เลือกจากรายชื่อร้านค้า" />}
+                                    />
+                                )}
                             </Box>
                         )}
                         {selectedShopData && userRole !== 'admin' && (
@@ -960,6 +1040,7 @@ export default function HistoryClaimNew({ history, shops, filters, isAdmin, area
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
                                         - คุณสามารถค้นหาเพื่อดูรายละเอียดได้จาก เลขที่ใบเคลม, เลข JOB หรือ เลขใบ RT<br />
+                                        - คุณสามารถค้นหาโดยนำรหัสร้านค้าเพื่อดูว่ามีรายการเคลมอะไรบ้าง<br />
                                         - <b>สถานะเซลล์รับอะไหล่:</b> สถานะเซลล์รับคืนอะไหล่จะไม่เกี่ยวข้องกับสถานะบัญชีรับอะไหล่ เมื่อเซลล์รับอะไหล่แล้ว หากครบสถานะจะเป็น complete ทันที <br />
                                         - <b>สถานะตรวจสอบบัญชี:</b> เมื่อเกิดเอกสาร RT สถานะเริ่มต้นจะเป็น Active หากรับคืนตรวจสอบอะไหล่ครบสถานะจะเป็น complete ทันที<br />
                                     </Typography>

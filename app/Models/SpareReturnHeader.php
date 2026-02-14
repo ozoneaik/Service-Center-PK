@@ -55,4 +55,8 @@ class SpareReturnHeader extends Model
         // สมมติว่าเชื่อมด้วย user_code กับตาราง users
         return $this->belongsTo(User::class, 'receive_by_sale', 'user_code');
     }
+    public function salesFiles()
+    {
+        return $this->hasMany(ClaimFileUpload::class, 'return_job_no', 'return_job_no');
+    }
 }

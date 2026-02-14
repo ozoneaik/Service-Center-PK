@@ -12,6 +12,7 @@ class ClaimFileUpload extends Model
 
     protected $fillable = [
         'claim_id',
+        'return_job_no',
         'file_path',
         'file_name',
         'remark',

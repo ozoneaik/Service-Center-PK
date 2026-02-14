@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ClaimFileUpload;
 use App\Models\SpareReturnDetail;
 use App\Models\SpareReturnFile;
 use App\Models\SpareReturnHeader;
@@ -24,7 +25,8 @@ class AccountingReturnController extends Controller
 
         $jobs = SpareReturnHeader::query()
             // โหลด details, claim.files (claim_file_uploads), และ files (spare_return_files)
-            ->with(['details.originalClaimDetail', 'claim.files', 'files'])
+            // ->with(['details.originalClaimDetail', 'claim.files', 'files'])
+            ->with(['details.originalClaimDetail', 'files'])
             ->when($status !== 'all', function ($q) use ($status) {
                 if ($status === 'complete') {
                     $q->whereIn('status', ['complete', 'partial']);
@@ -34,22 +36,28 @@ class AccountingReturnController extends Controller
             })
             ->orderByDesc('created_at')
             ->get()
+            // ->map(function ($job) {
+            //     // --- 1. ส่วนของฝ่ายขาย (Sales) ---
+            //     // ดึงไฟล์จากตาราง claim_file_uploads ที่ตรงกับเลขใบ RT ของรอบนี้เท่านั้น
+            //     // (แนะนำให้เพิ่ม relationship ใน SpareReturnHeader จะดีที่สุด แต่ใช้ query ตรงแบบนี้ก็ได้)
+            //     $currentSalesFiles = \App\Models\ClaimFileUpload::where('return_job_no', $job->return_job_no)->get();
+
+            //     $job->sales_files = $currentSalesFiles;
+
+            //     // ดึงหมายเหตุเฉพาะรอบนี้ จากไฟล์แรกที่เจอ
+            //     $job->sales_remark_actual = $currentSalesFiles->whereNotNull('remark')->first()?->remark ?? '-';
+
+            //     // --- 2. ส่วนของบัญชี (Accounting) ---
+            //     $job->acc_remark_actual = $job->remark ?? '-';
+            //     $job->acc_files_actual = $job->files->values();
+
+            //     return $job;
+            // });
+            
             ->map(function ($job) {
-                // --- 1. ส่วนของฝ่ายขาย (Sales) ---
-                // ดึงไฟล์จากตาราง claim_file_uploads ผ่าน relationship files() ที่เพิ่มใน Model Claim
-                $salesFiles = $job->claim ? $job->claim->files : collect();
-                $job->sales_files = $salesFiles->values();
-
-                // หมายเหตุจากเซลล์ ใช้จาก claim_file_uploads.remark (ดึงจากไฟล์แรกที่มี)
-                $job->sales_remark_actual = $salesFiles->whereNotNull('remark')->first()?->remark ?? '-';
-
-                // --- 2. ส่วนของบัญชี (Accounting) ---
-                // หมายเหตุการตรวจสอบ ใช้จาก spare_return_headers.remark โดยตรง
+                $job->sales_remark_actual = $job->salesFiles->first()?->remark ?? '-';
                 $job->acc_remark_actual = $job->remark ?? '-';
-
-                // หลักฐานรูปภาพบัญชี จาก spare_return_files
-                $job->acc_files_actual = $job->files->values();
-
+                // ไม่ต้องรัน query ใหม่ในนี้แล้ว
                 return $job;
             });
 
@@ -139,7 +147,7 @@ class AccountingReturnController extends Controller
             'items' => 'required|array',
             'items.*.detail_id' => 'required|exists:spare_return_details,id',
             'items.*.receive_qty' => 'required|integer|min:0',
-            'is_full_receive' => 'required|boolean', 
+            'is_full_receive' => 'required|boolean',
             'remark' => 'nullable|string',
             'files' => 'nullable|array',
             'files.*' => 'image|max:10240'

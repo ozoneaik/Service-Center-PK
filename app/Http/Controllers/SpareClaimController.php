@@ -343,6 +343,7 @@ class SpareClaimController extends Controller
     public function historyShow(Request $request): Response
     {
         $user = Auth::user();
+        $userRole = $user->role;
         $shops = [];
         $areas = [];
         $selectedShop = $request->query('shop');
@@ -391,6 +392,10 @@ class SpareClaimController extends Controller
             } catch (\Exception $e) {
                 Log::error("Failed to fetch sales shops: " . $e->getMessage());
             }
+        } else if ($userRole === 'acc') {
+            // สำหรับบัญชี ไม่ต้องส่ง $shops ไปทั้งหมด (ส่งเป็นค่าว่าง) 
+            // เพราะเราจะใช้การพิมพ์รหัสแล้วกด Enter เพื่อกรองแทน
+            $shops = [];
         } else {
             $selectedShop = $user->is_code_cust_id;
         }
@@ -420,14 +425,45 @@ class SpareClaimController extends Controller
                     $subQuery->where('status', $selectedAccStatus);
                 });
             })
-            ->where(function ($query) use ($user, $isSale, $selectedShop, $selectedArea, $shops) {
-                if ($user->role === 'admin') {
+            // ->where(function ($query) use ($user, $isSale, $selectedShop, $selectedArea, $shops) {
+            //     if ($user->role === 'admin') {
+            //         if ($selectedShop) {
+            //             $query->where('user_id', $selectedShop);
+            //         } else {
+            //             $query->where('user_id', $user->is_code_cust_id);
+            //         }
+            //     } elseif ($isSale) {
+            //         if ($selectedShop) {
+            //             $query->where('user_id', $selectedShop);
+            //         } elseif ($selectedArea) {
+            //             $shopIdsInArea = collect($shops)->where('sale_area_code', $selectedArea)->pluck('is_code_cust_id')->toArray();
+            //             $query->whereIn('user_id', $shopIdsInArea ?: ['none']);
+            //         } else {
+            //             $myShopIds = collect($shops)->pluck('is_code_cust_id')->toArray();
+            //             $query->whereIn('user_id', $myShopIds ?: ['none']);
+            //         }
+            //     } else {
+            //         $query->where('user_id', $user->is_code_cust_id);
+            //     }
+            // })
+            ->where(function ($query) use ($user, $isSale, $selectedShop, $selectedArea, $shops, $userRole) {
+                // --- กรณีเป็น ACC (บัญชี) ---
+                if ($userRole === 'acc') {
+                    // ให้ดูได้ทุกร้าน ยกเว้นร้าน IS-CODE-001415445
+                    $query->where('user_id', '!=', 'IS-CODE-001415445');
+                    if ($selectedShop) {
+                        $query->where('user_id', 'like', "%{$selectedShop}%");
+                    }
+                }
+                // --- กรณีเป็น Admin ---
+                elseif ($userRole === 'admin') {
                     if ($selectedShop) {
                         $query->where('user_id', $selectedShop);
-                    } else {
-                        $query->where('user_id', $user->is_code_cust_id);
                     }
-                } elseif ($isSale) {
+                    // ถ้า admin ไม่เลือก shop ก็ไม่ต้อง where อะไร (ให้เห็นหมด)
+                }
+                // --- กรณีเป็น Sale ---
+                elseif ($isSale) {
                     if ($selectedShop) {
                         $query->where('user_id', $selectedShop);
                     } elseif ($selectedArea) {
@@ -437,7 +473,9 @@ class SpareClaimController extends Controller
                         $myShopIds = collect($shops)->pluck('is_code_cust_id')->toArray();
                         $query->whereIn('user_id', $myShopIds ?: ['none']);
                     }
-                } else {
+                }
+                // --- กรณีเป็น User ทั่วไป (ร้านค้าดูตัวเอง) ---
+                else {
                     $query->where('user_id', $user->is_code_cust_id);
                 }
             })
@@ -729,6 +767,7 @@ class SpareClaimController extends Controller
                     // B. บันทึกเข้า ClaimFileUpload ของเดิม (Backup / Backward Compatibility)
                     ClaimFileUpload::create([
                         'claim_id' => $request->claim_id,
+                        'return_job_no' => $returnJobNo,
                         'file_path' => $path,
                         'file_name' => $file->getClientOriginalName(),
                         // 'remark' => "Ref Job: $returnJobNo | " . $request->remark
