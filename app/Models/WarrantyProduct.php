@@ -15,6 +15,8 @@ class WarrantyProduct extends Model
         'user_is_code_id',
         'expire_date',
         'warranty_period',
-        'path_file'
+        'path_file',
+        'skumain',
+        'accessory_sku'
     ];
 }

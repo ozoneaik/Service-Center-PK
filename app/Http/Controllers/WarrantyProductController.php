@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -110,7 +111,11 @@ class WarrantyProductController extends Controller
                 throw new \Exception($data['message'] ?? 'ไม่พบหมายเลขซีเรียลในระบบ');
             }
 
-            if (($data['search_type'] ?? '') !== 'serial') {
+            // if (($data['search_type'] ?? '') !== 'serial') {
+            //     throw new \Exception('ระบบอนุญาตให้ค้นหาด้วยหมายเลขซีเรียล (Serial) เท่านั้น');
+            // }
+
+            if (!str_contains($data['search_type'] ?? '', 'serial')) {
                 throw new \Exception('ระบบอนุญาตให้ค้นหาด้วยหมายเลขซีเรียล (Serial) เท่านั้น');
             }
 
@@ -163,6 +168,41 @@ class WarrantyProductController extends Controller
                 $warranty_color = 'orange';
             }
 
+            $power_accessories = $data['power_accessories'] ?? null;
+            $sn_hd = $data['sn_hd'] ?? null;
+            if (!empty($power_accessories) && is_array($power_accessories)) {
+                foreach ($power_accessories as $category => &$accessories_list) {
+                    foreach ($accessories_list as &$acc) {
+                        $acc['qty'] = 1; // ตั้งค่าเริ่มต้นเป็น 1 ชิ้น
+                        if ($category === 'battery' && isset($sn_hd['batteryQty'])) {
+                            $acc['qty'] = $sn_hd['batteryQty'];
+                        } elseif ($category === 'charger' && isset($sn_hd['chargerQty'])) {
+                            $acc['qty'] = $sn_hd['chargerQty'];
+                        }
+                        $acc_sku = $acc['accessory_sku'] ?? null;
+                        $acc['image_url'] = null; // กำหนดค่าเริ่มต้นเผื่อไม่มีรูป
+
+                        if ($acc_sku) {
+                            try {
+                                // เอา SKU อุปกรณ์ไปยิง API เพื่อดึง detail
+                                $accResponse = Http::timeout(5)->get($URL, ['search' => $acc_sku]);
+
+                                if ($accResponse->successful()) {
+                                    $accData = $accResponse->json();
+
+                                    // ถ้ามีข้อมูลรูปใน main_assets -> imagesku ให้ดึงมาใส่
+                                    if (!empty($accData['main_assets']['imagesku']) && is_array($accData['main_assets']['imagesku'])) {
+                                        $acc['image_url'] = $accData['main_assets']['imagesku'][0];
+                                    }
+                                }
+                            } catch (\Exception $e) {
+                                // ถ้ายิงไม่สำเร็จก็ปล่อยผ่านไป (ไม่มีรูป)
+                            }
+                        }
+                    }
+                }
+            }
+
             $real_product = [
                 'pid' => $pid,
                 'pname' => $asset['pname'] ?? '',
@@ -175,7 +215,12 @@ class WarrantyProductController extends Controller
                 'insurance_expire' => $insurance_expire,
                 'buy_date' => $buy_date,
                 'warranty_status' => $warranty_status,
+                'power_accessories' => $power_accessories,
+                'sn_hd' => $sn_hd,
             ];
+            
+            //ทำเป็น pretty print ใน log
+            Log::info("Search Warranty Result: " . json_encode($real_product, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
             return response()->json([
                 'message' => 'success',
@@ -239,6 +284,7 @@ class WarrantyProductController extends Controller
 
         // ดึงข้อมูลจากฟอร์ม
         $serial_id = $request->input('serial_id');
+        $power_accessories = json_decode($request->input('power_accessories'), true);
         logStamp::query()->create([
             'description' => Auth::user()->user_code . " พยายามลงทะเบียนรับประกัน $serial_id"
         ]);
@@ -289,6 +335,35 @@ class WarrantyProductController extends Controller
                 'expire_date' => $expire_date->toDateString(),
                 'path_file' => $full_file_path ?? null, // เพิ่มฟิลด์นี้ในฐานข้อมูล
             ]);
+
+            if (!empty($power_accessories)) {
+                // วนลูปแยกประเภทเช่น 'battery', 'charger'
+                foreach ($power_accessories as $acc_category => $accessories_list) {
+                    foreach ($accessories_list as $acc) {
+                        $acc_sku = $acc['accessory_sku'] ?? null;
+
+                        if ($acc_sku) {
+                            $acc_period = (int)($acc['warranty_period'] ?? 0);
+                            $acc_expire_date = $dateWarranty->copy()->addMonths($acc_period);
+
+                            WarrantyProduct::query()->create([
+                                'serial_id' => $serial_id, // ใช้ซีเรียลเดียวกับเครื่องหลัก
+                                'pid' => $acc_sku,         // เอา SKU อุปกรณ์มาเก็บเป็น Product ID แทน
+                                'p_name' => $acc['product_name'] ?? '',
+                                'date_warranty' => $dateWarranty->toDateString(),
+                                'user_id' => Auth::user()->id,
+                                'user_is_code_id' => Auth::user()->is_code_cust_id,
+                                'warranty_period' => $acc_period,
+                                'expire_date' => $acc_expire_date->toDateString(),
+                                'path_file' => $full_file_path ?? null,
+                                // หาก Database ของคุณสร้างฟิลด์ใหม่แล้วให้ uncomment 2 บรรทัดล่างนี้
+                                'skumain' => $pid,      // อ้างอิงตัวเครื่องหลัก
+                                'accessory_sku' => $acc_sku,
+                            ]);
+                        }
+                    }
+                }
+            }
 
             $message = 'บันทึกข้อมูลเสร็จสิ้น สิ้นสุดประกันถึง ' . $expire_date->format('d/m/Y H:i:s');
             $status = 200;

@@ -2,9 +2,10 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import { Head } from "@inertiajs/react";
 import {
     Button, Container, Grid2,
-    Stack, TextField, Typography, Paper, Alert, Box
+    Stack, TextField, Typography, Paper, Alert, Box,
+    Dialog, DialogContent, IconButton
 } from "@mui/material";
-import { Search, CheckCircle, AppRegistration, CloudUpload } from "@mui/icons-material";
+import { Search, CheckCircle, AppRegistration, CloudUpload, Close as CloseIcon } from "@mui/icons-material";
 import { useRef, useState } from "react";
 import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
 import ProductDetail from "@/Components/ProductDetail.jsx";
@@ -25,10 +26,19 @@ export default function WrForm() {
 
     // state ใหม่
     const [custTel, setCustTel] = useState('');
+    const [previewAccImage, setPreviewAccImage] = useState(null);
 
     const handleSearch = async (e) => {
         e.preventDefault();
         setProduct(null);
+        setIsAlreadyRegistered(false);
+        setSelectedDay('');
+        setSelectedFile(null);
+        setFilePreview(null);
+        setCustTel('');
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
         try {
             setLoading(true);
             const { data, status } = await axios.post(route('warranty.search', {
@@ -110,6 +120,9 @@ export default function WrForm() {
                             formData.append('warrantyperiod', product.warrantyperiod);
                             formData.append('cust_tel', custTel);
                             formData.append('evidence_file', selectedFile);
+                            if (product.power_accessories) {
+                                formData.append('power_accessories', JSON.stringify(product.power_accessories));
+                            }
 
                             const { data, status } = await axios.post(
                                 route('warranty-history.store'),
@@ -122,6 +135,14 @@ export default function WrForm() {
                                 icon: 'success',
                                 text: `${data.message}\nสิ้นสุดประกันถึง: ${data.expire_date}`
                             });
+                            setProduct(prevProduct => ({
+                                ...prevProduct,
+                                buy_date: selectedDay,           // นำวันที่กรอกในฟอร์มไปอัปเดต
+                                expire_date: data.expire_date,   // นำวันหมดอายุจาก API มาอัปเดต
+                                warranty_status: true,           // ปรับสถานะเป็น True
+                                warranty_text: 'อยู่ในประกัน',     // เปลี่ยน Text เป็นสีเขียว
+                                warranty_color: 'green'
+                            }));
                             setIsAlreadyRegistered(true);
                         } catch (error) {
                             AlertDialog({
@@ -225,6 +246,78 @@ export default function WrForm() {
                     {product && (
                         <Grid2 size={12}>
                             <ProductDetail {...product} serial={search.current.value} />
+                        </Grid2>
+                    )}
+
+                    {product?.power_accessories && Object.keys(product.power_accessories).length > 0 && (
+                        <Grid2 size={12}>
+                            <Paper elevation={2} sx={{ p: 3 }}>
+                                <Typography variant="h6" gutterBottom color="primary">
+                                    อุปกรณ์เสริม (Power Accessories)
+                                </Typography>
+                                <Stack spacing={2} sx={{ mt: 2 }}>
+                                    {Object.entries(product.power_accessories).map(([type, items]) =>
+                                        items.map((acc, index) => (
+                                            <Box
+                                                key={`${type}-${index}`}
+                                                sx={{
+                                                    p: 2,
+                                                    border: '1px solid #e0e0e0',
+                                                    borderRadius: 2,
+                                                    bgcolor: '#fafafa',
+                                                    display: 'flex', // ใช้ Flexbox เรียงรูปภาพกับข้อความ
+                                                    gap: 2,
+                                                    alignItems: 'center'
+                                                }}
+                                            >
+                                                <img
+                                                    src={`https://images.dcpumpkin.com/images/product/500/${acc.accessory_sku}.jpg`}
+                                                    alt={acc.product_name}
+                                                    onError={(e) => {
+                                                        e.target.src = 'https://images.dcpumpkin.com/images/product/500/default.jpg';
+                                                    }}
+                                                    onClick={(e) => setPreviewAccImage(e.target.src)} // <--- เพิ่ม onClick ตรงนี้
+                                                    style={{
+                                                        width: 80,
+                                                        height: 80,
+                                                        objectFit: 'contain',
+                                                        borderRadius: 4,
+                                                        backgroundColor: '#fff',
+                                                        border: '1px solid #ddd',
+                                                        cursor: 'pointer', // <--- เพิ่ม cursor เป็นรูปนิ้วชี้
+                                                        transition: 'transform 0.2s', // (แถม) ใส่ effect เวลานำเมาส์ไปชี้
+                                                    }}
+                                                    onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'} // (แถม) ขยายขึ้นนิดนึงตอนเมาส์ชี้
+                                                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                                />
+
+                                                {/* ส่วนแสดงรายละเอียด */}
+                                                <Box>
+                                                    <Typography variant="subtitle1" fontWeight="bold">
+                                                        {acc.product_name}
+                                                    </Typography>
+                                                    <Stack direction="row" spacing={3} sx={{ mt: 1 }}>
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            <b>SKU:</b> {acc.accessory_sku}
+                                                        </Typography>
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            <b>จำนวน:</b> {acc.qty} ชิ้น
+                                                        </Typography>
+                                                        <Typography variant="body2" color="success.main">
+                                                            <b>ระยะเวลารับประกัน:</b> {acc.warranty_period} เดือน
+                                                        </Typography>
+                                                    </Stack>
+                                                    {acc.warranty_condition && (
+                                                        <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
+                                                            *เงื่อนไข: {acc.warranty_condition}
+                                                        </Typography>
+                                                    )}
+                                                </Box>
+                                            </Box>
+                                        ))
+                                    )}
+                                </Stack>
+                            </Paper>
                         </Grid2>
                     )}
 
@@ -374,6 +467,34 @@ export default function WrForm() {
                     )}
                 </Grid2>
             </Container>
+            <Dialog
+                open={!!previewAccImage}
+                onClose={() => setPreviewAccImage(null)}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogContent sx={{ position: 'relative', p: 2, bgcolor: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <IconButton
+                        onClick={() => setPreviewAccImage(null)}
+                        sx={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            bgcolor: 'rgba(255,255,255,0.8)',
+                            '&:hover': { bgcolor: 'rgba(200,200,200,0.9)' }
+                        }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+
+                    {/* รูปภาพขนาดใหญ่ */}
+                    <img
+                        src={previewAccImage}
+                        alt="Enlarged Preview"
+                        style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain' }}
+                    />
+                </DialogContent>
+            </Dialog>
         </AuthenticatedLayout>
     )
 }
