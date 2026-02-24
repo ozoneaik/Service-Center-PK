@@ -124,30 +124,72 @@ class WarrantyProductController extends Controller
             $asset = $assets[$pid] ?? [];
             $facmodel = $asset['facmodel'] ?? $pid;
 
+            // $insurance_expire = $data['insurance_expire'] ?? null;
+            // $buy_date = $data['buy_date'] ?? null;
+
+            // if (empty($insurance_expire)) {
+            //     $local = WarrantyProduct::where('serial_id', $serial_id)->first();
+            //     $insurance_expire = $local->expire_date ?? null;
+            //     $buy_date = $local->date_warranty ?? null;
+            // }
+
+            // $warranty_status = false;
+            // $warranty_color = 'red';
+            // $warranty_text = 'ไม่อยู่ในประกัน';
+
+            // // ถ้ามี field warrantyexpire ให้เช็คก่อน
+            // $warrantyexpire = $data['warrantyexpire'] ?? null;
+
+            // if ($warrantyexpire === true) {
+            //     $warranty_status = true;
+            //     $warranty_color = 'green';
+            //     $warranty_text = 'อยู่ในประกัน';
+            // } elseif ($warrantyexpire === false) {
+            //     $warranty_status = false;
+            //     $warranty_color = 'red';
+            //     $warranty_text = 'ไม่อยู่ในประกัน';
+            // } elseif (!empty($insurance_expire)) {
+            //     //  ถ้าไม่มี warrantyexpire แต่มีวันหมดประกัน → เช็ควัน
+            //     try {
+            //         $expireDate = Carbon::parse($insurance_expire);
+            //         if ($expireDate->isFuture()) {
+            //             $warranty_status = true;
+            //             $warranty_color = 'green';
+            //             $warranty_text = 'อยู่ในประกัน';
+            //         } else {
+            //             $warranty_text = 'หมดอายุการรับประกัน';
+            //         }
+            //     } catch (\Exception $e) {
+            //         $warranty_text = 'ไม่สามารถระบุวันหมดประกันได้';
+            //     }
+            // } else {
+            //     // ไม่มีทั้ง warrantyexpire และวันหมดประกัน → ยังไม่ได้ลงทะเบียน
+            //     $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
+            //     $warranty_color = 'orange';
+            // }
+
             $insurance_expire = $data['insurance_expire'] ?? null;
             $buy_date = $data['buy_date'] ?? null;
 
-            if (empty($insurance_expire)) {
+            // แก้ไข: เช็ค local DB อย่างปลอดภัย และไม่เอาค่าว่างไปทับค่าจาก API
+            if (empty($insurance_expire) || empty($buy_date)) {
                 $local = WarrantyProduct::where('serial_id', $serial_id)->first();
-                $insurance_expire = $local->expire_date ?? null;
-                $buy_date = $local->date_warranty ?? null;
+                if ($local) {
+                    $insurance_expire = $insurance_expire ?: $local->expire_date;
+                    $buy_date = $buy_date ?: $local->date_warranty;
+                }
             }
 
             $warranty_status = false;
             $warranty_color = 'red';
             $warranty_text = 'ไม่อยู่ในประกัน';
 
-            // ถ้ามี field warrantyexpire ให้เช็คก่อน
             $warrantyexpire = $data['warrantyexpire'] ?? null;
 
             if ($warrantyexpire === true) {
                 $warranty_status = true;
                 $warranty_color = 'green';
                 $warranty_text = 'อยู่ในประกัน';
-            } elseif ($warrantyexpire === false) {
-                $warranty_status = false;
-                $warranty_color = 'red';
-                $warranty_text = 'ไม่อยู่ในประกัน';
             } elseif (!empty($insurance_expire)) {
                 //  ถ้าไม่มี warrantyexpire แต่มีวันหมดประกัน → เช็ควัน
                 try {
@@ -157,15 +199,27 @@ class WarrantyProductController extends Controller
                         $warranty_color = 'green';
                         $warranty_text = 'อยู่ในประกัน';
                     } else {
+                        $warranty_status = false;
+                        $warranty_color = 'red';
                         $warranty_text = 'หมดอายุการรับประกัน';
                     }
                 } catch (\Exception $e) {
                     $warranty_text = 'ไม่สามารถระบุวันหมดประกันได้';
                 }
-            } else {
-                // ไม่มีทั้ง warrantyexpire และวันหมดประกัน → ยังไม่ได้ลงทะเบียน
-                $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
+            } elseif (!empty($buy_date) && empty($insurance_expire)) {
+                // เพิ่มเงื่อนไข: มีวันลงทะเบียน (buy_date) แต่ไม่มีวันหมดประกัน (insurance_expire เป็น null)
+                $warranty_status = false;
                 $warranty_color = 'orange';
+                $warranty_text = 'รออนุมัติการรับประกัน';
+            } elseif ($warrantyexpire === false && empty($buy_date)) {
+                $warranty_status = false;
+                $warranty_color = 'orange';
+                $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
+            } else {
+                // ไม่มีทั้ง warrantyexpire และวันหมดประกัน และ buy_date → ยังไม่ได้ลงทะเบียน
+                $warranty_status = false;
+                $warranty_color = 'orange';
+                $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
             }
 
             $power_accessories = $data['power_accessories'] ?? null;

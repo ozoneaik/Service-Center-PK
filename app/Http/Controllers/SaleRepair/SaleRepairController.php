@@ -4,8 +4,8 @@ namespace App\Http\Controllers\SaleRepair;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccessoriesNote;
-use App\Models\JobSaleList;         
-use App\Models\CustomerInJobSale;   
+use App\Models\JobSaleList;
+use App\Models\CustomerInJobSale;
 use App\Models\FileUpload;
 use App\Models\Remark;
 use App\Models\StoreInformation;
@@ -217,13 +217,48 @@ class SaleRepairController extends Controller
             if (in_array($insurance_expire, ['', '-', 'ไม่มีข้อมูล'], true)) $insurance_expire = null;
             if (in_array($buy_date, ['', '-', 'ไม่มีข้อมูล'], true)) $buy_date = null;
 
+            // $warranty_status = false;
+            // $warranty_text = 'ไม่อยู่ในประกัน';
+            // $warranty_color = 'red';
+
+            // if (empty($insurance_expire) && empty($buy_date)) {
+            //     $warranty_status = false;
+            //     $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
+            //     $warranty_color = 'orange';
+            // } elseif ($warrantyexpire === true) {
+            //     $warranty_status = true;
+            //     $warranty_text = 'อยู่ในประกัน';
+            //     $warranty_color = 'green';
+            // } elseif (!empty($insurance_expire) && strtotime($insurance_expire)) {
+            //     try {
+            //         $expireDate = Carbon::parse($insurance_expire);
+            //         if ($expireDate->isFuture()) {
+            //             $warranty_status = true;
+            //             $warranty_text = 'อยู่ในประกัน';
+            //             $warranty_color = 'green';
+            //         } else {
+            //             $warranty_status = false;
+            //             $warranty_text = 'หมดอายุการรับประกัน';
+            //             $warranty_color = 'red';
+            //         }
+            //     } catch (\Exception $e) {
+            //     }
+            // }
+
+            // ตรวจสถานะประกัน
             $warranty_status = false;
             $warranty_text = 'ไม่อยู่ในประกัน';
             $warranty_color = 'red';
 
+            // ถ้าไม่มีวันหมดประกัน + ไม่มีวันซื้อ = ยังไม่ได้ลงทะเบียน
             if (empty($insurance_expire) && empty($buy_date)) {
                 $warranty_status = false;
                 $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
+                $warranty_color = 'orange';
+            } elseif (!empty($buy_date) && empty($insurance_expire)) {
+                // เพิ่มเงื่อนไข: มีวันซื้อ (buy_date) แต่ไม่มีวันหมดประกัน (insurance_expire)
+                $warranty_status = false;
+                $warranty_text = 'รออนุมัติการรับประกัน';
                 $warranty_color = 'orange';
             } elseif ($warrantyexpire === true) {
                 $warranty_status = true;
@@ -243,6 +278,10 @@ class SaleRepairController extends Controller
                     }
                 } catch (\Exception $e) {
                 }
+            } else {
+                $warranty_status = false;
+                $warranty_text = 'ไม่อยู่ในประกัน';
+                $warranty_color = 'red';
             }
 
             $sku['job_id'] = $findDetail['job_id'];

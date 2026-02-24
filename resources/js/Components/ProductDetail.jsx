@@ -56,6 +56,25 @@ export default function ProductDetail({
     // }
 
     // เงื่อนไขการแสดงผลสถานะการรับประกันใหม่ (วิว)
+    // if (!warranty_status) {
+    //     if (expire_date) {
+    //         const expireDate = new Date(expire_date);
+    //         if (expireDate < now) {
+    //             warrantyStatusText = 'หมดอายุการรับประกัน';
+    //             warrantyColor = 'red';
+    //         } else {
+    //             warrantyStatusText = 'ไม่อยู่ในประกัน';
+    //             warrantyColor = 'red';
+    //         }
+    //     } else if (!buy_date) {
+    //         warrantyStatusText = 'ยังไม่ได้ลงทะเบียนรับประกัน';
+    //         warrantyColor = 'orange';
+    //     } else {
+    //         warrantyStatusText = 'ไม่อยู่ในประกัน';
+    //         warrantyColor = 'red';
+    //     }
+    // }
+
     if (!warranty_status) {
         if (expire_date) {
             const expireDate = new Date(expire_date);
@@ -70,8 +89,9 @@ export default function ProductDetail({
             warrantyStatusText = 'ยังไม่ได้ลงทะเบียนรับประกัน';
             warrantyColor = 'orange';
         } else {
-            warrantyStatusText = 'ไม่อยู่ในประกัน';
-            warrantyColor = 'red';
+            // เพิ่มเงื่อนไข: มี buy_date แต่ไม่มี expire_date (insurance_expire เป็น null)
+            warrantyStatusText = 'รออนุมัติการรับประกัน';
+            warrantyColor = '#f39c12'; // สีส้มอมเหลือง หรือใช้ 'orange' ก็ได้ครับ
         }
     }
 
@@ -95,7 +115,7 @@ export default function ProductDetail({
                             {/* <Detail title={'สถานะรับประกัน'}
                                 value={warranty_status ? 'อยู่ในประกัน' : 'ไม่อยู่ในประกัน'}
                                 Color={warranty_status ? 'green' : 'red'} /> */}
-                                
+
                             {/* <Detail title={'สถานะรับประกัน'}
                                 value={warrantyStatusText}
                                 Color={warrantyColor}

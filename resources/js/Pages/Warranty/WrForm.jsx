@@ -5,7 +5,7 @@ import {
     Stack, TextField, Typography, Paper, Alert, Box,
     Dialog, DialogContent, IconButton
 } from "@mui/material";
-import { Search, CheckCircle, AppRegistration, CloudUpload, Close as CloseIcon } from "@mui/icons-material";
+import { Search, CheckCircle, AppRegistration, CloudUpload, Close as CloseIcon, AccessTime } from "@mui/icons-material";
 import { useRef, useState } from "react";
 import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
 import ProductDetail from "@/Components/ProductDetail.jsx";
@@ -18,6 +18,7 @@ export default function WrForm() {
 
     const [product, setProduct] = useState(null);
     const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false);
+    const [isPendingApproval, setIsPendingApproval] = useState(false);
 
     // Form states
     const [selectedDay, setSelectedDay] = useState('');
@@ -32,6 +33,7 @@ export default function WrForm() {
         e.preventDefault();
         setProduct(null);
         setIsAlreadyRegistered(false);
+        setIsPendingApproval(false);
         setSelectedDay('');
         setSelectedFile(null);
         setFilePreview(null);
@@ -54,10 +56,25 @@ export default function WrForm() {
             }))
 
             // Check if already registered
+            // if (data.expire_date && data.expire_date.trim() !== '') {
+            //     setIsAlreadyRegistered(true);
+            // } else {
+            //     setIsAlreadyRegistered(false);
+            // }
+
+            // ตรวจสอบสถานะการลงทะเบียน
             if (data.expire_date && data.expire_date.trim() !== '') {
+                // มีวันหมดประกัน = ลงทะเบียนเรียบร้อย
                 setIsAlreadyRegistered(true);
-            } else {
+                setIsPendingApproval(false);
+            } else if (data.warrantyAt && data.warrantyAt.trim() !== '') {
+                // มีวันซื้อ (warrantyAt) แต่ไม่มีวันหมดประกัน = รออนุมัติ
                 setIsAlreadyRegistered(false);
+                setIsPendingApproval(true);
+            } else {
+                // ไม่มีทั้งคู่ = ยังไม่ได้ลงทะเบียน
+                setIsAlreadyRegistered(false);
+                setIsPendingApproval(false);
             }
 
         } catch (error) {
@@ -144,6 +161,7 @@ export default function WrForm() {
                                 warranty_color: 'green'
                             }));
                             setIsAlreadyRegistered(true);
+                            setIsPendingApproval(false);
                         } catch (error) {
                             AlertDialog({
                                 title: 'เกิดข้อผิดพลาด',
@@ -338,7 +356,24 @@ export default function WrForm() {
                         </Grid2>
                     )}
 
-                    {product && !isAlreadyRegistered && (
+                    {product && isPendingApproval && (
+                        <Grid2 size={12}>
+                            <Alert
+                                severity="warning"
+                                icon={<AccessTime />}
+                                sx={{ fontSize: '1.1rem', py: 2 }}
+                            >
+                                <Typography variant="h6" component="div">
+                                    อยู่ระหว่างรออนุมัติการรับประกัน
+                                </Typography>
+                                <Typography variant="body2">
+                                    สินค้าชิ้นนี้ได้ส่งข้อมูลลงทะเบียนแล้ว กรุณารอเจ้าหน้าที่ตรวจสอบและอนุมัติ
+                                </Typography>
+                            </Alert>
+                        </Grid2>
+                    )}
+
+                    {product && !isAlreadyRegistered && !isPendingApproval && (
                         <>
                             <Grid2 size={12}>
                                 <Paper elevation={2} sx={{ p: 3 }}>
