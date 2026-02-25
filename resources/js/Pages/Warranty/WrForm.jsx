@@ -84,7 +84,7 @@ export default function WrForm() {
             console.log("Message to show:", errorMessage);
 
             AlertDialog({
-                icon: 'error',       
+                icon: 'error',
                 title: 'แจ้งเตือน',
                 text: errorMessage,
                 message: errorMessage
@@ -130,15 +130,21 @@ export default function WrForm() {
                         try {
                             const formData = new FormData();
                             formData.append('date_warranty', selectedDay);
-                            formData.append('serial_id', search.current.value);
+                            // formData.append('serial_id', search.current.value);
+                            formData.append('serial_id', product.serial_id);
                             formData.append('pid', product.pid);
                             formData.append('pname', product.pname);
                             formData.append('facmodel', product.facmodel || '');
                             formData.append('warrantyperiod', product.warrantyperiod);
                             formData.append('cust_tel', custTel);
                             formData.append('evidence_file', selectedFile);
+
                             if (product.power_accessories) {
                                 formData.append('power_accessories', JSON.stringify(product.power_accessories));
+                            }
+
+                            if (product.is_combo && product.combo_items) {
+                                formData.append('combo_items', JSON.stringify(product.combo_items));
                             }
 
                             const { data, status } = await axios.post(
@@ -263,14 +269,80 @@ export default function WrForm() {
 
                     {product && (
                         <Grid2 size={12}>
-                            <ProductDetail {...product} serial={search.current.value} />
+                            {/* <ProductDetail {...product} serial={search.current.value} /> */}
+                            <ProductDetail {...product} serial={product.serial_id} />
+                        </Grid2>
+                    )}
+
+                    {product?.is_combo && product?.combo_items && product.combo_items.length > 0 && (
+                        <Grid2 size={12}>
+                            <Paper elevation={2} sx={{ p: 3, borderLeft: '4px solid #ff5722' }}>
+                                <Typography variant="h6" gutterBottom color="#ff5722">
+                                    📦 สินค้าในชุด Combo Set
+                                </Typography>
+                                <Stack spacing={2} sx={{ mt: 2 }}>
+                                    {product.combo_items.map((item, index) => (
+                                        <Box
+                                            key={`combo-${index}`}
+                                            sx={{
+                                                p: 2,
+                                                border: '1px solid #e0e0e0',
+                                                borderRadius: 2,
+                                                bgcolor: '#fafafa',
+                                                display: 'flex',
+                                                gap: 2,
+                                                alignItems: 'center'
+                                            }}
+                                        >
+                                            <img
+                                                src={`https://images.dcpumpkin.com/images/product/500/${item.pid}.jpg`}
+                                                alt={item.pname}
+                                                onError={(e) => {
+                                                    e.target.src = 'https://images.dcpumpkin.com/images/product/500/default.jpg';
+                                                }}
+                                                onClick={(e) => setPreviewAccImage(e.target.src)}
+                                                style={{
+                                                    width: 80,
+                                                    height: 80,
+                                                    objectFit: 'contain',
+                                                    borderRadius: 4,
+                                                    backgroundColor: '#fff',
+                                                    border: '1px solid #ddd',
+                                                    cursor: 'pointer',
+                                                    transition: 'transform 0.2s',
+                                                }}
+                                                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                                                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                            />
+                                            <Box>
+                                                <Typography variant="subtitle1" fontWeight="bold">
+                                                    {item.pname}
+                                                </Typography>
+                                                <Stack direction="row" spacing={3} sx={{ mt: 1 }}>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        <b>SKU:</b> {item.pid}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="success.main">
+                                                        <b>ระยะเวลารับประกัน:</b> {item.warrantyperiod ? `${item.warrantyperiod} เดือน` : 'อ้างอิงตามชุดหลัก'}
+                                                    </Typography>
+                                                </Stack>
+                                                {item.warrantycondition && (
+                                                    <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
+                                                        เงื่อนไข: {item.warrantycondition}
+                                                    </Typography>
+                                                )}
+                                            </Box>
+                                        </Box>
+                                    ))}
+                                </Stack>
+                            </Paper>
                         </Grid2>
                     )}
 
                     {product?.power_accessories && Object.keys(product.power_accessories).length > 0 && (
                         <Grid2 size={12}>
-                            <Paper elevation={2} sx={{ p: 3 }}>
-                                <Typography variant="h6" gutterBottom color="primary">
+                            <Paper elevation={2} sx={{ p: 3, borderLeft: '4px solid #ff5722' }}>
+                                <Typography variant="h6" gutterBottom color="#ff5722">
                                     อุปกรณ์เสริม (Power Accessories)
                                 </Typography>
                                 <Stack spacing={2} sx={{ mt: 2 }}>
@@ -283,7 +355,7 @@ export default function WrForm() {
                                                     border: '1px solid #e0e0e0',
                                                     borderRadius: 2,
                                                     bgcolor: '#fafafa',
-                                                    display: 'flex', // ใช้ Flexbox เรียงรูปภาพกับข้อความ
+                                                    display: 'flex',
                                                     gap: 2,
                                                     alignItems: 'center'
                                                 }}
@@ -294,7 +366,7 @@ export default function WrForm() {
                                                     onError={(e) => {
                                                         e.target.src = 'https://images.dcpumpkin.com/images/product/500/default.jpg';
                                                     }}
-                                                    onClick={(e) => setPreviewAccImage(e.target.src)} // <--- เพิ่ม onClick ตรงนี้
+                                                    onClick={(e) => setPreviewAccImage(e.target.src)}
                                                     style={{
                                                         width: 80,
                                                         height: 80,
@@ -302,8 +374,8 @@ export default function WrForm() {
                                                         borderRadius: 4,
                                                         backgroundColor: '#fff',
                                                         border: '1px solid #ddd',
-                                                        cursor: 'pointer', // <--- เพิ่ม cursor เป็นรูปนิ้วชี้
-                                                        transition: 'transform 0.2s', // (แถม) ใส่ effect เวลานำเมาส์ไปชี้
+                                                        cursor: 'pointer',
+                                                        transition: 'transform 0.2s',
                                                     }}
                                                     onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'} // (แถม) ขยายขึ้นนิดนึงตอนเมาส์ชี้
                                                     onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -318,16 +390,20 @@ export default function WrForm() {
                                                         <Typography variant="body2" color="text.secondary">
                                                             <b>SKU:</b> {acc.accessory_sku}
                                                         </Typography>
-                                                        <Typography variant="body2" color="text.secondary">
+                                                        {/* <Typography variant="body2" color="text.secondary">
                                                             <b>จำนวน:</b> {acc.qty} ชิ้น
+                                                        </Typography> */}
+                                                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                                                            {acc.serial_label ? `Serial: ${acc.serial_label}` : 'ไม่มี Serial'}
                                                         </Typography>
                                                         <Typography variant="body2" color="success.main">
-                                                            <b>ระยะเวลารับประกัน:</b> {acc.warranty_period} เดือน
+                                                            <b>ระยะเวลารับประกัน:</b> {acc.warranty_period ? `${acc.warranty_period} เดือน` : 'ไม่ระบุ'}
                                                         </Typography>
                                                     </Stack>
+
                                                     {acc.warranty_condition && (
                                                         <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
-                                                            *เงื่อนไข: {acc.warranty_condition}
+                                                            เงื่อนไข: {acc.warranty_condition}
                                                         </Typography>
                                                     )}
                                                 </Box>

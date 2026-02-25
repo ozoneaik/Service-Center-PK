@@ -155,6 +155,7 @@ class TblHistoryProdController extends Controller
 
         // รับข้อมูล power_accessories จาก Frontend
         $powerAccessories = json_decode($request->input('power_accessories'), true);
+        $comboItems = json_decode($request->input('combo_items'), true);
 
         logStamp::query()->create([
             'description' => Auth::user()->user_code . " พยายามลงทะเบียนรับประกัน $serial_id"
@@ -244,6 +245,45 @@ class TblHistoryProdController extends Controller
                                 // 'product_type'     => 'accessory',
                             ]);
                         }
+                    }
+                }
+            }
+
+            if (!empty($comboItems) && is_array($comboItems)) {
+                foreach ($comboItems as $cItem) {
+                    $c_pid = $cItem['pid'] ?? null;
+
+                    if ($c_pid) {
+                        $c_period = (int)($cItem['warrantyperiod'] ?? 0);
+
+                        // ถ้าสินค้าย่อยไม่มีระยะเวลาประกันระบุแยก ให้ยึดเวลาจากเครื่องชุดหลัก
+                        if ($c_period === 0 && $warrantyPeriod > 0) {
+                            $c_period = $warrantyPeriod;
+                        }
+                        $c_expire_date = $dateWarranty->copy()->addMonths($c_period);
+
+                        TblHistoryProd::create([
+                            'serial_number'    => $serial_id, // ใช้ซีเรียลเดียวกับเครื่องหลัก
+                            'model_code'       => $c_pid,     // SKU ของสินค้าย่อยในชุด
+                            'product_name'     => $cItem['pname'] ?? '',
+                            'model_name'       => $cItem['facmodel'] ?? '',
+                            'buy_date'         => $dateWarranty->toDateString(),
+                            'insurance_expire' => $c_expire_date->toDateString(),
+                            'cust_tel'         => $request->input('cust_tel', ''),
+                            'buy_from'         => $request->input('buy_from', 'N/A'),
+                            'slip'             => $slipUrl,
+                            'insurance'        => 'standard',
+                            'approval'         => 'Y',
+                            'status'           => 'enabled',
+                            'reward'           => 'N',
+                            'warranty_from'    => 'Service Center',
+                            'create_at'        => Carbon::now(),
+                            'updated_at'       => Carbon::now(),
+                            'updated_by'       => Auth::user()->user_code ?? null,
+
+                            // 'sku_main'         => $pid,
+                            // 'product_type'     => 'combo_item',
+                        ]);
                     }
                 }
             }
