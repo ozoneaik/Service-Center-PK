@@ -68,9 +68,9 @@ export default function WrForm() {
                 setIsAlreadyRegistered(true);
                 setIsPendingApproval(false);
             } else if (data.warrantyAt && data.warrantyAt.trim() !== '') {
-                // มีวันซื้อ (warrantyAt) แต่ไม่มีวันหมดประกัน = รออนุมัติ
-                setIsAlreadyRegistered(false);
-                setIsPendingApproval(true);
+                // มีวันซื้อ (warrantyAt) แต่ไม่มีวันหมดประกัน = อยู่ในประกัน (เปลี่ยนจากรออนุมัติ)
+                setIsAlreadyRegistered(true);
+                setIsPendingApproval(false);
             } else {
                 // ไม่มีทั้งคู่ = ยังไม่ได้ลงทะเบียน
                 setIsAlreadyRegistered(false);

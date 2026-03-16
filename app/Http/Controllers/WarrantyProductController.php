@@ -310,9 +310,9 @@ class WarrantyProductController extends Controller
                     $warranty_text = 'ไม่สามารถระบุวันหมดประกันได้';
                 }
             } elseif (!empty($buy_date) && empty($insurance_expire)) {
-                $warranty_status = false;
-                $warranty_color = 'orange';
-                $warranty_text = 'รออนุมัติการรับประกัน';
+                $warranty_status = true;
+                $warranty_color = 'green';
+                $warranty_text = 'อยู่ในประกัน';
             } elseif ($warrantyexpire === false && empty($buy_date)) {
                 $warranty_status = false;
                 $warranty_color = 'orange';

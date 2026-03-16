@@ -90,8 +90,8 @@ export default function ProductDetail({
             warrantyColor = 'orange';
         } else {
             // เพิ่มเงื่อนไข: มี buy_date แต่ไม่มี expire_date (insurance_expire เป็น null)
-            warrantyStatusText = 'รออนุมัติการรับประกัน';
-            warrantyColor = '#f39c12'; // สีส้มอมเหลือง หรือใช้ 'orange' ก็ได้ครับ
+            warrantyStatusText = 'อยู่ในประกัน';
+            warrantyColor = 'green';
         }
     }
 

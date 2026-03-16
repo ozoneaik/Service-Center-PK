@@ -990,9 +990,9 @@ class SearchController extends Controller
                 $warranty_color = 'orange';
             } elseif (!empty($buy_date) && empty($insurance_expire)) {
                 // เพิ่มเงื่อนไข: มีวันซื้อ (buy_date) แต่ไม่มีวันหมดประกัน (insurance_expire)
-                $warranty_status = false;
-                $warranty_text = 'รออนุมัติการรับประกัน';
-                $warranty_color = 'orange';
+                $warranty_status = true;
+                $warranty_text = 'อยู่ในประกัน';
+                $warranty_color = 'green';
             } elseif ($warrantyexpire === true) {
                 $warranty_status = true;
                 $warranty_text = 'อยู่ในประกัน';
