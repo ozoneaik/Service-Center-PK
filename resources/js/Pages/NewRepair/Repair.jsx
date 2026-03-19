@@ -1,7 +1,15 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import { Head, router } from "@inertiajs/react";
-import { Box, Button, Container, Grid2, InputAdornment, Stack, TextField } from "@mui/material";
-import { Search } from '@mui/icons-material';
+import {
+    Box,
+    Button,
+    Container,
+    Grid2,
+    InputAdornment,
+    Stack,
+    TextField,
+} from "@mui/material";
+import { Search } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
 import { AlertDialog } from "@/Components/AlertDialog.js";
 import { ErrorMessage } from "@/assets/ErrorMessage.js";
@@ -14,22 +22,21 @@ import ListHistoryRepair from "@/Pages/HistoryRepair/ListHistoryRepair.jsx";
 import { SelectAccessory } from "./SelectAccessory";
 
 const menuNames = {
-    1: 'แจ้งซ่อม',
-    2: 'ดูประวัติการซ่อม',
-    3: 'คู่มือ',
-    4: 'วิดีโอที่เกี่ยวข้อง'
+    1: "แจ้งซ่อม",
+    2: "ดูประวัติการซ่อม",
+    3: "คู่มือ",
+    4: "วิดีโอที่เกี่ยวข้อง",
 };
 
 export default function Repair({ DATA }) {
-    const [SN, setSN] = useState('');
-    const [PID, setPID] = useState('');
+    const [SN, setSN] = useState("");
+    const [PID, setPID] = useState("");
     const [loading, setLoading] = useState(false);
     const [detail, setDetail] = useState(DATA);
     const [menuSel, setMenuSel] = useState(0);
     const [showPidForm, setShowPidForm] = useState(false);
 
     const [miniSize, setMiniSize] = useState(false);
-
 
     const [comboSets, setComboSets] = useState();
     const [openSelSku, setOpenSelSku] = useState(false);
@@ -40,34 +47,208 @@ export default function Repair({ DATA }) {
     const scrollRef = useRef(null);
 
     useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const querySn = params.get("sn");
+        const queryPid = params.get("pid");
+
+        if (querySn) {
+            setSN(querySn);
+            let targetPid = "";
+
+            if (queryPid && queryPid !== "undefined") {
+                targetPid = queryPid;
+                setPID(targetPid);
+                setShowPidForm(true);
+            }
+
+            // เรียกฟังก์ชันค้นหาอัตโนมัติทันที โดยโยนค่าเข้าฟังก์ชันตรงๆ
+            handleSearch(null, querySn, targetPid);
+        }
+    }, []);
+
+    useEffect(() => {
         if (menuSel !== 0) {
-            scrollRef.current.scrollIntoView({ behavior: 'smooth' });
+            scrollRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [menuSel]);
 
-    const handleSearch = async (e) => {
-        e.preventDefault();
+    // const handleSearch = async (e) => {
+    //     e.preventDefault();
+    //     setLoading(true);
+    //     setDetail(null);
+    //     if (SN.startsWith("JOB-")) {
+    //         router.get(route("repair.index", { job_id: SN }));
+    //     } else {
+    //         try {
+    //             const { data, status } = await axios.post(
+    //                 route("repair.search"),
+    //                 { SN, PID },
+    //             );
+
+    //             // flag combo: รองรับทั้งของใหม่/เก่า
+    //             const combo_set = data.data.combo_set ?? data.is_combo ?? false;
+
+    //             const insurance_expire =
+    //                 data.data.data_from_api.insurance_expire || null;
+    //             const buy_date = data.data.buy_date || null;
+    //             const addWarranty = data.data.warranty_expire;
+    //             const expire_date =
+    //                 data.data.expire_date || insurance_expire || null;
+
+    //             const power_accessories =
+    //                 data.data.data_from_api?.power_accessories || null;
+    //             const has_accessories =
+    //                 power_accessories &&
+    //                 ((power_accessories.battery &&
+    //                     power_accessories.battery.length > 0) ||
+    //                     (power_accessories.charger &&
+    //                         power_accessories.charger.length > 0));
+
+    //             if (combo_set) {
+    //                 setOpenSelSku(true);
+    //                 let sku_list = data.data.sku_list || [];
+    //                 sku_list = sku_list.map((item) => ({
+    //                     ...item,
+    //                     warranty_status: addWarranty,
+    //                     expire_date,
+    //                     buy_date,
+    //                 }));
+    //                 setComboSets(sku_list);
+    //             } else if (has_accessories) {
+    //                 // กรณีไม่ใช่ Combo แต่มี Power Accessories แถมมาด้วย
+    //                 let main_sku = data.data.sku_list[0];
+    //                 let acc_list = [];
+
+    //                 // 1. นำเครื่องหลักใส่เป็นตัวเลือกแรก
+    //                 acc_list.push({
+    //                     ...main_sku,
+    //                     warranty_status: addWarranty,
+    //                     expire_date,
+    //                     buy_date,
+    //                     display_type: "main",
+    //                     display_name: "ตัวเครื่องหลัก",
+    //                     target_serial: main_sku.serial_id || main_sku.serial, // Serial หลัก
+    //                 });
+
+    //                 // 2. นำแบตเตอรี่ทั้งหมดมาใส่
+    //                 if (power_accessories.battery) {
+    //                     power_accessories.battery.forEach((bat, idx) => {
+    //                         acc_list.push({
+    //                             ...main_sku, // ลอกโครงสร้างหลักมาเพื่อไม่ให้หน้า RpMain พัง (พวก diagram ต่างๆ)
+    //                             pid: bat.accessory_sku,
+    //                             pname: bat.product_name,
+    //                             display_type: "battery",
+    //                             display_name: `แบตเตอรี่ ก้อนที่ ${idx + 1}`,
+    //                             target_serial: bat.serial_label, // ใช้ Serial ของแบต
+    //                             warrantyperiod: bat.warranty_period,
+    //                             warrantycondition: bat.warranty_condition,
+    //                             warrantynote: bat.warranty_note,
+    //                             warranty_status: addWarranty,
+    //                             expire_date,
+    //                             buy_date,
+    //                         });
+    //                     });
+    //                 }
+
+    //                 // 3. นำแท่นชาร์จทั้งหมดมาใส่
+    //                 if (power_accessories.charger) {
+    //                     power_accessories.charger.forEach((chg, idx) => {
+    //                         acc_list.push({
+    //                             ...main_sku,
+    //                             pid: chg.accessory_sku,
+    //                             pname: chg.product_name,
+    //                             display_type: "charger",
+    //                             display_name: `แท่นชาร์จ ${idx + 1}`,
+    //                             target_serial: chg.serial_label, // ใช้ Serial ของแท่นชาร์จ
+    //                             warrantyperiod: chg.warranty_period,
+    //                             warrantycondition: chg.warranty_condition,
+    //                             warrantynote: chg.warranty_note,
+    //                             warranty_status: addWarranty,
+    //                             expire_date,
+    //                             buy_date,
+    //                         });
+    //                     });
+    //                 }
+
+    //                 setAccSets(acc_list);
+    //                 setOpenSelAcc(true); // เปิด Modal สำหรับ Accessory
+    //             } else {
+    //                 let sku_item = data.data.sku_list[0];
+    //                 sku_item = {
+    //                     ...sku_item,
+    //                     warranty_status: addWarranty,
+    //                     expire_date,
+    //                     buy_date,
+    //                 };
+    //                 setDetail(sku_item);
+    //             }
+
+    //             setSN("");
+    //             setPID("");
+    //         } catch (error) {
+    //             const errorMessage = error.response.data.message;
+    //             const errorStatus = error.status;
+    //             AlertDialog({
+    //                 title: "เกิดข้อผิดพลาด",
+    //                 text: ErrorMessage({
+    //                     status: errorStatus,
+    //                     message: errorMessage,
+    //                 }),
+    //             });
+    //         } finally {
+    //             setMiniSize(false);
+    //             setLoading(false);
+    //             setMenuSel(0);
+    //             setShowPidForm(false);
+    //         }
+    //     }
+    // };
+
+    const handleSearch = async (e, autoSn = null, autoPid = null) => {
+        // ป้องกัน Error กรณีเรียกฟังก์ชันอัตโนมัติแบบไม่มี Event
+        if (e) e.preventDefault();
+
+        // ใช้ค่าที่ส่งเข้ามา (ถ้ามี) หรือใช้ค่าจากที่พิมพ์ในช่อง Input
+        const currentSn = autoSn || SN;
+        const currentPid = autoPid || PID;
+
+        if (!currentSn) return;
+
         setLoading(true);
         setDetail(null);
-        if (SN.startsWith('JOB-')) {
-            router.get(route('repair.index', { job_id: SN }));
+
+        // ใช้ currentSn แทน SN
+        if (currentSn.startsWith("JOB-")) {
+            router.get(route("repair.index", { job_id: currentSn }));
         } else {
             try {
-                const { data, status } = await axios.post(route('repair.search'), { SN, PID });
+                // ใช้ currentSn และ currentPid ในการส่ง API
+                const { data, status } = await axios.post(
+                    route("repair.search"),
+                    {
+                        SN: currentSn,
+                        PID: currentPid,
+                    },
+                );
 
                 // flag combo: รองรับทั้งของใหม่/เก่า
                 const combo_set = data.data.combo_set ?? data.is_combo ?? false;
 
-                const insurance_expire = data.data.data_from_api.insurance_expire || null;
+                const insurance_expire =
+                    data.data.data_from_api.insurance_expire || null;
                 const buy_date = data.data.buy_date || null;
                 const addWarranty = data.data.warranty_expire;
-                const expire_date = data.data.expire_date || insurance_expire || null;
+                const expire_date =
+                    data.data.expire_date || insurance_expire || null;
 
-                const power_accessories = data.data.data_from_api?.power_accessories || null;
-                const has_accessories = power_accessories && (
-                    (power_accessories.battery && power_accessories.battery.length > 0) ||
-                    (power_accessories.charger && power_accessories.charger.length > 0)
-                );
+                const power_accessories =
+                    data.data.data_from_api?.power_accessories || null;
+                const has_accessories =
+                    power_accessories &&
+                    ((power_accessories.battery &&
+                        power_accessories.battery.length > 0) ||
+                        (power_accessories.charger &&
+                            power_accessories.charger.length > 0));
 
                 if (combo_set) {
                     setOpenSelSku(true);
@@ -79,8 +260,7 @@ export default function Repair({ DATA }) {
                         buy_date,
                     }));
                     setComboSets(sku_list);
-                }
-                else if (has_accessories) {
+                } else if (has_accessories) {
                     // กรณีไม่ใช่ Combo แต่มี Power Accessories แถมมาด้วย
                     let main_sku = data.data.sku_list[0];
                     let acc_list = [];
@@ -91,26 +271,27 @@ export default function Repair({ DATA }) {
                         warranty_status: addWarranty,
                         expire_date,
                         buy_date,
-                        display_type: 'main',
-                        display_name: 'ตัวเครื่องหลัก',
-                        target_serial: main_sku.serial_id || main_sku.serial // Serial หลัก
+                        display_type: "main",
+                        display_name: "ตัวเครื่องหลัก",
+                        target_serial: main_sku.serial_id || main_sku.serial, // Serial หลัก
                     });
 
                     // 2. นำแบตเตอรี่ทั้งหมดมาใส่
                     if (power_accessories.battery) {
                         power_accessories.battery.forEach((bat, idx) => {
                             acc_list.push({
-                                ...main_sku, // ลอกโครงสร้างหลักมาเพื่อไม่ให้หน้า RpMain พัง (พวก diagram ต่างๆ)
+                                ...main_sku,
                                 pid: bat.accessory_sku,
                                 pname: bat.product_name,
-                                display_type: 'battery',
+                                display_type: "battery",
                                 display_name: `แบตเตอรี่ ก้อนที่ ${idx + 1}`,
-                                target_serial: bat.serial_label, // ใช้ Serial ของแบต
+                                target_serial: bat.serial_label,
                                 warrantyperiod: bat.warranty_period,
                                 warrantycondition: bat.warranty_condition,
                                 warrantynote: bat.warranty_note,
                                 warranty_status: addWarranty,
-                                expire_date, buy_date
+                                expire_date,
+                                buy_date,
                             });
                         });
                     }
@@ -122,22 +303,22 @@ export default function Repair({ DATA }) {
                                 ...main_sku,
                                 pid: chg.accessory_sku,
                                 pname: chg.product_name,
-                                display_type: 'charger',
+                                display_type: "charger",
                                 display_name: `แท่นชาร์จ ${idx + 1}`,
-                                target_serial: chg.serial_label, // ใช้ Serial ของแท่นชาร์จ
+                                target_serial: chg.serial_label,
                                 warrantyperiod: chg.warranty_period,
                                 warrantycondition: chg.warranty_condition,
                                 warrantynote: chg.warranty_note,
                                 warranty_status: addWarranty,
-                                expire_date, buy_date
+                                expire_date,
+                                buy_date,
                             });
                         });
                     }
 
                     setAccSets(acc_list);
-                    setOpenSelAcc(true); // เปิด Modal สำหรับ Accessory
-                }
-                else {
+                    setOpenSelAcc(true);
+                } else {
                     let sku_item = data.data.sku_list[0];
                     sku_item = {
                         ...sku_item,
@@ -148,14 +329,17 @@ export default function Repair({ DATA }) {
                     setDetail(sku_item);
                 }
 
-                setSN('');
-                setPID('');
+                setSN("");
+                setPID("");
             } catch (error) {
                 const errorMessage = error.response.data.message;
                 const errorStatus = error.status;
                 AlertDialog({
-                    title: 'เกิดข้อผิดพลาด',
-                    text: ErrorMessage({ status: errorStatus, message: errorMessage })
+                    title: "เกิดข้อผิดพลาด",
+                    text: ErrorMessage({
+                        status: errorStatus,
+                        message: errorMessage,
+                    }),
                 });
             } finally {
                 setMiniSize(false);
@@ -164,55 +348,93 @@ export default function Repair({ DATA }) {
                 setShowPidForm(false);
             }
         }
-    }
+    };
 
     return (
         <AuthenticatedLayout>
-            <Head title={'แจ้งซ่อม'} />
-            {openSelSku &&
+            <Head title={"แจ้งซ่อม"} />
+            {openSelSku && (
                 <SelectSku
-                    sku_list={comboSets} open={openSelSku} setOpen={setOpenSelSku}
+                    sku_list={comboSets}
+                    open={openSelSku}
+                    setOpen={setOpenSelSku}
                     onSelect={(sku) => setDetail(sku)}
                 />
-            }
+            )}
 
-            {openSelAcc &&
+            {openSelAcc && (
                 <SelectAccessory
-                    accessoryList={accSets} open={openSelAcc} setOpen={setOpenSelAcc}
+                    accessoryList={accSets}
+                    open={openSelAcc}
+                    setOpen={setOpenSelAcc}
                     onSelect={(item) => setDetail(item)}
                 />
-            }
+            )}
 
             <Container sx={{ mt: 3 }}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
-                        <Box bgcolor={'white'}>
+                        <Box bgcolor={"white"}>
                             <SearchSnComponent
-                                {...{ SN, setSn: setSN, PID, setPID, loading, showPidForm, setShowPidForm }}
+                                {...{
+                                    SN,
+                                    setSn: setSN,
+                                    PID,
+                                    setPID,
+                                    loading,
+                                    showPidForm,
+                                    setShowPidForm,
+                                }}
                                 onPassed={(e) => handleSearch(e)}
                             />
                         </Box>
                     </Grid2>
-                    {typeof detail === 'object' && detail !== null && (
+                    {typeof detail === "object" && detail !== null && (
                         <>
                             <Grid2 size={12}>
                                 {!miniSize && (
                                     <ProductDetail
                                         // serial={detail.serial || detail.serial_id}
-                                        serial={detail.target_serial || detail.serial || detail.serial_id}
-                                        imagesku={detail.imagesku || detail.image_sku}
+                                        serial={
+                                            detail.target_serial ||
+                                            detail.serial ||
+                                            detail.serial_id
+                                        }
+                                        imagesku={
+                                            detail.imagesku || detail.image_sku
+                                        }
                                         pname={detail.pname || detail.p_name}
                                         pid={detail.pid}
-                                        warranty_status={detail.warranty_status || detail.warranty}
-                                        warrantycondition={detail.warrantycondition || detail.warranty_condition || ''}
-                                        warrantynote={detail.warrantynote || detail.warranty_note || ''}
-                                        warrantyperiod={detail.warrantyperiod || detail.warranty_period || ''}
+                                        warranty_status={
+                                            detail.warranty_status ||
+                                            detail.warranty
+                                        }
+                                        warrantycondition={
+                                            detail.warrantycondition ||
+                                            detail.warranty_condition ||
+                                            ""
+                                        }
+                                        warrantynote={
+                                            detail.warrantynote ||
+                                            detail.warranty_note ||
+                                            ""
+                                        }
+                                        warrantyperiod={
+                                            detail.warrantyperiod ||
+                                            detail.warranty_period ||
+                                            ""
+                                        }
                                         expire_date={detail.expire_date}
                                         buy_date={detail.buy_date}
                                     />
                                 )}
-                                <Button fullWidth onClick={() => setMiniSize(!miniSize)}>
-                                    {!miniSize ? 'ย่อรายละเอียดสินค้า' : 'แสดงรายละเอียดสินค้า'}
+                                <Button
+                                    fullWidth
+                                    onClick={() => setMiniSize(!miniSize)}
+                                >
+                                    {!miniSize
+                                        ? "ย่อรายละเอียดสินค้า"
+                                        : "แสดงรายละเอียดสินค้า"}
                                 </Button>
                             </Grid2>
                             <span ref={scrollRef}></span>
@@ -222,14 +444,32 @@ export default function Repair({ DATA }) {
                             {menuSel !== 0 && (
                                 <Grid2 size={12}>
                                     <PathDetail
-                                        name={menuNames[menuSel] || 'อื่นๆ'}
-                                        Sn={detail.target_serial || detail.serial || detail.serial_id}
-                                        job_id={detail.job_id} jobStatus={detail.status}
+                                        name={menuNames[menuSel] || "อื่นๆ"}
+                                        Sn={
+                                            detail.target_serial ||
+                                            detail.serial ||
+                                            detail.serial_id
+                                        }
+                                        job_id={detail.job_id}
+                                        jobStatus={detail.status}
                                     />
-                                    {menuSel === 1 &&
-                                        <RpMain productDetail={detail} serial_id={detail.serial_id || detail.serial} />}
-                                    {menuSel === 2 &&
-                                        <ListHistoryRepair serial_id={detail.serial || detail.serial_id} />}
+                                    {menuSel === 1 && (
+                                        <RpMain
+                                            productDetail={detail}
+                                            serial_id={
+                                                detail.serial_id ||
+                                                detail.serial
+                                            }
+                                        />
+                                    )}
+                                    {menuSel === 2 && (
+                                        <ListHistoryRepair
+                                            serial_id={
+                                                detail.serial ||
+                                                detail.serial_id
+                                            }
+                                        />
+                                    )}
                                 </Grid2>
                             )}
                         </>
@@ -237,54 +477,78 @@ export default function Repair({ DATA }) {
                 </Grid2>
             </Container>
         </AuthenticatedLayout>
-    )
+    );
 }
 
-const SearchSnComponent = ({ SN, setSn, onPassed, PID, setPID, loading, showPidForm, setShowPidForm }) => {
-
+const SearchSnComponent = ({
+    SN,
+    setSn,
+    onPassed,
+    PID,
+    setPID,
+    loading,
+    showPidForm,
+    setShowPidForm,
+}) => {
     const handleChangeSN = (e) => {
         const value = e.target.value;
         setSn(value);
-        if (value === '9999') setShowPidForm(true)
-        else setShowPidForm(false)
-    }
+        if (value === "9999") setShowPidForm(true);
+        else setShowPidForm(false);
+    };
     return (
         <form onSubmit={(e) => onPassed(e)}>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                <Stack direction="column" spacing={2} width='100%'>
-                    <TextField disabled={loading}
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                <Stack direction="column" spacing={2} width="100%">
+                    <TextField
+                        disabled={loading}
                         slotProps={{
                             input: {
                                 startAdornment: (
-                                    <InputAdornment position={'start'}>
+                                    <InputAdornment position={"start"}>
                                         S/N :
                                     </InputAdornment>
-                                )
-                            }
+                                ),
+                            },
                         }}
-                        value={SN || ''} onChange={(e) => handleChangeSN(e)}
+                        value={SN || ""}
+                        onChange={(e) => handleChangeSN(e)}
                         focused
-                        placeholder={'ค้นหาหมายเลขซีเรียล หรือ หมายเลข Job หากไม่ทราบกรุณากรอก 9999 เพื่อระบุรหัสสินค้า'}
-                        fullWidth required
+                        placeholder={
+                            "ค้นหาหมายเลขซีเรียล หรือ หมายเลข Job หากไม่ทราบกรุณากรอก 9999 เพื่อระบุรหัสสินค้า"
+                        }
+                        fullWidth
+                        required
                     />
                     {showPidForm && (
-                        <TextField disabled={loading}
+                        <TextField
+                            disabled={loading}
                             slotProps={{
                                 input: {
                                     startAdornment: (
-                                        <InputAdornment position={'start'}>
+                                        <InputAdornment position={"start"}>
                                             PID
-                                        </InputAdornment>)
-                                }
+                                        </InputAdornment>
+                                    ),
+                                },
                             }}
-                            value={PID || ''} onChange={(e) => setPID(e.target.value)}
-                            placeholder={'กรอกรหัสสินค้า'} fullWidth required
-                        />)}
+                            value={PID || ""}
+                            onChange={(e) => setPID(e.target.value)}
+                            placeholder={"กรอกรหัสสินค้า"}
+                            fullWidth
+                            required
+                        />
+                    )}
                 </Stack>
-                <Button loading={loading} type={"submit"} startIcon={<Search />} variant='contained'>
+                <Button
+                    loading={loading}
+                    type={"submit"}
+                    startIcon={<Search />}
+                    variant="contained"
+                >
                     ค้นหา
                 </Button>
             </Stack>
         </form>
-    )
-}
+    );
+};
