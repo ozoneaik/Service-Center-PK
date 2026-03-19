@@ -22,6 +22,9 @@ class StoreInformation extends Model
         'footer_text',
         'footer_description',
         'is_active',
+        'use_disc_40p',
+        'use_disc_20p',
+        'use_std_price'
     ];
 
     public function gp(): HasOne

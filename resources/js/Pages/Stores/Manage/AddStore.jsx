@@ -2,7 +2,8 @@ import { useForm, usePage } from "@inertiajs/react";
 import {
     Alert, Button, Dialog, DialogContent, DialogTitle,
     FormControl, FormHelperText, InputLabel, MenuItem, Select,
-    Grid2, Box, TextField, Typography, Divider, CircularProgress
+    Grid2, Box, TextField, Typography, Divider, CircularProgress,
+    Checkbox, FormControlLabel
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -32,7 +33,19 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave, sales 
         zipcode: "",
         full_address : '',
         sale_id : '',
+        use_disc_40p: false,
+        use_disc_20p: false,
+        use_std_price: false,
     });
+
+    const handleDiscountChange = (field) => {
+        const discountFields = ['use_disc_40p', 'use_disc_20p', 'use_std_price'];
+        const newValues = {};
+        discountFields.forEach(f => {
+            newValues[f] = f === field ? !data[field] : false;
+        });
+        setData(prev => ({ ...prev, ...newValues }));
+    };
 
     const [provinces, setProvinces] = useState([]);
     const [amphures, setAmphures] = useState([]);
@@ -417,6 +430,44 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave, sales 
                                 </Select>
                                 {errors.sale_id && <FormHelperText>{errors.sale_id}</FormHelperText>}
                             </FormControl>
+                        </Grid2>
+
+                        <Grid2 size={12}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 'medium', mb: 1 }}>
+                                ตัวเลือกราคาสำหรับการสั่งซื้อ (เลือกได้ 1 อย่าง หรือไม่เลือก)
+                            </Typography>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={!!data.use_disc_40p}
+                                            onChange={() => handleDiscountChange('use_disc_40p')}
+                                            color="success"
+                                        />
+                                    }
+                                    label="ใช้ส่วนลด disc40p (ราคาทุนแบบ 40%)"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={!!data.use_disc_20p}
+                                            onChange={() => handleDiscountChange('use_disc_20p')}
+                                            color="warning"
+                                        />
+                                    }
+                                    label="ใช้ส่วนลด disc20p (ราคาทุนแบบ 20%)"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={!!data.use_std_price}
+                                            onChange={() => handleDiscountChange('use_std_price')}
+                                            color="primary"
+                                        />
+                                    }
+                                    label="ใช้ราคามาตรฐาน (Standard Price)"
+                                />
+                            </Box>
                         </Grid2>
                     </Grid2>
 

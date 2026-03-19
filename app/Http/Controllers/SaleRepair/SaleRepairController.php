@@ -399,6 +399,21 @@ class SaleRepairController extends Controller
             // --- เตรียมตัวแปรหลัก ---
             $assets = $data['assets'] ?? [];
             $dmList = $data['dm_list'] ?? [];
+
+            // --- ส่วนที่เพิ่ม: กรณีเป็นเลขซีเรียล ให้เลือก DM จาก [sn_hd][DM] ---
+            $searchType = $data['search_type'] ?? null;
+            $snHd       = $data['sn_hd'] ?? [];
+            $targetDm   = $snHd['DM'] ?? null;
+
+            if ($searchType === 'serial' && $targetDm) {
+                foreach ($dmList as $pidKey => $dms) {
+                    if (isset($dms[$targetDm])) {
+                        // กรองให้เหลือแค่ DM ของเครื่องนี้เท่านั้น ให้กับทุก PID (กรณี Combo)
+                        $dmList[$pidKey] = [$targetDm => $dms[$targetDm]];
+                    }
+                }
+            }
+
             $spAll  = $data['sp'] ?? [];
             $skuSet = $data['skuset'] ?? [];
             $skumain = $data['skumain']  ?? null;

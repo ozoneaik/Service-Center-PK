@@ -102,6 +102,18 @@ class OrderController extends Controller
             $imageDmBase = rtrim(env('VITE_IMAGE_DM', 'https://warranty-sn.pumpkin.tools/storage'), '/');
             $imageSpBase = rtrim(env('VITE_IMAGE_SP_NEW', ''), '/');
 
+            // --- ส่วนที่เพิ่ม: กรณีเป็นเลขซีเรียล ให้เลือก DM จาก [sn_hd][DM] ---
+            $searchType = $data['search_type'] ?? null;
+            $snHd = $data['sn_hd'] ?? [];
+            $targetDm = $snHd['DM'] ?? null;
+
+            if ($searchType === 'serial' && $targetDm && !empty($dmList[$pid])) {
+                if (isset($dmList[$pid][$targetDm])) {
+                    // กรองให้เหลือแค่ DM ของเครื่องนี้เท่านั้น
+                    $dmList[$pid] = [$targetDm => $dmList[$pid][$targetDm]];
+                }
+            }
+
             // loop ผ่าน dmList 
             if (!empty($dmList[$pid])) {
 
@@ -151,18 +163,35 @@ class OrderController extends Controller
                         ];
                     }
 
+                    $storeInfo = Auth::user()->store_info;
+                    $useDisc40p = $storeInfo->use_disc_40p ?? false;
+                    $useDisc20p = $storeInfo->use_disc_20p ?? false;
+                    $useStdPrice = $storeInfo->use_std_price ?? false;
+
                     // --- ใช้ $displayName ใน Parts List (spList) ---
                     if (!empty($spAll[$pid][$dmKey])) {
                         foreach ($spAll[$pid][$dmKey] as $sp) {
                             $spcode = $sp['spcode'] ?? null;
                             if (!$spcode) continue;
 
+                            // เลือกราคาตาม flag ที่ตั้งไว้ (เลือกได้อย่างใดอย่างหนึ่ง)
+                            if ($useDisc40p) {
+                                $pricePerUnit = \floatval($sp['disc40p'] ?? $sp['disc40p20p'] ?? $sp['disc20p'] ?? 0);
+                            } elseif ($useDisc20p) {
+                                $pricePerUnit = \floatval($sp['disc20p'] ?? $sp['disc40p20p'] ?? 0);
+                            } elseif ($useStdPrice) {
+                                $pricePerUnit = \floatval($sp['stdprice'] ?? 0);
+                            } else {
+                                // default: ไม่เลือกเลย ใช้ fallback เดิม
+                                $pricePerUnit = \floatval($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0);
+                            }
+
                             $spList[] = [
                                 'spcode'            => $spcode,
                                 'spname'            => $sp['spname'] ?? '',
                                 'spunit'            => $sp['spunit'] ?? 'ชิ้น',
                                 'stdprice_per_unit' => floatval($sp['stdprice'] ?? 0),
-                                'price_per_unit'    => floatval($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0),
+                                'price_per_unit'    => $pricePerUnit,
                                 'layout'            => (int)($sp['layout'] ?? 1),
                                 'tracking_number'   => $sp['tracking_number'] ?? '',
                                 'modelfg'           => $displayName, // สำคัญ: ใช้สำหรับกรองใน React
@@ -419,6 +448,57 @@ class OrderController extends Controller
             ->groupBy('sku_code', 'sku_name')
             ->get();
 
+        // ดึง flag discount ปัจจุบันของร้าน
+        $storeInfo = Auth::user()->store_info;
+        $useDisc40p = $storeInfo->use_disc_40p ?? false;
+        $useDisc20p = $storeInfo->use_disc_20p ?? false;
+        $useStdPrice = $storeInfo->use_std_price ?? false;
+
+        // เก็บราคาจาก API ตาม sku_code เพื่อ reprice
+        $apiUrl = env('VITE_WARRANTY_SN_API_GETDATA');
+        $spPriceMap = []; // sp_code => new_price
+
+        // ดึงราคาล่าสุดจาก API ตาม sku_code ที่อยู่ในตะกร้า
+        $uniqueSkus = $groupSku->pluck('sku_code')->unique();
+        foreach ($uniqueSkus as $skuCode) {
+            try {
+                $response = Http::timeout(10)->get($apiUrl, ['search' => $skuCode]);
+                if (!$response->successful()) continue;
+
+                $data = $response->json();
+                if (($data['status'] ?? '') !== 'SUCCESS') continue;
+
+                $spAll = $data['sp'] ?? [];
+                $pid = $data['skumain'] ?? $skuCode;
+
+                // loop ผ่าน DM list
+                if (!empty($spAll[$pid])) {
+                    foreach ($spAll[$pid] as $dmKey => $dmParts) {
+                        foreach ($dmParts as $sp) {
+                            $spcode = $sp['spcode'] ?? null;
+                            if (!$spcode) continue;
+
+                            // คำนวณราคาตาม flag ปัจจุบัน
+                            if ($useDisc40p) {
+                                $price = floatval($sp['disc40p'] ?? $sp['disc40p20p'] ?? $sp['disc20p'] ?? 0);
+                            } elseif ($useDisc20p) {
+                                $price = floatval($sp['disc20p'] ?? $sp['disc40p20p'] ?? 0);
+                            } elseif ($useStdPrice) {
+                                $price = floatval($sp['stdprice'] ?? 0);
+                            } else {
+                                $price = floatval($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0);
+                            }
+
+                            $spPriceMap[$spcode] = $price;
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning("Cart reprice: ไม่สามารถดึงราคาสำหรับ SKU {$skuCode}", ['error' => $e->getMessage()]);
+                continue;
+            }
+        }
+
         $totalSp = 0;
         foreach ($groupSku as $group) {
             $group['sku_image_path'] = $sku_image_path . $group['sku_code'] . ".jpg";
@@ -427,6 +507,18 @@ class OrderController extends Controller
                 ->where('is_active', false)
                 ->where('sku_code', $group->sku_code)
                 ->get();
+
+            // อัพเดทราคาในตะกร้าตาม flag ปัจจุบัน
+            foreach ($group['list'] as $cartItem) {
+                if (isset($spPriceMap[$cartItem->sp_code])) {
+                    $newPrice = $spPriceMap[$cartItem->sp_code];
+                    if (floatval($cartItem->price_per_unit) !== $newPrice) {
+                        $cartItem->update(['price_per_unit' => $newPrice]);
+                        $cartItem->price_per_unit = $newPrice;
+                    }
+                }
+            }
+
             $totalSp += $group['list']->count();
         }
 

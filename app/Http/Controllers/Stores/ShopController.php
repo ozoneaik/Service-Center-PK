@@ -40,7 +40,10 @@ class ShopController extends Controller
                 'sub_district' => $data['subdistrict'],
                 'sale_id' => $data['sale_id'],
                 'line_id' => $data['line_id'] ?? null,
-                'digit_code' => $random_digit
+                'digit_code' => $random_digit,
+                'use_disc_40p' => $data['use_disc_40p'] ?? false,
+                'use_disc_20p' => $data['use_disc_20p'] ?? false,
+                'use_std_price' => $data['use_std_price'] ?? false,
             ]);
             DB::commit();
             return Redirect::route('stockSp.shopList', [
@@ -116,6 +119,9 @@ class ShopController extends Controller
                 'subdistrict'    => $request['subdistrict'],
                 'sale_id'         => $request['sale_id'],
                 'line_id'         => $request->line_id ?? null,
+                'use_disc_40p'    => $request->use_disc_40p ?? false,
+                'use_disc_20p'    => $request->use_disc_20p ?? false,
+                'use_std_price'   => $request->use_std_price ?? false,
             ]);
 
             DB::commit();
