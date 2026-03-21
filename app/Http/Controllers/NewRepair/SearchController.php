@@ -704,6 +704,23 @@ class SearchController extends Controller
             $insurance_expire = $data['insurance_expire'] ?? null;
             $buy_date         = $data['buy_date']         ?? null;
 
+            // --- คำนวณวันที่หมดประกัน ถ้ามี buy_date แต่ไม่มี insurance_expire ---
+            if (!empty($buy_date) && empty($insurance_expire)) {
+                $mainAsset = $assets[$skumain] ?? $assets[$sku] ?? reset($assets);
+                $warrantyperiod = $mainAsset['warrantyperiod'] ?? 0;
+                $months = (int) $warrantyperiod;
+                if ($months > 0) {
+                    try {
+                        $insurance_expire = \Carbon\Carbon::parse($buy_date)->addMonths($months)->format('Y-m-d');
+                        if (\Carbon\Carbon::parse($insurance_expire)->isFuture()) {
+                            $warranty_expire = true;
+                        }
+                    } catch (\Exception $e) {
+                        // ignore
+                    }
+                }
+            }
+
             if (isset($formData['sn']) && !$warranty_expire) {
                 $warranty_expire = $this->findWarranty($formData['sn'], $warranty_expire);
             }
@@ -1004,17 +1021,40 @@ class SearchController extends Controller
                 $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
                 $warranty_color = 'orange';
             } elseif (!empty($buy_date) && empty($insurance_expire)) {
-                // เพิ่มเงื่อนไข: มีวันซื้อ (buy_date) แต่ไม่มีวันหมดประกัน (insurance_expire)
-                $warranty_status = true;
-                $warranty_text = 'อยู่ในประกัน';
-                $warranty_color = 'green';
+                $months = (int) ($warrantyperiod ?? 0);
+                if ($months > 0) {
+                    try {
+                        $insurance_expire = \Carbon\Carbon::parse($buy_date)->addMonths($months)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                    }
+                }
+
+                if (!empty($insurance_expire)) {
+                    try {
+                        $expireDate = \Carbon\Carbon::parse($insurance_expire);
+                        if ($expireDate->isFuture()) {
+                            $warranty_status = true;
+                            $warranty_text = 'อยู่ในประกัน';
+                            $warranty_color = 'green';
+                        } else {
+                            $warranty_status = false;
+                            $warranty_text = 'หมดอายุการรับประกัน';
+                            $warranty_color = 'red';
+                        }
+                    } catch (\Exception $e) {
+                    }
+                } else {
+                    $warranty_status = true;
+                    $warranty_text = 'อยู่ในประกัน';
+                    $warranty_color = 'green';
+                }
             } elseif ($warrantyexpire === true) {
                 $warranty_status = true;
                 $warranty_text = 'อยู่ในประกัน';
                 $warranty_color = 'green';
             } elseif (!empty($insurance_expire) && strtotime($insurance_expire)) {
                 try {
-                    $expireDate = Carbon::parse($insurance_expire);
+                    $expireDate = \Carbon\Carbon::parse($insurance_expire);
                     if ($expireDate->isFuture()) {
                         $warranty_status = true;
                         $warranty_text = 'อยู่ในประกัน';

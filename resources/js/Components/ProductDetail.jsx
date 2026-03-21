@@ -2,38 +2,51 @@ import { Card, Grid2, Stack, Typography } from "@mui/material";
 import { showDefaultImage } from "@/utils/showImage.js";
 
 export default function ProductDetail({
-    serial = 'ไม่พบ',
+    serial = "ไม่พบ",
     imagesku,
-    pname = 'ไม่พบ',
-    pid = 'ไม่พบ',
+    pname = "ไม่พบ",
+    pid = "ไม่พบ",
     warranty = true,
     warranty_status = false,
-    warrantycondition = '',
-    warrantynote = '',
-    warrantyperiod = '',
+    warrantycondition = "",
+    warrantynote = "",
+    warrantyperiod = "",
     status_job,
     expire_date,
     buy_date,
     warranty_text = null,
-    warranty_color = null
+    warranty_color = null,
 }) {
-    const Detail = ({ value, title, Color = '#f55721' }) => (
-        <Typography fontWeight='bold' variant="subtitle1" sx={{ color: 'black' }}>
-            {title} : <span style={{ color: Color, fontWeight: 'normal' }}>{value}</span>
+    const Detail = ({ value, title, Color = "#f55721" }) => (
+        <Typography
+            fontWeight="bold"
+            variant="subtitle1"
+            sx={{ color: "black" }}
+        >
+            {title} :{" "}
+            <span style={{ color: Color, fontWeight: "normal" }}>{value}</span>
         </Typography>
-    )
+    );
 
-    const DetailWarranty = ({ title, Color = '#f55721', start, to }) => (
-        <Typography fontWeight='bold' variant="subtitle1" sx={{ color: 'black' }}>
-            {title} : <span style={{ color: Color, fontWeight: 'normal' }}>{start} <span
-                style={{ color: 'black' }}>ถึง</span> {to}</span>
+    const DetailWarranty = ({ title, Color = "#f55721", start, to }) => (
+        <Typography
+            fontWeight="bold"
+            variant="subtitle1"
+            sx={{ color: "black" }}
+        >
+            {title} :{" "}
+            <span style={{ color: Color, fontWeight: "normal" }}>
+                {start} <span style={{ color: "black" }}>ถึง</span> {to}
+            </span>
         </Typography>
-    )
+    );
 
     //เช๊คสถานะการรับประกันกรณีเป็น false
     const now = new Date();
-    let warrantyStatusText = warranty_status ? 'อยู่ในประกัน' : 'ไม่อยู่ในประกัน';
-    let warrantyColor = warranty_status ? 'green' : 'red';
+    let warrantyStatusText = warranty_status
+        ? "อยู่ในประกัน"
+        : "ไม่อยู่ในประกัน";
+    let warrantyColor = warranty_status ? "green" : "red";
 
     //เดิมเงื่อนไขการแสดงผลสถานะการรับประกัน (วิว)
     // if (!warranty_status) {
@@ -75,40 +88,66 @@ export default function ProductDetail({
     //     }
     // }
 
+    let computedExpireDate = expire_date;
+    if (!computedExpireDate && buy_date && warrantyperiod) {
+        const months = parseInt(warrantyperiod, 10);
+        if (!isNaN(months) && months > 0) {
+            const buyDateObj = new Date(buy_date);
+            buyDateObj.setMonth(buyDateObj.getMonth() + months);
+            computedExpireDate = buyDateObj.toISOString().split("T")[0];
+        }
+    }
+
     if (!warranty_status) {
-        if (expire_date) {
-            const expireDate = new Date(expire_date);
-            if (expireDate < now) {
-                warrantyStatusText = 'หมดอายุการรับประกัน';
-                warrantyColor = 'red';
+        if (computedExpireDate) {
+            const expireDateObj = new Date(computedExpireDate);
+            if (expireDateObj < now) {
+                warrantyStatusText = "หมดอายุการรับประกัน";
+                warrantyColor = "red";
             } else {
-                warrantyStatusText = 'ไม่อยู่ในประกัน';
-                warrantyColor = 'red';
+                if (!expire_date && buy_date) {
+                    warrantyStatusText = "อยู่ในประกัน";
+                    warrantyColor = "green";
+                } else {
+                    warrantyStatusText = "ไม่อยู่ในประกัน";
+                    warrantyColor = "red";
+                }
             }
         } else if (!buy_date) {
-            warrantyStatusText = 'ยังไม่ได้ลงทะเบียนรับประกัน';
-            warrantyColor = 'orange';
+            warrantyStatusText = "ยังไม่ได้ลงทะเบียนรับประกัน";
+            warrantyColor = "orange";
         } else {
-            // เพิ่มเงื่อนไข: มี buy_date แต่ไม่มี expire_date (insurance_expire เป็น null)
-            warrantyStatusText = 'อยู่ในประกัน';
-            warrantyColor = 'green';
+            warrantyStatusText = "อยู่ในประกัน";
+            warrantyColor = "green";
         }
     }
 
     return (
-        <Grid2 container spacing={3} direction={{ lg: 'row', xs: 'column-reverse' }}>
+        <Grid2
+            container
+            spacing={3}
+            direction={{ lg: "row", xs: "column-reverse" }}
+        >
             <Grid2 size={{ xs: 12, lg: 8 }}>
-                <Stack direction='column' spacing={2} mb={3}>
+                <Stack direction="column" spacing={2} mb={3}>
                     <Typography variant="subtitle1">รายละเอียด</Typography>
-                    <Typography variant='h5' fontWeight='bold'>{pid} {pname}</Typography>
-                    <Typography variant='h5' fontWeight='bold'>S/N : {serial}</Typography>
+                    <Typography variant="h5" fontWeight="bold">
+                        {pid} {pname}
+                    </Typography>
+                    <Typography variant="h5" fontWeight="bold">
+                        S/N : {serial}
+                    </Typography>
                 </Stack>
-                <Stack direction='column' spacing={1}>
-
-                    <Detail title={'ระยะเวลารับประกัน (เดือน)'} value={warrantyperiod} />
-                    <Detail title={'เงื่อนไขการรับประกัน'} value={warrantycondition} />
-                    <Detail title={'หมายเหตุรับประกัน'}
-                        value={warrantynote} />
+                <Stack direction="column" spacing={1}>
+                    <Detail
+                        title={"ระยะเวลารับประกัน (เดือน)"}
+                        value={warrantyperiod}
+                    />
+                    <Detail
+                        title={"เงื่อนไขการรับประกัน"}
+                        value={warrantycondition}
+                    />
+                    <Detail title={"หมายเหตุรับประกัน"} value={warrantynote} />
                     {warranty && (
                         <>
                             {/*<DetailWarranty title={'ระยะประกัน'} to={'23-01-2024'} start={'23-01-2025'}/>*/}
@@ -121,29 +160,38 @@ export default function ProductDetail({
                                 Color={warrantyColor}
                             /> */}
                             <Detail
-                                title={'สถานะรับประกัน'}
+                                title={"สถานะรับประกัน"}
                                 value={warranty_text || warrantyStatusText}
                                 Color={warranty_color || warrantyColor}
                             />
                         </>
                     )}
-                    {status_job && <Detail title={'สถานะการซ่อม'} value={warrantynote} />}
+                    {status_job && (
+                        <Detail title={"สถานะการซ่อม"} value={warrantynote} />
+                    )}
                     {buy_date && (
-                        <Detail
-                            title={'วันที่ซื้อสินค้า'}
-                            value={buy_date}
-                        />
+                        <Detail title={"วันที่ซื้อสินค้า"} value={buy_date} />
                     )}
                     {/* {warrantyStatusText && <Detail title={'วันที่หมดประกัน'} value={expire_date} />} */}
-                    {expire_date && <Detail title={'วันที่หมดประกัน'} value={expire_date} />}
+                    {computedExpireDate && (
+                        <Detail
+                            title={"วันที่หมดประกัน"}
+                            value={computedExpireDate}
+                        />
+                    )}
                     {/* <Detail title={'วันที่หมดประกัน'} value={expire_date} /> */}
                 </Stack>
-
             </Grid2>
             <Grid2 size={{ xs: 5, md: 4 }}>
-                <img style={{ mixBlendMode: 'multiply', maxHeight: '300px' }}
-                    src={imagesku || 'https://images.dcpumpkin.com/images/product/500/default.jpg'} onError={showDefaultImage} />
+                <img
+                    style={{ mixBlendMode: "multiply", maxHeight: "300px" }}
+                    src={
+                        imagesku ||
+                        "https://images.dcpumpkin.com/images/product/500/default.jpg"
+                    }
+                    onError={showDefaultImage}
+                />
             </Grid2>
         </Grid2>
-    )
+    );
 }

@@ -238,8 +238,22 @@ export default function Repair({ DATA }) {
                     data.data.data_from_api.insurance_expire || null;
                 const buy_date = data.data.buy_date || null;
                 const addWarranty = data.data.warranty_expire;
-                const expire_date =
+                let expire_date =
                     data.data.expire_date || insurance_expire || null;
+
+                if (!expire_date && buy_date) {
+                    const sku_list_0 = data.data.sku_list?.[0];
+                    const wp =
+                        sku_list_0?.warrantyperiod ||
+                        sku_list_0?.warranty_period ||
+                        "";
+                    const m = parseInt(wp, 10);
+                    if (!isNaN(m) && m > 0) {
+                        const d = new Date(buy_date);
+                        d.setMonth(d.getMonth() + m);
+                        expire_date = d.toISOString().split("T")[0];
+                    }
+                }
 
                 const power_accessories =
                     data.data.data_from_api?.power_accessories || null;
