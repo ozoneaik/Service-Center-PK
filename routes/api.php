@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AssRepairController;
 use App\Http\Controllers\Api\GeneralController;
 use App\Http\Controllers\ApiSpareClaimController;
 use Illuminate\Http\Request;
@@ -13,11 +14,11 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
-Route::get('/test',function(){
+Route::get('/test', function () {
     return response()->json(['test' => 'ok']);
 });
 
-Route::post('/job_detail', [GeneralController::class,'index'])->name('api.get-job');
+Route::post('/job_detail', [GeneralController::class, 'index'])->name('api.get-job');
 
 Route::get('/getgroup', [ClosedController::class, 'getGroups'])->name('api.get-group');
 
@@ -28,3 +29,5 @@ Route::get('/claims-list', [ApiSpareClaimController::class, 'apiList']);
 Route::post('/receive-claim', [ApiSpareClaimController::class, 'apiReceiveUpdate']);
 Route::get('/claim-detail/{claim_id}', [ApiSpareClaimController::class, 'apiGetClaimDetail']);
 Route::get('/sales-shops', [ApiSpareClaimController::class, 'apiGetShops']);
+
+Route::post('/ass-repair/info', [AssRepairController::class, 'getRepairInfo']);
