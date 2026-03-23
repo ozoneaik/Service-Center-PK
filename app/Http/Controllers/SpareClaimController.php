@@ -835,11 +835,10 @@ class SpareClaimController extends Controller
         }
         try {
             DB::beginTransaction();
-            $uri = env('VITE_API_CHECK_ORDER');
+            $uri = 'https://afterservice-sv.pumpkin.tools/sv/callpsc.php';
             $claim_id_remove_prefix = str_replace('C-', '', $claim_id);
             $body = [
-                'jobno' => $claim_id_remove_prefix,
-                'type' => 'claim'
+                'ticketcode' => $claim_id_remove_prefix,
             ];
             Log::info('📦 เริ่มเช็คสถานะออเดอร์', [
                 'claim_id' => $claim_id,
@@ -871,7 +870,11 @@ class SpareClaimController extends Controller
                 ]);
 
                 if ($externalStatus) {
-                    $claim->status = $externalStatus;
+                    if (in_array($externalStatus, ['เปิดออเดอร์แล้ว', 'รอเปิดSO'])) {
+                        $claim->status = 'approved';
+                    } else {
+                        $claim->status = $externalStatus;
+                    }
                     $claim->save();
 
                     Log::info('Update Status SuccessFully', [

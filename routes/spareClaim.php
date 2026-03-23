@@ -12,6 +12,7 @@ Route::prefix('spare-claim')->group(function () {
     Route::get('/pending', [SpareClaimController::class, 'pendingShow'])->name('spareClaim.pending');
     Route::post('/store', [SpareClaimController::class, 'store'])->name('spareClaim.store');
     Route::post('/receive-update', [SpareClaimController::class, 'updateReceiveStatus'])->name('spareClaim.updateReceiveStatus');
+    Route::post('/check-status', [SpareClaimController::class, 'checkStatusClaim'])->name('spareClaim.checkStatusClaim');
 });
 
 Route::prefix('accounting/spare-return')->name('accounting.return.')->group(function () {
@@ -19,13 +20,13 @@ Route::prefix('accounting/spare-return')->name('accounting.return.')->group(func
     Route::post('/confirm', [AccountingReturnController::class, 'confirm'])->name('confirm');
 });
 
-Route::middleware('adminPermission')->group(function(){
-    Route::prefix('admin')->group(function(){
-        Route::prefix('claimSP')->group(function(){
-            Route::get('/index/{status}',[ClaimSpController::class,'index'])->name('claimSP.index');
-            Route::get('/detail/{claim_id}',[ClaimSpController::class,'detail'])->name('claimSP.detail');
-            Route::put('/update-by-sp-id/{claimDetail_id}/{status}',[ClaimSpController::class,'updateByIdSp'])->name('claimSP.updateByIdSp');
-            Route::put('/update-all/{claim_id}/{status}',[ClaimSpController::class,'updateAll'])->name('claimSP.updateAll');
+Route::middleware('adminPermission')->group(function () {
+    Route::prefix('admin')->group(function () {
+        Route::prefix('claimSP')->group(function () {
+            Route::get('/index/{status}', [ClaimSpController::class, 'index'])->name('claimSP.index');
+            Route::get('/detail/{claim_id}', [ClaimSpController::class, 'detail'])->name('claimSP.detail');
+            Route::put('/update-by-sp-id/{claimDetail_id}/{status}', [ClaimSpController::class, 'updateByIdSp'])->name('claimSP.updateByIdSp');
+            Route::put('/update-all/{claim_id}/{status}', [ClaimSpController::class, 'updateAll'])->name('claimSP.updateAll');
         });
     });
 });

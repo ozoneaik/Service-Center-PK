@@ -1164,9 +1164,9 @@ class OrderController extends Controller
         }
         try {
             DB::beginTransaction();
-            $uri = env('VITE_API_CHECK_ORDER');
+            $uri = 'https://afterservice-sv.pumpkin.tools/sv/callpsc.php';
             $order_id_remove_prefix = str_replace('ORDER-', '', $order_id);
-            $body = ['jobno' => $order_id_remove_prefix];
+            $body = ['ticketcode' => $order_id_remove_prefix];
 
             // เริ่มต้น Log ก่อนเรียก API
             Log::info('📦 เริ่มเช็คสถานะออเดอร์', [

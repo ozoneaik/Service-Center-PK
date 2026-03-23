@@ -156,38 +156,68 @@
 //-------------------------------------------version 2 ----------------------------------------------
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {
-    Container, Table, TableBody, TableCell, TableHead, TableRow,
-    Typography, Chip, Button, useMediaQuery, Grid2, Card, CardContent, Divider, Stack, useTheme,
+    Container,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    Typography,
+    Chip,
+    Button,
+    useMediaQuery,
+    Grid2,
+    Card,
+    CardContent,
+    Divider,
+    Stack,
+    useTheme,
     Box,
     IconButton,
-    CircularProgress
+    CircularProgress,
 } from "@mui/material";
 import { Link } from "@inertiajs/react";
 import { DateFormatTh } from "@/Components/DateFormat.jsx";
 import { Refresh, RemoveRedEye } from "@mui/icons-material";
 import { useState } from "react";
-import axios from 'axios';
+import axios from "axios";
 import { AlertDialog } from "@/Components/AlertDialog";
 
 const getStatusDisplay = (status) => {
     switch (status) {
-        case 'pending':
-        case 'กำลังรอรับคำสั่งซื้อ':
-            return 'กำลังรอรับคำสั่งซื้อ';
-        case 'รับคำสั่งซื้อ':
-        case 'กำลังเปิดคำสั่งซื้อ':
-            return 'รับคำสั่งซื้อ';
-        case 'progress':
-        case 'กำลังดำเนินการจัดเตรียมสินค้า':
-            return 'กำลังดำเนินการจัดเตรียมสินค้า';
-        case 'shipping':
-        case 'อยู่ระหว่างการจัดส่ง':
-            return 'อยู่ระหว่างการจัดส่ง';
-        case 'success':
-        case 'จัดส่งสำเร็จ':
-            return 'จัดส่งสำเร็จ';
-        case 'canceled':
-            return 'ยกเลิก';
+        case "pending":
+        case "กำลังรอรับคำสั่งซื้อ":
+        case "รอรับงานซ่อม":
+        case "กำลังซ่อม":
+        case "พักงานซ่อม":
+        case "รอปิดงานซ่อม":
+            return "กำลังรอรับคำสั่งซื้อ";
+        case "รับคำสั่งซื้อ":
+        case "กำลังเปิดคำสั่งซื้อ":
+        case "เปิดออเดอร์แล้ว":
+        case "รอเปิดSO":
+            return "รับคำสั่งซื้อ";
+        case "progress":
+        case "กำลังดำเนินการจัดเตรียมสินค้า":
+        case "พร้อมส่ง":
+        case "แพ็คสินค้าเสร็จ":
+        case "กำลังจัดสินค้า":
+            return "กำลังดำเนินการจัดเตรียมสินค้า";
+        case "shipping":
+        case "อยู่ระหว่างการจัดส่ง":
+        case "กำลังส่ง":
+        case "เตรียมส่ง":
+            return "อยู่ระหว่างการจัดส่ง";
+        case "success":
+        case "จัดส่งสำเร็จ":
+        case "บัญชีรับงานแล้ว":
+        case "ส่งของแล้ว":
+            return "จัดส่งสำเร็จ";
+        case "canceled":
+        case "ยกเลิกคำสั่งซื้อ":
+            return "ยกเลิกคำสั่งซื้อ";
+        case "ไม่พบคำสั่งซื้อ":
+            return "ไม่พบคำสั่งซื้อ";
         default:
             return status;
     }
@@ -199,71 +229,102 @@ export default function OrderHistory({ history }) {
 
     const ColorStatus = (status) => {
         switch (status) {
-            case 'pending':
-                return 'warning';
-            case 'รับคำสั่งซื้อ':
-                return 'secondary';
-            case 'ยกเลิกคำสั่งซื้อ':
-                return 'error';
-            case 'กำลังจัดเตรียมสินค้า':
-                return 'secondary';
-            case 'อยู่ระหว่างการจัดส่ง':
-                return 'secondary';
-            case 'จัดส่งสำเร็จ':
-                return 'success';
+            case "pending":
+            case "กำลังรอรับคำสั่งซื้อ":
+            case "รอรับงานซ่อม":
+            case "กำลังซ่อม":
+            case "พักงานซ่อม":
+            case "รอปิดงานซ่อม":
+                return "warning";
+            case "รับคำสั่งซื้อ":
+            case "กำลังเปิดคำสั่งซื้อ":
+            case "เปิดออเดอร์แล้ว":
+            case "รอเปิดSO":
+                return "secondary";
+            case "progress":
+            case "กำลังดำเนินการจัดเตรียมสินค้า":
+            case "พร้อมส่ง":
+            case "แพ็คสินค้าเสร็จ":
+            case "กำลังจัดสินค้า":
+                return "secondary";
+            case "shipping":
+            case "อยู่ระหว่างการจัดส่ง":
+            case "กำลังส่ง":
+            case "เตรียมส่ง":
+                return "primary";
+            case "success":
+            case "จัดส่งสำเร็จ":
+            case "บัญชีรับงานแล้ว":
+            case "ส่งของแล้ว":
+                return "success";
+            case "ยกเลิกคำสั่งซื้อ":
+            case "canceled":
+            case "ไม่พบคำสั่งซื้อ":
+                return "error";
             default:
-                return 'info';
+                return "info";
         }
-    }
+    };
 
-    const isMobile = useMediaQuery('(max-width:600px)');
+    const isMobile = useMediaQuery("(max-width:600px)");
 
     const checkOrderStatus = async (order_id) => {
         try {
             setLoadingOrderId(order_id);
-            const { data } = await axios.post(route('orders.checkStatusOrder'), { order_id });
+            const { data } = await axios.post(
+                route("orders.checkStatusOrder"),
+                { order_id },
+            );
             const orderStatus = data.data.status;
-            setHistoryList(prevList => prevList.map(item => {
-                if (item.order_id === order_id) {
-                    return { ...item, status: orderStatus };
-                }
-                return item;
-            }));
+            setHistoryList((prevList) =>
+                prevList.map((item) => {
+                    if (item.order_id === order_id) {
+                        return { ...item, status: orderStatus };
+                    }
+                    return item;
+                }),
+            );
             AlertDialog({
-                title: 'อัปเดตสถานะสำเร็จ',
+                title: "อัปเดตสถานะสำเร็จ",
                 text: `สถานะของ ${order_id} ถูกอัปเดตเป็น: ${getStatusDisplay(orderStatus)}`,
                 icon: "success",
             });
         } catch (error) {
             console.error("Error checking status:", error);
             AlertDialog({
-                title: 'เกิดข้อผิดพลาด',
-                text: error.response?.data?.message || error.message || 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้',
+                title: "เกิดข้อผิดพลาด",
+                text:
+                    error.response?.data?.message ||
+                    error.message ||
+                    "ไม่สามารถติดต่อเซิร์ฟเวอร์ได้",
             });
         } finally {
             setLoadingOrderId(null);
         }
-    }
+    };
 
     const TextDetail = ({ label, value, chip }) => {
         const { palette } = useTheme();
         const labelColor = palette.pumpkinColor?.main || palette.primary.main;
 
         return (
-            <Stack direction='row' spacing={1} alignItems="center">
-                <Typography color={labelColor} fontWeight='bold'>{label}</Typography>
+            <Stack direction="row" spacing={1} alignItems="center">
+                <Typography color={labelColor} fontWeight="bold">
+                    {label}
+                </Typography>
                 <Typography>:</Typography>
-                {chip ?
-                    <Chip label={value} color={chip} size="small" /> :
+                {chip ? (
+                    <Chip label={value} color={chip} size="small" />
+                ) : (
                     <Typography>{value}</Typography>
-                }
+                )}
             </Stack>
-        )
-    }
+        );
+    };
 
     return (
         <AuthenticatedLayout>
-            <Container maxWidth="false" sx={{ mt: 4, bgcolor: 'white', p: 3 }}>
+            <Container maxWidth="false" sx={{ mt: 4, bgcolor: "white", p: 3 }}>
                 <Typography variant="h5" gutterBottom>
                     ประวัติคำสั่งซื้อ
                 </Typography>
@@ -272,57 +333,128 @@ export default function OrderHistory({ history }) {
                         <Grid2 size={12}>
                             <Stack spacing={2}>
                                 {historyList.map((item, index) => {
-                                    const displayStatus = getStatusDisplay(item.status);
-                                    const statusColor = ColorStatus(item.status);
-                                    const isItemLoading = loadingOrderId === item.order_id;
+                                    const displayStatus = getStatusDisplay(
+                                        item.status,
+                                    );
+                                    const statusColor = ColorStatus(
+                                        item.status,
+                                    );
+                                    const isItemLoading =
+                                        loadingOrderId === item.order_id;
                                     return (
-                                        <Card variant='outlined' key={index} sx={{ mb: 1 }}>
+                                        <Card
+                                            variant="outlined"
+                                            key={index}
+                                            sx={{ mb: 1 }}
+                                        >
                                             <CardContent>
                                                 <Stack spacing={1.5}>
-                                                    <Box display='flex' justifyContent='space-between' alignItems='center'>
-                                                        <TextDetail label={'รายการที่'} value={index + 1} />
+                                                    <Box
+                                                        display="flex"
+                                                        justifyContent="space-between"
+                                                        alignItems="center"
+                                                    >
+                                                        <TextDetail
+                                                            label={"รายการที่"}
+                                                            value={index + 1}
+                                                        />
                                                         {/* Mobile View: แสดง CircularProgress แทน Refresh Icon เมื่อโหลด */}
                                                         <IconButton
-                                                            onClick={() => checkOrderStatus(item.order_id)}
+                                                            onClick={() =>
+                                                                checkOrderStatus(
+                                                                    item.order_id,
+                                                                )
+                                                            }
                                                             color="info"
                                                             size="small"
-                                                            disabled={isItemLoading}
+                                                            disabled={
+                                                                isItemLoading
+                                                            }
                                                         >
                                                             {isItemLoading ? (
-                                                                <CircularProgress size={20} color="inherit" />
+                                                                <CircularProgress
+                                                                    size={20}
+                                                                    color="inherit"
+                                                                />
                                                             ) : (
                                                                 <Refresh />
                                                             )}
                                                         </IconButton>
                                                     </Box>
                                                     <Divider />
-                                                    <TextDetail label={'หมายเลขคำสั่งซื้อ'} value={item.order_id} />
-                                                    <TextDetail label={'วันที่สั่งซื้อ'}
-                                                        value={new Date(item.buy_at).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })} />
-                                                    <TextDetail label={'ที่อยู่'} value={item.address} />
+                                                    <TextDetail
+                                                        label={
+                                                            "หมายเลขคำสั่งซื้อ"
+                                                        }
+                                                        value={item.order_id}
+                                                    />
+                                                    <TextDetail
+                                                        label={"วันที่สั่งซื้อ"}
+                                                        value={new Date(
+                                                            item.buy_at,
+                                                        ).toLocaleString(
+                                                            "th-TH",
+                                                            {
+                                                                dateStyle:
+                                                                    "short",
+                                                                timeStyle:
+                                                                    "short",
+                                                            },
+                                                        )}
+                                                    />
+                                                    <TextDetail
+                                                        label={"ที่อยู่"}
+                                                        value={item.address}
+                                                    />
 
-                                                    <Stack direction='row' spacing={1} alignItems="center">
-                                                        <Typography color={'primary'} fontWeight='bold'>สถานะ :</Typography>
-                                                        <Chip label={displayStatus} color={statusColor} size="small" />
+                                                    <Stack
+                                                        direction="row"
+                                                        spacing={1}
+                                                        alignItems="center"
+                                                    >
+                                                        <Typography
+                                                            color={"primary"}
+                                                            fontWeight="bold"
+                                                        >
+                                                            สถานะ :
+                                                        </Typography>
+                                                        <Chip
+                                                            label={
+                                                                displayStatus
+                                                            }
+                                                            color={statusColor}
+                                                            size="small"
+                                                        />
                                                     </Stack>
 
                                                     <Divider />
                                                     <Button
-                                                        fullWidth startIcon={<RemoveRedEye />}
-                                                        variant='contained' size='small' component={Link}
-                                                        href={route('orders.historyDetail', { order_id: item.order_id })}
+                                                        fullWidth
+                                                        startIcon={
+                                                            <RemoveRedEye />
+                                                        }
+                                                        variant="contained"
+                                                        size="small"
+                                                        component={Link}
+                                                        href={route(
+                                                            "orders.historyDetail",
+                                                            {
+                                                                order_id:
+                                                                    item.order_id,
+                                                            },
+                                                        )}
                                                     >
                                                         ดูรายละเอียด
                                                     </Button>
                                                 </Stack>
                                             </CardContent>
                                         </Card>
-                                    )
+                                    );
                                 })}
                             </Stack>
                         </Grid2>
                     ) : (
-                        <Grid2 size={12} overflow='auto'>
+                        <Grid2 size={12} overflow="auto">
                             <Table stickyHeader>
                                 <TableHead>
                                     <TableRow>
@@ -330,45 +462,98 @@ export default function OrderHistory({ history }) {
                                         <TableCell>หมายเลขคำสั่งซื้อ</TableCell>
                                         <TableCell>วันที่สั่งซื้อ</TableCell>
                                         <TableCell>ที่อยู่</TableCell>
-                                        <TableCell align="center">สถานะ</TableCell>
+                                        <TableCell align="center">
+                                            สถานะ
+                                        </TableCell>
                                         <TableCell>รายละเอียด</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {historyList.length > 0 ? (
                                         historyList.map((item, index) => {
-                                            const displayStatus = getStatusDisplay(item.status);
-                                            const statusColor = ColorStatus(item.status);
-                                            const isItemLoading = loadingOrderId === item.order_id; // ตรวจสอบสถานะโหลดของรายการนี้
+                                            const displayStatus =
+                                                getStatusDisplay(item.status);
+                                            const statusColor = ColorStatus(
+                                                item.status,
+                                            );
+                                            const isItemLoading =
+                                                loadingOrderId ===
+                                                item.order_id; // ตรวจสอบสถานะโหลดของรายการนี้
 
                                             return (
                                                 <TableRow key={index} hover>
-                                                    <TableCell>{index + 1}</TableCell>
-                                                    <TableCell>{item.order_id}</TableCell>
-                                                    <TableCell>{new Date(item.buy_at).toLocaleString()}</TableCell>
-                                                    <TableCell>{item.address}</TableCell>
                                                     <TableCell>
-                                                        <Box display='flex' justifyContent='center' alignItems='center' gap={2}>
+                                                        {index + 1}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {item.order_id}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {new Date(
+                                                            item.buy_at,
+                                                        ).toLocaleString()}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {item.address}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Box
+                                                            display="flex"
+                                                            justifyContent="center"
+                                                            alignItems="center"
+                                                            gap={2}
+                                                        >
                                                             <Button
-                                                                color="info" size="small"
-                                                                onClick={() => checkOrderStatus(item.order_id)}
-                                                                disabled={isItemLoading}
-                                                                startIcon={isItemLoading ? null : <Refresh />}
-                                                                variant='outlined'
+                                                                color="info"
+                                                                size="small"
+                                                                onClick={() =>
+                                                                    checkOrderStatus(
+                                                                        item.order_id,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    isItemLoading
+                                                                }
+                                                                startIcon={
+                                                                    isItemLoading ? null : (
+                                                                        <Refresh />
+                                                                    )
+                                                                }
+                                                                variant="outlined"
                                                             >
                                                                 {isItemLoading ? (
-                                                                    <CircularProgress size={16} color="inherit" />
+                                                                    <CircularProgress
+                                                                        size={
+                                                                            16
+                                                                        }
+                                                                        color="inherit"
+                                                                    />
                                                                 ) : (
                                                                     "เช็คสถานะล่าสุด"
                                                                 )}
                                                             </Button>
-                                                            <Chip label={displayStatus} color={statusColor} />
+                                                            <Chip
+                                                                label={
+                                                                    displayStatus
+                                                                }
+                                                                color={
+                                                                    statusColor
+                                                                }
+                                                            />
                                                         </Box>
                                                     </TableCell>
                                                     <TableCell>
                                                         <Button
-                                                            variant='contained' size='small' component={Link}
-                                                            href={route('orders.historyDetail', { order_id: item.order_id })}
+                                                            variant="contained"
+                                                            size="small"
+                                                            component={Link}
+                                                            href={route(
+                                                                "orders.historyDetail",
+                                                                {
+                                                                    order_id:
+                                                                        item.order_id,
+                                                                },
+                                                            )}
                                                         >
                                                             ดู
                                                         </Button>
@@ -378,7 +563,10 @@ export default function OrderHistory({ history }) {
                                         })
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={6} align="center">
+                                            <TableCell
+                                                colSpan={6}
+                                                align="center"
+                                            >
                                                 ไม่มีข้อมูลคำสั่งซื้อ
                                             </TableCell>
                                         </TableRow>
@@ -388,7 +576,6 @@ export default function OrderHistory({ history }) {
                         </Grid2>
                     )}
                 </Grid2>
-
             </Container>
         </AuthenticatedLayout>
     );
@@ -399,13 +586,16 @@ const TextDetail = ({ label, value, chip }) => {
     const labelColor = palette.pumpkinColor?.main || palette.primary.main;
 
     return (
-        <Stack direction='row' spacing={1} alignItems="center">
-            <Typography color={labelColor} fontWeight='bold'>{label}</Typography>
+        <Stack direction="row" spacing={1} alignItems="center">
+            <Typography color={labelColor} fontWeight="bold">
+                {label}
+            </Typography>
             <Typography>:</Typography>
-            {chip ?
-                <Chip label={value} color={chip} size="small" /> :
+            {chip ? (
+                <Chip label={value} color={chip} size="small" />
+            ) : (
                 <Typography>{value}</Typography>
-            }
+            )}
         </Stack>
-    )
-}
+    );
+};
