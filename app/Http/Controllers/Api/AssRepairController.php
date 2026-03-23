@@ -72,26 +72,37 @@ class AssRepairController extends Controller
         // --- ค้นหา Symptom ---
         $symptomText = Symptom::findByJobId($job->job_id);
 
-        // --- ประกันออนไลน์ (อ้างอิงจาก TblHistoryProd อย่างเดียว) ---
+        // --- ประกันออนไลน์ (อ้างอิงจาก TblHistoryProd และ fallback ไป JobList) ---
         $historyProd = $job->serial_id
             ? TblHistoryProd::where('serial_number', $job->serial_id)->first()
             : null;
 
-        $warrantyExpire    = $historyProd?->insurance_expire;
+        $warrantyExpire    = $historyProd?->insurance_expire ?: $job->insurance_expire;
         $warrantyStartDate = $historyProd?->buy_date;
 
+        // ถ้าเกิดว่ามีวันที่ซื้อมา แต่ไม่มีวันหมดอายุ ให้คำนวณวันหมดอายุให้เลย โดยนำฟิลด์ warranty_period จาก job_list มาคำนวณ
+        if (!empty($warrantyStartDate) && (empty($warrantyExpire) || $warrantyExpire === 'ไม่มีข้อมูล')) {
+            $months = (int) $job->warranty_period;
+            if ($months > 0) {
+                try {
+                    $warrantyExpire = Carbon::parse($warrantyStartDate)->addMonths($months)->format('Y-m-d');
+                } catch (\Exception $e) {
+                }
+            }
+        }
+
+        // เช็คจาก joblist ด้วย ถ้าขึ้นว่า "ไม่มีข้อมูลให้เป็น null ไป"
         if ($warrantyExpire === 'ไม่มีข้อมูล' || trim($warrantyExpire) === '') {
             $warrantyExpire = null;
         }
 
-        // --- เพิ่มเงื่อนไขเช็คการลงทะเบียนออนไลน์ ---
-        // เช็คว่ามีข้อมูลใน TblHistoryProd ไหม (ถ้ามี = ลงทะเบียนแล้ว)
-        $isRegistered = $historyProd ? true : false;
+        // ถ้าข้อมูลการลงทะเบียนไม่มีทั้งใน HistoryProd และ ในของ Joblist ไม่มีข้อมูล ก็ควรให้เป็น null และ ให้เป็น false
+        $hasAnyData = $historyProd || $warrantyExpire;
+        $isRegistered = $hasAnyData ? true : false;
 
         // สร้าง Array รอไว้เลย ไม่ต้องรอให้มีวันที่
         $onlineWarranty = [
             'is_registered' => $isRegistered,
-            // 'type'          => $isRegistered ? 'ลงทะเบียนออนไลน์แล้ว' : 'ยังไม่ได้ลงทะเบียน',
             'status'        => null,
             'expire_date'   => null,
             'start_date'    => null,
@@ -115,9 +126,12 @@ class AssRepairController extends Controller
             } catch (\Exception $e) {
                 // เก็บตกเผื่อรูปแบบวันที่ในระบบไม่ใช่ที่ถูกต้อง (ตัวอย่าง 0000-00-00 หรือมีค่านั้นๆ)
                 $onlineWarranty['status']      = 'รูปแบบวันที่หมดประกันไม่ถูกต้อง';
+                $onlineWarranty['is_registered'] = false;
             }
         } else {
-            $onlineWarranty['status']      = 'ไม่พบข้อมูลวันหมดประกัน';
+            // ถ้าไม่มีข้อมูลการลงทะเบียนทั้งคู่ ให้ค่าตกลงเป็น null และ false
+            $onlineWarranty['status']      = null;
+            $onlineWarranty['is_registered'] = false;
         }
 
         if ($warrantyStartDate) {
