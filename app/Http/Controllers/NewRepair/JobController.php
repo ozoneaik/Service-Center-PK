@@ -70,7 +70,23 @@ class JobController extends Controller
                             'found' => true,
                             'job' => ['job_detail' => $found]
                         ]);
-                    } elseif ($found->status === 'send') {
+                    } elseif (
+                        $found->status === 'send'
+                        || $found->status === 'รอรับงานซ่อม'
+                        || $found->status === 'พักงานซ่อม'
+                        || $found->status === 'กำลังซ่อม'
+                        || $found->status === 'รอปิดงานซ่อม'
+                        || $found->status === 'รอเปิดSO'
+                        || $found->status === 'เปิดออเดอร์แล้ว'
+                        || $found->status === 'กำลังจัดสินค้า'
+                        || $found->status === 'กำลังจัดสินค้า'
+                        || $found->status === 'แพ็คสินค้าเสร็จ'
+                        || $found->status === 'พร้อมส่ง'
+                        || $found->status === 'เตรียมส่ง'
+                        || $found->status === 'กำลังส่ง'
+                        || $found->status === 'ส่งของแล้ว'
+                        || $found->status === 'บัญชีรับงานแล้ว'
+                    ) {
                         throw new \Exception('ส่งไปยัง pumpkin');
                     } else {
                         $status = 404;

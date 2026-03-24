@@ -247,9 +247,9 @@ export default function RpTab2Form({ productDetail, JOB, setMainStep, MainStep, 
                                     {/* <HeaderTitle headTitle='สรุปจบงาน' /> */}
                                     <HeaderTitle
                                         headTitle={JOB.group_job !== null && JOB.status === 'success'
-                                            ? `จบงานจากการรับงานส่งกลับจากพัมคิน ฯ (เลขที่อ้างอิง (Group Job) : ${JOB.group_job})` : 'สรุปจบงาน'}
+                                            ? `จบงานส่งซ่อมไปยังพัมคิน ฯ (เลขที่อ้างอิง (Group Job) : ${JOB.group_job})` : 'สรุปจบงาน'}
                                     />
-                                    
+
                                     {/*content here*/}
                                     <RpSummary setJOB={setJOB} setMainStep={setMainStep} JOB={JOB}
                                         productDetail={productDetail} />

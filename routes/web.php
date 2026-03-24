@@ -131,7 +131,7 @@ Route::middleware('auth')->group(function () {
                 Route::get('/list', [OrderManageController::class, 'list'])->name('admin.orders.list');
             });
             Route::get('history-job', [HistorySpController::class, 'index'])->name('admin.history-job');
-            Route::get('/history-job/export', [HistorySpController::class, 'exportExcel'])->name('admin.history.export'); 
+            Route::get('/history-job/export', [HistorySpController::class, 'exportExcel'])->name('admin.history.export');
         });
     });
     require __DIR__ . '/admin.php';
@@ -206,7 +206,7 @@ Route::get('/test-page', function () {
     return Inertia::render('Test/TestPage');
 });
 
-Route::get('/dom-pdf/{group_job_id}', [DomPdfController::class, 'index'])->name('dom-pdf.index');
+Route::get('/dom-pdf/{group_job_id?}', [DomPdfController::class, 'index'])->name('dom-pdf.index');
 
 Route::get('/get-spare-part/{skusp}', [SparePartDetailController::class, 'detail'])->name('utils.spare-part.detail');
 

@@ -45,5 +45,6 @@ class JobList extends Model
         'shop_under_sale_name',
         'shop_under_sale_phone',
         'created_job_from',
+        'ticket_code',
     ];
 }

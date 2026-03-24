@@ -82,7 +82,7 @@ class sendJobController extends Controller
         try {
             $job_group = JobList::query()
                 ->where('group_job', $job_group)
-                ->select('serial_id', 'job_id', 'pid', 'p_name', 'updated_at', 'status')
+                ->select('serial_id', 'job_id', 'pid', 'p_name', 'updated_at', 'status', 'ticket_code')
                 ->get();
             return response()->json([
                 'message' => 'success',
@@ -105,11 +105,11 @@ class sendJobController extends Controller
         } else {
             $now = Carbon::now();
             foreach ($job_groups as $job) {
-                $job['counter_print'] = $job['counter_print'] + 1;
-                if (!isset($job['print_at'])) {
-                    $job['print_at'] = $now;
+                $job->counter_print = $job->counter_print + 1;
+                if (!isset($job->print_at)) {
+                    $job->print_at = $now;
                 }
-                $job['print_updated_at'] = $now;
+                $job->print_updated_at = $now;
                 $job->save();
             }
         }
@@ -144,7 +144,22 @@ class sendJobController extends Controller
         try {
             $query = JobList::query()
                 ->where('is_code_key', Auth::user()->is_code_cust_id)
-                ->whereIn('status', ['send', 'อยู่ระหว่างการจัดส่ง', 'จัดส่งสำเร็จ']);
+                ->whereIn('status', [
+                    'send',
+                    'บัญชีรับงานแล้ว',
+                    'ส่งของแล้ว',
+                    'กำลังส่ง',
+                    'เตรียมส่ง',
+                    'พร้อมส่ง',
+                    'แพ็คสินค้าเสร็จ',
+                    'กำลังจัดสินค้า',
+                    'เปิดออเดอร์แล้ว',
+                    'รอเปิดSO',
+                    'รอปิดงานซ่อม',
+                    'กำลังซ่อม',
+                    'พักงานซ่อม',
+                    'รอรับงานซ่อม'
+                ]);
             if (!empty($jobId) && !empty($serialId)) {
                 $query->where('job_id', 'like', "%{$jobId}%")
                     ->where('serial_id', 'like', "%{$serialId}%");
@@ -206,7 +221,22 @@ class sendJobController extends Controller
         try {
             $query = JobList::query()
                 ->where('is_code_key', Auth::user()->is_code_cust_id)
-                ->whereIn('status', ['send', 'รับคำสั่งซื้อ', 'กำลังดำเนินการจัดเตรียมสินค้า', 'อยู่ระหว่างการจัดส่ง', 'จัดส่งสำเร็จ', 'ยกเลิกคำสั่งซื้อ']);
+                ->whereIn('status', [
+                    'send',
+                    'บัญชีรับงานแล้ว',
+                    'ส่งของแล้ว',
+                    'กำลังส่ง',
+                    'เตรียมส่ง',
+                    'พร้อมส่ง',
+                    'แพ็คสินค้าเสร็จ',
+                    'กำลังจัดสินค้า',
+                    'เปิดออเดอร์แล้ว',
+                    'รอเปิดSO',
+                    'รอปิดงานซ่อม',
+                    'กำลังซ่อม',
+                    'พักงานซ่อม',
+                    'รอรับงานซ่อม'
+                ]);
 
             if ($request->filled('group_job')) {
                 $query->where('group_job', 'like', '%' . $request->input('group_job') . '%');
@@ -227,9 +257,10 @@ class sendJobController extends Controller
             //กรองสถานะ 
             if ($request->filled('status')) {
                 $query->where('status', $request->input('status'));
-            } else {
-                $query->whereIn('status', ['send', 'รับคำสั่งซื้อ', 'กำลังดำเนินการจัดเตรียมสินค้า', 'อยู่ระหว่างการจัดส่ง', 'จัดส่งสำเร็จ', 'ยกเลิกคำสั่งซื้อ']);
             }
+            // else {
+            //     $query->whereIn('status', ['send', 'รับคำสั่งซื้อ', 'กำลังดำเนินการจัดเตรียมสินค้า', 'อยู่ระหว่างการจัดส่ง', 'จัดส่งสำเร็จ', 'ยกเลิกคำสั่งซื้อ']);
+            // }
 
             $jobs = $query->orderBy('created_at', 'asc')->get();
 
@@ -264,15 +295,13 @@ class sendJobController extends Controller
             $updatedCount = JobList::query()
                 ->whereIn('job_id', $jobIds)
                 ->where('is_code_key', Auth::user()->is_code_cust_id)
-                // ->where('status', 'จัดส่งสำเร็จ')
-                ->where('status', 'send')
+                ->whereIn('status', ['บัญชีรับงานแล้ว', 'ส่งของแล้ว'])
                 ->update([
                     'status' => 'success',
                     'close_job_at' => $now,
                     'close_job_by' => Auth::user()->user_code,
                     'updated_at' => $now,
                 ]);
-
             if ($updatedCount > 0) {
                 logStamp::query()->create(['description' => Auth::user()->user_code . " จบงานส่งซ่อม (success) จำนวน $updatedCount รายการ: " . implode(', ', $jobIds)]);
                 DB::commit();
@@ -290,225 +319,6 @@ class sendJobController extends Controller
             ], 500);
         }
     }
-
-    // เช็ค API ซ้ำตอนกดจบงาน
-    // public function finishSendJob(Request $request): JsonResponse
-    // {
-    //     $jobsToFinish = $request->input('jobs_to_finish');
-
-    //     if (empty($jobsToFinish) || !is_array($jobsToFinish)) {
-    //         return response()->json(['message' => 'ไม่มี Job ID ที่เลือกสำหรับจบงาน'], 400);
-    //     }
-
-    //     $REQUIRED_API_STATUS = 'อยู่ระหว่างการจัดส่ง';
-    //     $jobIdsToUpdate = [];
-    //     $jobsToFinishMap = collect($jobsToFinish)->keyBy('job_id');
-
-    //     try {
-    //         $requests = [];
-    //         $uri = env('VITE_API_CHECK_ORDER');
-    //         $timeout = 10;
-
-    //         foreach ($jobsToFinishMap as $jobId => $jobData) {
-    //             $body = ['jobno' => $jobData['job_id'], 'serialno' => $jobData['serial_id'], 'pid' => $jobData['pid']];
-    //             $requests[$jobId] = Http::timeout($timeout)->async()->post($uri, $body);
-    //         }
-
-    //         if (empty($requests)) {
-    //             return response()->json(['message' => 'ไม่สามารถเตรียมคำขอ API ได้ (Job List ว่างเปล่า)', 'success' => false], 500);
-    //         }
-
-    //         $responses = Utils::settle($requests)->wait();
-    //         DB::beginTransaction();
-    //         $now = Carbon::now();
-
-    //         foreach ($jobsToFinishMap as $jobId => $jobData) {
-    //             $externalStatus = null;
-    //             if (isset($responses[$jobId]['value'])) {
-    //                 $response = $responses[$jobId]['value'];
-    //                 if (!($response instanceof Response)) {
-    //                     throw new \Exception("Job ID: $jobId การตอบกลับ API ไม่ใช่รูปแบบ Response ที่คาดหวัง");
-    //                 }
-
-    //                 $rawBody = trim($response->body());
-    //                 $jsonMatch = [];
-    //                 if (preg_match('/{.*}$/s', $rawBody, $jsonMatch)) {
-    //                     $response_json = json_decode($jsonMatch[0], true);
-    //                     $externalStatus = $response_json['status'] ?? null;
-    //                 }
-    //             } elseif (isset($responses[$jobId]['reason'])) {
-    //                 $exception = $responses[$jobId]['reason'];
-    //                 $errorMessage = $exception->getMessage();
-    //                 if ($exception instanceof ConnectionException) {
-    //                     $errorMessage = "การเชื่อมต่อล้มเหลว/หมดเวลา";
-    //                 }
-    //                 throw new \Exception("Job ID: $jobId การเรียก API ล้มเหลว: " . $errorMessage);
-    //             } else {
-    //                 throw new \Exception("Job ID: $jobId ไม่พบผลลัพธ์การเรียก API ที่ชัดเจน");
-    //             }
-    //             $findJob = JobList::query()->where('job_id', $jobId)->first();
-    //             if (!$findJob) {
-    //                 throw new \Exception("ไม่พบ Job ID: $jobId ในระบบ");
-    //             }
-    //             if (!in_array($findJob->status, ['send', 'อยู่ระหว่างการจัดส่ง', 'จัดส่งสำเร็จ'])) {
-    //                 throw new \Exception("Job ID: $jobId ไม่ได้อยู่ในสถานะที่พร้อมปิดงาน (ปัจจุบันสถานะคือ: {$findJob->status})");
-    //             }
-    //             if (!$externalStatus) {
-    //                 throw new \Exception("Job ID: $jobId API ภายนอกไม่มีสถานะตอบกลับ หรือรูปแบบ Response ผิดพลาด");
-    //             }
-    //             if ($externalStatus === 'ไม่พบคำสั่งซื้อ') {
-    //                 throw new \Exception("Job ID: $jobId ไม่พบงานส่งซ่อมในระบบภายนอก");
-    //             }
-    //             if ($externalStatus !== $REQUIRED_API_STATUS) {
-    //                 throw new \Exception("Job ID: $jobId สถานะภายนอกคือ '$externalStatus'. ต้องเป็น '$REQUIRED_API_STATUS' จึงจะปิดงานได้");
-    //             }
-    //             $jobIdsToUpdate[] = $jobId;
-    //         }
-    //         if (count($jobIdsToUpdate) > 0) {
-    //             $updatedCount = JobList::query()
-    //                 ->whereIn('job_id', $jobIdsToUpdate)
-    //                 ->where('is_code_key', Auth::user()->is_code_cust_id)
-    //                 ->whereIn('status', ['send', 'อยู่ระหว่างการจัดส่ง'])
-    //                 ->update([
-    //                     'status' => 'success',
-    //                     'close_job_at' => $now,
-    //                     'close_job_by' => Auth::user()->user_code,
-    //                     'updated_at' => $now,
-    //                 ]);
-
-    //             if ($updatedCount > 0) {
-    //                 logStamp::query()->create(['description' => Auth::user()->user_code . " จบงานส่งซ่อม (success) จำนวน $updatedCount รายการ: " . implode(', ', $jobIdsToUpdate)]);
-    //                 DB::commit();
-    //                 return response()->json(['message' => "อัปเดตสถานะเป็น 'success' สำเร็จ {$updatedCount} รายการ", 'success' => true]);
-    //             } else {
-    //                 DB::rollBack();
-    //                 return response()->json(['message' => 'ไม่พบรายการ Job ที่สามารถอัปเดตได้ (อาจถูกอัปเดตไปก่อนหน้านี้ หรือสถานะไม่ตรง)', 'success' => false], 404);
-    //             }
-    //         } else {
-    //             DB::rollBack();
-    //             return response()->json(['message' => 'ไม่พบรายการ Job ที่ผ่านเงื่อนไขการตรวจสอบสถานะภายนอกเพื่อทำการปิดงาน'], 400);
-    //         }
-    //     } catch (\Exception $exception) {
-    //         DB::rollBack();
-    //         $errorMessage = $exception->getMessage();
-    //         $customMessage = 'ทำรายการไม่สำเร็จ กรุณาลองใหม่อีกครั้ง หรือติดต่อผู้ดูแลระบบ';
-    //         if (
-    //             str_contains($errorMessage, 'การตอบกลับ API ไม่ใช่รูปแบบ Response ที่คาดหวัง') ||
-    //             str_contains($errorMessage, 'API ภายนอกไม่มีสถานะตอบกลับ')
-    //         ) {
-
-    //             $finalMessage = $customMessage;
-    //         } elseif (str_contains($errorMessage, 'ไม่พบงานส่งซ่อมในระบบภายนอก')) {
-    //             $finalMessage = $errorMessage;
-    //         } else {
-    //             $finalMessage = $errorMessage;
-    //         }
-
-    //         Log::error('❌ เกิดข้อผิดพลาดในการจบงานส่งซ่อม (Batch): ' . $errorMessage, ['user' => Auth::user()->user_code]);
-    //         return response()->json([
-    //             'message' => 'เกิดข้อผิดพลาดในการจบงาน: ' . $finalMessage,
-    //             'success' => false
-    //         ], 500);
-    //     }
-    // }
-
-    // public function checkJobStatus(Request $request): JsonResponse
-    // {
-    //     $jobId = $request->input('job_id');
-    //     $serialId = $request->input('serial_id');
-    //     $pid = $request->input('pid');
-
-    //     if (empty($jobId) || empty($serialId) || empty($pid)) {
-    //         return response()->json([
-    //             'message' => 'กรุณากรอก Job ID, Serial ID และ PID',
-    //             'status' => false
-    //         ], 400);
-    //     }
-
-    //     try {
-    //         $timeout = 10;
-    //         $uri = env('VITE_API_CHECK_ORDER');
-    //         $body = ['jobno' => $jobId, 'serialno' => $serialId, 'pid' => $pid];
-
-    //         Log::info('📦 เริ่มเช็คสถานะงานซ่อม PK', ['job_id' => $jobId, 'request_body' => $body, 'timeout' => $timeout]);
-    //         $response = Http::timeout($timeout)->post($uri, $body);
-
-    //         if (!$response->successful() || $response->status() !== 200) {
-    //             $errorBody = $response->body();
-    //             if (str_contains($errorBody, 'ไม่พบคำสั่งซื้อ') || str_contains($errorBody, 'not found')) {
-    //                 throw new \Exception("ไม่พบงานส่งซ่อมในระบบภายนอก");
-    //             }
-    //             throw new \Exception("API ภายนอกล้มเหลว (HTTP {$response->status()})");
-    //         }
-
-    //         $rawBody = trim($response->body());
-    //         $jsonMatch = [];
-
-    //         if (!preg_match('/{.*}$/s', $rawBody, $jsonMatch)) {
-    //             throw new \Exception("API ตอบกลับมาในรูปแบบที่ไม่สามารถแยก JSON ได้: " . $rawBody);
-    //         }
-
-    //         $jsonString = $jsonMatch[0];
-    //         $response_json = json_decode($jsonString, true);
-
-    //         if (!is_array($response_json)) {
-    //             throw new \Exception("API ตอบกลับมาในรูปแบบที่ไม่ใช่ JSON ที่ใช้งานได้: " . $jsonString);
-    //         }
-
-    //         $externalStatus = $response_json['status'] ?? null;
-
-    //         if (!$externalStatus) {
-    //             throw new \Exception("API ตอบกลับมาแล้ว แต่ไม่พบคีย์ 'status' ใน Response JSON. JSON ที่ได้รับ: " . json_encode($response_json));
-    //         }
-    //         if ($externalStatus === 'ไม่พบคำสั่งซื้อ') {
-    //             throw new \Exception("ไม่พบงานส่งซ่อม");
-    //         }
-    //         DB::beginTransaction();
-    //         $updated = JobList::where('job_id', $jobId)->update([
-    //             'status' => $externalStatus,
-    //             'updated_at' => Carbon::now(),
-    //         ]);
-
-    //         if ($updated) {
-    //             DB::commit();
-    //             Log::info('✅ สถานะงานซ่อมถูกอัปเดตใน DB', ['job_id' => $jobId, 'status_new' => $externalStatus]);
-    //         } else {
-    //             DB::rollBack();
-    //             Log::warning('⚠️ สถานะงานซ่อมไม่ถูกอัปเดตใน DB', ['job_id' => $jobId, 'status_api' => $externalStatus]);
-    //         }
-
-    //         return response()->json([
-    //             'status' => 'success',
-    //             'api_status' => $externalStatus,
-    //             'message' => 'ดึงสถานะสำเร็จ',
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         if (DB::transactionLevel() > 0) {
-    //             DB::rollBack();
-    //         }
-    //         $errorMessage = $e->getMessage();
-    //         $userFriendlyMessage = 'เช็คสถานะล้มเหลว: ';
-    //         if (
-    //             str_contains($errorMessage, 'cURL error 28') ||
-    //             str_contains($errorMessage, 'timed out') ||
-    //             str_contains($errorMessage, 'API ตอบกลับมาในรูปแบบที่ไม่สามารถแยก JSON ได้')
-    //         ) {
-
-    //             $userFriendlyMessage .= 'เกิดข้อผิดพลาด กรุณาลองใหม่ในภายหลัง';
-    //         } elseif (str_contains($errorMessage, 'ไม่พบงานส่งซ่อม')) {
-    //             $userFriendlyMessage .= 'ไม่พบงานส่งซ่อมที่ต้องการเช็คสถานะในระบบภายนอก';
-    //         } else {
-    //             $userFriendlyMessage .= $errorMessage;
-    //         }
-
-    //         Log::error('❌ ตรวจสอบสถานะงานซ่อมล้มเหลว', ['job_id' => $jobId, 'error' => $errorMessage]);
-    //         Log::error('❌ ตรวจสอบสถานะงานซ่อมล้มเหลว', ['job_id' => $jobId, 'error' => $e->getMessage()]);
-    //         return response()->json([
-    //             'status' => 'error',
-    //             'message' => 'เช็คสถานะล้มเหลว: ' . $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
 
     // Mock Up Test CheckJobStatus
     public function checkJobStatus(Request $request): JsonResponse
@@ -543,54 +353,69 @@ class sendJobController extends Controller
                 $externalStatus = $mockTargetStatus;
             } else {
                 $timeout = 10;
-                $uri = env('VITE_API_CHECK_ORDER');
-                $body = ['jobno' => $jobId, 'serialno' => $serialId, 'pid' => $pid, 'type' => $type];
+                $uri = "https://afterservice-sv.pumpkin.tools/sv/callpsc.php";
 
-                Log::info('📦 เริ่มเช็คสถานะงานซ่อม PK', ['job_id' => $jobId, 'request_body' => $body, 'timeout' => $timeout]);
-                $response = Http::timeout($timeout)->post($uri, $body);
+                Log::info('📦 เริ่มเช็คสถานะงานซ่อม PK (New API callpsc.php)', ['job_id' => $jobId]);
+
+                // ดึง ticket_code จากฐานข้อมูล
+                $job = JobList::where('job_id', $jobId)->first();
+                $ticketCode = $job ? $job->ticket_code : null;
+
+                if (!$ticketCode) {
+                    throw new \Exception("ไม่พบ Ticket Code สำหรับ Job นี้ในระบบ ไม่สามารถเช็คสถานะได้");
+                }
+
+                // ส่งแบบ JSON ตามรูปแบบที่ระบุ
+                $response = Http::timeout($timeout)->post($uri, [
+                    'ticketcode' => $ticketCode
+                ]);
 
                 if (!$response->successful() || $response->status() !== 200) {
-                    $errorBody = $response->body();
-                    if (str_contains($errorBody, 'ไม่พบคำสั่งซื้อ') || str_contains($errorBody, 'not found')) {
-                        throw new \Exception("ไม่พบงานส่งซ่อมในระบบภายนอก");
-                    }
+                    Log::error('❌ API callpsc.php ล้มเหลว', [
+                        'status' => $response->status(),
+                        'body' => $response->body()
+                    ]);
                     throw new \Exception("API ภายนอกล้มเหลว (HTTP {$response->status()})");
                 }
 
-                $rawBody = trim($response->body());
-                $jsonMatch = [];
+                $response_json = $response->json();
 
-                if (!preg_match('/{.*}$/s', $rawBody, $jsonMatch)) {
-                    throw new \Exception("API ตอบกลับมาในรูปแบบที่ไม่สามารถแยก JSON ได้: " . $rawBody);
+                if (!$response_json || !is_array($response_json)) {
+                    throw new \Exception("API ตอบกลับมาในรูปแบบที่ไม่ใช่ JSON ที่ใช้งานได้");
                 }
 
-                $jsonString = $jsonMatch[0];
-                $response_json = json_decode($jsonString, true);
-
-                if (!is_array($response_json)) {
-                    throw new \Exception("API ตอบกลับมาในรูปแบบที่ไม่ใช่ JSON ที่ใช้งานได้: " . $jsonString);
-                }
-
+                // รับสถานะและเลข ASS จาก API
                 $externalStatus = $response_json['status'] ?? null;
+                $assNo = $response_json['assno'] ?? null;
             }
 
             if (!$externalStatus) {
+                if (isset($response_json['exists']) && $response_json['exists'] === false) {
+                    throw new \Exception("ไม่พบงานส่งซ่อมในระบบภายนอก");
+                }
                 throw new \Exception("ไม่ได้รับสถานะที่ถูกต้อง (Status is null)");
             }
 
-            if ($externalStatus === 'ไม่พบคำสั่งซื้อ') {
-                throw new \Exception("ไม่พบงานส่งซ่อม");
-            }
-
             DB::beginTransaction();
-            $updated = JobList::where('job_id', $jobId)->update([
+
+            $updateData = [
                 'status' => $externalStatus,
                 'updated_at' => Carbon::now(),
-            ]);
+            ];
+
+            // ใช้ assno จาก API ถ้ามี ถ้าไม่มีให้ใช้ ticketCode เดิมที่ส่งไป
+            if ($assNo) {
+                $updateData['ticket_code'] = $assNo;
+                $ticketCode = $assNo; // อัปเดตตัวแปรเพื่อส่งกลับไปยัง Frontend
+            } elseif ($ticketCode) {
+                $updateData['ticket_code'] = $ticketCode;
+            }
+
+            $updated = JobList::where('job_id', $jobId)->update($updateData);
 
             if ($updated) {
                 DB::commit();
-                Log::info('✅ สถานะงานซ่อมถูกอัปเดตใน DB', ['job_id' => $jobId, 'status_new' => $externalStatus, 'mode' => $isMock ? 'MOCK' : 'REAL']);
+                Log::info('✅ สถานะงานซ่อมถูกอัปเดตใน DB', ['job_id' => $jobId, 'status_new' => $externalStatus, 'assno' => $assNo, 'mode' => $isMock ? 'MOCK' : 'REAL']);
             } else {
                 DB::rollBack();
                 Log::warning('⚠️ สถานะงานซ่อมไม่ถูกอัปเดตใน DB', ['job_id' => $jobId, 'status_api' => $externalStatus]);
@@ -599,6 +424,8 @@ class sendJobController extends Controller
             return response()->json([
                 'status' => 'success',
                 'api_status' => $externalStatus,
+                'ticket_code' => $ticketCode,
+                'assno' => $assNo,
                 'message' => $isMock ? 'ดึงสถานะสำเร็จ (จำลอง)' : 'ดึงสถานะสำเร็จ',
             ]);
         } catch (\Exception $e) {
@@ -615,6 +442,8 @@ class sendJobController extends Controller
                 $userFriendlyMessage .= 'เกิดข้อผิดพลาด กรุณาลองตรวจสอบสถานะใหม่ในภายหลัง';
             } elseif (str_contains($errorMessage, 'ไม่พบงานส่งซ่อม')) {
                 $userFriendlyMessage .= 'ไม่พบงานส่งซ่อมที่ต้องการเช็คสถานะ';
+            } elseif (str_contains($errorMessage, 'ไม่พบ Ticket Code')) {
+                $userFriendlyMessage .= $errorMessage;
             } else {
                 // $userFriendlyMessage .= $errorMessage;
                 $userFriendlyMessage .= 'เกิดข้อผิดพลาด กรุณาลองตรวจสอบใหม่อีกครั้ง';

@@ -1,53 +1,132 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import InputAdornment from '@mui/material/InputAdornment';
+import InputAdornment from "@mui/material/InputAdornment";
 import { Head, Link, usePage, router } from "@inertiajs/react";
 import {
-    Box, Button, Card, CardContent, Chip, Container, Divider, Drawer, Grid2, MenuItem, Pagination, Paper, Select,
-    Stack, Table, TableBody, TableCell, TableRow, TableHead, TextField, Typography, useMediaQuery, useTheme,
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    Container,
+    Divider,
+    Drawer,
+    Grid2,
+    MenuItem,
+    Pagination,
+    Paper,
+    Select,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableRow,
+    TableHead,
+    TextField,
+    Typography,
+    useMediaQuery,
+    useTheme,
     Snackbar,
-    Alert
+    Alert,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { ListDetailModal } from "@/Pages/HistoryPage/ListDetailModal.jsx";
-import { ChevronLeft, FilterList, ManageHistory, LocalPhone, Person, Search, Print, FileUpload } from "@mui/icons-material";
+import {
+    ChevronLeft,
+    FilterList,
+    ManageHistory,
+    LocalPhone,
+    Person,
+    Search,
+    Print,
+    FileUpload,
+} from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import { styled } from "@mui/material/styles";
-import { TableStyle } from "../../../css/TableStyle"
+import { TableStyle } from "../../../css/TableStyle";
 import { showDefaultImage } from "@/utils/showImage.js";
 
 const statusLabels = {
-    pending: 'กำลังดำเนินการซ่อม',
-    success: 'ปิดการซ่อมแล้ว',
-    canceled: 'ยกเลิกการซ่อมแล้ว',
-    send: 'ส่งไปยังศูนย์ซ่อม PK',
-    'รับคำสั่งซื้อ': 'รับสินค้าแล้ว',
-    'กำลังดำเนินการจัดเตรียมสินค้า': 'กำลังดำเนินการจัดเตรียมสินค้า',
-    'อยู่ระหว่างการจัดส่ง': 'อยู่ระหว่างการจัดส่ง',
-    'จัดส่งสำเร็จ': 'จัดส่งสำเร็จ',
-    'ยกเลิกคำสั่งซื้อ': 'ยกเลิกการส่งซ่อม',
+    pending: "กำลังดำเนินการซ่อม",
+    success: "ปิดการซ่อมแล้ว",
+    canceled: "ยกเลิกการซ่อมแล้ว",
+    send: "ส่งไปยังศูนย์ซ่อม PK",
+    บัญชีรับงานแล้ว: "จัดส่งสำเร็จ",
+    ส่งของแล้ว: "จัดส่งสำเร็จ",
+    กำลังส่ง: "อยู่ระหว่างการจัดส่ง",
+    เตรียมส่ง: "อยู่ระหว่างการจัดส่ง",
+    พร้อมส่ง: "พร้อมส่ง",
+    แพ็คสินค้าเสร็จ: "กำลังดำเนินการจัดเตรียมสินค้า",
+    กำลังจัดสินค้า: "กำลังดำเนินการจัดเตรียมสินค้า",
+    เปิดออเดอร์แล้ว: "เปิดออเดอร์แล้ว",
+    รอเปิดSO: "รอเปิดSO",
+    รอปิดงานซ่อม: "รอปิดงานซ่อม",
+    กำลังซ่อม: "กำลังดำเนินการซ่อม",
+    พักงานซ่อม: "พักงานซ่อม",
+    รอรับงานซ่อม: "รอรับงานซ่อม",
 };
-const DrawerHeader = styled('div')(({ theme }) => ({
-    display: 'flex', alignItems: 'center',
-    padding: theme.spacing(0, 1), ...theme.mixins.toolbar, justifyContent: 'flex-end',
+const DrawerHeader = styled("div")(({ theme }) => ({
+    display: "flex",
+    alignItems: "center",
+    padding: theme.spacing(0, 1),
+    ...theme.mixins.toolbar,
+    justifyContent: "flex-end",
 }));
 
-
-const statusColors = { pending: 'secondary', success: 'success', canceled: 'error', send: 'info' };
+const statusColors = {
+    pending: "secondary",
+    success: "success",
+    canceled: "error",
+    send: "info",
+    บัญชีรับงานแล้ว: "success",
+    ส่งของแล้ว: "success",
+    กำลังส่ง: "info",
+    เตรียมส่ง: "info",
+    พร้อมส่ง: "info",
+    แพ็คสินค้าเสร็จ: "info",
+    กำลังจัดสินค้า: "info",
+    เปิดออเดอร์แล้ว: "info",
+    รอเปิดSO: "info",
+    รอปิดงานซ่อม: "info",
+    กำลังซ่อม: "info",
+    พักงานซ่อม: "info",
+    รอรับงานซ่อม: "info",
+};
 export const TableDetail = ({ jobs, handleShowDetail, url }) => {
     const { palette } = useTheme();
     const pumpkinColor = palette.pumpkinColor.main;
     const handelPrint = (job_id) => {
-        window.open(route('genReCieveSpPdf', job_id), '_blank')
-    }
+        window.open(route("genReCieveSpPdf", job_id), "_blank");
+    };
     return (
         <Table stickyHeader>
             <TableHead>
                 <TableRow>
                     {(url.startsWith("/admin/history-job")
-                        ? ["รูปภาพ", "ซีเรียล", "วันที่", "รหัส job", "ศูนย์บริการ", "ข้อมูลลูกค้า", "ช่างที่ซ่อม", "สถานะ", "รายละเอียด"]
-                        : ["รูปภาพ", "ซีเรียล", "วันที่", "รหัส job", "ข้อมูลลูกค้า", "ช่างที่ซ่อม", "สถานะ", "รายละเอียด"]
+                        ? [
+                              "รูปภาพ",
+                              "ซีเรียล",
+                              "วันที่",
+                              "รหัส job",
+                              "ศูนย์บริการ",
+                              "ข้อมูลลูกค้า",
+                              "ช่างที่ซ่อม",
+                              "สถานะ",
+                              "รายละเอียด",
+                          ]
+                        : [
+                              "รูปภาพ",
+                              "ซีเรียล",
+                              "วันที่",
+                              "รหัส job",
+                              "ข้อมูลลูกค้า",
+                              "ช่างที่ซ่อม",
+                              "สถานะ",
+                              "รายละเอียด",
+                          ]
                     ).map((head, i) => (
-                        <TableCell sx={TableStyle.TableHead} key={i}>{head}</TableCell>
+                        <TableCell sx={TableStyle.TableHead} key={i}>
+                            {head}
+                        </TableCell>
                     ))}
                 </TableRow>
             </TableHead>
@@ -56,7 +135,11 @@ export const TableDetail = ({ jobs, handleShowDetail, url }) => {
                 {jobs.map((job, index) => (
                     <TableRow key={index}>
                         <TableCell>
-                            <img src={job.image_sku} width={50} onError={showDefaultImage} />
+                            <img
+                                src={job.image_sku}
+                                width={50}
+                                onError={showDefaultImage}
+                            />
                         </TableCell>
                         <TableCell>
                             {/* <Link href={route('repair.index', { job_id: job.job_id })}>
@@ -74,47 +157,77 @@ export const TableDetail = ({ jobs, handleShowDetail, url }) => {
                             </Link>
                         </TableCell>
                         <TableCell>
-                            {job.created_at ? new Date(job.created_at).toLocaleString("th-TH") : "-"}
+                            {job.created_at
+                                ? new Date(job.created_at).toLocaleString(
+                                      "th-TH",
+                                  )
+                                : "-"}
                         </TableCell>
-                        <TableCell>
-                            {job.job_id}
-                        </TableCell>
+                        <TableCell>{job.job_id}</TableCell>
                         {url.startsWith("/admin/history-job") && (
                             <TableCell>
-                                <b>รหัสร้านค้า :</b> <span style={{ color: pumpkinColor }}>{job.is_code_key}</span>
+                                <b>รหัสร้านค้า :</b>{" "}
+                                <span style={{ color: pumpkinColor }}>
+                                    {job.is_code_key}
+                                </span>
                                 <br />
-                                <b>ชื่อร้าน :</b> <span style={{ color: pumpkinColor }}>{job.shop_name}</span>
+                                <b>ชื่อร้าน :</b>{" "}
+                                <span style={{ color: pumpkinColor }}>
+                                    {job.shop_name}
+                                </span>
                             </TableCell>
                         )}
                         <TableCell>
-                            <b>ชื่อ :</b> <span style={{ color: pumpkinColor }}>{job.name}</span><br />
-                            <b>เบอร์โทร :</b> <span style={{ color: pumpkinColor }}>{job.phone}</span>
+                            <b>ชื่อ :</b>{" "}
+                            <span style={{ color: pumpkinColor }}>
+                                {job.name}
+                            </span>
+                            <br />
+                            <b>เบอร์โทร :</b>{" "}
+                            <span style={{ color: pumpkinColor }}>
+                                {job.phone}
+                            </span>
                         </TableCell>
                         <TableCell>
-                            <b>ชื่อ :</b> <span style={{ color: pumpkinColor }}>{job.technician_name}</span><br />
-                            <b>เบอร์โทร :</b> <span style={{ color: pumpkinColor }}>{job.technician_phone}</span>
+                            <b>ชื่อ :</b>{" "}
+                            <span style={{ color: pumpkinColor }}>
+                                {job.technician_name}
+                            </span>
+                            <br />
+                            <b>เบอร์โทร :</b>{" "}
+                            <span style={{ color: pumpkinColor }}>
+                                {job.technician_phone}
+                            </span>
                         </TableCell>
                         <TableCell>
-                            <Chip label={statusLabels[job.status] || 'ไม่สามารถระบุสถานะได้'}
-                                color={statusColors[job.status] || 'info'} />
+                            <Chip
+                                label={
+                                    statusLabels[job.status] ||
+                                    "ไม่สามารถระบุสถานะได้"
+                                }
+                                color={statusColors[job.status] || "info"}
+                            />
                         </TableCell>
-                        <TableCell >
-                            <Box display='flex' flexWrap='nowrap' gap={2}>
+                        <TableCell>
+                            <Box display="flex" flexWrap="nowrap" gap={2}>
                                 <Button
-                                    variant="contained" size="small" color="info"
-                                    startIcon={<Print />} onClick={() => handelPrint(job.job_id)}
+                                    variant="contained"
+                                    size="small"
+                                    color="info"
+                                    startIcon={<Print />}
+                                    onClick={() => handelPrint(job.job_id)}
                                 >
                                     พิมพ์ใบรับงานซ่อม
                                 </Button>
                                 <Button
                                     startIcon={<ManageHistory />}
-                                    variant="contained" size="small"
+                                    variant="contained"
+                                    size="small"
                                     onClick={() => handleShowDetail(job)}
                                 >
                                     ดูรายละเอียด
                                 </Button>
                             </Box>
-
                         </TableCell>
                     </TableRow>
                 ))}
@@ -123,76 +236,132 @@ export const TableDetail = ({ jobs, handleShowDetail, url }) => {
     );
 };
 
-const FilterForm = ({ handleFilterChange, filters, setFilters, searchJobs }) => {
-    const isMobile = useMediaQuery('(max-width:700px)');
+const FilterForm = ({
+    handleFilterChange,
+    filters,
+    setFilters,
+    searchJobs,
+}) => {
+    const isMobile = useMediaQuery("(max-width:700px)");
     const { url } = usePage();
     return (
         <Grid2 container spacing={2}>
             <Grid2 size={{ md: 4, xs: 12 }}>
                 <TextField
-                    fullWidth size="small" label='ค้นหา Serial ID'
-                    type="text" name="serial_id" value={filters.serial_id}
+                    fullWidth
+                    size="small"
+                    label="ค้นหา Serial ID"
+                    type="text"
+                    name="serial_id"
+                    value={filters.serial_id}
                     onChange={handleFilterChange}
                     slotProps={{
                         input: {
-                            startAdornment: <InputAdornment position="start">Sn</InputAdornment>
-                        }
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    Sn
+                                </InputAdornment>
+                            ),
+                        },
                     }}
                 />
             </Grid2>
             <Grid2 size={{ md: 4, xs: 12 }}>
                 <TextField
-                    fullWidth value={filters.job_id} name="job_id"
-                    label='ค้นหา Job ID' size="small" type="text"
+                    fullWidth
+                    value={filters.job_id}
+                    name="job_id"
+                    label="ค้นหา Job ID"
+                    size="small"
+                    type="text"
                     onChange={handleFilterChange}
                     slotProps={{
                         input: {
-                            startAdornment: <InputAdornment position="start">Job ID</InputAdornment>
-                        }
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    Job ID
+                                </InputAdornment>
+                            ),
+                        },
                     }}
                 />
             </Grid2>
             <Grid2 size={{ md: 4, xs: 12 }}>
                 <TextField
-                    fullWidth label='ค้นหาเบอร์โทรศัพท์' size="small"
-                    type="text" name="phone" value={filters.phone}
+                    fullWidth
+                    label="ค้นหาเบอร์โทรศัพท์"
+                    size="small"
+                    type="text"
+                    name="phone"
+                    value={filters.phone}
                     onChange={handleFilterChange}
                     slotProps={{
                         input: {
-                            startAdornment: <InputAdornment position="start">
-                                <LocalPhone />
-                            </InputAdornment>
-                        }
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <LocalPhone />
+                                </InputAdornment>
+                            ),
+                        },
                     }}
                 />
             </Grid2>
             <Grid2 size={{ md: 2, xs: 12 }}>
                 <TextField
-                    fullWidth label='ค้นหาชื่อลูกค้า' size="small"
-                    type="text" name="name" value={filters.name}
+                    fullWidth
+                    label="ค้นหาชื่อลูกค้า"
+                    size="small"
+                    type="text"
+                    name="name"
+                    value={filters.name}
                     onChange={handleFilterChange}
                     slotProps={{
                         input: {
-                            startAdornment: <InputAdornment position="start">
-                                <Person />
-                            </InputAdornment>
-                        }
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <Person />
+                                </InputAdornment>
+                            ),
+                        },
                     }}
                 />
             </Grid2>
             <Grid2 size={{ md: 2, xs: 12 }}>
                 <Select
-                    variant='outlined'
-                    fullWidth={!isMobile} value={filters.status || 'select'}
+                    variant="outlined"
+                    fullWidth={!isMobile}
+                    value={filters.status || "select"}
                     onChange={handleFilterChange}
-                    name="status" size="small"
+                    name="status"
+                    size="small"
                 >
-                    <MenuItem disabled value={'select'}>เลือกสถานะการซ่อม</MenuItem>
-                    <MenuItem value={''}>ทั้งหมด</MenuItem>
-                    <MenuItem value={'pending'}>กำลังดำเนินการซ่อม</MenuItem>
-                    <MenuItem value={'send'}>ส่งไปยังศูนย์ซ่อม PK</MenuItem>
-                    <MenuItem value={'success'}>ปิดการซ่อมแล้ว</MenuItem>
-                    <MenuItem value={'canceled'}>ยกเลิกการซ่อมแล้ว</MenuItem>
+                    <MenuItem disabled value={"select"}>
+                        เลือกสถานะการซ่อม
+                    </MenuItem>
+                    <MenuItem value={""}>ทั้งหมด</MenuItem>
+                    <MenuItem value={"pending"}>กำลังดำเนินการซ่อม</MenuItem>
+                    <MenuItem value={"send"}>ส่งไปยังศูนย์ซ่อม PK</MenuItem>
+                    <MenuItem value={"success"}>ปิดการซ่อมแล้ว</MenuItem>
+                    <MenuItem value={"canceled"}>ยกเลิกการซ่อมแล้ว</MenuItem>
+                    <MenuItem value={"บัญชีรับงานแล้ว"}>
+                        บัญชีรับงานแล้ว
+                    </MenuItem>
+                    <MenuItem value={"ส่งของแล้ว"}>ส่งของแล้ว</MenuItem>
+                    <MenuItem value={"กำลังส่ง"}>กำลังส่ง</MenuItem>
+                    <MenuItem value={"เตรียมส่ง"}>เตรียมส่ง</MenuItem>
+                    <MenuItem value={"พร้อมส่ง"}>พร้อมส่ง</MenuItem>
+                    <MenuItem value={"แพ็คสินค้าเสร็จ"}>
+                        แพ็คสินค้าเสร็จ
+                    </MenuItem>
+                    <MenuItem value={"กำลังจัดสินค้า"}>กำลังจัดสินค้า</MenuItem>
+                    <MenuItem value={"เปิดออเดอร์แล้ว"}>
+                        เปิดออเดอร์แล้ว
+                    </MenuItem>
+                    <MenuItem value={"รอเปิดSO"}>รอเปิดSO</MenuItem>
+                    <MenuItem value={"รอปิดงานซ่อม"}>รอปิดงานซ่อม</MenuItem>
+                    <MenuItem value={"กำลังซ่อม"}>กำลังซ่อม</MenuItem>
+                    <MenuItem value={"พักงานซ่อม"}>พักงานซ่อม</MenuItem>
+                    <MenuItem value={"รอรับงานซ่อม"}>รอรับงานซ่อม</MenuItem>
                 </Select>
             </Grid2>
             <Grid2 size={{ md: 2, xs: 12 }}>
@@ -221,16 +390,18 @@ const FilterForm = ({ handleFilterChange, filters, setFilters, searchJobs }) => 
             </Grid2>
             <Grid2 size={{ md: 1, xs: 12 }}>
                 <Select
-                    variant='outlined'
+                    variant="outlined"
                     fullWidth={!isMobile}
-                    value={filters.created_job_from || 'select'}
+                    value={filters.created_job_from || "select"}
                     onChange={handleFilterChange}
                     name="created_job_from"
                     size="small"
                 >
-                    <MenuItem disabled value={'select'}>งานซ่อมจาก</MenuItem>
-                    <MenuItem value={''}>ทั้งหมด</MenuItem>
-                    <MenuItem value={'sale'}>เซลล์</MenuItem>
+                    <MenuItem disabled value={"select"}>
+                        งานซ่อมจาก
+                    </MenuItem>
+                    <MenuItem value={""}>ทั้งหมด</MenuItem>
+                    <MenuItem value={"sale"}>เซลล์</MenuItem>
                     {/* หากต้องการกรองงานทั่วไปด้วย */}
                     {/* <MenuItem value={'admin'}>ศูนย์บริการ</MenuItem> */}
                 </Select>
@@ -256,12 +427,19 @@ const FilterForm = ({ handleFilterChange, filters, setFilters, searchJobs }) => 
                                 status: "",
                                 created_job_from: "",
                                 date_start: "",
-                                date_end: ""
+                                date_end: "",
                             });
-                            const routeName = window.location.pathname.startsWith("/admin/history-job")
-                                ? "admin.history-job"
-                                : "history.index";
-                            router.get(route(routeName), {}, { preserveState: true });
+                            const routeName =
+                                window.location.pathname.startsWith(
+                                    "/admin/history-job",
+                                )
+                                    ? "admin.history-job"
+                                    : "history.index";
+                            router.get(
+                                route(routeName),
+                                {},
+                                { preserveState: true },
+                            );
                         }}
                     >
                         ล้างตัวกรอง
@@ -277,8 +455,12 @@ const FilterForm = ({ handleFilterChange, filters, setFilters, searchJobs }) => 
                         variant="contained"
                         color="success"
                         onClick={() => {
-                            const query = new URLSearchParams(filters).toString();
-                            const exportRoute = url.startsWith("/admin/history-job")
+                            const query = new URLSearchParams(
+                                filters,
+                            ).toString();
+                            const exportRoute = url.startsWith(
+                                "/admin/history-job",
+                            )
                                 ? route("admin.history.export")
                                 : route("history.export");
                             window.open(exportRoute + "?" + query, "_blank");
@@ -288,62 +470,104 @@ const FilterForm = ({ handleFilterChange, filters, setFilters, searchJobs }) => 
                     </Button>
                 </Box>
             </Grid2>
-
         </Grid2>
-    )
-}
-
+    );
+};
 
 const MobileDetail = ({ jobs, handleShowDetail, url }) => {
     const { palette } = useTheme();
     const pumpkinColor = palette.pumpkinColor.main;
     const TextDetail = ({ label, value }) => (
-        <Stack direction='row' spacing={1}>
-            <Typography fontWeight='bold' color={pumpkinColor}>{label}</Typography>
+        <Stack direction="row" spacing={1}>
+            <Typography fontWeight="bold" color={pumpkinColor}>
+                {label}
+            </Typography>
             <Typography>:</Typography>
-            {label === 'สถานะ' ? (
-                <Chip label={statusLabels[value] || 'ไม่สามารถระบุสถานะได้'}
-                    color={statusColors[value] || 'info'} />
+            {label === "สถานะ" ? (
+                <Chip
+                    label={statusLabels[value] || "ไม่สามารถระบุสถานะได้"}
+                    color={statusColors[value] || "info"}
+                />
             ) : (
                 <Typography>{value}</Typography>
             )}
-
         </Stack>
-    )
+    );
 
     const handelPrint = (job_id) => {
-        window.open(route('genReCieveSpPdf', job_id), '_blank')
-    }
+        window.open(route("genReCieveSpPdf", job_id), "_blank");
+    };
     return (
         <Stack spacing={2}>
             {jobs.map((job, index) => {
                 // ["รูปภาพ", "ซีเรียล", "รหัส job", "ศูนย์บริการ", "ข้อมูลลูกค้า", "สถานะ", "รายละเอียด"]
                 return (
-                    <Card variant='outlined' key={index}>
+                    <Card variant="outlined" key={index}>
                         <CardContent>
                             <Stack spacing={1}>
-                                <Link href={route('repair.index', { job_id: job.job_id })}>
-                                    <TextDetail label='ซีเรียล' value={job.serial_id} />
+                                <Link
+                                    href={route("repair.index", {
+                                        job_id: job.job_id,
+                                    })}
+                                >
+                                    <TextDetail
+                                        label="ซีเรียล"
+                                        value={job.serial_id}
+                                    />
                                 </Link>
-                                <TextDetail label='วันที่' value={job.created_at ? new Date(job.created_at).toLocaleString("th-TH") : "-"} />
-                                <TextDetail label='รหัส job' value={job.job_id} />
-                                <TextDetail label='ชื่อ/เบอร์โทรลูกค้า' value={job.name + job.phone} />
+                                <TextDetail
+                                    label="วันที่"
+                                    value={
+                                        job.created_at
+                                            ? new Date(
+                                                  job.created_at,
+                                              ).toLocaleString("th-TH")
+                                            : "-"
+                                    }
+                                />
+                                <TextDetail
+                                    label="รหัส job"
+                                    value={job.job_id}
+                                />
+                                <TextDetail
+                                    label="ชื่อ/เบอร์โทรลูกค้า"
+                                    value={job.name + job.phone}
+                                />
                                 {url.startsWith("/admin/history-job") && (
-                                    <TextDetail label='ศูนย์บริการ' value={`(${job.is_code_key}) ` + job.shop_name} />
+                                    <TextDetail
+                                        label="ศูนย์บริการ"
+                                        value={
+                                            `(${job.is_code_key}) ` +
+                                            job.shop_name
+                                        }
+                                    />
                                 )}
-                                <TextDetail label='สถานะ' value={job.status} />
-                                <TextDetail label='ช่างที่ซ่อม' value={job.technician_name + `(${job.technician_phone})`} />
+                                <TextDetail label="สถานะ" value={job.status} />
+                                <TextDetail
+                                    label="ช่างที่ซ่อม"
+                                    value={
+                                        job.technician_name +
+                                        `(${job.technician_phone})`
+                                    }
+                                />
                                 <Divider />
-                                <Stack direction='row' justifyContent='space-between'>
+                                <Stack
+                                    direction="row"
+                                    justifyContent="space-between"
+                                >
                                     <Button
-                                        variant="contained" size="small" color="info"
-                                        startIcon={<Print />} onClick={() => handelPrint(job.job_id)}
+                                        variant="contained"
+                                        size="small"
+                                        color="info"
+                                        startIcon={<Print />}
+                                        onClick={() => handelPrint(job.job_id)}
                                     >
                                         พิมพ์ใบรับงานซ่อม
                                     </Button>
                                     <Button
                                         startIcon={<ManageHistory />}
-                                        variant="contained" size="small"
+                                        variant="contained"
+                                        size="small"
                                         onClick={() => handleShowDetail(job)}
                                     >
                                         ดูรายละเอียด
@@ -352,11 +576,11 @@ const MobileDetail = ({ jobs, handleShowDetail, url }) => {
                             </Stack>
                         </CardContent>
                     </Card>
-                )
+                );
             })}
         </Stack>
-    )
-}
+    );
+};
 
 export default function HistoryMain({ jobs }) {
     console.log(jobs);
@@ -366,7 +590,7 @@ export default function HistoryMain({ jobs }) {
 
     const { flash } = props;
     const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState("");
     useEffect(() => {
         if (flash?.error) {
             setErrorMessage(flash.error);
@@ -376,13 +600,16 @@ export default function HistoryMain({ jobs }) {
 
     const handleCloseSnackbar = () => setSnackbarOpen(false);
 
-    const isMobile = useMediaQuery('(max-width:700px)');
+    const isMobile = useMediaQuery("(max-width:700px)");
     const [filters, setFilters] = useState({
-        serial_id: "", job_id: "",
-        phone: "", name: "",
+        serial_id: "",
+        job_id: "",
+        phone: "",
+        name: "",
         status: "",
         created_job_from: "",
-        date_start: "", date_end: ""
+        date_start: "",
+        date_end: "",
     });
 
     const [openDrawer, setOpenDrawer] = useState(false);
@@ -391,7 +618,9 @@ export default function HistoryMain({ jobs }) {
         setFilters({ ...filters, [e.target.name]: e.target.value });
     };
     const searchJobs = () => {
-        const routeName = url.startsWith("/admin/history-job") ? "admin.history-job" : "history.index";
+        const routeName = url.startsWith("/admin/history-job")
+            ? "admin.history-job"
+            : "history.index";
         router.get(route(routeName), filters, { preserveState: true });
         setOpenDrawer(false);
     };
@@ -400,18 +629,27 @@ export default function HistoryMain({ jobs }) {
     const handleShowDetail = (item) => {
         setSelected(item);
         setOpen(true);
-    }
-
+    };
 
     const DrawerList = (
         <Box sx={{ minWidth: 200, maxWidth: 300, p: 3 }} role="presentation">
-            <FilterForm handleFilterChange={handleFilterChange} filters={filters} setFilters={setFilters} searchJobs={searchJobs} />
+            <FilterForm
+                handleFilterChange={handleFilterChange}
+                filters={filters}
+                setFilters={setFilters}
+                searchJobs={searchJobs}
+            />
         </Box>
-
-    )
+    );
     return (
         <>
-            {open && <ListDetailModal open={open} setOpen={setOpen} selected={selected} />}
+            {open && (
+                <ListDetailModal
+                    open={open}
+                    setOpen={setOpen}
+                    selected={selected}
+                />
+            )}
             <AuthenticatedLayout>
                 <Head title="ประวัติซ่อม" />
                 <Drawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
@@ -422,44 +660,88 @@ export default function HistoryMain({ jobs }) {
                     </DrawerHeader>
                     {DrawerList}
                 </Drawer>
-                <Container maxWidth='false' sx={{ backgroundColor: 'white', p: 3 }}>
+                <Container
+                    maxWidth="false"
+                    sx={{ backgroundColor: "white", p: 3 }}
+                >
                     <Grid2 container spacing={2}>
                         {isMobile ? (
-                            <Button variant='contained' onClick={() => setOpenDrawer(true)} startIcon={<FilterList />}>
+                            <Button
+                                variant="contained"
+                                onClick={() => setOpenDrawer(true)}
+                                startIcon={<FilterList />}
+                            >
                                 กรองค้นหา
                             </Button>
                         ) : (
                             <Grid2 size={12}>
-                                <FilterForm handleFilterChange={handleFilterChange} filters={filters}
+                                <FilterForm
+                                    handleFilterChange={handleFilterChange}
+                                    filters={filters}
                                     setFilters={setFilters}
-                                    searchJobs={searchJobs} />
+                                    searchJobs={searchJobs}
+                                />
                             </Grid2>
                         )}
 
                         <Grid2 size={12}>
-                            <Stack direction={{ sm: 'row', xs: 'column' }} justifyContent='space-between'
-                                alignItems='center'>
-                                <Typography variant='h5' fontWeight='bold'>ประวัติซ่อม</Typography>
-                                <Typography
-                                    variant="subtitle1">รายการ {jobs.to} จากรายการทั้งหมด {jobs.total} รายการ</Typography>
+                            <Stack
+                                direction={{ sm: "row", xs: "column" }}
+                                justifyContent="space-between"
+                                alignItems="center"
+                            >
+                                <Typography variant="h5" fontWeight="bold">
+                                    ประวัติซ่อม
+                                </Typography>
+                                <Typography variant="subtitle1">
+                                    รายการ {jobs.to} จากรายการทั้งหมด{" "}
+                                    {jobs.total} รายการ
+                                </Typography>
                             </Stack>
                         </Grid2>
                         <Grid2 size={12}>
                             {isMobile ? (
-                                <MobileDetail url={url} jobs={jobs.data} handleShowDetail={handleShowDetail} />
+                                <MobileDetail
+                                    url={url}
+                                    jobs={jobs.data}
+                                    handleShowDetail={handleShowDetail}
+                                />
                             ) : (
-                                <Paper variant='outlined' sx={{ height: 'calc(100vh - 350px)', overflowX: 'auto' }}>
-                                    <TableDetail url={url} jobs={jobs.data} handleShowDetail={handleShowDetail} />
+                                <Paper
+                                    variant="outlined"
+                                    sx={{
+                                        height: "calc(100vh - 350px)",
+                                        overflowX: "auto",
+                                    }}
+                                >
+                                    <TableDetail
+                                        url={url}
+                                        jobs={jobs.data}
+                                        handleShowDetail={handleShowDetail}
+                                    />
                                 </Paper>
                             )}
 
-                            <Stack mt={3} direction='row' justifyContent='center'>
+                            <Stack
+                                mt={3}
+                                direction="row"
+                                justifyContent="center"
+                            >
                                 <Pagination
                                     count={jobs.links.length - 2}
                                     onChange={(e, page) => {
-                                        const routeName = url.startsWith("/admin/history-job") ? "admin.history-job" : "history.index";
-                                        router.get(route(routeName), { ...filters, page: page }, { preserveState: true });
-                                    }} />
+                                        const routeName = url.startsWith(
+                                            "/admin/history-job",
+                                        )
+                                            ? "admin.history-job"
+                                            : "history.index";
+                                        router.get(
+                                            route(routeName),
+                                            { ...filters, page: page },
+                                            { preserveState: true },
+                                        );
+                                    }}
+                                />
                             </Stack>
                         </Grid2>
                     </Grid2>
@@ -468,13 +750,17 @@ export default function HistoryMain({ jobs }) {
                     open={snackbarOpen}
                     autoHideDuration={6000}
                     onClose={handleCloseSnackbar}
-                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                    anchorOrigin={{ vertical: "top", horizontal: "center" }}
                 >
-                    <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
+                    <Alert
+                        onClose={handleCloseSnackbar}
+                        severity="error"
+                        sx={{ width: "100%" }}
+                    >
                         {errorMessage}
                     </Alert>
                 </Snackbar>
             </AuthenticatedLayout>
         </>
-    )
+    );
 }
