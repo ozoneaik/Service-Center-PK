@@ -166,6 +166,7 @@ class AssRepairController extends Controller
             'job_type'               => 'ปกติ',  // 19. ประเภทงาน
             'so_no'                  => null,   // 20. เลขที่ SO
             't_doc_no'               => null,  // 21. เลขที่เอกสาร T
+            'job_status'             => $job->status, // 22. สถานะงาน
         ];
 
         return response()->json([
