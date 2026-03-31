@@ -35,7 +35,12 @@ class SpareClaimController extends Controller
         // ตรวจสอบสิทธิ์: ถ้าเป็น Admin
         if ($user->role === 'admin') {
             // 1. ดึงรายชื่อร้านค้าทั้งหมดมาให้เลือก
+            // $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
+            //     ->orderBy('shop_name')
+            //     ->get();
+
             $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
+                ->whereNotIn('is_code_cust_id', ['68263', '2760801005', '67132', 'How'])
                 ->orderBy('shop_name')
                 ->get();
 
@@ -359,7 +364,11 @@ class SpareClaimController extends Controller
 
         // 1. จัดการข้อมูล Master Data ตามสิทธิ์ (Admin / Sale / User)
         if ($user->role === 'admin') {
+            // $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
+            //     ->orderBy('shop_name')
+            //     ->get();
             $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
+                ->whereNotIn('is_code_cust_id', ['68263', '2760801005', '67132', 'How'])
                 ->orderBy('shop_name')
                 ->get();
         } else if ($isSale) {
