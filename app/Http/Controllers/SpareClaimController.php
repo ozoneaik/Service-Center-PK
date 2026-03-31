@@ -950,9 +950,26 @@ class SpareClaimController extends Controller
                     'status_from_api' => $externalStatus,
                 ]);
 
+                // if ($externalStatus) {
+                //     if (in_array($externalStatus, ['เปิดออเดอร์แล้ว', 'รอเปิดSO'])) {
+                //         $claim->status = 'approved';
+                //     } else {
+                //         $claim->status = $externalStatus;
+                //     }
+                //     $claim->save();
+
+                //     Log::info('Update Status SuccessFully', [
+                //         'claim_id' => $claim_id,
+                //         'status' => $claim->status
+                //     ]);
+                // }
+
                 if ($externalStatus) {
                     if (in_array($externalStatus, ['เปิดออเดอร์แล้ว', 'รอเปิดSO'])) {
                         $claim->status = 'approved';
+                    } elseif ($externalStatus === 'ไม่พบข้อมูล') {
+                        // ถ้าไม่พบข้อมูล ให้เซ็ตเป็น pending เพื่อให้ UI แสดง "กำลังตรวจสอบคำขอเคลม"
+                        $claim->status = 'pending';
                     } else {
                         $claim->status = $externalStatus;
                     }
