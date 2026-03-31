@@ -1513,6 +1513,7 @@
 //         </AuthenticatedLayout>
 //     );
 // }
+
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
 import { useEffect, useState } from "react";
@@ -1577,6 +1578,11 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
         setJobs([]);
         setSelectedJobIds([]);
         setAlert(null);
+    };
+
+    const getStatus = (status) => {
+        if (status === "send") return "ส่งไปยังศูนย์ซ่อม PK";
+        return status;
     };
 
     const checkJobStatusAndRefresh = async (job) => {
@@ -1739,10 +1745,6 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
     const handleModeChange = (mode) => {
         setSearchMode(mode);
         resetAll();
-    };
-
-    const getStatus = (status) => {
-        return status;
     };
 
     const fetchHistoryJobs = async (searchFilters = filters) => {
@@ -2433,7 +2435,6 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                                                     })
                                                 }
                                                 placeholder="ระบุบางส่วนของ Job ID"
-                                                // เพิ่ม max-w-xs ตรงนี้
                                                 className="mt-1 p-2 block w-full max-w-xs rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                                             />
                                         </div>
@@ -2453,7 +2454,6 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                                                     })
                                                 }
                                                 placeholder="ระบุบางส่วนของ Serial"
-                                                // เพิ่ม max-w-xs ตรงนี้
                                                 className="mt-1 p-2 block w-full max-w-xs rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                                             />
                                         </div>
@@ -2473,12 +2473,11 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                                                     })
                                                 }
                                                 placeholder="ระบุรหัสสินค้า"
-                                                // เพิ่ม max-w-xs ตรงนี้
                                                 className="mt-1 p-2 block w-full max-w-xs rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                                             />
                                         </div>
 
-                                        {/* Buttons: ย้ายมาอยู่แถวใหม่ หรือให้ชิดซ้ายต่อจาก input ตัวสุดท้าย */}
+                                        {/* Buttons */}
                                         <div className="flex space-x-2 md:col-span-2">
                                             <button
                                                 type="submit"
@@ -2505,12 +2504,12 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
 
                     {/* Alert Dialog Popup */}
                     <Dialog
-                        open={!!alert} // แปลง object alert ให้เป็น boolean (มีค่า=true, null=false)
-                        onClose={() => setAlert(null)} // กดพื้นหลังเพื่อปิด
+                        open={!!alert}
+                        onClose={() => setAlert(null)}
                         aria-labelledby="alert-dialog-title"
                         aria-describedby="alert-dialog-description"
                         fullWidth
-                        maxWidth="xs" // ขนาดความกว้าง (xs, sm, md, lg)
+                        maxWidth="xs"
                     >
                         {alert && (
                             <>
@@ -2769,47 +2768,37 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                                                 const isChecking =
                                                     statusCheckingJobId ===
                                                     job.job_id;
-                                                const displayStatus =
-                                                    job.status;
+                                                const rawStatus = job.status;
+                                                const displayStatus = getStatus(rawStatus);
+
                                                 let statusClasses =
                                                     "bg-gray-100 text-gray-800";
+
                                                 if (
-                                                    displayStatus ===
-                                                    "success" ||
-                                                    displayStatus ===
-                                                    "บัญชีรับงานแล้ว" ||
-                                                    displayStatus ===
-                                                    "ส่งของแล้ว"
+                                                    rawStatus === "success" ||
+                                                    rawStatus === "บัญชีรับงานแล้ว" ||
+                                                    rawStatus === "ส่งของแล้ว"
                                                 ) {
-                                                    statusClasses =
-                                                        "bg-green-100 text-green-800";
+                                                    statusClasses = "bg-green-100 text-green-800";
                                                 } else if (
-                                                    displayStatus === "send" ||
-                                                    displayStatus ===
-                                                    "กำลังส่ง" ||
-                                                    displayStatus ===
-                                                    "เตรียมส่ง"
+                                                    rawStatus === "send" ||
+                                                    rawStatus === "กำลังส่ง" ||
+                                                    rawStatus === "เตรียมส่ง"
                                                 ) {
-                                                    statusClasses =
-                                                        "bg-indigo-100 text-indigo-700";
+                                                    statusClasses = "bg-indigo-100 text-indigo-700";
                                                 } else if (
-                                                    displayStatus ===
-                                                    "รอปิดงานซ่อม" ||
-                                                    displayStatus ===
-                                                    "กำลังซ่อม" ||
-                                                    displayStatus ===
-                                                    "พักงานซ่อม" ||
-                                                    displayStatus ===
-                                                    "รอรับงานซ่อม"
+                                                    rawStatus === "รอปิดงานซ่อม" ||
+                                                    rawStatus === "กำลังซ่อม" ||
+                                                    rawStatus === "พักงานซ่อม" ||
+                                                    rawStatus === "รอรับงานซ่อม"
                                                 ) {
-                                                    statusClasses =
-                                                        "bg-yellow-100 text-yellow-800";
+                                                    statusClasses = "bg-yellow-100 text-yellow-800";
                                                 } else if (
-                                                    displayStatus === "canceled"
+                                                    rawStatus === "canceled"
                                                 ) {
-                                                    statusClasses =
-                                                        "bg-red-100 text-red-800";
+                                                    statusClasses = "bg-red-100 text-red-800";
                                                 }
+
                                                 return (
                                                     <tr
                                                         key={job.job_id}
