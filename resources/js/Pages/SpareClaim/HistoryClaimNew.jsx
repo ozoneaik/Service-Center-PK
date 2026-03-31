@@ -1249,7 +1249,7 @@ export default function HistoryClaimNew({
                         <TableCell>วันที่แจ้งเคลม</TableCell>
                         <TableCell>วันที่อัพเดท</TableCell>
                         {userRole !== "acc" && (
-                            <TableCell align="center">
+                            <TableCell>
                                 สถานะเคลมอะไหล่
                             </TableCell>
                         )}
@@ -1295,7 +1295,7 @@ export default function HistoryClaimNew({
                                             alignItems="center"
                                             gap={1}
                                         >
-                                            <Button
+                                            {/* <Button
                                                 color="info"
                                                 size="small"
                                                 onClick={() =>
@@ -1324,7 +1324,7 @@ export default function HistoryClaimNew({
                                                 ) : (
                                                     "เช็คสถานะ"
                                                 )}
-                                            </Button>
+                                            </Button> */}
                                             <StatusClaim status={item.status} />
                                         </Box>
                                     </TableCell>
