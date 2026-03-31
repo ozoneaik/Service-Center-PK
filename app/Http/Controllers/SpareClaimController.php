@@ -824,6 +824,86 @@ class SpareClaimController extends Controller
     }
 
     //เพิ่มฟังก์ชั่น Check Status Order
+    // public function checkStatusClaim(Request $request): JsonResponse
+    // {
+    //     $claim_id = $request->input('claim_id');
+    //     if (empty($claim_id)) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Claim ID ไม่ถูกต้อง'
+    //         ], 400);
+    //     }
+    //     try {
+    //         DB::beginTransaction();
+    //         $uri = 'https://afterservice-sv.pumpkin.tools/sv/callpsc.php';
+    //         $claim_id_remove_prefix = str_replace('C-', '', $claim_id);
+    //         $body = [
+    //             'ticketcode' => $claim_id_remove_prefix,
+    //         ];
+    //         Log::info('📦 เริ่มเช็คสถานะออเดอร์', [
+    //             'claim_id' => $claim_id,
+    //             'endpoint' => $uri,
+    //             'request_body' => $claim_id_remove_prefix
+    //         ]);
+
+    //         $response = Http::post($uri, $body);
+    //         Log::info('API Resposne', [
+    //             'claim_id' => $claim_id,
+    //             'http_status' => $response->status(),
+    //             'raw_body' => $response->body(),
+    //         ]);
+
+    //         if ($response->successful() && $response->status() == 200) {
+    //             $claim = Claim::query()->where('claim_id', $claim_id)->first();
+    //             if (!$claim) {
+    //                 return response()->json([
+    //                     'status' => 'error',
+    //                     'message' => 'ไม่พบรหัส id ที่ต้องการ update'
+    //                 ], 400);
+    //             }
+    //             $response_json = $response->json();
+    //             $externalStatus = $response_json['status'] ?? null;
+    //             Log::info('สถานะปัจจุบันการเคลม', [
+    //                 'claim_id' => $claim_id,
+    //                 'status_old' => $claim->status,
+    //                 'status_from_api' => $externalStatus,
+    //             ]);
+
+    //             if ($externalStatus) {
+    //                 if (in_array($externalStatus, ['เปิดออเดอร์แล้ว', 'รอเปิดSO'])) {
+    //                     $claim->status = 'approved';
+    //                 } else {
+    //                     $claim->status = $externalStatus;
+    //                 }
+    //                 $claim->save();
+
+    //                 Log::info('Update Status SuccessFully', [
+    //                     'claim_id' => $claim_id,
+    //                     'status' => $claim->status
+    //                 ]);
+    //             }
+
+    //             DB::commit();
+    //             return response()->json([
+    //                 'status' => 'success',
+    //                 'data' => ['status' => $claim->status]
+    //             ]);
+    //         } else {
+    //             throw new \Exception('API ไม่สําเร็จ');
+    //         }
+    //     } catch (\Exception $exception) {
+    //         DB::rollBack();
+    //         Log::error('❌ ตรวจสอบสถานะล้มเหลว', [
+    //             'claim_id' => $claim_id,
+    //             'error' => $exception->getMessage(),
+    //         ]);
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => $exception->getMessage()
+    //         ], 400);
+    //     }
+    // }
+
     public function checkStatusClaim(Request $request): JsonResponse
     {
         $claim_id = $request->input('claim_id');
@@ -836,14 +916,15 @@ class SpareClaimController extends Controller
         try {
             DB::beginTransaction();
             $uri = 'https://afterservice-sv.pumpkin.tools/sv/callpsc.php';
-            $claim_id_remove_prefix = str_replace('C-', '', $claim_id);
+
+            // ส่ง $claim_id ไปเต็มๆ โดยไม่ต้องตัด C-
             $body = [
-                'ticketcode' => $claim_id_remove_prefix,
+                'ticketcode' => $claim_id,
             ];
             Log::info('📦 เริ่มเช็คสถานะออเดอร์', [
                 'claim_id' => $claim_id,
                 'endpoint' => $uri,
-                'request_body' => $claim_id_remove_prefix
+                'request_body' => $claim_id
             ]);
 
             $response = Http::post($uri, $body);
