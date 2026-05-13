@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 // Schedule::command('stuc:check-status')->hourly();
 Schedule::command('stuc:check-status')->twiceDaily(0, 12);
 Schedule::command('claim:check-status')->everyThirtyMinutes();
+Schedule::command('order:check-status')->everyThirtyMinutes();
