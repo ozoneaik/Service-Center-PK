@@ -40,7 +40,7 @@ class SpareClaimController extends Controller
             //     ->get();
 
             $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
-                ->whereNotIn('is_code_cust_id', ['68263', '2760801005', '67132', 'How'])
+                ->whereNotIn('is_code_cust_id', ['68263', '2760801005', '67132', 'How', '1760201010-V', '3062027-Q'])
                 ->orderBy('shop_name')
                 ->get();
 

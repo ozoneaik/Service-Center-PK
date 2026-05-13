@@ -327,7 +327,7 @@ import {
     CircularProgress, // เพิ่ม CircularProgress
 } from "@mui/material";
 import { ArrowBack, Refresh } from "@mui/icons-material"; // เพิ่ม Refresh icon
-import React, { useState } from "react"; // เพิ่ม useState
+import React, { useState, useEffect } from "react"; // เพิ่ม useState
 import axios from "axios"; // เพิ่ม axios
 
 const steps = [
@@ -368,11 +368,22 @@ const getActiveStep = (status) => {
     }
 };
 
+const FINAL_STATUSES = ["จัดส่งสำเร็จ", "บัญชีรับงานแล้ว", "ส่งของแล้ว", "rejected"];
+
 export default function HistoryClaimNewDetail({ list, claim_id, claim }) {
     const isMobile = useMediaQuery("(max-width:600px)");
     const [loading, setLoading] = useState(false); // เพิ่ม State ควบคุม Loading ปุ่มเช็คสถานะ
 
-    // ฟังก์ชันเช็คสถานะ (ดึงมาจากหน้าหลัก)
+    // เช็คสถานะ 1 ครั้งตอนเปิดหน้า (เงียบ ไม่ขึ้น popup) เผื่อข้อมูลล่าช้ากว่า cron
+    useEffect(() => {
+        if (!FINAL_STATUSES.includes(claim.status)) {
+            axios
+                .post(route("spareClaim.checkStatusClaim"), { claim_id })
+                .then(() => router.reload({ only: ["claim", "list"] }))
+                .catch(() => {});
+        }
+    }, []);
+
     const checkClaimStatus = async (id) => {
         try {
             setLoading(true);
