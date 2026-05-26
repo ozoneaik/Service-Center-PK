@@ -11,7 +11,7 @@ import {
     MenuItem
 } from "@mui/material";
 import { TableStyle } from "../../../../css/TableStyle.js";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
@@ -23,6 +23,7 @@ export default function SucBsList2({
     total_start_up_cost,
     shops,
     selected_shop,
+    selected_shops: initialSelectedShops,
     current_shop_name,
     is_admin,
     is_acc,
@@ -35,6 +36,15 @@ export default function SucBsList2({
     const [startDate, setStartDate] = useState(filters?.start_date || '');
     const [endDate, setEndDate] = useState(filters?.end_date || '');
     const [status, setStatus] = useState(filters?.status || 'WaitCN');
+    const [selectedShopCodes, setSelectedShopCodes] = useState(() => {
+        if (initialSelectedShops?.length) return initialSelectedShops;
+        if (selected_shop && selected_shop !== 'all') return [selected_shop];
+        return [];
+    });
+    const selectedShopsData = useMemo(() => {
+        if (!selectedShopCodes?.length || !shops) return [];
+        return shops.filter((s) => selectedShopCodes.includes(s.is_code_cust_id));
+    }, [selectedShopCodes, shops]);
 
     // --- Checkbox Logic ---
     const handleSelectAllClick = (event) => {
@@ -70,24 +80,36 @@ export default function SucBsList2({
     const isSelected = (id) => selected.indexOf(id) !== -1;
 
     // --- Filter & Search Logic ---
-    const handleSearch = (overrideShopId = null) => {
+    const handleSearch = () => {
         router.get(route('report.start-up-cost-shop.index'), {
-            shop: overrideShopId !== null ? overrideShopId : selected_shop,
+            shops: selectedShopCodes,
             start_date: startDate,
             end_date: endDate,
             status: status,
-            page: 1, // เมื่อค้นหาใหม่ ให้กลับไปหน้า 1 เสมอ
+            page: 1,
         }, {
             preserveState: true,
             replace: true,
         });
     };
 
+    const handleShopsChange = (newValues) => {
+        const codes = newValues.map(s => s.is_code_cust_id);
+        setSelectedShopCodes(codes);
+        router.get(route('report.start-up-cost-shop.index'), {
+            shops: codes,
+            start_date: startDate,
+            end_date: endDate,
+            status: status,
+            page: 1,
+        }, { preserveState: true, replace: true });
+    };
+
     const handleClearDate = () => {
         setStartDate('');
         setEndDate('');
         router.get(route('report.start-up-cost-shop.index'), {
-            shop: selected_shop,
+            shops: selectedShopCodes,
             start_date: '',
             end_date: '',
             status: 'WaitCN',
@@ -96,19 +118,18 @@ export default function SucBsList2({
     };
 
     const handleExport = () => {
-        const params = new URLSearchParams({
-            shop: selected_shop || '',
-            start_date: startDate || '',
-            end_date: endDate || '',
-            status: status || 'Y'
-        });
-        window.open(route('report.start-up-cost-shop.export') + '?' + params.toString(), "_blank");
+        const exportUrl = new URL(route('report.start-up-cost-shop.export'), window.location.origin);
+        selectedShopCodes.forEach(code => exportUrl.searchParams.append('shops[]', code));
+        if (startDate) exportUrl.searchParams.set('start_date', startDate);
+        if (endDate) exportUrl.searchParams.set('end_date', endDate);
+        exportUrl.searchParams.set('status', status || 'Y');
+        window.open(exportUrl.toString(), "_blank");
     };
 
-    // --- Pagination Handler (เพิ่มใหม่) ---
+    // --- Pagination Handler ---
     const handlePageChange = (event, value) => {
         router.get(route('report.start-up-cost-shop.index'), {
-            shop: selected_shop,
+            shops: selectedShopCodes,
             start_date: startDate,
             end_date: endDate,
             status: status,
@@ -148,10 +169,7 @@ export default function SucBsList2({
         return <span style={{ color: 'gray' }}>รอสร้าง Job</span>;
     }
 
-    const shopOptions = [
-        { is_code_cust_id: 'all', shop_name: '--- ร้านค้าทั้งหมด (ALL) ---' },
-        ...shops
-    ];
+    // multi-select: empty array = all shops
 
     // --- Desktop Table Component ---
     const TableComponent = () => {
@@ -390,13 +408,31 @@ export default function SucBsList2({
                                 }}>
                                     {(is_admin || is_acc) && (
                                         <Autocomplete
+                                            multiple
+                                            options={shops || []}
+                                            getOptionLabel={(option) => `[${option.is_code_cust_id}] ${option.shop_name}`}
+                                            value={selectedShopsData}
+                                            isOptionEqualToValue={(option, value) => option.is_code_cust_id === value.is_code_cust_id}
+                                            onChange={(_, newValues) => handleShopsChange(newValues)}
                                             size="small"
-                                            sx={{ width: isMobile ? "100%" : 250 }}
-                                            options={shopOptions}
-                                            getOptionLabel={(option) => option.shop_name}
-                                            value={shopOptions.find((s) => s.is_code_cust_id == selected_shop) || null}
-                                            onChange={(_, newValue) => handleSearch(newValue?.is_code_cust_id || '')}
-                                            renderInput={(params) => <TextField {...params} label="เลือกร้านค้า" />}
+                                            sx={{ width: isMobile ? "100%" : 380 }}
+                                            renderTags={(value, getTagProps) =>
+                                                value.map((option, index) => (
+                                                    <Chip
+                                                        {...getTagProps({ index })}
+                                                        key={option.is_code_cust_id}
+                                                        label={option.shop_name}
+                                                        size="small"
+                                                    />
+                                                ))
+                                            }
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    label="เลือกร้านค้า (เลือกได้หลายร้าน)"
+                                                    placeholder={selectedShopsData.length === 0 ? "ไม่เลือก = ทั้งหมด" : ""}
+                                                />
+                                            )}
                                         />
                                     )}
                                     {/* <Stack direction="row" spacing={1} alignItems="center" width={isMobile ? "100%" : "auto"}>

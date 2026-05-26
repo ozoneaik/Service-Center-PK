@@ -28,25 +28,22 @@ class SummaryCenterRepairsController extends Controller
         $defaultShop = Auth::user()->is_code_cust_id;
 
         // admin สามารถเลือก shop อื่นได้จาก filter
-        $selectedShop = $request->query('shop', $defaultShop);
+        $selectedShops = array_values(array_filter((array) $request->input('shops', [])));
+        if (empty($selectedShops)) {
+            $selectedShops = [$defaultShop];
+        }
+        $selectedShop = $selectedShops[0];
 
-        $currentShopName = StoreInformation::where('is_code_cust_id', $selectedShop)
-            ->value('shop_name');
+        $currentShopName = count($selectedShops) > 1
+            ? count($selectedShops) . ' ร้านค้าที่เลือก'
+            : StoreInformation::where('is_code_cust_id', $selectedShop)->value('shop_name');
 
         $month = $request->query('month', date('Y-m'));
         $showAll = (int) $request->query('all', 0);
 
-        // ดึงงานซ่อมตามร้าน
-        // $jobs = JobList::query()
-        //     ->whereIn('status', ['success', 'pending', 'canceled', 'send'])
-        //     ->where('is_code_key', $selectedShop)
-        //     ->whereMonth('created_at', substr($month, 5, 2))
-        //     ->whereYear('created_at', substr($month, 0, 4))
-        //     ->get();
-
         $jobsQuery = JobList::query()
             ->whereIn('status', ['success', 'pending', 'canceled', 'send'])
-            ->where('is_code_key', $selectedShop);
+            ->whereIn('is_code_key', $selectedShops);
 
         if ($showAll === 0) {
             $jobsQuery->whereMonth('created_at', substr($month, 5, 2))
@@ -107,6 +104,7 @@ class SummaryCenterRepairsController extends Controller
             'shops'             => $shops,
             'stats'             => $stats,
             'selectedShop'      => $selectedShop,
+            'selectedShops'     => $selectedShops,
             'currentShopName'   => $currentShopName,
             'isAdmin'           => true,
             'barData'           => $barData,
@@ -117,24 +115,24 @@ class SummaryCenterRepairsController extends Controller
 
     public function exportExcel(Request $request)
     {
-        $shop = $request->query('shop');
+        $defaultShop = Auth::user()->is_code_cust_id;
+        $selectedShops = array_values(array_filter((array) $request->input('shops', [])));
+        if (empty($selectedShops)) {
+            $shop = $request->query('shop', $defaultShop);
+            $selectedShops = [$shop];
+        } else {
+            $shop = $selectedShops[0];
+        }
         $month = $request->query('month', date('Y-m'));
         $showAll = (int)$request->query('all', 0);
 
         // ดึงชื่อร้าน
-        $shopName = StoreInformation::where('is_code_cust_id', $shop)->value('shop_name');
-
-        // ดึงข้อมูลตามเดือนและร้านค้า
-        // $jobs = JobList::query()
-        //     ->where('is_code_key', $shop)
-        //     ->whereIn('status', ['success', 'pending', 'canceled', 'send'])
-        //     ->whereMonth('created_at', substr($month, 5, 2))
-        //     ->whereYear('created_at', substr($month, 0, 4))
-        //     ->orderBy('created_at', 'desc')
-        //     ->get();
+        $shopName = count($selectedShops) > 1
+            ? count($selectedShops) . ' ร้านค้า'
+            : StoreInformation::where('is_code_cust_id', $shop)->value('shop_name');
 
         $jobsQuery = JobList::query()
-            ->where('is_code_key', $shop)
+            ->whereIn('is_code_key', $selectedShops)
             ->whereIn('status', ['success', 'pending', 'canceled', 'send']);
 
         if ($showAll === 0) {
@@ -191,17 +189,26 @@ class SummaryCenterRepairsController extends Controller
 
     public function detail(Request $request)
     {
-        $shop = $request->query('shop');
+        $defaultShop = Auth::user()->is_code_cust_id;
+        $selectedShops = array_values(array_filter((array) $request->input('shops', [])));
+        if (empty($selectedShops)) {
+            $shop = $request->query('shop', $defaultShop);
+            $selectedShops = [$shop];
+        } else {
+            $shop = $selectedShops[0];
+        }
         $status = $request->query('status');
         $showAll = (int)$request->query('all', 0);
 
         // ถ้า all=1 → month = null
         $month = $showAll ? null : $request->query('month');
 
-        $currentShopName = StoreInformation::where('is_code_cust_id', $shop)->value('shop_name');
+        $currentShopName = count($selectedShops) > 1
+            ? count($selectedShops) . ' ร้านค้าที่เลือก'
+            : StoreInformation::where('is_code_cust_id', $shop)->value('shop_name');
 
         $jobsQuery = JobList::query()
-            ->where('is_code_key', $shop)
+            ->whereIn('is_code_key', $selectedShops)
             ->whereIn('status', (array)$status);
 
         // filter เฉพาะกรณีเป็นรายเดือน
@@ -212,7 +219,7 @@ class SummaryCenterRepairsController extends Controller
 
         // ส่ง params กลับไปให้ pagination
         $params = [
-            'shop' => $shop,
+            'shops' => $selectedShops,
             'status' => $status,
             'all' => $showAll,
         ];

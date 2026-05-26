@@ -18,10 +18,14 @@ import { Button } from "flowbite-react";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 export default function WDReportList() {
-    const { shops, selectedShop, currentShopName, isAdmin, withdrawals, stats, filters } = usePage().props;
-    console.log(filters);
-    const defaultShop = shops.find(s => s.is_code_cust_id === selectedShop) || null;
-    const [shopValue, setShopValue] = useState(defaultShop);
+    const { shops, selectedShop, selectedShops: initialSelectedShops, currentShopName, isAdmin, withdrawals, stats, filters } = usePage().props;
+    const [selectedShopCodes, setSelectedShopCodes] = useState(
+        initialSelectedShops?.length ? initialSelectedShops : (selectedShop ? [selectedShop] : [])
+    );
+    const selectedShopsData = useMemo(() => {
+        if (!selectedShopCodes || !Array.isArray(selectedShopCodes) || !shops) return [];
+        return shops.filter((s) => selectedShopCodes.includes(s.is_code_cust_id));
+    }, [selectedShopCodes, shops]);
     const [searchTerm, setSearchTerm] = useState(filters?.search || '');
     const [statusFilter, setStatusFilter] = useState(filters?.status || '');
     const [startDate, setStartDate] = useState(filters?.start_date || '');
@@ -31,14 +35,16 @@ export default function WDReportList() {
 
     const fetchData = (additionalParams = {}) => {
         const params = {
-            shop: selectedShop,
+            shops: selectedShopCodes,
             search: searchTerm,
             status: statusFilter,
             start_date: filters?.start_date || '',
             end_date: filters?.end_date || '',
             ...additionalParams
         };
-        Object.keys(params).forEach(key => (params[key] === '' || params[key] === null) && delete params[key]);
+        Object.keys(params).forEach(key => {
+            if (key !== 'shops' && (params[key] === '' || params[key] === null)) delete params[key];
+        });
 
         router.get(
             route(isAdmin ? "admin.withdraw-report.index" : "report.withdraw-report.index"), params, {
@@ -47,11 +53,12 @@ export default function WDReportList() {
         });
     }
 
-    const handleSelectShop = (newValue) => {
-        setShopValue(newValue);
+    const handleSelectShops = (newValues) => {
+        const codes = newValues.map(s => s.is_code_cust_id);
+        setSelectedShopCodes(codes);
         router.get(
-            route("admin.withdraw-report.index"),
-            { shop: newValue?.is_code_cust_id || "" },
+            route(isAdmin ? "admin.withdraw-report.index" : "report.withdraw-report.index"),
+            { shops: codes },
             { replace: true }
         );
     }
@@ -140,20 +147,14 @@ export default function WDReportList() {
     };
 
     const handleExport = () => {
-        // สร้าง Query String จาก state ปัจจุบัน
-        const params = new URLSearchParams({
-            shop: selectedShop,
-            search: searchTerm,
-            status: statusFilter,
-            start_date: startDate,
-            end_date: endDate
-        });
-
-        // ตรวจสอบว่าเป็น Admin หรือ User เพื่อเลือก Route ให้ถูก
         const routeName = isAdmin ? "admin.withdraw-report.export" : "report.withdraw-report.export";
-
-        // เปิด Tab ใหม่เพื่อ Download
-        window.open(`${route(routeName)}?${params.toString()}`, '_blank');
+        const url = new URL(route(routeName), window.location.origin);
+        selectedShopCodes.forEach(code => url.searchParams.append('shops[]', code));
+        if (searchTerm) url.searchParams.set('search', searchTerm);
+        if (statusFilter) url.searchParams.set('status', statusFilter);
+        if (startDate) url.searchParams.set('start_date', startDate);
+        if (endDate) url.searchParams.set('end_date', endDate);
+        window.open(url.toString(), '_blank');
     };
 
     return (
@@ -168,12 +169,32 @@ export default function WDReportList() {
                 <div className="flex flex-col md:flex-row md:items-center gap-2 mb-4">
                     {isAdmin && (
                         <Autocomplete
-                            options={shops}
-                            sx={{ width: isMobile ? "100%" : 300 }}
-                            value={shopValue}
-                            onChange={(e, v) => handleSelectShop(v)}
-                            getOptionLabel={(option) => option?.shop_name ? `${option.shop_name}` : ""}
-                            renderInput={(params) => <TextField {...params} label="เลือกสาขา / ร้าน" size="small" />}
+                            multiple
+                            options={shops || []}
+                            getOptionLabel={(option) => `[${option.is_code_cust_id}] ${option.shop_name}`}
+                            value={selectedShopsData}
+                            isOptionEqualToValue={(option, value) => option.is_code_cust_id === value.is_code_cust_id}
+                            onChange={(e, newValues) => handleSelectShops(newValues)}
+                            size="small"
+                            sx={{ width: isMobile ? "100%" : 400 }}
+                            renderTags={(value, getTagProps) =>
+                                value.map((option, index) => (
+                                    <Chip
+                                        {...getTagProps({ index })}
+                                        key={option.is_code_cust_id}
+                                        label={option.shop_name}
+                                        size="small"
+                                    />
+                                ))
+                            }
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="เลือกร้านค้า (เลือกได้หลายร้าน)"
+                                    size="small"
+                                    placeholder={selectedShopsData.length === 0 ? "พิมพ์เพื่อค้นหา..." : ""}
+                                />
+                            )}
                         />
                     )}
                     <TextField

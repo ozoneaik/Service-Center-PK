@@ -28,9 +28,10 @@ class StartUpCostByShopController2 extends Controller
             return redirect()->route('report.g-start-up-cost-shop.index');
         }
 
-        $selected_shop = $request->query('shop', 'all');
-        $is_all_shops = $selected_shop === 'all';
-        $shop = $is_all_shops ? null : $selected_shop;
+        $selected_shops = array_values(array_filter((array) $request->input('shops', [])));
+        $is_all_shops = empty($selected_shops);
+        $selected_shop = $is_all_shops ? 'all' : (count($selected_shops) === 1 ? $selected_shops[0] : 'multi');
+        $shop = $is_all_shops ? null : $selected_shops[0];
 
         // รับค่าวันที่จาก Request
         $start_date = $request->query('start_date');
@@ -57,8 +58,8 @@ class StartUpCostByShopController2 extends Controller
             ->where('stuc_status', 'Y');
 
         if (!$is_all_shops) {
-            // กรณีเลือกร้านเดียว
-            $query->where('is_code_key', $shop);
+            // กรณีเลือกร้านบางร้าน
+            $query->whereIn('is_code_key', $selected_shops);
         } else {
             // กรณีเลือกทั้งหมด: ให้ดึงมาเฉพาะ Job ของร้านที่ Active เท่านั้น
             $query->whereIn('is_code_key', $activeShopIds);
@@ -120,7 +121,8 @@ class StartUpCostByShopController2 extends Controller
                 'all_selectable_ids' => $all_selectable_ids,
                 'total_start_up_cost' => $total_start_up_cost,
                 'shops' => $shops,
-                'selected_shop' => $selected_shop ?? $shop,
+                'selected_shop' => $selected_shop,
+                'selected_shops' => $selected_shops,
                 'current_shop_name' => $current_shop_name,
                 'is_admin' => Auth::user()->role === 'admin',
                 'is_acc' => Auth::user()->role === 'acc',
@@ -135,11 +137,11 @@ class StartUpCostByShopController2 extends Controller
 
     public function exportExcel(Request $request)
     {
-        $shop = $request->query('shop');
+        $selected_shops = array_values(array_filter((array) $request->input('shops', [])));
         $start_date = $request->query('start_date');
         $end_date = $request->query('end_date');
         $status = $request->query('status');
-        $is_all_shops = $shop === 'all';
+        $is_all_shops = empty($selected_shops);
 
         $activeShopIds = StoreInformation::where('is_active', 'Y')->pluck('is_code_cust_id')->toArray();
 
@@ -149,7 +151,7 @@ class StartUpCostByShopController2 extends Controller
             ->where('stuc_status', 'Y');
 
         if (!$is_all_shops) {
-            $query->where('is_code_key', $shop);
+            $query->whereIn('is_code_key', $selected_shops);
         } else {
             $query->whereIn('is_code_key', $activeShopIds);
         }

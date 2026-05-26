@@ -6,6 +6,7 @@ import {
     Stack,
     Typography,
     Autocomplete,
+    Chip,
     TextField,
     Grid,
     Card,
@@ -18,17 +19,22 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid,
     ResponsiveContainer
 } from "recharts";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "flowbite-react";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 const COLORS = ["#4caf50", "#2196f3", "#ff9800", "#f44336", "#d1ffe4"];
 
 export default function SumLists() {
-    const { shops, stats, selectedShop, currentShopName, isAdmin, barData, selectedMonth: serverMonth, showAll: serverShowAll } = usePage().props;
+    const { shops, stats, selectedShop, selectedShops: initialSelectedShops, currentShopName, isAdmin, barData, selectedMonth: serverMonth, showAll: serverShowAll } = usePage().props;
 
-    const defaultShop = shops.find(s => s.is_code_cust_id === selectedShop) || null;
-    const [shopValue, setShopValue] = useState(defaultShop);
+    const [selectedShopCodes, setSelectedShopCodes] = useState(
+        initialSelectedShops?.length ? initialSelectedShops : (selectedShop ? [selectedShop] : [])
+    );
+    const selectedShopsData = useMemo(() => {
+        if (!selectedShopCodes || !Array.isArray(selectedShopCodes) || !shops) return [];
+        return shops.filter((s) => selectedShopCodes.includes(s.is_code_cust_id));
+    }, [selectedShopCodes, shops]);
     const [selectedMonth, setSelectedMonth] = useState(serverMonth);
     const [showAll, setShowAll] = useState(serverShowAll == 1);
 
@@ -42,16 +48,16 @@ export default function SumLists() {
 
     // Update state เมื่อ backend reload
     useEffect(() => {
-        const newDefault = shops.find(s => s.is_code_cust_id === selectedShop) || null;
-        setShopValue(newDefault);
-    }, [selectedShop, shops]);
+        const codes = initialSelectedShops?.length ? initialSelectedShops : (selectedShop ? [selectedShop] : []);
+        setSelectedShopCodes(codes);
+    }, [selectedShop, initialSelectedShops]);
 
-    const handleSelectShop = (newValue) => {
-        setShopValue(newValue);
-
+    const handleSelectShops = (newValues) => {
+        const codes = newValues.map(s => s.is_code_cust_id);
+        setSelectedShopCodes(codes);
         router.get(
-            route("admin.summary-center-repairs.index"),
-            { shop: newValue?.is_code_cust_id || "", month: selectedMonth || "" }, // ส่ง month กลับไปด้วย
+            route(isAdmin ? "admin.summary-center-repairs.index" : "report.summary-center-repairs.index"),
+            { shops: codes, month: selectedMonth || "" },
             { replace: true }
         );
     };
@@ -64,9 +70,9 @@ export default function SumLists() {
     // แก้ไข route สำหรับ Filter เดือน (ใช้ admin.summary-center-repairs.index)
     const handleMonthChange = (e) => {
         router.get(
-            route("admin.summary-center-repairs.index"),
+            route(isAdmin ? "admin.summary-center-repairs.index" : "report.summary-center-repairs.index"),
             {
-                shop: shopValue?.is_code_cust_id || "",
+                shops: selectedShopCodes,
                 month: e.target.value
             },
             { replace: true }
@@ -81,7 +87,7 @@ export default function SumLists() {
                     : "report.summary-center-repairs.detail"
             ),
             {
-                shop: shopValue?.is_code_cust_id || "",
+                shops: selectedShopCodes,
                 status: statuses,
                 month: selectedMonth,
                 all: showAll ? 1 : 0
@@ -133,7 +139,7 @@ export default function SumLists() {
                                                     : "report.summary-center-repairs.index"
                                             ),
                                             {
-                                                shop: shopValue?.is_code_cust_id || "",
+                                                shops: selectedShopCodes,
                                                 month: e.target.value,
                                                 all: 0
                                             });
@@ -165,7 +171,7 @@ export default function SumLists() {
                                                 : "report.summary-center-repairs.index"
                                         ),
                                         {
-                                            shop: shopValue?.is_code_cust_id || "",
+                                            shops: selectedShopCodes,
                                             all: next ? 1 : 0,
                                             ...(next ? {} : { month: selectedMonth }),
                                         }
@@ -180,14 +186,14 @@ export default function SumLists() {
                                 variant="contained"
                                 color="success"
                                 onClick={() => {
-                                    window.open(
-                                        route("admin.summary-center-repairs.export", {
-                                            shop: shopValue?.is_code_cust_id || "",
-                                            month: selectedMonth,
-                                            all: showAll ? 1 : 0
-                                        }),
-                                        "_blank"
+                                    const exportUrl = new URL(
+                                        route("admin.summary-center-repairs.export"),
+                                        window.location.origin
                                     );
+                                    selectedShopCodes.forEach(code => exportUrl.searchParams.append('shops[]', code));
+                                    exportUrl.searchParams.set('month', selectedMonth || '');
+                                    exportUrl.searchParams.set('all', showAll ? 1 : 0);
+                                    window.open(exportUrl.toString(), "_blank");
                                 }}
                             >
                                 Excel
@@ -200,17 +206,30 @@ export default function SumLists() {
                 {/* Autocomplete สำหรับ Admin */}
                 {isAdmin && (
                     <Autocomplete
-                        options={shops}
-                        sx={{ width: isMobile ? '100%' : 400, mb: 3 }} // ใช้เต็มความกว้างบนมือถือ
-                        value={shopValue}
-                        onChange={(e, v) => handleSelectShop(v)}
-                        getOptionLabel={(option) =>
-                            option?.shop_name
-                                ? `${option.shop_name}`
-                                : ""
+                        multiple
+                        options={shops || []}
+                        getOptionLabel={(option) => `[${option.is_code_cust_id}] ${option.shop_name}`}
+                        value={selectedShopsData}
+                        isOptionEqualToValue={(option, value) => option.is_code_cust_id === value.is_code_cust_id}
+                        onChange={(e, newValues) => handleSelectShops(newValues)}
+                        size="small"
+                        sx={{ width: isMobile ? '100%' : 500, mb: 3 }}
+                        renderTags={(value, getTagProps) =>
+                            value.map((option, index) => (
+                                <Chip
+                                    {...getTagProps({ index })}
+                                    key={option.is_code_cust_id}
+                                    label={option.shop_name}
+                                    size="small"
+                                />
+                            ))
                         }
                         renderInput={(params) => (
-                            <TextField {...params} label="เลือกสาขา / ร้านค้า" />
+                            <TextField
+                                {...params}
+                                label="เลือกร้านค้า (เลือกได้หลายร้าน)"
+                                placeholder={selectedShopsData.length === 0 ? "พิมพ์เพื่อค้นหา..." : ""}
+                            />
                         )}
                     />
                 )}

@@ -20,8 +20,14 @@ class WithdrawReportController extends Controller
             ->orderBy('shop_name', 'asc')
             ->get();
         $defaultShop = Auth::user()->is_code_cust_id;
-        $selectedShop = $request->query('shop', $defaultShop);
-        $currentShopName = StoreInformation::where('is_code_cust_id', $selectedShop)->value('shop_name');
+        $selectedShops = array_values(array_filter((array) $request->input('shops', [])));
+        if (empty($selectedShops)) {
+            $selectedShops = [$defaultShop];
+        }
+        $selectedShop = $selectedShops[0];
+        $currentShopName = count($selectedShops) > 1
+            ? count($selectedShops) . ' ร้านค้าที่เลือก'
+            : StoreInformation::where('is_code_cust_id', $selectedShop)->value('shop_name');
         $search = $request->query('search');
         $status = $request->query('status');
         $startDate = $request->query('start_date');
@@ -42,7 +48,7 @@ class WithdrawReportController extends Controller
             )
             ->leftJoin('stock_job_details', 'stock_jobs.stock_job_id', '=', 'stock_job_details.stock_job_id')
             ->where('stock_jobs.type', 'เบิก')
-            ->where('stock_jobs.is_code_cust_id', $selectedShop);
+            ->whereIn('stock_jobs.is_code_cust_id', $selectedShops);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -68,7 +74,7 @@ class WithdrawReportController extends Controller
         // 2. ส่วนคำนวณ Stats (Dashboard)
         // สร้าง Query พื้นฐานสำหรับนับ JOB (ไม่ Join details เพื่อไม่ให้นับซ้ำ)
         $jobQuery = StockJob::where('type', 'เบิก')
-            ->where('is_code_cust_id', $selectedShop);
+            ->whereIn('is_code_cust_id', $selectedShops);
 
         $totalJobs = (clone $jobQuery)->count();
         $processJobs = (clone $jobQuery)->where('job_status', 'processing')->count();
@@ -77,7 +83,7 @@ class WithdrawReportController extends Controller
         // คำนวณยอดเงินสุทธิ เฉพาะ Job ที่ Complete (complete)
         // สูตร: (จำนวน * ราคา) - ส่วนลด
         $totalNetAmount = StockJob::where('stock_jobs.type', 'เบิก')
-            ->where('stock_jobs.is_code_cust_id', $selectedShop)
+            ->whereIn('stock_jobs.is_code_cust_id', $selectedShops)
             ->where('stock_jobs.job_status', 'complete')
             ->join('stock_job_details', 'stock_jobs.stock_job_id', '=', 'stock_job_details.stock_job_id')
             ->sum(DB::raw('(stock_job_details.sp_qty * stock_job_details.stdprice_per_unit) - ((stock_job_details.sp_qty * stock_job_details.stdprice_per_unit) * (COALESCE(stock_job_details.discount_percent, 0) / 100))'));
@@ -85,6 +91,7 @@ class WithdrawReportController extends Controller
         return Inertia::render('Admin/WithDrawReport/WDReportList', [
             'shops' => $shop,
             'selectedShop' => $selectedShop,
+            'selectedShops' => $selectedShops,
             'currentShopName' => $currentShopName,
             'isAdmin'        => true,
             'withdrawals' => $withdrawals,
@@ -106,7 +113,11 @@ class WithdrawReportController extends Controller
     public function export(Request $request)
     {
         $defaultShop = Auth::user()->is_code_cust_id;
-        $selectedShop = $request->query('shop', $defaultShop);
+        $selectedShops = array_values(array_filter((array) $request->input('shops', [])));
+        if (empty($selectedShops)) {
+            $selectedShops = [$defaultShop];
+        }
+        $selectedShop = $selectedShops[0];
         $search = $request->query('search');
         $status = $request->query('status');
         $startDate = $request->query('start_date');
@@ -130,7 +141,7 @@ class WithdrawReportController extends Controller
             ->leftJoin('store_information', 'stock_jobs.is_code_cust_id', '=', 'store_information.is_code_cust_id')
             ->leftJoin('stock_job_details', 'stock_jobs.stock_job_id', '=', 'stock_job_details.stock_job_id')
             ->where('stock_jobs.type', 'เบิก')
-            ->where('stock_jobs.is_code_cust_id', $selectedShop);
+            ->whereIn('stock_jobs.is_code_cust_id', $selectedShops);
 
         // Filter Logic (เหมือน Index)
         if ($search) {

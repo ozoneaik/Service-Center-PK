@@ -25,12 +25,17 @@ class SummaryUsedSparePartsController extends Controller
             ->select('is_code_cust_id', 'shop_name')
             ->orderBy('shop_name', 'asc')->get();
         $defaultShop = Auth::user()->is_code_cust_id;
-        $selectedShop = $request->query('shop', $defaultShop);
+        $selectedShops = array_values(array_filter((array) $request->input('shops', [])));
+        if (empty($selectedShops)) {
+            $selectedShops = [$defaultShop];
+        }
+        $selectedShop = $selectedShops[0];
         $search = $request->query('search');
         $filter = $request->query('filter');
 
-        $currentShopName = StoreInformation::where('is_code_cust_id', $selectedShop)
-            ->value('shop_name');
+        $currentShopName = count($selectedShops) > 1
+            ? count($selectedShops) . ' ร้านค้าที่เลือก'
+            : StoreInformation::where('is_code_cust_id', $selectedShop)->value('shop_name');
 
         // นับงานซ่อมจาก spare_parts + job_lists
         $jobCounts = SparePart::selectRaw("
@@ -39,7 +44,7 @@ class SummaryUsedSparePartsController extends Controller
             SUM(CASE WHEN job_lists.status = 'success' THEN 1 ELSE 0 END) AS complete_count
         ")
             ->join('job_lists', 'job_lists.job_id', '=', 'spare_parts.job_id')
-            ->where('job_lists.is_code_key', $selectedShop)
+            ->whereIn('job_lists.is_code_key', $selectedShops)
             ->groupBy('spare_parts.sp_code')
             ->get()
             ->keyBy('sp_code');
@@ -51,7 +56,7 @@ class SummaryUsedSparePartsController extends Controller
             SUM(CASE WHEN stock_jobs.job_status = 'complete' THEN 1 ELSE 0 END) AS withdraw_complete
         ")
             ->join('stock_jobs', 'stock_jobs.stock_job_id', '=', 'stock_job_details.stock_job_id')
-            ->where('stock_jobs.is_code_cust_id', $selectedShop)
+            ->whereIn('stock_jobs.is_code_cust_id', $selectedShops)
             ->where('stock_jobs.type', 'เบิก')
             ->groupBy('stock_job_details.sp_code')
             ->get()
@@ -61,7 +66,7 @@ class SummaryUsedSparePartsController extends Controller
             ->select('sp_code', DB::raw('MAX(sp_unit) as sp_unit'))
             ->groupBy('sp_code');
 
-        $query = StockSparePart::where('stock_spare_parts.is_code_cust_id', $selectedShop)
+        $query = StockSparePart::whereIn('stock_spare_parts.is_code_cust_id', $selectedShops)
             ->leftJoinSub($unitSub, 'unit_table', function ($join) {
                 $join->on('unit_table.sp_code', '=', 'stock_spare_parts.sp_code');
             })
@@ -80,42 +85,42 @@ class SummaryUsedSparePartsController extends Controller
 
         if ($filter) {
             if ($filter === 'repair_complete') {
-                $query->whereIn('stock_spare_parts.sp_code', function ($q) use ($selectedShop) {
+                $query->whereIn('stock_spare_parts.sp_code', function ($q) use ($selectedShops) {
                     $q->select('spare_parts.sp_code')
                         ->from('spare_parts')
                         ->join('job_lists', 'job_lists.job_id', '=', 'spare_parts.job_id')
-                        ->where('job_lists.is_code_key', $selectedShop)
+                        ->whereIn('job_lists.is_code_key', $selectedShops)
                         ->where('job_lists.status', 'success');
                 });
             }
 
             if ($filter === 'repair_process') {
-                $query->whereIn('stock_spare_parts.sp_code', function ($q) use ($selectedShop) {
+                $query->whereIn('stock_spare_parts.sp_code', function ($q) use ($selectedShops) {
                     $q->select('spare_parts.sp_code')
                         ->from('spare_parts')
                         ->join('job_lists', 'job_lists.job_id', '=', 'spare_parts.job_id')
-                        ->where('job_lists.is_code_key', $selectedShop)
+                        ->whereIn('job_lists.is_code_key', $selectedShops)
                         ->where('job_lists.status', 'pending');
                 });
             }
 
             if ($filter === 'withdraw_process') {
-                $query->whereIn('stock_spare_parts.sp_code', function ($q) use ($selectedShop) {
+                $query->whereIn('stock_spare_parts.sp_code', function ($q) use ($selectedShops) {
                     $q->select('stock_job_details.sp_code')
                         ->from('stock_job_details')
                         ->join('stock_jobs', 'stock_jobs.stock_job_id', '=', 'stock_job_details.stock_job_id')
-                        ->where('stock_jobs.is_code_cust_id', $selectedShop)
+                        ->whereIn('stock_jobs.is_code_cust_id', $selectedShops)
                         ->where('stock_jobs.type', 'เบิก')
                         ->where('stock_jobs.job_status', 'processing');
                 });
             }
 
             if ($filter === 'withdraw_complete') {
-                $query->whereIn('stock_spare_parts.sp_code', function ($q) use ($selectedShop) {
+                $query->whereIn('stock_spare_parts.sp_code', function ($q) use ($selectedShops) {
                     $q->select('stock_job_details.sp_code')
                         ->from('stock_job_details')
                         ->join('stock_jobs', 'stock_jobs.stock_job_id', '=', 'stock_job_details.stock_job_id')
-                        ->where('stock_jobs.is_code_cust_id', $selectedShop)
+                        ->whereIn('stock_jobs.is_code_cust_id', $selectedShops)
                         ->where('stock_jobs.type', 'เบิก')
                         ->where('stock_jobs.job_status', 'complete');
                 });
@@ -171,6 +176,7 @@ class SummaryUsedSparePartsController extends Controller
         return Inertia::render('Admin/SummaryUsedSP/SumUsedSpList', [
             'shops' => $shops,
             'selectedShop' => $selectedShop,
+            'selectedShops' => $selectedShops,
             'currentShopName' => $currentShopName,
             'spareParts'      => $spareParts,
             'isAdmin' => true,
@@ -241,11 +247,16 @@ class SummaryUsedSparePartsController extends Controller
 
     public function exportExcel(Request $request)
     {
-        $selectedShop = $request->query('shop');
+        $defaultShop = Auth::user()->is_code_cust_id;
+        $selectedShops = array_values(array_filter((array) $request->input('shops', [])));
+        if (empty($selectedShops)) {
+            $selectedShops = [$defaultShop];
+        }
+        $selectedShop = $selectedShops[0];
         $search = $request->query('search');
 
         // ดึงรายการอะไหล่ในร้าน
-        $spareParts = StockSparePart::where('stock_spare_parts.is_code_cust_id', $selectedShop)
+        $spareParts = StockSparePart::whereIn('stock_spare_parts.is_code_cust_id', $selectedShops)
             ->select(
                 'stock_spare_parts.sp_code',
                 'stock_spare_parts.sp_name',

@@ -619,7 +619,7 @@ class sendJobController extends Controller
         $jobId = $request->input('job_id');
         $serialId = $request->input('serial_id');
         $groupJob = $request->input('group_job');
-        $shop = $request->input('shop'); // รับค่า shop
+        $shops = array_values(array_filter((array) $request->input('shops', []))); // รับค่า shops array
 
         if (!empty($jobId) || !empty($serialId)) {
             if (empty($jobId) || empty($serialId)) {
@@ -641,8 +641,8 @@ class sendJobController extends Controller
 
             // เช็คสิทธิ์
             if ($user->role === 'admin') {
-                if (!empty($shop)) {
-                    $query->where('is_code_key', $shop);
+                if (!empty($shops)) {
+                    $query->whereIn('is_code_key', $shops);
                 }
             } else {
                 $query->where('is_code_key', $user->is_code_cust_id);
@@ -702,8 +702,9 @@ class sendJobController extends Controller
 
             // เช็คสิทธิ์ Admin
             if ($user->role === 'admin') {
-                if ($request->filled('shop')) {
-                    $query->where('is_code_key', $request->input('shop'));
+                $adminShops = array_values(array_filter((array) $request->input('shops', [])));
+                if (!empty($adminShops)) {
+                    $query->whereIn('is_code_key', $adminShops);
                 }
             } else {
                 $query->where('is_code_key', $user->is_code_cust_id);
@@ -1152,8 +1153,9 @@ class sendJobController extends Controller
 
             // เช็คสิทธิ์ Admin
             if ($user->role === 'admin') {
-                if ($request->filled('shop')) {
-                    $query->where('is_code_key', $request->input('shop'));
+                $adminShops = array_values(array_filter((array) $request->input('shops', [])));
+                if (!empty($adminShops)) {
+                    $query->whereIn('is_code_key', $adminShops);
                 }
             } else {
                 $query->where('is_code_key', $user->is_code_cust_id);

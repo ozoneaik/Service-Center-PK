@@ -1,8 +1,8 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router, usePage } from "@inertiajs/react";
-import { Autocomplete, Paper, TextField, useTheme } from "@mui/material";
+import { Autocomplete, Chip, Paper, TextField, useTheme } from "@mui/material";
 import { Container } from "postcss";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import FilePresentIcon from '@mui/icons-material/FilePresent';
 import 'dayjs/locale/th';
@@ -12,6 +12,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 export default function SoiList() {
     const { shops,
         selectedShop,
+        selectedShops: initialSelectedShops,
         currentShopName,
         isAdmin,
         jobs,
@@ -24,8 +25,13 @@ export default function SoiList() {
         end_date
     } = usePage().props;
 
-    const defaultShop = shops.find(s => s.is_code_cust_id === selectedShop) || null;
-    const [shopValue, setShopValue] = useState(defaultShop);
+    const [selectedShopCodes, setSelectedShopCodes] = useState(
+        initialSelectedShops?.length ? initialSelectedShops : (selectedShop ? [selectedShop] : [])
+    );
+    const selectedShopsData = useMemo(() => {
+        if (!selectedShopCodes || !Array.isArray(selectedShopCodes) || !shops) return [];
+        return shops.filter((s) => selectedShopCodes.includes(s.is_code_cust_id));
+    }, [selectedShopCodes, shops]);
     const theme = useTheme();
     const [detailList, setDetailList] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -89,13 +95,13 @@ export default function SoiList() {
         return "bg-gray-100 text-gray-800";                                  // default
     };
 
-    const handleSelectShop = (newValue) => {
-        setShopValue(newValue);
-        // Force a full Inertia visit to update data based on shop
+    const handleSelectShops = (newValues) => {
+        const codes = newValues.map(s => s.is_code_cust_id);
+        setSelectedShopCodes(codes);
         router.get(
             route(indexRouteName),
             {
-                shop: newValue?.is_code_cust_id || "",
+                shops: codes,
                 status: statusValue?.value || "",
                 start_date: startDate || "",
                 end_date: endDate || ""
@@ -109,7 +115,7 @@ export default function SoiList() {
         router.get(
             route(indexRouteName),
             {
-                shop: shopValue?.is_code_cust_id || "",
+                shops: selectedShopCodes,
                 status: newValue?.value || "",
                 start_date: startDate || "",
                 end_date: endDate || ""
@@ -130,7 +136,7 @@ export default function SoiList() {
 
         // Debounce or apply filter directly. Here we apply directly for simplicity.
         router.get(route(indexRouteName), {
-            shop: shopValue?.is_code_cust_id || "",
+            shops: selectedShopCodes,
             status: statusValue?.value || "",
             start_date: newStartDate,
             end_date: newEndDate
@@ -141,7 +147,7 @@ export default function SoiList() {
         setStartDate("");
         setEndDate("");
         router.get(route(indexRouteName), {
-            shop: shopValue?.is_code_cust_id || "",
+            shops: selectedShopCodes,
             status: statusValue?.value || "",
             start_date: "",
             end_date: ""
@@ -159,8 +165,7 @@ export default function SoiList() {
 
         try {
             const res = await axios.get(
-                // Use selectedShop from props if shopValue is null or undefined for the route param
-                route(routeName, [job_id, shopValue?.is_code_cust_id || selectedShop])
+                route(routeName, [job_id, selectedShopCodes[0] || selectedShop])
             );
             setDetailList(res.data.details);
             setOpen(true);
@@ -172,8 +177,8 @@ export default function SoiList() {
     };
 
     const handleExportAll = () => {
-        const shopKey = shopValue?.is_code_cust_id || selectedShop;
-        const status = statusValue?.value || selectedStatus || '';
+        const shopKey = selectedShopCodes[0] || selectedShop;
+        const statusVal = statusValue?.value || selectedStatus || '';
         if (!shopKey) {
             alert("กรุณาเลือกหรือเข้าสู่ระบบด้วยร้านค้าที่ถูกต้อง");
             return;
@@ -182,13 +187,9 @@ export default function SoiList() {
             ? "admin.summary-income.export-all"
             : "report.summary-income.export-all";
 
-        const params = { status };
-        if (startDate) {
-            params.start_date = startDate;
-        }
-        if (endDate) {
-            params.end_date = endDate;
-        }
+        const params = { status: statusVal };
+        if (startDate) params.start_date = startDate;
+        if (endDate) params.end_date = endDate;
 
         const queryParams = new URLSearchParams(params).toString();
         const url = route(routeName, shopKey) + `?${queryParams}`;
@@ -209,19 +210,34 @@ export default function SoiList() {
 
                     {/* Shop Select (Admin only) */}
                     {isAdmin && (
-                        <div className="col-span-1">
+                        <div className="col-span-1 md:col-span-2">
                             <Autocomplete
-                                options={shops}
+                                multiple
+                                options={shops || []}
+                                getOptionLabel={(option) => `[${option.is_code_cust_id}] ${option.shop_name}`}
+                                value={selectedShopsData}
+                                isOptionEqualToValue={(option, value) => option.is_code_cust_id === value.is_code_cust_id}
+                                onChange={(e, newValues) => handleSelectShops(newValues)}
+                                size="small"
                                 fullWidth
-                                value={shopValue}
-                                onChange={(e, v) => handleSelectShop(v)}
-                                getOptionLabel={(option) =>
-                                    option?.shop_name ? `${option.shop_name}` : ""
+                                renderTags={(value, getTagProps) =>
+                                    value.map((option, index) => (
+                                        <Chip
+                                            {...getTagProps({ index })}
+                                            key={option.is_code_cust_id}
+                                            label={option.shop_name}
+                                            size="small"
+                                        />
+                                    ))
                                 }
                                 renderInput={(params) => (
-                                    <TextField {...params} label="ร้านค้า" size="small" />
+                                    <TextField
+                                        {...params}
+                                        label="เลือกร้านค้า (เลือกได้หลายร้าน)"
+                                        size="small"
+                                        placeholder={selectedShopsData.length === 0 ? "พิมพ์เพื่อค้นหา..." : ""}
+                                    />
                                 )}
-                                isOptionEqualToValue={(option, value) => option.is_code_cust_id === value.is_code_cust_id}
                             />
                         </div>
                     )}
@@ -386,7 +402,7 @@ export default function SoiList() {
                                     <td className="border p-2 text-center">
                                         <button
                                             className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-150 ease-in-out"
-                                            onClick={() => loadDetail(job.job_id, selectedShop)}
+                                            onClick={() => loadDetail(job.job_id, job.is_code_key || selectedShopCodes[0] || selectedShop)}
                                             title={`ดูรายละเอียดอะไหล่/ค่าบริการของงาน ${job.job_id}`}
                                         >
                                             <FilePresentIcon fontSize="small" />
@@ -429,7 +445,7 @@ export default function SoiList() {
                                 onClick={() => link.url && router.get(
                                     link.url,
                                     {
-                                        shop: shopValue?.is_code_cust_id || "",
+                                        shops: selectedShopCodes,
                                         status: statusValue?.value || "",
                                         start_date: startDate,
                                         end_date: endDate
@@ -451,7 +467,7 @@ export default function SoiList() {
                             router.get(
                                 jobs.next_page_url,
                                 {
-                                    shop: shopValue?.is_code_cust_id || "",
+                                    shops: selectedShopCodes,
                                     status: statusValue?.value || "",
                                     start_date: startDate,
                                     end_date: endDate

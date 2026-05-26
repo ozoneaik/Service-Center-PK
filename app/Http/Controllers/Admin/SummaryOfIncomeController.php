@@ -26,9 +26,14 @@ class SummaryOfIncomeController extends Controller
             ->orderBy('shop_name', 'asc')->get();
         // $shops = StoreInformation::orderBy('shop_name', 'asc')->get();
         $defaultShop = Auth::user()->is_code_cust_id;
-        $selectedShop = $request->query('shop', $defaultShop);
-        $currentShopName = StoreInformation::where('is_code_cust_id', $selectedShop)
-            ->value('shop_name');
+        $selectedShops = array_values(array_filter((array) $request->input('shops', [])));
+        if (empty($selectedShops)) {
+            $selectedShops = [$defaultShop];
+        }
+        $selectedShop = $selectedShops[0];
+        $currentShopName = count($selectedShops) > 1
+            ? count($selectedShops) . ' ร้านค้าที่เลือก'
+            : StoreInformation::where('is_code_cust_id', $selectedShop)->value('shop_name');
         $selectedStatus = $request->query('status', '');
 
         $startDate = null;
@@ -48,7 +53,7 @@ class SummaryOfIncomeController extends Controller
         }
 
         $summary = JobList::query()
-            ->where('job_lists.is_code_key', $selectedShop)
+            ->whereIn('job_lists.is_code_key', $selectedShops)
             ->when($selectedStatus !== '', fn($q) => $q->where('job_lists.status', $selectedStatus))
             ->when($startDate, fn($q) => $q->whereDate('job_lists.created_at', '>=', $startDate))
             ->when($endDate, fn($q) => $q->whereDate('job_lists.created_at', '<=', $endDate))
@@ -79,7 +84,8 @@ class SummaryOfIncomeController extends Controller
             )
             ->first();
         $jobs = JobList::query()
-            ->where('is_code_key', $selectedShop)
+            ->whereIn('is_code_key', $selectedShops)
+            ->addSelect(['job_lists.is_code_key'])
             ->when($selectedStatus !== '', function ($query) use ($selectedStatus) {
                 $query->where('job_lists.status', $selectedStatus);
             })
@@ -130,6 +136,7 @@ class SummaryOfIncomeController extends Controller
         return inertia('Admin/SummaryOfIncome/SoiList', [
             'shops' => $shops,
             'selectedShop' => $selectedShop,
+            'selectedShops' => $selectedShops,
             'currentShopName' => $currentShopName,
             'jobs' => $jobs,
             'isAdmin' => true,

@@ -1,8 +1,8 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout"
 import { Head, router, usePage } from "@inertiajs/react"
-import { Autocomplete, Box, Modal, TextField, useMediaQuery, useTheme } from "@mui/material";
+import { Autocomplete, Box, Chip, Modal, TextField, useMediaQuery, useTheme } from "@mui/material";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import FilePresentIcon from '@mui/icons-material/FilePresent';
 <style>
@@ -37,9 +37,14 @@ import FilePresentIcon from '@mui/icons-material/FilePresent';
 </style>
 
 export default function SumUsedSpList() {
-    const { shops, selectedShop, currentShopName, isAdmin, spareParts, summary, search } = usePage().props;
-    const defaultShop = shops.find(s => s.is_code_cust_id === selectedShop) || null;
-    const [shopValue, setShopValue] = useState(defaultShop);
+    const { shops, selectedShop, selectedShops: initialSelectedShops, currentShopName, isAdmin, spareParts, summary, search } = usePage().props;
+    const [selectedShopCodes, setSelectedShopCodes] = useState(
+        initialSelectedShops?.length ? initialSelectedShops : (selectedShop ? [selectedShop] : [])
+    );
+    const selectedShopsData = useMemo(() => {
+        if (!selectedShopCodes || !Array.isArray(selectedShopCodes) || !shops) return [];
+        return shops.filter((s) => selectedShopCodes.includes(s.is_code_cust_id));
+    }, [selectedShopCodes, shops]);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [open, setOpen] = useState(false);
@@ -48,7 +53,7 @@ export default function SumUsedSpList() {
     const [searchTerm, setSearchTerm] = useState(search || "");
     const [filterStatus, setFilterStatus] = useState("");
 
-    // SEARCH
+    // SEARCH + FILTER (รวมเป็น useEffect เดียว)
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
             router.get(
@@ -58,31 +63,9 @@ export default function SumUsedSpList() {
                         : "report.summary-spare-parts.index"
                 ),
                 {
-                    shop: shopValue?.is_code_cust_id || "",
+                    shops: selectedShopCodes,
                     search: searchTerm,
-                },
-                {
-                    preserveState: true,
-                    replace: true,
-                }
-            );
-        }, 500); // หน่วง 500ms
-
-        return () => clearTimeout(delayDebounce);
-    }, [searchTerm, shopValue]);
-
-    useEffect(() => {
-        const delayDebounce = setTimeout(() => {
-            router.get(
-                route(
-                    isAdmin
-                        ? "admin.summary-spare-parts.index"
-                        : "report.summary-spare-parts.index"
-                ),
-                {
-                    shop: shopValue?.is_code_cust_id || "",
-                    search: searchTerm,
-                    filter: filterStatus, // เพิ่มตรงนี้
+                    filter: filterStatus,
                 },
                 {
                     preserveState: true,
@@ -92,7 +75,7 @@ export default function SumUsedSpList() {
         }, 500);
 
         return () => clearTimeout(delayDebounce);
-    }, [searchTerm, shopValue, filterStatus]);
+    }, [searchTerm, selectedShopCodes, filterStatus]);
 
     const loadDetail = async (sp) => {
         setLoading(true);
@@ -107,12 +90,12 @@ export default function SumUsedSpList() {
         setLoading(false);
     };
 
-    const handleSelectShop = (newValue) => {
-        setShopValue(newValue);
-
+    const handleSelectShops = (newValues) => {
+        const codes = newValues.map(s => s.is_code_cust_id);
+        setSelectedShopCodes(codes);
         router.get(
-            route("admin.summary-spare-parts.index"),
-            { shop: newValue?.is_code_cust_id || "" },
+            route(isAdmin ? "admin.summary-spare-parts.index" : "report.summary-spare-parts.index"),
+            { shops: codes },
             { replace: true }
         );
     };
@@ -145,15 +128,30 @@ export default function SumUsedSpList() {
                     <div className="mt-4">
                         {isAdmin && (
                             <Autocomplete
-                                options={shops}
-                                sx={{ width: isMobile ? "100%" : 300 }}
-                                value={shopValue}
-                                onChange={(e, v) => handleSelectShop(v)}
-                                getOptionLabel={(option) =>
-                                    option?.shop_name ? `${option.shop_name}` : ""
+                                multiple
+                                options={shops || []}
+                                getOptionLabel={(option) => `[${option.is_code_cust_id}] ${option.shop_name}`}
+                                value={selectedShopsData}
+                                isOptionEqualToValue={(option, value) => option.is_code_cust_id === value.is_code_cust_id}
+                                onChange={(e, newValues) => handleSelectShops(newValues)}
+                                size="small"
+                                sx={{ width: isMobile ? "100%" : 380 }}
+                                renderTags={(value, getTagProps) =>
+                                    value.map((option, index) => (
+                                        <Chip
+                                            {...getTagProps({ index })}
+                                            key={option.is_code_cust_id}
+                                            label={option.shop_name}
+                                            size="small"
+                                        />
+                                    ))
                                 }
                                 renderInput={(params) => (
-                                    <TextField {...params} label="เลือกสาขา / ร้าน" />
+                                    <TextField
+                                        {...params}
+                                        label="เลือกร้านค้า (เลือกได้หลายร้าน)"
+                                        placeholder={selectedShopsData.length === 0 ? "พิมพ์เพื่อค้นหา..." : ""}
+                                    />
                                 )}
                             />
                         )}
@@ -179,13 +177,14 @@ export default function SumUsedSpList() {
                     <div className="mt-4">
                         <button
                             onClick={() => {
-                                const url = route(
+                                const baseUrl = new URL(route(
                                     isAdmin
                                         ? "admin.summary-spare-parts.export"
                                         : "report.summary-spare-parts.export"
-                                ) + `?shop=${shopValue?.is_code_cust_id}&search=${searchTerm}`;
-
-                                window.open(url, "_blank");
+                                ), window.location.origin);
+                                selectedShopCodes.forEach(code => baseUrl.searchParams.append('shops[]', code));
+                                if (searchTerm) baseUrl.searchParams.set('search', searchTerm);
+                                window.open(baseUrl.toString(), "_blank");
                             }}
                             className="flex justify-center p-2 items-center bg-green-600 text-white rounded shadow hover:bg-green-700"
                         >
