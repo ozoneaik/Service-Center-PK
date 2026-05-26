@@ -107,6 +107,7 @@ Route::prefix('send-job')->group(function () {
     Route::post('/finish', [sendJobController::class, 'finishSendJob'])->name('sendJobs.finish');
     Route::post('/history', [sendJobController::class, 'historySuccessJobs'])->name('sendJobs.history');
     Route::post('/check-status', [sendJobController::class, 'checkJobStatus'])->name('sendJobs.checkJobStatus');
+    Route::post('/batch-check-status', [sendJobController::class, 'batchCheckJobStatus'])->name('sendJobs.batchCheckStatus');
 });
 
 Route::get('/genReCieveSpPdf/{job_id}',[genQuPdfController::class,'genReCieveSpPdf'])->name('genReCieveSpPdf');

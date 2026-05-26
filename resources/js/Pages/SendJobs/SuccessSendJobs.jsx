@@ -1555,6 +1555,10 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
     const [jobsToFinishConfirm, setJobsToFinishConfirm] = useState([]);
     const [activeTab, setActiveTab] = useState("all");
 
+    // Auto / Batch check state
+    const [batchChecking, setBatchChecking] = useState(false);
+    const [lastBatchCheck, setLastBatchCheck] = useState(null);
+
     const { data, setData, reset } = useForm({
         job_id: "",
         serial_id: "",
@@ -1745,6 +1749,54 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
     const handleModeChange = (mode) => {
         setSearchMode(mode);
         resetAll();
+    };
+
+    /** สถานะที่ยังต้องติดตาม (ไม่ใช่ final) */
+    const ACTIVE_STATUSES_FOR_CHECK = [
+        "send", "เปิดออเดอร์แล้ว", "รอเปิดSO", "พร้อมส่ง",
+        "แพ็คสินค้าเสร็จ", "กำลังจัดสินค้า", "กำลังส่ง",
+        "เตรียมส่ง", "รอปิดงานซ่อม", "กำลังซ่อม",
+        "พักงานซ่อม", "รอรับงานซ่อม",
+    ];
+
+    /** กดปุ่ม "เช็คสถานะทั้งหมด" — ส่ง job_ids ที่ยังไม่ final ให้ backend เช็ค API แล้ว refresh */
+    const handleBatchCheckAll = async () => {
+        const jobsToCheck = jobs
+            .filter((j) => ACTIVE_STATUSES_FOR_CHECK.includes(j.status))
+            .map((j) => j.job_id);
+
+        if (jobsToCheck.length === 0) {
+            setAlert({ type: "info", message: "ไม่มีงานที่ต้องเช็คสถานะในขณะนี้" });
+            return;
+        }
+
+        setBatchChecking(true);
+        setAlert(null);
+
+        try {
+            const response = await axios.post(
+                route("sendJobs.batchCheckStatus"),
+                { job_ids: jobsToCheck },
+            );
+
+            setLastBatchCheck(new Date());
+            setAlert({ type: "success", message: response.data.message });
+
+            // Refresh ข้อมูลในตารางให้แสดงสถานะล่าสุด
+            if (currentView === "history") {
+                fetchHistoryJobs();
+            } else {
+                fetchAllCurrentJobs();
+            }
+        } catch (error) {
+            const errorMsg =
+                error.response?.data?.message ||
+                error.message ||
+                "เกิดข้อผิดพลาดในการเช็คสถานะ";
+            setAlert({ type: "error", message: errorMsg });
+        } finally {
+            setBatchChecking(false);
+        }
     };
 
     const fetchHistoryJobs = async (searchFilters = filters) => {
@@ -2596,61 +2648,91 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                             <div className="p-6">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2">
-                                    <h3 className="text-xl font-semibold border-b pb-2 w-full sm:w-auto">
-                                        {currentView === "history"
-                                            ? "รายการประวัติการปิดงาน (" +
-                                            filteredJobs.length +
-                                            ")"
-                                            : "รายการงานทั้งหมด (" +
-                                            filteredJobs.length +
-                                            ")"}
-                                    </h3>
+                                    {/* ชื่อตาราง + badge auto-check */}
+                                    <div className="flex flex-col gap-1">
+                                        <h3 className="text-xl font-semibold border-b pb-1">
+                                            {currentView === "history"
+                                                ? `รายการประวัติการปิดงาน (${filteredJobs.length})`
+                                                : `รายการงานทั้งหมด (${filteredJobs.length})`}
+                                        </h3>
+                                        {currentView === "all_current" && (
+                                            <span className="text-xs text-gray-400 flex items-center gap-1">
+                                                🤖 ระบบเช็คสถานะอัตโนมัติทุก 30 นาที
+                                                {lastBatchCheck && (
+                                                    <span className="ml-1 text-gray-500">
+                                                        | เช็คล่าสุด:{" "}
+                                                        {lastBatchCheck.toLocaleTimeString("th-TH")}
+                                                    </span>
+                                                )}
+                                            </span>
+                                        )}
+                                    </div>
 
-                                    {(currentView === "close_current" ||
-                                        currentView === "all_current") &&
-                                        isReadyToFinish() && (
+                                    {/* ปุ่มกลุ่มขวา */}
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        {/* ปุ่มเช็คสถานะทั้งหมด (เฉพาะ all_current) */}
+                                        {currentView === "all_current" && (
                                             <button
                                                 type="button"
-                                                onClick={handleConfirmOpen}
-                                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
-                                                disabled={
-                                                    selectedJobIds.length ===
-                                                    0 ||
-                                                    finishLoading ||
-                                                    searchLoading
-                                                }
+                                                onClick={handleBatchCheckAll}
+                                                disabled={batchChecking || finishLoading || searchLoading}
+                                                className="inline-flex items-center px-3 py-2 border border-orange-300 text-sm font-medium rounded-md text-orange-700 bg-orange-50 hover:bg-orange-100 disabled:opacity-50 transition-colors duration-150"
                                             >
-                                                {finishLoading ? (
+                                                {batchChecking ? (
                                                     <>
                                                         <svg
-                                                            className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-orange-600"
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             fill="none"
                                                             viewBox="0 0 24 24"
                                                         >
-                                                            <circle
-                                                                className="opacity-25"
-                                                                cx="12"
-                                                                cy="12"
-                                                                r="10"
-                                                                stroke="currentColor"
-                                                                strokeWidth="4"
-                                                            ></circle>
-                                                            <path
-                                                                className="opacity-75"
-                                                                fill="currentColor"
-                                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 
-                                                                5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 
-                                                                3 7.938l3-2.647z"
-                                                            ></path>
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                                         </svg>
-                                                        กำลังจบงาน...
+                                                        กำลังเช็คสถานะ...
                                                     </>
                                                 ) : (
-                                                    `ปิดงาน ${selectedJobIds.length} รายการ`
+                                                    <>
+                                                        <Refresh className="w-4 h-4 mr-1" />
+                                                        เช็คสถานะทั้งหมด
+                                                    </>
                                                 )}
                                             </button>
                                         )}
+
+                                        {/* ปุ่มปิดงาน */}
+                                        {(currentView === "close_current" ||
+                                            currentView === "all_current") &&
+                                            isReadyToFinish() && (
+                                                <button
+                                                    type="button"
+                                                    onClick={handleConfirmOpen}
+                                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                                                    disabled={
+                                                        selectedJobIds.length === 0 ||
+                                                        finishLoading ||
+                                                        searchLoading
+                                                    }
+                                                >
+                                                    {finishLoading ? (
+                                                        <>
+                                                            <svg
+                                                                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                            >
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                                            </svg>
+                                                            กำลังจบงาน...
+                                                        </>
+                                                    ) : (
+                                                        `ปิดงาน ${selectedJobIds.length} รายการ`
+                                                    )}
+                                                </button>
+                                            )}
+                                    </div>
                                 </div>
 
                                 {/* Tap สถานะ */}

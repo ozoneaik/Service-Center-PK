@@ -12,3 +12,5 @@ Artisan::command('inspire', function () {
 Schedule::command('stuc:check-status')->twiceDaily(0, 12);
 Schedule::command('claim:check-status')->everyThirtyMinutes();
 Schedule::command('order:check-status')->everyThirtyMinutes();
+Schedule::command('job:check-status')->everyThirtyMinutes();
+Schedule::command('job:auto-close')->dailyAt('01:00'); // ปิดงานอัตโนมัติ เมื่อ success เกิน 3 วัน

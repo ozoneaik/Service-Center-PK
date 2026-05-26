@@ -1054,6 +1054,94 @@ class sendJobController extends Controller
         }
     }
     
+    /**
+     * Batch เช็คสถานะ (เรียกจาก Frontend ปุ่ม "เช็คสถานะทั้งหมด")
+     * รับ job_ids[] และเช็คกับ API ทีละตัว สูงสุด 50 รายการต่อครั้ง
+     */
+    public function batchCheckJobStatus(Request $request): JsonResponse
+    {
+        $jobIds = $request->input('job_ids', []);
+
+        if (empty($jobIds) || !is_array($jobIds)) {
+            return response()->json(['message' => 'ไม่มี Job ID ที่ต้องการเช็คสถานะ'], 400);
+        }
+
+        // จำกัดสูงสุด 50 รายการต่อ request เพื่อป้องกัน timeout
+        $jobIds = array_slice($jobIds, 0, 50);
+        $total  = count($jobIds);
+
+        $uri     = 'https://afterservice-sv.pumpkin.tools/sv/callpsc.php';
+        $timeout = 10;
+        $updated = 0;
+        $failed  = 0;
+
+        foreach ($jobIds as $jobId) {
+            try {
+                $response = Http::timeout($timeout)->post($uri, ['ticketcode' => $jobId]);
+
+                if (!$response->successful()) {
+                    $failed++;
+                    continue;
+                }
+
+                $json = $response->json();
+
+                if (!$json || !is_array($json)) {
+                    $failed++;
+                    continue;
+                }
+
+                $externalStatus = $json['status'] ?? null;
+                $assNo          = $json['assno']  ?? null;
+
+                if (empty($externalStatus)) {
+                    $failed++;
+                    continue;
+                }
+
+                if ($externalStatus === 'ไม่พบข้อมูล') {
+                    $externalStatus = 'send';
+                }
+
+                $updateData = [
+                    'status'     => $externalStatus,
+                    'updated_at' => Carbon::now(),
+                ];
+
+                if ($assNo) {
+                    $updateData['ticket_code'] = $assNo;
+                }
+
+                JobList::where('job_id', $jobId)->update($updateData);
+                $updated++;
+
+            } catch (\Exception $e) {
+                $failed++;
+                Log::error('batchCheckJobStatus Error on ' . $jobId . ': ' . $e->getMessage());
+            }
+
+            usleep(100_000); // 100ms ระหว่าง request
+        }
+
+        logStamp::query()->create([
+            'description' => Auth::user()->user_code
+                . " เช็คสถานะแบบ Batch {$updated}/{$total} รายการ"
+                . ($failed > 0 ? " (ผิดพลาด {$failed})" : ''),
+        ]);
+
+        $message = "เช็คสถานะสำเร็จ {$updated}/{$total} รายการ";
+        if ($failed > 0) {
+            $message .= " (ไม่สำเร็จ {$failed} รายการ)";
+        }
+
+        return response()->json([
+            'message' => $message,
+            'updated' => $updated,
+            'failed'  => $failed,
+            'total'   => $total,
+        ]);
+    }
+
     public function historySuccessJobs(Request $request): JsonResponse
     {
         try {
