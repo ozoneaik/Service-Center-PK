@@ -1516,7 +1516,7 @@
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import {
     CheckCircle,
@@ -1537,6 +1537,7 @@ import {
     Box,
     Autocomplete,
     TextField,
+    Chip,
 } from "@mui/material";
 
 // เพิ่ม props isAdmin และ shops
@@ -1566,7 +1567,7 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
     });
 
     const [filters, setFilters] = useState({
-        shop: "", // เพิ่ม Field shop
+        shops: [], // multi-select shops (admin)
         job_id: "",
         serial_id: "",
         pid: "",
@@ -1676,7 +1677,7 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
 
     const handleResetFilter = () => {
         const emptyFilters = {
-            shop: filters.shop, // เก็บร้านค้าปัจจุบันไว้ (ไม่ล้าง)
+            shops: filters.shops, // เก็บร้านค้าปัจจุบันไว้ (ไม่ล้าง)
             group_job: "",
             job_id: "",
             serial_id: "",
@@ -1713,9 +1714,9 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
         }
     };
 
-    // ฟังก์ชันเลือกร้าน (สำหรับ Admin)
-    const handleShopChange = (newShop) => {
-        const newFilters = { ...filters, shop: newShop };
+    // ฟังก์ชันเลือกร้าน (สำหรับ Admin) — รับ array ของ is_code_cust_id
+    const handleShopsChange = (newShopCodes) => {
+        const newFilters = { ...filters, shops: newShopCodes };
         setFilters(newFilters);
 
         // Auto Fetch เมื่อเปลี่ยนร้านค้า (เพื่อความสะดวก)
@@ -1725,6 +1726,12 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
             fetchAllCurrentJobs(newFilters);
         }
     };
+
+    // ข้อมูล object ของร้านที่เลือก (สำหรับ Autocomplete value)
+    const selectedShopsData = useMemo(() => {
+        if (!filters.shops || !Array.isArray(filters.shops) || !shops) return [];
+        return shops.filter((s) => filters.shops.includes(s.is_code_cust_id));
+    }, [filters.shops, shops]);
 
     const handleClose = () => {
         setIsVisible(false);
@@ -1874,7 +1881,7 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                     job_id: data.job_id,
                     serial_id: data.serial_id,
                     group_job: "",
-                    shop: filters.shop, // แนบ Shop ไปด้วย
+                    shops: filters.shops, // แนบ Shops ไปด้วย
                 };
             }
         } else if (searchMode === "group") {
@@ -1885,7 +1892,7 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                     job_id: "",
                     serial_id: "",
                     group_job: data.group_job,
-                    shop: filters.shop, // แนบ Shop ไปด้วย
+                    shops: filters.shops, // แนบ Shops ไปด้วย
                 };
             }
         }
@@ -1996,7 +2003,7 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                 setCurrentView("history");
                 setSelectedJobIds([]);
                 const emptyFilters = {
-                    shop: filters.shop,
+                    shops: filters.shops,
                     group_job: "",
                     job_id: "",
                     serial_id: "",
@@ -2165,31 +2172,45 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                         </div>
                     </div>
 
-                    {/* การกรองร้านค้าสำหรับ Admin */}
+                    {/* การกรองร้านค้าสำหรับ Admin (multi-select) */}
                     {isAdmin && (
                         <div className="mb-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                            <Typography variant="body2" fontWeight="bold">
+                            <Typography variant="body2" fontWeight="bold" sx={{ whiteSpace: "nowrap" }}>
                                 🔍 เลือกร้านค้า:
                             </Typography>
-                            <Box sx={{ minWidth: 300, flex: 1, maxWidth: 500 }}>
+                            <Box sx={{ flex: 1, minWidth: 320 }}>
                                 <Autocomplete
+                                    multiple
                                     options={shops || []}
                                     getOptionLabel={(option) =>
                                         `[${option.is_code_cust_id}] ${option.shop_name}`
                                     }
-                                    value={
-                                        shops?.find(
-                                            (s) => s.is_code_cust_id === filters.shop
-                                        ) || null
+                                    value={selectedShopsData}
+                                    isOptionEqualToValue={(option, value) =>
+                                        option.is_code_cust_id === value.is_code_cust_id
                                     }
-                                    onChange={(e, newValue) => {
-                                        handleShopChange(
-                                            newValue ? newValue.is_code_cust_id : ""
-                                        );
-                                    }}
+                                    onChange={(e, newValues) =>
+                                        handleShopsChange(
+                                            newValues.map((s) => s.is_code_cust_id)
+                                        )
+                                    }
                                     size="small"
+                                    renderTags={(value, getTagProps) =>
+                                        value.map((option, index) => (
+                                            <Chip
+                                                {...getTagProps({ index })}
+                                                key={option.is_code_cust_id}
+                                                label={option.shop_name}
+                                                size="small"
+                                            />
+                                        ))
+                                    }
                                     renderInput={(params) => (
-                                        <TextField {...params} placeholder="ร้านค้าทั้งหมด" />
+                                        <TextField
+                                            {...params}
+                                            label="เลือกร้านค้า (เลือกได้หลายร้าน)"
+                                            placeholder={selectedShopsData.length === 0 ? "พิมพ์เพื่อค้นหา..." : ""}
+                                        />
                                     )}
                                 />
                             </Box>

@@ -12,11 +12,11 @@ export default function LayoutMangeAdmin({children}) {
     const [collapsed, setCollapsed] = useState(false);
 
     const menuItems = [
-        {
-            text: "เอกสารรอเคลม",
-            icon: <DashboardIcon/>,
-            path: "claimSP.index"
-        },
+        // {
+        //     text: "เอกสารรอเคลม",
+        //     icon: <DashboardIcon/>,
+        //     path: "claimSP.index"
+        // },
         {
             text: "อนุมัติอะไหล่",
             icon: <DashboardIcon/>,

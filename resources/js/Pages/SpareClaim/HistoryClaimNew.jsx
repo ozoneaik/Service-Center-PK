@@ -1109,6 +1109,12 @@ export default function HistoryClaimNew({
         return shops.find((s) => s.is_code_cust_id === filters.shop);
     }, [filters?.shop, shops]);
 
+    // multi-select: แปลง array ของ is_code_cust_id กลับเป็น array ของ shop objects
+    const selectedShopsData = useMemo(() => {
+        if (!filters?.shops || !Array.isArray(filters.shops) || !shops) return [];
+        return shops.filter((s) => filters.shops.includes(s.is_code_cust_id));
+    }, [filters?.shops, shops]);
+
     const redirectToDetail = (claim_id) => {
         router.get(route("spareClaim.historyDetail", { claim_id }));
     };
@@ -1176,6 +1182,7 @@ export default function HistoryClaimNew({
 
         if (key === "area") {
             newFilters.shop = "";
+            newFilters.shops = []; // clear multi-select shops ด้วยเมื่อเปลี่ยนเขต
             if (userRole === "acc") setShopSearch("");
         }
 
@@ -1198,6 +1205,7 @@ export default function HistoryClaimNew({
             route("spareClaim.history"),
             {
                 shop: "",
+                shops: [],
                 area: "",
                 receive_status: "all",
                 status: "",
@@ -1653,7 +1661,7 @@ export default function HistoryClaimNew({
 
                         {/* ส่วนการกรองร้านค้า */}
                         {userRole !== "service" && (
-                            <Box sx={{ minWidth: "250px" }}>
+                            <Box sx={{ minWidth: userRole === "acc" ? "250px" : "380px" }}>
                                 {userRole === "acc" ? (
                                     // สำหรับ Accounting: ใช้ TextField เพื่อกรอกรหัสร้านค้าโดยตรง
                                     <TextField
@@ -1667,7 +1675,6 @@ export default function HistoryClaimNew({
                                         }
                                         onKeyDown={(e) => {
                                             if (e.key === "Enter") {
-                                                // ต้องใช้ค่า shopSearch จาก State ปัจจุบัน
                                                 handleFilterChange(
                                                     "shop",
                                                     shopSearch,
@@ -1693,8 +1700,9 @@ export default function HistoryClaimNew({
                                         }}
                                     />
                                 ) : (
-                                    // สำหรับ Admin/Sale: ใช้ Autocomplete เหมือนเดิม
+                                    // สำหรับ Admin/Sale: Autocomplete แบบ multi-select
                                     <Autocomplete
+                                        multiple
                                         options={
                                             filters?.area
                                                 ? shops.filter(
@@ -1707,26 +1715,40 @@ export default function HistoryClaimNew({
                                         getOptionLabel={(option) =>
                                             `[${option.is_code_cust_id}] ${option.shop_name}`
                                         }
-                                        value={
-                                            shops?.find(
-                                                (s) =>
-                                                    s.is_code_cust_id ===
-                                                    filters?.shop,
-                                            ) || null
+                                        value={selectedShopsData}
+                                        isOptionEqualToValue={(option, value) =>
+                                            option.is_code_cust_id ===
+                                            value.is_code_cust_id
                                         }
-                                        onChange={(e, newValue) =>
+                                        onChange={(e, newValues) =>
                                             handleFilterChange(
-                                                "shop",
-                                                newValue
-                                                    ? newValue.is_code_cust_id
-                                                    : "",
+                                                "shops",
+                                                newValues.map(
+                                                    (s) => s.is_code_cust_id,
+                                                ),
                                             )
                                         }
                                         size="small"
+                                        renderTags={(value, getTagProps) =>
+                                            value.map((option, index) => (
+                                                <Chip
+                                                    {...getTagProps({ index })}
+                                                    key={option.is_code_cust_id}
+                                                    label={option.shop_name}
+                                                    size="small"
+                                                />
+                                            ))
+                                        }
                                         renderInput={(params) => (
                                             <TextField
                                                 {...params}
-                                                label="เลือกจากรายชื่อร้านค้า"
+                                                label="เลือกร้านค้า (เลือกได้หลายร้าน)"
+                                                placeholder={
+                                                    selectedShopsData.length ===
+                                                    0
+                                                        ? "พิมพ์เพื่อค้นหา..."
+                                                        : ""
+                                                }
                                             />
                                         )}
                                     />

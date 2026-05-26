@@ -352,6 +352,7 @@ class SpareClaimController extends Controller
         $shops = [];
         $areas = [];
         $selectedShop = $request->query('shop');
+        $selectedShops = []; // multi-select สำหรับ admin
         $selectedArea = $request->query('area');
         $selectedReceiveStatus = $request->query('receive_status', 'all');
         $selectedStatus = $request->query('status');
@@ -371,6 +372,9 @@ class SpareClaimController extends Controller
                 ->whereNotIn('is_code_cust_id', ['68263', '2760801005', '67132', 'How', '1760201010-V', '3062027-Q'])
                 ->orderBy('shop_name')
                 ->get();
+
+            // รับ shops[] สำหรับ multi-select (admin เลือกได้หลายร้าน)
+            $selectedShops = array_values(array_filter((array) $request->query('shops', [])));
         } else if ($isSale) {
             try {
                 $apiShops = $this->fetchShopsForSale($user->user_code);
@@ -455,7 +459,7 @@ class SpareClaimController extends Controller
             //         $query->where('user_id', $user->is_code_cust_id);
             //     }
             // })
-            ->where(function ($query) use ($user, $isSale, $selectedShop, $selectedArea, $shops, $userRole) {
+            ->where(function ($query) use ($user, $isSale, $selectedShop, $selectedShops, $selectedArea, $shops, $userRole) {
                 // --- กรณีเป็น ACC (บัญชี) ---
                 if ($userRole === 'acc') {
                     // ให้ดูได้ทุกร้าน ยกเว้นร้าน IS-CODE-001415445
@@ -466,10 +470,11 @@ class SpareClaimController extends Controller
                 }
                 // --- กรณีเป็น Admin ---
                 elseif ($userRole === 'admin') {
-                    if ($selectedShop) {
-                        $query->where('user_id', $selectedShop);
+                    if (!empty($selectedShops)) {
+                        // multi-select: กรองเฉพาะร้านที่เลือก
+                        $query->whereIn('user_id', $selectedShops);
                     }
-                    // ถ้า admin ไม่เลือก shop ก็ไม่ต้อง where อะไร (ให้เห็นหมด)
+                    // ถ้า admin ไม่เลือกร้านเลย → เห็นข้อมูลทั้งหมด
                 }
                 // --- กรณีเป็น Sale ---
                 elseif ($isSale) {
@@ -553,6 +558,7 @@ class SpareClaimController extends Controller
             'currentSale' => $currentSale,
             'filters' => [
                 'shop' => $selectedShop,
+                'shops' => $selectedShops, // multi-select shops (admin)
                 'area' => $selectedArea,
                 'receive_status' => $selectedReceiveStatus,
                 'status' => $selectedStatus,

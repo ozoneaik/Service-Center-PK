@@ -15,12 +15,12 @@ import {Grading, Handyman, IntegrationInstructions, PlaylistAdd} from "@mui/icon
 
 export default function AdminMainPage() {
     const menuItems = [
-        {
-            text: "เอกสารรอเคลม",
-            icon: <AssignmentIcon />,
-            path: route("claimSP.index", { status: 'pending' }),
-            color: 'gray'
-        },
+        // {
+        //     text: "เอกสารรอเคลม",
+        //     icon: <AssignmentIcon />,
+        //     path: route("claimSP.index", { status: 'pending' }),
+        //     color: 'gray'
+        // },
         {
             text: "อนุมัติอะไหล่",
             icon: <AssignmentTurnedInIcon />,
