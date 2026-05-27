@@ -17,51 +17,49 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SyncIcon from '@mui/icons-material/Sync'; // <--- 1. เพิ่ม Import ไอคอน Sync
 import CancelIcon from '@mui/icons-material/Cancel';
-export default function DocList({ docs, shops, selected_shop, current_shop_name, is_admin, is_acc, filters }) {
+export default function DocList({ docs, shops, selected_shops, current_shop_name, is_admin, is_acc, filters }) {
     const isMobile = useMediaQuery('(max-width:900px)');
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [status, setStatus] = useState(filters?.status || 'All');
 
-    // --- สร้าง Options ร้านค้า (เพิ่ม All) ---
-    const shopOptions = [
-        { is_code_cust_id: 'all', shop_name: '--- ทั้งหมด (All Shops) ---' },
-        ...shops
-    ];
+    // selected_shops เป็น array ของ is_code_cust_id ที่เลือกอยู่ ([] = ทั้งหมด)
+    const safeSelectedShops = selected_shops || [];
 
-    const handleSearch = (newShop, newStatus) => {
+    const handleSearch = (newShops, newStatus) => {
         router.get(route('report.start-up-cost-shop.doc-list'), {
-            shop: newShop !== undefined ? newShop : selected_shop,
+            shops: newShops !== undefined ? newShops : safeSelectedShops,
             status: newStatus !== undefined ? newStatus : status,
             page: 1
         }, { preserveState: true, preserveScroll: true });
     };
 
     // --- Filter Logic ---
-    const handleShopChange = (newShopId) => {
+    const handleShopChange = (newShopIds) => {
         router.get(route('report.start-up-cost-shop.doc-list'), {
-            shop: newShopId,
+            shops: newShopIds,
+            status: status,
             page: 1
-        });
+        }, { preserveState: true, preserveScroll: true });
     };
 
     const handleStatusChange = (e) => {
         const newStatus = e.target.value;
         setStatus(newStatus);
-        handleSearch(selected_shop, newStatus);
+        handleSearch(safeSelectedShops, newStatus);
     };
 
     const handlePageChange = (event, value) => {
         router.get(route('report.start-up-cost-shop.doc-list'), {
-            shop: selected_shop,
+            shops: safeSelectedShops,
+            status: status,
             page: value,
         }, { preserveState: true, preserveScroll: true });
     };
 
     const handleExport = () => {
-        const params = new URLSearchParams({
-            shop: selected_shop || 'all',
-            status: status || 'All'
-        });
+        const params = new URLSearchParams();
+        safeSelectedShops.forEach(s => params.append('shops[]', s));
+        params.append('status', status || 'All');
         window.open(route('report.start-up-cost-shop.export-doc-list') + '?' + params.toString(), "_blank");
     }
 
@@ -404,13 +402,22 @@ export default function DocList({ docs, shops, selected_shop, current_shop_name,
                                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                                     {(is_admin || is_acc) && (
                                         <Autocomplete
+                                            multiple
+                                            limitTags={2}
                                             size="small"
-                                            sx={{ width: isMobile ? "100%" : 300 }}
-                                            options={shopOptions}
+                                            sx={{ width: isMobile ? "100%" : 350 }}
+                                            options={shops}
                                             getOptionLabel={(option) => option.shop_name}
-                                            value={shopOptions.find((s) => s.is_code_cust_id == selected_shop) || null}
-                                            onChange={(_, newValue) => handleShopChange(newValue?.is_code_cust_id || '')}
-                                            renderInput={(params) => <TextField {...params} label="กรองร้านค้า" />}
+                                            value={shops.filter(s => safeSelectedShops.includes(s.is_code_cust_id))}
+                                            onChange={(_, newValues) => handleShopChange(newValues.map(v => v.is_code_cust_id))}
+                                            isOptionEqualToValue={(option, value) => option.is_code_cust_id === value.is_code_cust_id}
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    label="กรองร้านค้า"
+                                                    placeholder={safeSelectedShops.length === 0 ? "ทั้งหมด" : ""}
+                                                />
+                                            )}
                                         />
                                     )}
                                     <TextField

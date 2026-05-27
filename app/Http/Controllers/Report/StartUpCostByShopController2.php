@@ -409,12 +409,11 @@ class StartUpCostByShopController2 extends Controller
             return redirect()->route('report.g-start-up-cost-shop.index');
         }
 
-        // 1. จัดการตัวแปร Filter ร้านค้า (รองรับ 'all')
-        $selected_shop = $request->query('shop', 'all');
-        $is_all_shops = $selected_shop === 'all';
-        $shop = $is_all_shops ? null : $selected_shop;
+        // 1. จัดการตัวแปร Filter ร้านค้า (รองรับหลายร้านค้า)
+        $selected_shops = array_values(array_filter((array) $request->input('shops', [])));
+        $is_all_shops = empty($selected_shops);
 
-        // รับค่า Status (เผื่ออนาคตอยากกรองสถานะในหน้านี้ด้วย)
+        // รับค่า Status
         $status = $request->query('status', 'WaitCN');
 
         $shops = StoreInformation::where('is_active', 'Y')
@@ -425,8 +424,13 @@ class StartUpCostByShopController2 extends Controller
 
         if ($is_all_shops) {
             $current_shop_name = 'ทั้งหมด';
+        } elseif (count($selected_shops) === 1) {
+            $current_shop_name = StoreInformation::where('is_code_cust_id', $selected_shops[0])->value('shop_name');
         } else {
-            $current_shop_name = StoreInformation::where('is_code_cust_id', $shop)->value('shop_name');
+            $shopNames = StoreInformation::whereIn('is_code_cust_id', $selected_shops)
+                ->pluck('shop_name')
+                ->toArray();
+            $current_shop_name = implode(', ', $shopNames);
         }
 
         $userMap = User::pluck('name', 'user_code')->toArray();
@@ -435,9 +439,9 @@ class StartUpCostByShopController2 extends Controller
         $query = JobList::query()
             ->whereNotNull('stuc_doc_no'); // เอาเฉพาะที่มีเลขเอกสารแล้ว
 
-        // กรองร้านค้าถ้าไม่ได้เลือก All
+        // กรองร้านค้าตามที่เลือก
         if (!$is_all_shops) {
-            $query->where('is_code_key', $shop);
+            $query->whereIn('is_code_key', $selected_shops);
         } else {
             // กรองเฉพาะเอกสารของร้านที่ Active
             $query->whereIn('is_code_key', $activeShopIds);
@@ -496,7 +500,7 @@ class StartUpCostByShopController2 extends Controller
         return Inertia::render('Reports/StartUpCostByShop/DocList', [
             'docs' => $docs,
             'shops' => $shops,
-            'selected_shop' => $selected_shop, // ส่งค่าที่เลือกกลับไป (all หรือ รหัสร้าน)
+            'selected_shops' => $selected_shops, // ส่งค่าที่เลือกกลับไป (array ของรหัสร้าน)
             'current_shop_name' => $current_shop_name,
             'is_admin' => Auth::user()->role === 'admin',
             'is_acc' => Auth::user()->role === 'acc',
@@ -555,10 +559,10 @@ class StartUpCostByShopController2 extends Controller
 
     public function exportDocList(Request $request)
     {
-        // รับค่า Filter
-        $shop = $request->query('shop');
+        // รับค่า Filter (รองรับหลายร้านค้า)
+        $selected_shops = array_values(array_filter((array) $request->input('shops', [])));
         $status = $request->query('status');
-        $is_all_shops = $shop === 'all';
+        $is_all_shops = empty($selected_shops);
 
         $activeShopIds = StoreInformation::where('is_active', 'Y')->pluck('is_code_cust_id')->toArray();
 
@@ -569,7 +573,7 @@ class StartUpCostByShopController2 extends Controller
             ->whereNotNull('job_lists.stuc_doc_no');
 
         if (!$is_all_shops) {
-            $query->where('job_lists.is_code_key', $shop);
+            $query->whereIn('job_lists.is_code_key', $selected_shops);
         } else {
             $query->whereIn('job_lists.is_code_key', $activeShopIds);
         }
@@ -680,7 +684,16 @@ class StartUpCostByShopController2 extends Controller
             }
         }
 
-        $fileName = 'ข้อมูลค่าเปิดเครื่อง_' . date('Ymd_His') . '.xlsx';
+        if ($is_all_shops) {
+            $shopSuffix = 'All_Shops';
+        } elseif (count($selected_shops) === 1) {
+            $rawName = StoreInformation::where('is_code_cust_id', $selected_shops[0])->value('shop_name') ?? 'Shop';
+            $shopSuffix = preg_replace('/[^A-Za-z0-9ก-๙]/u', '_', $rawName);
+        } else {
+            $shopSuffix = count($selected_shops) . '_Shops';
+        }
+
+        $fileName = 'ข้อมูลค่าเปิดเครื่อง_' . $shopSuffix . '_' . date('Ymd_His') . '.xlsx';
         $writer = new Xlsx($spreadsheet);
         $filePath = storage_path($fileName);
         $writer->save($filePath);
