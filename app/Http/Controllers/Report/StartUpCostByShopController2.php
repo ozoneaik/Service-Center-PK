@@ -53,32 +53,34 @@ class StartUpCostByShopController2 extends Controller
         }
 
         $query = JobList::query()
-            ->where('status', 'success')
-            ->where('warranty', true)
-            ->where('stuc_status', 'Y');
+            ->leftJoin('store_information', 'job_lists.is_code_key', '=', 'store_information.is_code_cust_id')
+            ->select('job_lists.*', 'store_information.shop_name')
+            ->where('job_lists.status', 'success')
+            ->where('job_lists.warranty', true)
+            ->where('job_lists.stuc_status', 'Y');
 
         if (!$is_all_shops) {
             // กรณีเลือกร้านบางร้าน
-            $query->whereIn('is_code_key', $selected_shops);
+            $query->whereIn('job_lists.is_code_key', $selected_shops);
         } else {
             // กรณีเลือกทั้งหมด: ให้ดึงมาเฉพาะ Job ของร้านที่ Active เท่านั้น
-            $query->whereIn('is_code_key', $activeShopIds);
+            $query->whereIn('job_lists.is_code_key', $activeShopIds);
         }
 
         switch ($status) {
             case 'WaitJob': // Y และยังไม่มีเลข CT
-                $query->where('stuc_status', 'Y')->whereNull('stuc_doc_no');
+                $query->where('job_lists.stuc_status', 'Y')->whereNull('job_lists.stuc_doc_no');
                 break;
             case 'WaitCN': // Y, มีเลข CT แล้ว, แต่ยังไม่มี CN
-                $query->where('stuc_status', 'Y')
-                    ->whereNotNull('stuc_doc_no')
-                    ->whereNull('cn_doc');
+                $query->where('job_lists.stuc_status', 'Y')
+                    ->whereNotNull('job_lists.stuc_doc_no')
+                    ->whereNull('job_lists.cn_doc');
                 break;
             case 'HasCN': // Y และ มีเลข CN แล้ว
-                $query->where('stuc_status', 'Y')->whereNotNull('cn_doc');
+                $query->where('job_lists.stuc_status', 'Y')->whereNotNull('job_lists.cn_doc');
                 break;
             case 'Paid': // สถานะเป็น P
-                $query->where('stuc_status', 'P');
+                $query->where('job_lists.stuc_status', 'P');
                 break;
             case 'All':
             default:
@@ -90,13 +92,13 @@ class StartUpCostByShopController2 extends Controller
             try {
                 $start = Carbon::createFromFormat('Y-m', $start_date)->startOfMonth()->format('Y-m-d H:i:s');
                 $end = Carbon::createFromFormat('Y-m', $end_date)->endOfMonth()->format('Y-m-d H:i:s');
-                $query->whereBetween('close_job_at', [$start, $end]);
+                $query->whereBetween('job_lists.close_job_at', [$start, $end]);
             } catch (\Exception $e) {
             }
         }
 
-        $jobs = (clone $query)->orderBy('created_at', 'desc')->paginate(10);
-        $jobs_all = (clone $query)->orderBy('created_at', 'desc')->get();
+        $jobs = (clone $query)->orderBy('job_lists.created_at', 'desc')->paginate(10);
+        $jobs_all = (clone $query)->orderBy('job_lists.created_at', 'desc')->get();
 
         foreach ($jobs as $key => $job) {
             $start_up_cost = StartUpCost::query()->where('sku_code', $job['pid'])->first();
@@ -110,8 +112,8 @@ class StartUpCostByShopController2 extends Controller
         }
 
         $all_selectable_ids = (clone $query)
-            ->whereNull('stuc_doc_no')
-            ->pluck('job_id')
+            ->whereNull('job_lists.stuc_doc_no')
+            ->pluck('job_lists.job_id')
             ->toArray();
 
         return Inertia::render(

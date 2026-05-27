@@ -17,6 +17,8 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import DescriptionIcon from '@mui/icons-material/Description';
 import HistoryIcon from '@mui/icons-material/History';
+const ALL_OPTION = { is_code_cust_id: 'all', shop_name: 'ร้านค้าทั้งหมด (ALL)' };
+
 export default function SucBsList2({
     jobs,
     all_selectable_ids,
@@ -42,9 +44,11 @@ export default function SucBsList2({
         return [];
     });
     const selectedShopsData = useMemo(() => {
-        if (!selectedShopCodes?.length || !shops) return [];
+        if (!selectedShopCodes?.length) return [ALL_OPTION];
+        if (!shops) return [];
         return shops.filter((s) => selectedShopCodes.includes(s.is_code_cust_id));
     }, [selectedShopCodes, shops]);
+    const allOptions = useMemo(() => [ALL_OPTION, ...(shops || [])], [shops]);
 
     // --- Checkbox Logic ---
     const handleSelectAllClick = (event) => {
@@ -93,8 +97,24 @@ export default function SucBsList2({
         });
     };
 
-    const handleShopsChange = (newValues) => {
-        const codes = newValues.map(s => s.is_code_cust_id);
+    const handleShopsChange = (_, newValues) => {
+        const newHasAll = newValues.some(v => v.is_code_cust_id === 'all');
+        const prevIsAll = !selectedShopCodes.length;
+
+        let codes;
+        if (newHasAll && !prevIsAll) {
+            // เพิ่งเลือก ALL → ล้างทุกร้านกลับเป็น "ทั้งหมด"
+            codes = [];
+        } else if (newHasAll && prevIsAll) {
+            // ALL อยู่แล้ว แล้วเลือกร้านเพิ่ม → เอา ALL ออก เหลือแต่ร้านที่เลือก
+            codes = newValues.filter(v => v.is_code_cust_id !== 'all').map(v => v.is_code_cust_id);
+        } else if (newValues.length === 0) {
+            // เอาออกหมด → กลับเป็น "ทั้งหมด"
+            codes = [];
+        } else {
+            codes = newValues.filter(v => v.is_code_cust_id !== 'all').map(v => v.is_code_cust_id);
+        }
+
         setSelectedShopCodes(codes);
         router.get(route('report.start-up-cost-shop.index'), {
             shops: codes,
@@ -199,6 +219,7 @@ export default function SucBsList2({
                                 <TableCell sx={TableStyle.TableHead}>ลำดับ</TableCell>
                                 <TableCell sx={TableStyle.TableHead}>หมายเลข Job</TableCell>
                                 <TableCell sx={TableStyle.TableHead}>ข้อมูลสินค้า</TableCell>
+                                <TableCell sx={TableStyle.TableHead}>ชื่อศูนย์ซ่อม</TableCell>
                                 <TableCell sx={TableStyle.TableHead} align="center">ค่าเปิดเครื่อง</TableCell>
                                 <TableCell sx={TableStyle.TableHead} align="center">สถานะ</TableCell>
                                 <TableCell sx={TableStyle.TableHead} align="center">วันที่ปิดงาน</TableCell>
@@ -263,6 +284,11 @@ export default function SucBsList2({
                                                     </Stack>
                                                 </Stack>
                                             </Stack>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography>
+                                                {job.shop_name ? job.shop_name : 'ไม่พบข้อมูล'}
+                                            </Typography>
                                         </TableCell>
                                         <TableCell align="center">
                                             <Typography variant="body1" fontWeight="bold" color="primary">
@@ -409,11 +435,15 @@ export default function SucBsList2({
                                     {(is_admin || is_acc) && (
                                         <Autocomplete
                                             multiple
-                                            options={shops || []}
-                                            getOptionLabel={(option) => `[${option.is_code_cust_id}] ${option.shop_name}`}
+                                            options={allOptions}
+                                            getOptionLabel={(option) =>
+                                                option.is_code_cust_id === 'all'
+                                                    ? option.shop_name
+                                                    : `[${option.is_code_cust_id}] ${option.shop_name}`
+                                            }
                                             value={selectedShopsData}
                                             isOptionEqualToValue={(option, value) => option.is_code_cust_id === value.is_code_cust_id}
-                                            onChange={(_, newValues) => handleShopsChange(newValues)}
+                                            onChange={handleShopsChange}
                                             size="small"
                                             sx={{ width: isMobile ? "100%" : 380 }}
                                             renderTags={(value, getTagProps) =>
@@ -422,6 +452,7 @@ export default function SucBsList2({
                                                         {...getTagProps({ index })}
                                                         key={option.is_code_cust_id}
                                                         label={option.shop_name}
+                                                        color={option.is_code_cust_id === 'all' ? 'primary' : 'default'}
                                                         size="small"
                                                     />
                                                 ))
@@ -430,7 +461,7 @@ export default function SucBsList2({
                                                 <TextField
                                                     {...params}
                                                     label="เลือกร้านค้า (เลือกได้หลายร้าน)"
-                                                    placeholder={selectedShopsData.length === 0 ? "ไม่เลือก = ทั้งหมด" : ""}
+                                                    placeholder={selectedShopCodes.length > 0 ? "เพิ่มร้านค้า..." : ""}
                                                 />
                                             )}
                                         />
