@@ -6,11 +6,15 @@ import {
     Button,
     Card,
     CardContent,
+    Checkbox,
     Chip,
     Container,
     Divider,
     Drawer,
+    FormControl,
     Grid2,
+    InputLabel,
+    ListItemText,
     MenuItem,
     Pagination,
     Paper,
@@ -241,9 +245,11 @@ const FilterForm = ({
     filters,
     setFilters,
     searchJobs,
+    stores = [],
 }) => {
     const isMobile = useMediaQuery("(max-width:700px)");
     const { url } = usePage();
+    const isAdmin = url.startsWith("/admin/history-job");
     return (
         <Grid2 container spacing={2}>
             <Grid2 size={{ md: 4, xs: 12 }}>
@@ -406,6 +412,47 @@ const FilterForm = ({
                     {/* <MenuItem value={'admin'}>ศูนย์บริการ</MenuItem> */}
                 </Select>
             </Grid2>
+
+            {/* ✅ Admin-only: กรองร้านค้า (เลือกได้หลายร้าน) */}
+            {isAdmin && (
+                <Grid2 size={{ md: 3, xs: 12 }}>
+                    <FormControl fullWidth size="small">
+                        <InputLabel shrink>กรองร้านค้า</InputLabel>
+                        <Select
+                            multiple
+                            name="shops"
+                            value={filters.shops || []}
+                            onChange={handleFilterChange}
+                            label="กรองร้านค้า"
+                            notched
+                            displayEmpty
+                            renderValue={(selected) =>
+                                selected.length === 0
+                                    ? <em style={{ color: "#aaa" }}>ทั้งหมด</em>
+                                    : `เลือก ${selected.length} ร้านค้า`
+                            }
+                        >
+                            {stores.map((store) => (
+                                <MenuItem
+                                    key={store.is_code_cust_id}
+                                    value={store.is_code_cust_id}
+                                >
+                                    <Checkbox
+                                        checked={(filters.shops || []).includes(
+                                            store.is_code_cust_id,
+                                        )}
+                                        size="small"
+                                    />
+                                    <ListItemText
+                                        primary={`(${store.is_code_cust_id}) ${store.shop_name}`}
+                                    />
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </Grid2>
+            )}
+
             <Grid2 size={{ md: 1, xs: 12 }}>
                 <Stack direction="row" spacing={1}>
                     <Button
@@ -428,6 +475,7 @@ const FilterForm = ({
                                 created_job_from: "",
                                 date_start: "",
                                 date_end: "",
+                                shops: [],
                             });
                             const routeName =
                                 window.location.pathname.startsWith(
@@ -455,15 +503,26 @@ const FilterForm = ({
                         variant="contained"
                         color="success"
                         onClick={() => {
-                            const query = new URLSearchParams(
-                                filters,
-                            ).toString();
+                            // สร้าง query string รองรับ array shops[]
+                            const params = new URLSearchParams();
+                            Object.entries(filters).forEach(([key, val]) => {
+                                if (Array.isArray(val)) {
+                                    val.forEach((v) =>
+                                        params.append(`${key}[]`, v),
+                                    );
+                                } else if (val !== "") {
+                                    params.append(key, val);
+                                }
+                            });
                             const exportRoute = url.startsWith(
                                 "/admin/history-job",
                             )
                                 ? route("admin.history.export")
                                 : route("history.export");
-                            window.open(exportRoute + "?" + query, "_blank");
+                            window.open(
+                                exportRoute + "?" + params.toString(),
+                                "_blank",
+                            );
                         }}
                     >
                         ส่งออก Excel
@@ -582,7 +641,7 @@ const MobileDetail = ({ jobs, handleShowDetail, url }) => {
     );
 };
 
-export default function HistoryMain({ jobs }) {
+export default function HistoryMain({ jobs, stores = [] }) {
     console.log(jobs);
 
     // const { url } = usePage();
@@ -610,6 +669,7 @@ export default function HistoryMain({ jobs }) {
         created_job_from: "",
         date_start: "",
         date_end: "",
+        shops: [],
     });
 
     const [openDrawer, setOpenDrawer] = useState(false);
@@ -638,6 +698,7 @@ export default function HistoryMain({ jobs }) {
                 filters={filters}
                 setFilters={setFilters}
                 searchJobs={searchJobs}
+                stores={stores}
             />
         </Box>
     );
@@ -680,6 +741,7 @@ export default function HistoryMain({ jobs }) {
                                     filters={filters}
                                     setFilters={setFilters}
                                     searchJobs={searchJobs}
+                                    stores={stores}
                                 />
                             </Grid2>
                         )}

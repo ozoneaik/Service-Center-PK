@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\JobList;
+use App\Models\StoreInformation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -49,9 +50,25 @@ class HistorySpController extends Controller
             $query->where('job_lists.status', $request->status);
         }
 
+        // กรองตามร้านค้า (multi-shop) — รับเป็น array shops[]
+        if ($request->filled('shops')) {
+            $shops = $request->input('shops');
+            if (is_array($shops) && count($shops) > 0) {
+                $query->whereIn('job_lists.is_code_key', $shops);
+            }
+        }
+
         $jobs = $query->orderBy('job_lists.id', 'desc')->paginate(100);
 
-        return Inertia::render('HistoryPage/HistoryMain', ['jobs' => $jobs]);
+        // ดึงรายการร้านค้าทั้งหมดสำหรับ filter dropdown
+        $stores = StoreInformation::select('is_code_cust_id', 'shop_name')
+            ->orderBy('shop_name')
+            ->get();
+
+        return Inertia::render('HistoryPage/HistoryMain', [
+            'jobs'   => $jobs,
+            'stores' => $stores,
+        ]);
     }
 
     public function exportExcel(Request $request)
@@ -84,6 +101,13 @@ class HistorySpController extends Controller
         }
         if ($request->filled('status')) {
             $query->where('job_lists.status', $request->status);
+        }
+        // กรองตามร้านค้า (multi-shop)
+        if ($request->filled('shops')) {
+            $shops = $request->input('shops');
+            if (is_array($shops) && count($shops) > 0) {
+                $query->whereIn('job_lists.is_code_key', $shops);
+            }
         }
         if ($request->filled('date_start') && $request->filled('date_end')) {
             $query->whereBetween('job_lists.created_at', [$request->date_start . " 00:00:00", $request->date_end . " 23:59:59"]);
