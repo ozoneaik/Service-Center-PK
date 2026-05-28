@@ -1547,11 +1547,10 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
     const [searchLoading, setSearchLoading] = useState(false);
     const [finishLoading, setFinishLoading] = useState(false);
     const [alert, setAlert] = useState(null);
-    const [isVisible, setIsVisible] = useState(false);
 
     const [currentView, setCurrentView] = useState("all_current");
     const [searchMode, setSearchMode] = useState("individual");
-    const [statusCheckingJobId, setStatusCheckingJobId] = useState(null);
+    // const [statusCheckingJobId, setStatusCheckingJobId] = useState(null);  // ซ่อนไว้ก่อน — ใช้กับ checkJobStatusAndRefresh
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     const [jobsToFinishConfirm, setJobsToFinishConfirm] = useState([]);
     const [activeTab, setActiveTab] = useState("all");
@@ -1586,57 +1585,16 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
     };
 
     const getStatus = (status) => {
-        if (status === "send") return "ส่งไปยังศูนย์ซ่อม PK";
-        return status;
-    };
-
-    const checkJobStatusAndRefresh = async (job) => {
-        setStatusCheckingJobId(job.job_id);
-        setAlert(null);
-
-        try {
-            const response = await axios.post(
-                route("sendJobs.checkJobStatus"),
-                {
-                    job_id: job.job_id,
-                    serial_id: job.serial_id,
-                    pid: job.pid,
-                },
-            );
-
-            const apiStatus = response.data.api_status;
-            const newTicketCode = response.data.ticket_code;
-            setJobs((prevJobs) =>
-                prevJobs.map((item) => {
-                    if (item.job_id === job.job_id) {
-                        return {
-                            ...item,
-                            status: apiStatus,
-                            ticket_code: newTicketCode,
-                        };
-                    }
-                    return item;
-                }),
-            );
-
-            setAlert({
-                type: "success",
-                message: `Job ID ${job.job_id} สถานะปัจจุบันเป็น: ${getStatus(apiStatus)}`,
-            });
-        } catch (error) {
-            console.error("Error checking status:", error);
-            const errorMsg =
-                error.response?.data?.message ||
-                error.message ||
-                "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุในการเช็คสถานะ";
-            setAlert({
-                type: "error",
-                message: `Job ID ${job.job_id} ข้อผิดพลาด: ${errorMsg}`,
-            });
-        } finally {
-            setStatusCheckingJobId(null);
+        switch (status) {
+            case "send":     return "ส่งซ่อมไปยัง PK";
+            case "pending":  return "รอดำเนินการ (PK)";
+            case "success":  return "สำเร็จ";
+            case "canceled": return "ยกเลิก";
+            default:         return status;
         }
     };
+
+    // const checkJobStatusAndRefresh = async (job) => { ... }  // ซ่อนไว้ก่อน — มี Auto Check อยู่แล้ว
 
     const fetchAllCurrentJobs = async (searchFilters = filters) => {
         setJobs([]);
@@ -1734,7 +1692,6 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
     }, [filters.shops, shops]);
 
     const handleClose = () => {
-        setIsVisible(false);
         setTimeout(() => {
             setAlert(null);
         }, 300);
@@ -1742,8 +1699,6 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
 
     useEffect(() => {
         if (alert) {
-            setIsVisible(true);
-
             const timer = setTimeout(() => handleClose(), 3000);
             return () => clearTimeout(timer);
         }
@@ -1759,12 +1714,7 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
     };
 
     /** สถานะที่ยังต้องติดตาม (ไม่ใช่ final) */
-    const ACTIVE_STATUSES_FOR_CHECK = [
-        "send", "เปิดออเดอร์แล้ว", "รอเปิดSO", "พร้อมส่ง",
-        "แพ็คสินค้าเสร็จ", "กำลังจัดสินค้า", "กำลังส่ง",
-        "เตรียมส่ง", "รอปิดงานซ่อม", "กำลังซ่อม",
-        "พักงานซ่อม", "รอรับงานซ่อม",
-    ];
+    const ACTIVE_STATUSES_FOR_CHECK = ["send", "pending"];
 
     /** กดปุ่ม "เช็คสถานะทั้งหมด" — ส่ง job_ids ที่ยังไม่ final ให้ backend เช็ค API แล้ว refresh */
     const handleBatchCheckAll = async () => {
@@ -1953,14 +1903,7 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
             selectedJobIds.includes(job.job_id),
         );
 
-        return selectedJobs.some(
-            (job) =>
-                job.status === "ส่งสำเร็จ" ||
-                job.status === "จบงาน" ||
-                job.status === "ส่งของแล้ว" ||
-                job.status === "บัญชีรับงานแล้ว" ||
-                job.status === "จัดส่งสำเร็จ",
-        );
+        return selectedJobs.some((job) => job.status === "pending");
     };
 
     const handleConfirmOpen = () => {
@@ -2062,48 +2005,34 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
         {
             id: "all",
             label: "ทั้งหมด",
-            icon: <Info className="w-4 h-4" />,
         },
         {
-            id: "processing",
-            label: "กําลังดำเนินการ",
-            statuses: [
-                "send",
-                "เปิดออเดอร์แล้ว",
-                "รอเปิดSO",
-                "พร้อมส่ง",
-                "แพ็คสินค้าเสร็จ",
-                "กำลังจัดสินค้า",
-                "กำลังส่ง",
-                "เตรียมส่ง",
-                "รอปิดงานซ่อม",
-                "กำลังซ่อม",
-                "พักงานซ่อม",
-                "รอรับงานซ่อม",
-            ],
+            id: "send",
+            label: "📤 ส่งซ่อมไปยัง PK",
+            statuses: ["send"],
             color: "text-indigo-600 border-indigo-600 bg-indigo-50",
             countColor: "bg-indigo-100 text-indigo-600",
         },
         {
-            id: "ready_to_close",
-            label: "รอปิดงาน (จัดส่งสำเร็จ)",
-            statuses: ["บัญชีรับงานแล้ว", "ส่งของแล้ว"],
-            color: "text-green-600 border-green-600 bg-green-50",
-            countColor: "bg-green-100 text-green-600",
+            id: "pending",
+            label: "🔄 รอดำเนินการ (PK)",
+            statuses: ["pending"],
+            color: "text-yellow-600 border-yellow-500 bg-yellow-50",
+            countColor: "bg-yellow-100 text-yellow-700",
         },
         {
-            id: "completed",
-            label: "สำเร็จ",
+            id: "success",
+            label: "✅ สำเร็จ",
             statuses: ["success"],
             color: "text-green-600 border-green-600 bg-green-50",
             countColor: "bg-green-100 text-green-600",
         },
         {
             id: "canceled",
-            label: "ยกเลิกแล้ว",
+            label: "❌ ยกเลิก",
             statuses: ["canceled"],
-            color: "text-indigo-600 border-indigo-600 bg-indigo-50",
-            countColor: "bg-indigo-100 text-indigo-600",
+            color: "text-red-600 border-red-500 bg-red-50",
+            countColor: "bg-red-100 text-red-600",
         },
     ];
 
@@ -2692,7 +2621,7 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                                     {/* ปุ่มกลุ่มขวา */}
                                     <div className="flex items-center gap-2 flex-wrap">
                                         {/* ปุ่มเช็คสถานะทั้งหมด (เฉพาะ all_current) */}
-                                        {currentView === "all_current" && (
+                                        {/* {currentView === "all_current" && (
                                             <button
                                                 type="button"
                                                 onClick={handleBatchCheckAll}
@@ -2719,7 +2648,7 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                                                     </>
                                                 )}
                                             </button>
-                                        )}
+                                        )} */}
 
                                         {/* ปุ่มปิดงาน */}
                                         {(currentView === "close_current" ||
@@ -2850,6 +2779,10 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                                                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                     สถานะ
                                                 </th>
+                                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    ASS Status
+                                                </th>
+                                                {/* ตรวจสอบสถานะ — ซ่อนไว้ก่อน เพราะมี Auto Check อยู่แล้ว
                                                 {(currentView ===
                                                     "close_current" ||
                                                     currentView ===
@@ -2858,6 +2791,7 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                                                             ตรวจสอบสถานะ
                                                         </th>
                                                     )}
+                                                */}
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                     วันที่
                                                     {currentView === "history"
@@ -2868,37 +2802,20 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-200">
                                             {filteredJobs.map((job) => {
-                                                const isChecking =
-                                                    statusCheckingJobId ===
-                                                    job.job_id;
+                                                // const isChecking = statusCheckingJobId === job.job_id;  // ซ่อนไว้ก่อน
                                                 const rawStatus = job.status;
                                                 const displayStatus = getStatus(rawStatus);
 
                                                 let statusClasses =
                                                     "bg-gray-100 text-gray-800";
 
-                                                if (
-                                                    rawStatus === "success" ||
-                                                    rawStatus === "บัญชีรับงานแล้ว" ||
-                                                    rawStatus === "ส่งของแล้ว"
-                                                ) {
+                                                if (rawStatus === "success") {
                                                     statusClasses = "bg-green-100 text-green-800";
-                                                } else if (
-                                                    rawStatus === "send" ||
-                                                    rawStatus === "กำลังส่ง" ||
-                                                    rawStatus === "เตรียมส่ง"
-                                                ) {
+                                                } else if (rawStatus === "send") {
                                                     statusClasses = "bg-indigo-100 text-indigo-700";
-                                                } else if (
-                                                    rawStatus === "รอปิดงานซ่อม" ||
-                                                    rawStatus === "กำลังซ่อม" ||
-                                                    rawStatus === "พักงานซ่อม" ||
-                                                    rawStatus === "รอรับงานซ่อม"
-                                                ) {
+                                                } else if (rawStatus === "pending") {
                                                     statusClasses = "bg-yellow-100 text-yellow-800";
-                                                } else if (
-                                                    rawStatus === "canceled"
-                                                ) {
+                                                } else if (rawStatus === "canceled") {
                                                     statusClasses = "bg-red-100 text-red-800";
                                                 }
 
@@ -2978,100 +2895,35 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                                                                 {displayStatus}
                                                             </span>
                                                         </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                                            <span
+                                                                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                                                            >
+                                                                {job.ass_status? job.ass_status: "-"}
+                                                            </span>
+                                                        </td>
+                                                        {/* คอลัมน์ตรวจสอบสถานะ — ซ่อนไว้ก่อน เพราะมี Auto Check อยู่แล้ว
                                                         {(currentView ===
                                                             "close_current" ||
                                                             currentView ===
                                                             "all_current") && (
                                                                 <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                                    {(job.status ===
-                                                                        "send" ||
-                                                                        job.status ===
-                                                                        "เปิดออเดอร์แล้ว" ||
-                                                                        job.status ===
-                                                                        "รอเปิดSO" ||
-                                                                        job.status ===
-                                                                        "พร้อมส่ง" ||
-                                                                        job.status ===
-                                                                        "แพ็คสินค้าเสร็จ" ||
-                                                                        job.status ===
-                                                                        "กำลังจัดสินค้า" ||
-                                                                        job.status ===
-                                                                        "กำลังส่ง" ||
-                                                                        job.status ===
-                                                                        "เตรียมส่ง" ||
-                                                                        job.status ===
-                                                                        "รอปิดงานซ่อม" ||
-                                                                        job.status ===
-                                                                        "กำลังซ่อม" ||
-                                                                        job.status ===
-                                                                        "พักงานซ่อม" ||
-                                                                        job.status ===
-                                                                        "รอรับงานซ่อม") && (
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() =>
-                                                                                    checkJobStatusAndRefresh(
-                                                                                        job,
-                                                                                    )
-                                                                                }
-                                                                                disabled={
-                                                                                    isChecking ||
-                                                                                    finishLoading
-                                                                                }
-                                                                                className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-full shadow-sm text-gray-700 bg-yellow-200 hover:bg-yellow-300 disabled:opacity-50"
-                                                                            >
-                                                                                {isChecking ? (
-                                                                                    <svg
-                                                                                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-700"
-                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                        fill="none"
-                                                                                        viewBox="0 0 24 24"
-                                                                                    >
-                                                                                        <circle
-                                                                                            className="opacity-25"
-                                                                                            cx="12"
-                                                                                            cy="12"
-                                                                                            r="10"
-                                                                                            stroke="currentColor"
-                                                                                            strokeWidth="4"
-                                                                                        ></circle>
-                                                                                        <path
-                                                                                            className="opacity-75"
-                                                                                            fill="currentColor"
-                                                                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                                                        ></path>
-                                                                                    </svg>
-                                                                                ) : (
-                                                                                    <Refresh className="w-4 h-4 mr-1" />
-                                                                                )}
-                                                                                {isChecking
-                                                                                    ? "กำลังเช็ค..."
-                                                                                    : "ตรวจสอบ"}
-                                                                            </button>
-                                                                        )}
-                                                                    {(job.status ===
-                                                                        "จัดส่งสำเร็จ" ||
-                                                                        job.status ===
-                                                                        "ส่งสำเร็จ" ||
-                                                                        job.status ===
-                                                                        "จบงาน" ||
-                                                                        job.status ===
-                                                                        "ส่งของแล้ว" ||
-                                                                        job.status ===
-                                                                        "บัญชีรับงานแล้ว") && (
-                                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
-                                                                                <span className="w-2 h-2 mr-1.5 bg-blue-400 rounded-full animate-pulse"></span>
-                                                                                รอปิดงาน
-                                                                            </span>
-                                                                        )}
-                                                                    {job.status ===
-                                                                        "ยกเลิกคำสั่งซื้อ" && (
-                                                                            <span className="text-gray-400">
-                                                                                -
-                                                                            </span>
-                                                                        )}
+                                                                    {(job.status === "send" || job.status === "pending") && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => checkJobStatusAndRefresh(job)}
+                                                                            disabled={isChecking || finishLoading}
+                                                                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-full shadow-sm text-gray-700 bg-yellow-200 hover:bg-yellow-300 disabled:opacity-50"
+                                                                        >
+                                                                            {isChecking ? "กำลังเช็ค..." : "ตรวจสอบ"}
+                                                                        </button>
+                                                                    )}
+                                                                    {job.status === "canceled" && (
+                                                                        <span className="text-gray-400">-</span>
+                                                                    )}
                                                                 </td>
                                                             )}
+                                                        */}
                                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                             {new Date(
                                                                 currentView ===

@@ -12,29 +12,14 @@ class AutoCheckJobStatus extends Command
     protected $signature = 'job:check-status';
     protected $description = 'Auto check job status from PK external API (runs every 30 min)';
 
-    /** สถานะที่ไม่ต้องเช็คแล้ว (Final) */
-    private const FINAL_STATUSES = [
-        'success',
-        'canceled',
-        'pending',
-    ];
-
-    /** สถานะที่ยังต้องติดตาม (Active) */
+    /**
+     * สถานะที่ยังต้องติดตามกับ PK API
+     * send    = ส่งซ่อมไปแล้ว แต่ PK ยังไม่รับ
+     * pending = PK รับแล้ว กำลังดำเนินการ / รอส่งคืน
+     */
     private const ACTIVE_STATUSES = [
         'send',
-        'บัญชีรับงานแล้ว',
-        'ส่งของแล้ว',
-        'กำลังส่ง',
-        'เตรียมส่ง',
-        'พร้อมส่ง',
-        'แพ็คสินค้าเสร็จ',
-        'กำลังจัดสินค้า',
-        'เปิดออเดอร์แล้ว',
-        'รอเปิดSO',
-        'รอปิดงานซ่อม',
-        'กำลังซ่อม',
-        'พักงานซ่อม',
-        'รอรับงานซ่อม',
+        'pending',
     ];
 
     private const API_URL     = 'https://afterservice-sv.pumpkin.tools/sv/callpsc.php';
@@ -43,12 +28,18 @@ class AutoCheckJobStatus extends Command
 
     public function handle(): void
     {
+        if (!config('cron.auto_check_enabled', true)) {
+            $this->info('⏸ AutoCheckJobStatus is disabled (CRON_AUTO_CHECK_ENABLED=false).');
+            Log::info('CronJob [job:check-status]: Skipped — disabled via CRON_AUTO_CHECK_ENABLED.');
+            return;
+        }
+
         $this->info('🚀 Starting Auto Check Job Status...');
         Log::info('CronJob [job:check-status]: Start');
 
         $jobs = JobList::whereIn('status', self::ACTIVE_STATUSES)
             ->whereNotNull('group_job')
-            ->get(['job_id', 'status', 'ticket_code']);
+            ->get(['job_id', 'status', 'ticket_code', 'ass_status']);
 
         $total = $jobs->count();
 
@@ -89,18 +80,29 @@ class AutoCheckJobStatus extends Command
                 }
 
                 $newStatus  = $this->resolveStatus($externalStatus);
-                $updateData = ['updated_at' => now()];
+                $cronNow    = now();
+                $updateData = ['updated_at' => $cronNow];
 
                 if ($newStatus !== $job->status) {
                     $updateData['status'] = $newStatus;
+
+                    // ถ้า PK ส่งคืนแล้ว → บันทึกว่าปิดโดย Cron อัตโนมัติ
+                    if ($newStatus === 'success') {
+                        $updateData['close_job_at'] = $cronNow;
+                        $updateData['close_job_by'] = 'CRON';
+                    }
                 }
 
                 if ($assNo && $assNo !== $job->ticket_code) {
                     $updateData['ticket_code'] = $assNo;
                 }
 
+                if ($externalStatus !== $job->ass_status) {
+                    $updateData['ass_status'] = $externalStatus;
+                }
+
                 // อัปเดตเฉพาะเมื่อมีการเปลี่ยนแปลง
-                if (isset($updateData['status']) || isset($updateData['ticket_code'])) {
+                if (isset($updateData['status']) || isset($updateData['ticket_code']) || isset($updateData['ass_status'])) {
                     JobList::where('job_id', $job->job_id)->update($updateData);
                     $updated++;
                     Log::info("CronJob [job:check-status]: Updated {$job->job_id} → {$newStatus}" . ($assNo ? " (assno={$assNo})" : ''));
@@ -120,15 +122,47 @@ class AutoCheckJobStatus extends Command
     }
 
     /**
-     * แปลงสถานะจาก API ให้ตรงกับ internal status
+     * Map สถานะจาก PK API → internal status (เหมือนกับ mapApiStatus ใน Controller)
+     *
+     * send     = PK ยังไม่รับ / ไม่พบในระบบ PK
+     * pending  = PK รับแล้ว กำลังดำเนินการ / ยังไม่ส่งคืน
+     * success  = PK ส่งคืนเสร็จแล้ว (ปิดอัตโนมัติ)
+     * canceled = ยกเลิก
      */
     private function resolveStatus(string $externalStatus): string
     {
-        // ถ้า API บอกว่าไม่พบ → ถือว่ายังอยู่ในสถานะ send
-        if ($externalStatus === 'ไม่พบข้อมูล') {
+        // PK ยังไม่รับ → send
+        if (in_array($externalStatus, ['ไม่พบข้อมูล', 'send'], true)) {
             return 'send';
         }
 
-        return $externalStatus;
+        // PK ยกเลิก → canceled
+        if (in_array($externalStatus, ['canceled', 'ยกเลิกคำสั่งซื้อ', 'ยกเลิก'], true)) {
+            return 'canceled';
+        }
+
+        // PK ส่งคืนเสร็จแล้ว → success (ปิดอัตโนมัติ ไม่ต้อง manual)
+        if (in_array($externalStatus, [
+            'บัญชีรับงานแล้ว', 'ส่งของแล้ว',
+            'จัดส่งสำเร็จ', 'ส่งสำเร็จ', 'จบงาน',
+        ], true)) {
+            return 'success';
+        }
+
+        // PK กำลังดำเนินการ / ยังไม่ส่งคืน → pending
+        if (in_array($externalStatus, [
+            'เปิดออเดอร์แล้ว', 'รอเปิดSO',  'พร้อมส่ง',
+            'แพ็คสินค้าเสร็จ', 'กำลังจัดสินค้า', 'กำลังส่ง',
+            'เตรียมส่ง',       'รอปิดงานซ่อม',  'กำลังซ่อม',
+            'พักงานซ่อม',      'รอรับงานซ่อม',   'pending',
+        ], true)) {
+            return 'pending';
+        }
+
+        // กรณีอื่นๆ ที่ไม่รู้จัก → pending (safe fallback) + log เพื่อติดตาม
+        Log::warning('CronJob [job:check-status]: unknown status from PK API', [
+            'external_status' => $externalStatus,
+        ]);
+        return 'pending';
     }
 }

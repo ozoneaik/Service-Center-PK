@@ -510,7 +510,9 @@ class sendJobController extends Controller
             $query->where('serial_id', 'like', "%{$request->searchSn}%");
         }
         $jobs = $query->where('is_code_key', Auth::user()->is_code_cust_id)
-            ->where('status', 'pending')->orderBy('id', 'desc')->get();
+            ->where('status', 'pending')
+            ->whereNull('group_job')
+            ->orderBy('id', 'desc')->get();
         return Inertia::render('SendJobs/SenJobList', ['jobs' => $jobs]);
     }
 
@@ -648,22 +650,7 @@ class sendJobController extends Controller
                 $query->where('is_code_key', $user->is_code_cust_id);
             }
 
-            $query->whereIn('status', [
-                'send',
-                'บัญชีรับงานแล้ว',
-                'ส่งของแล้ว',
-                'กำลังส่ง',
-                'เตรียมส่ง',
-                'พร้อมส่ง',
-                'แพ็คสินค้าเสร็จ',
-                'กำลังจัดสินค้า',
-                'เปิดออเดอร์แล้ว',
-                'รอเปิดSO',
-                'รอปิดงานซ่อม',
-                'กำลังซ่อม',
-                'พักงานซ่อม',
-                'รอรับงานซ่อม'
-            ]);
+            $query->whereIn('status', ['send', 'pending']);
 
             if (!empty($jobId) && !empty($serialId)) {
                 $query->where('job_id', 'like', "%{$jobId}%")
@@ -710,22 +697,10 @@ class sendJobController extends Controller
                 $query->where('is_code_key', $user->is_code_cust_id);
             }
 
-            $query->whereIn('status', [
-                'send',
-                'บัญชีรับงานแล้ว',
-                'ส่งของแล้ว',
-                'กำลังส่ง',
-                'เตรียมส่ง',
-                'พร้อมส่ง',
-                'แพ็คสินค้าเสร็จ',
-                'กำลังจัดสินค้า',
-                'เปิดออเดอร์แล้ว',
-                'รอเปิดSO',
-                'รอปิดงานซ่อม',
-                'กำลังซ่อม',
-                'พักงานซ่อม',
-                'รอรับงานซ่อม'
-            ]);
+            // แสดง send + pending ที่มี group_job (ส่งซ่อมไปแล้ว ไม่ว่า PK จะรับแล้วหรือยัง)
+            $query->whereIn('status', ['send', 'pending'])
+                  ->whereNotNull('group_job')
+                  ->where('group_job', '!=', '');
 
             if ($request->filled('group_job')) {
                 $query->where('group_job', 'like', '%' . $request->input('group_job') . '%');
@@ -775,20 +750,26 @@ class sendJobController extends Controller
         $jobIds = array_column($jobsToFinish, 'job_id');
 
         try {
+            $user = Auth::user();
             DB::beginTransaction();
             $now = Carbon::now();
-            $updatedCount = JobList::query()
+
+            $jobQuery = JobList::query()
                 ->whereIn('job_id', $jobIds)
-                ->where('is_code_key', Auth::user()->is_code_cust_id)
-                ->whereIn('status', ['บัญชีรับงานแล้ว', 'ส่งของแล้ว'])
-                ->update([
+                ->where('status', 'pending');
+
+            if ($user->role !== 'admin') {
+                $jobQuery->where('is_code_key', $user->is_code_cust_id);
+            }
+
+            $updatedCount = $jobQuery->update([
                     'status' => 'success',
                     'close_job_at' => $now,
                     'close_job_by' => Auth::user()->user_code,
                     'updated_at' => $now,
                 ]);
             if ($updatedCount > 0) {
-                logStamp::query()->create(['description' => Auth::user()->user_code . " จบงานส่งซ่อม (success) จำนวน $updatedCount รายการ: " . implode(', ', $jobIds)]);
+                logStamp::query()->create(['description' => $user->user_code . " จบงานส่งซ่อม (success) จำนวน $updatedCount รายการ: " . implode(', ', $jobIds)]);
                 DB::commit();
                 return response()->json(['message' => "อัปเดตสถานะเป็น 'success' สำเร็จ {$updatedCount} รายการ", 'success' => true]);
             } else {
@@ -797,7 +778,7 @@ class sendJobController extends Controller
             }
         } catch (\Exception $exception) {
             DB::rollBack();
-            Log::error('❌ เกิดข้อผิดพลาดในการจบงานส่งซ่อม: ' . $exception->getMessage(), ['user' => Auth::user()->user_code]);
+            Log::error('❌ เกิดข้อผิดพลาดในการจบงานส่งซ่อม: ' . $exception->getMessage(), ['user' => $user->user_code]);
             return response()->json([
                 'message' => 'เกิดข้อผิดพลาดในการจบงาน: ' . $exception->getMessage(),
                 'success' => false
@@ -991,15 +972,21 @@ class sendJobController extends Controller
 
             DB::beginTransaction();
 
-            // หาก API ตอบกลับว่า "ไม่พบข้อมูล" ให้ถือว่าเป็นสถานะเริ่มต้นคือ 'send' 
-            if ($externalStatus === 'ไม่พบข้อมูล') {
-                $externalStatus = 'send';
-            }
+            // Map สถานะ PK → สถานะ DB ของเรา (send / pending / canceled)
+            $mappedStatus = $this->mapApiStatus($externalStatus);
 
+            $now = Carbon::now();
             $updateData = [
-                'status' => $externalStatus,
-                'updated_at' => Carbon::now(),
+                'status'     => $mappedStatus,
+                'ass_status' => $externalStatus,
+                'updated_at' => $now,
             ];
+
+            // ถ้า PK ส่งคืนแล้ว → บันทึกว่าปิดโดย API อัตโนมัติ
+            if ($mappedStatus === 'success') {
+                $updateData['close_job_at'] = $now;
+                $updateData['close_job_by'] = 'API';
+            }
 
             // ใช้ assno จาก API ถ้ามี
             $ticketCodeForResponse = $job->ticket_code;
@@ -1012,15 +999,20 @@ class sendJobController extends Controller
 
             if ($updated) {
                 DB::commit();
-                Log::info('✅ สถานะงานซ่อมถูกอัปเดตใน DB', ['job_id' => $jobId, 'status_new' => $externalStatus, 'assno' => $assNo]);
+                Log::info('✅ สถานะงานซ่อมถูกอัปเดตใน DB', [
+                    'job_id'      => $jobId,
+                    'api_status'  => $externalStatus,
+                    'db_status'   => $mappedStatus,
+                    'assno'       => $assNo,
+                ]);
             } else {
                 DB::rollBack();
-                Log::warning('⚠️ สถานะงานซ่อมไม่ถูกอัปเดตใน DB', ['job_id' => $jobId, 'status_api' => $externalStatus]);
+                Log::warning('⚠️ สถานะงานซ่อมไม่ถูกอัปเดตใน DB', ['job_id' => $jobId, 'api_status' => $externalStatus]);
             }
 
             return response()->json([
                 'status' => 'success',
-                'api_status' => $externalStatus,
+                'api_status' => $mappedStatus,   // ส่ง mapped status กลับ Frontend
                 'ticket_code' => $ticketCodeForResponse,
                 'assno' => $assNo,
                 'message' => 'ดึงสถานะสำเร็จ',
@@ -1056,6 +1048,49 @@ class sendJobController extends Controller
     }
     
     /**
+     * Map สถานะที่ได้จาก PK API → สถานะใน DB ของเรา (4 ค่า)
+     *
+     * send     = ส่งซ่อมไปแล้ว แต่ PK ยังไม่รับ / ไม่พบข้อมูลใน PK
+     * pending  = PK รับแล้ว กำลังดำเนินการ / ยังไม่ส่งคืน
+     * success  = PK ส่งคืนเสร็จแล้ว (ปิดอัตโนมัติ ไม่ต้อง manual)
+     * canceled = ยกเลิก
+     */
+    private function mapApiStatus(string $apiStatus): string
+    {
+        // PK ยังไม่รับงาน → send
+        if (in_array($apiStatus, ['ไม่พบข้อมูล', 'send'], true)) {
+            return 'send';
+        }
+
+        // PK ยกเลิก → canceled
+        if (in_array($apiStatus, ['canceled', 'ยกเลิกคำสั่งซื้อ', 'ยกเลิก'], true)) {
+            return 'canceled';
+        }
+
+        // PK ส่งคืนเสร็จแล้ว → success (ปิดอัตโนมัติ)
+        if (in_array($apiStatus, [
+            'บัญชีรับงานแล้ว', 'ส่งของแล้ว',
+            'จัดส่งสำเร็จ', 'ส่งสำเร็จ', 'จบงาน',
+        ], true)) {
+            return 'success';
+        }
+
+        // PK กำลังดำเนินการ / ยังไม่ส่งคืน → pending
+        if (in_array($apiStatus, [
+            'เปิดออเดอร์แล้ว', 'รอเปิดSO', 'พร้อมส่ง',
+            'แพ็คสินค้าเสร็จ', 'กำลังจัดสินค้า', 'กำลังส่ง',
+            'เตรียมส่ง', 'รอปิดงานซ่อม', 'กำลังซ่อม',
+            'พักงานซ่อม', 'รอรับงานซ่อม', 'pending',
+        ], true)) {
+            return 'pending';
+        }
+
+        // กรณีอื่นๆ ที่ไม่รู้จัก → pending (safe fallback)
+        Log::warning('mapApiStatus: unknown status from PK API', ['api_status' => $apiStatus]);
+        return 'pending';
+    }
+
+    /**
      * Batch เช็คสถานะ (เรียกจาก Frontend ปุ่ม "เช็คสถานะทั้งหมด")
      * รับ job_ids[] และเช็คกับ API ทีละตัว สูงสุด 50 รายการต่อครั้ง
      */
@@ -1069,6 +1104,15 @@ class sendJobController extends Controller
 
         // จำกัดสูงสุด 50 รายการต่อ request เพื่อป้องกัน timeout
         $jobIds = array_slice($jobIds, 0, 50);
+
+        // กรองเฉพาะ job_ids ที่ user มีสิทธิ์เข้าถึง
+        $batchUser  = Auth::user();
+        $authQuery  = JobList::whereIn('job_id', $jobIds)->select('job_id');
+        if ($batchUser->role !== 'admin') {
+            $authQuery->where('is_code_key', $batchUser->is_code_cust_id);
+        }
+        $jobIds = $authQuery->pluck('job_id')->toArray();
+
         $total  = count($jobIds);
 
         $uri     = 'https://afterservice-sv.pumpkin.tools/sv/callpsc.php';
@@ -1100,14 +1144,21 @@ class sendJobController extends Controller
                     continue;
                 }
 
-                if ($externalStatus === 'ไม่พบข้อมูล') {
-                    $externalStatus = 'send';
-                }
+                // Map สถานะ PK → สถานะ DB (send / pending / success / canceled)
+                $mappedStatus = $this->mapApiStatus($externalStatus);
+                $batchNow     = Carbon::now();
 
                 $updateData = [
-                    'status'     => $externalStatus,
-                    'updated_at' => Carbon::now(),
+                    'status'     => $mappedStatus,
+                    'ass_status' => $externalStatus,
+                    'updated_at' => $batchNow,
                 ];
+
+                // ถ้า PK ส่งคืนแล้ว → บันทึกปิดโดย API อัตโนมัติ
+                if ($mappedStatus === 'success') {
+                    $updateData['close_job_at'] = $batchNow;
+                    $updateData['close_job_by'] = 'API';
+                }
 
                 if ($assNo) {
                     $updateData['ticket_code'] = $assNo;
