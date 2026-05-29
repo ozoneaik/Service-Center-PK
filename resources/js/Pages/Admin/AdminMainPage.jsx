@@ -66,7 +66,7 @@ export default function AdminMainPage() {
         {
             text: "รายการสินค้าที่ส่งซ่อมมายัง pumpkin",
             icon: <HandymanIcon />,
-            path: route('JobFormService.index'),
+            path: route('sendJobs.successJobList'),
             color: '#a200ff'
         },
         {
