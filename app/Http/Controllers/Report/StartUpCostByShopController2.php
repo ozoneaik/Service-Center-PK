@@ -57,7 +57,13 @@ class StartUpCostByShopController2 extends Controller
             ->select('job_lists.*', 'store_information.shop_name')
             ->where('job_lists.status', 'success')
             ->where('job_lists.warranty', true)
-            ->where('job_lists.stuc_status', 'Y');
+            ->where('job_lists.stuc_status', 'Y')
+            ->whereExists(function ($sub) {
+                $sub->select(DB::raw(1))
+                    ->from('spare_parts')
+                    ->whereColumn('spare_parts.job_id', 'job_lists.job_id')
+                    ->where('spare_parts.sp_code', '!=', 'SV001');
+            });
 
         if (!$is_all_shops) {
             // กรณีเลือกร้านบางร้าน
@@ -150,7 +156,13 @@ class StartUpCostByShopController2 extends Controller
         $query = JobList::query()
             ->where('status', 'success')
             ->where('warranty', true)
-            ->where('stuc_status', 'Y');
+            ->where('stuc_status', 'Y')
+            ->whereExists(function ($sub) {
+                $sub->select(DB::raw(1))
+                    ->from('spare_parts')
+                    ->whereColumn('spare_parts.job_id', 'job_lists.job_id')
+                    ->where('spare_parts.sp_code', '!=', 'SV001');
+            });
 
         if (!$is_all_shops) {
             $query->whereIn('is_code_key', $selected_shops);

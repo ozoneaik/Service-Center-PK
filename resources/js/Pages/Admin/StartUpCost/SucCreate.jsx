@@ -5,7 +5,9 @@ import {
     FormControl, InputLabel, OutlinedInput, FormHelperText, Card, Stack,
 } from "@mui/material";
 import { useState } from "react";
-import { Save, Cancel, Inventory, QrCode, Category, MoneyOff, MonetizationOn, PriceCheck, Straighten, AspectRatio } from '@mui/icons-material';
+import { Save, Cancel, Inventory, QrCode, Category, MoneyOff, MonetizationOn, PriceCheck, Straighten, AspectRatio, Search } from '@mui/icons-material';
+import axios from 'axios';
+
 export default function SucCreate() {
     const { data, setData, post, errors, error, setError, processing } = useForm({
         sku_name: '',
@@ -19,6 +21,44 @@ export default function SucCreate() {
         startup_cost: ''
     })
     const { flash } = usePage().props;
+    const [searching, setSearching] = useState(false);
+
+    const handleSearchAPI = async () => {
+        if (!data.sku_code) {
+            alert('กรุณากรอกรหัส SKU เพื่อค้นหา');
+            return;
+        }
+
+        setSearching(true);
+        try {
+            // ตรวจสอบข้อมูลในระบบก่อน
+            const checkRes = await axios.get(route('startUpCost.checkExist', { sku_code: data.sku_code }));
+            if (checkRes.data.exists) {
+                alert('สินค้ารหัสนี้มีอยู่ในระบบแล้ว (ค่าเปิดเครื่อง)');
+                setSearching(false);
+                return;
+            }
+
+            const response = await axios.get(`https://warranty-sn.pumpkin.tools/api/getdata?search=${data.sku_code}`);
+            if (response.data && response.data.status === 'SUCCESS') {
+                const apiData = response.data;
+                setData(prevData => ({
+                    ...prevData,
+                    sku_name: apiData.main_assets?.pname || prevData.sku_name,
+                    sku_code: apiData.skumain || prevData.sku_code,
+                    p_cat_name: apiData.main_assets?.pCatName || prevData.p_cat_name,
+                    unit: apiData.main_assets?.pbaseunit || prevData.unit,
+                }));
+            } else {
+                alert('ไม่พบข้อมูลสินค้ารหัสนี้');
+            }
+        } catch (error) {
+            console.error("API Error:", error);
+            alert('เกิดข้อผิดพลาดในการดึงข้อมูลจาก API หรือตรวจสอบข้อมูล');
+        } finally {
+            setSearching(false);
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -62,221 +102,236 @@ export default function SucCreate() {
                     </Typography>
                 </Box>
                 <form onSubmit={handleSubmit}>
-                <Box sx={{ mt: 2 }}>
-                    <Grid2 container spacing={3}>
-                        <Grid2 size={12}>
-                            <Card sx={{ p: 3 }} variant="outlined">
-                                <Typography mb={3} variant="h6">ข้อมูลสินค้า</Typography>
-                                <Grid2 container spacing={3}>
-                                    {/* SKU Name */}
-                                    <Grid2 size={{ xs: 12, md: 6 }}>
-                                        <TextField
-                                            size="small" required fullWidth id="sku_name"
-                                            name="sku_name" label="ชื่อ SKU"
-                                            value={data.sku_name}
-                                            onChange={handleChange}
-                                            error={!!errors.sku_name}
-                                            helperText={errors.sku_name}
-                                            slotProps={{
-                                                input: {
-                                                    startAdornment: (
-                                                        <InputAdornment position="start">
-                                                            <Inventory color="primary" />
-                                                        </InputAdornment>
-                                                    ),
-                                                }
-
-                                            }}
-                                            variant="outlined"
-                                        />
-                                    </Grid2>
-
-                                    {/* SKU Code */}
-                                    <Grid2 size={{ xs: 12, md: 6 }}>
-                                        <TextField
-                                            size="small" required fullWidth
-                                            id="sku_code" name="sku_code" label="รหัส SKU"
-                                            value={data.sku_code}
-                                            onChange={handleChange}
-                                            error={!!errors.sku_code}
-                                            helperText={errors.sku_code}
-                                            slotProps={{
-                                                input: {
-                                                    startAdornment: (
-                                                        <InputAdornment position="start">
-                                                            <QrCode color="primary" />
-                                                        </InputAdornment>
-                                                    )
-                                                }
-                                            }}
-                                            variant="outlined"
-                                        />
-                                    </Grid2>
-                                </Grid2>
-                            </Card>
-                        </Grid2>
-
-                        <Grid2 size={12}>
-                            <Card sx={{ p: 3 }} variant="outlined">
-                                <Typography mb={3} variant="h6">รายละเอียดและราคา</Typography>
-
-                                <Grid2 container spacing={3}>
-                                    {/* Unit */}
-                                    <Grid2 size={{ xs: 12, md: 6 }}>
-                                        <TextField
-                                            size="small" fullWidth id="unit"
-                                            name="unit" label="หน่วย"
-                                            value={data.unit}
-                                            onChange={handleChange}
-                                            slotProps={{
-                                                input: {
-                                                    startAdornment: (
-                                                        <InputAdornment position="start">
-                                                            <Straighten color="primary" />
-                                                        </InputAdornment>
-                                                    ),
-                                                }
-
-                                            }}
-                                            variant="outlined"
-                                        />
-                                    </Grid2>
-
-                                    {/* Amount */}
-                                    <Grid2 size={{ xs: 12, md: 6 }}>
-                                        <TextField
-                                            size="small" fullWidth id="amount"
-                                            name="amount" label="จำนวน" type="number"
-                                            value={data.amount}
-                                            onChange={handleChange}
-                                            error={!!errors.amount}
-                                            helperText={errors.amount}
-                                            slotProps={{
-                                                input: {
-                                                    startAdornment: (
-                                                        <InputAdornment position="start">
-                                                            <AspectRatio color="primary" />
-                                                        </InputAdornment>
-                                                    ),
-                                                }
-
-                                            }}
-                                            variant="outlined"
-                                        />
-                                    </Grid2>
-
-                                    {/* Category */}
-                                    <Grid2 size={{ xs: 12, md: 4 }}>
-                                        <TextField
-                                            size="small" fullWidth label="หมวดหมู่สินค้า"
-                                            id="p_cat_name" name="p_cat_name"
-                                            value={data.p_cat_name}
-                                            onChange={handleChange}
-                                            slotProps={{
-                                                input: {
-                                                    startAdornment: (
-                                                        <InputAdornment position="start">
-                                                            <Category color="primary" />
-                                                        </InputAdornment>
-                                                    ),
-                                                }
-                                            }}
-                                            variant="outlined"
-                                        />
-                                    </Grid2>
-
-                                    {/* Price Per Unit */}
-                                    <Grid2 size={{ xs: 12, md: 4 }}>
-                                        <FormControl fullWidth error={!!errors.price_per_unit} variant="outlined">
-                                            <InputLabel htmlFor="price_per_unit">ราคาต่อหน่วย</InputLabel>
-                                            <OutlinedInput
-                                                size="small" id="price_per_unit"
-                                                name="price_per_unit" type="number"
-                                                value={data.price_per_unit}
+                    <Box sx={{ mt: 2 }}>
+                        <Grid2 container spacing={3}>
+                            <Grid2 size={12}>
+                                <Card sx={{ p: 3 }} variant="outlined">
+                                    <Typography mb={3} variant="h6">ข้อมูลสินค้า</Typography>
+                                    <Grid2 container spacing={3}>
+                                        {/* SKU Code */}
+                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                            <TextField
+                                                size="small" required fullWidth
+                                                id="sku_code" name="sku_code" label="รหัส SKU"
+                                                value={data.sku_code}
                                                 onChange={handleChange}
-                                                startAdornment={
-                                                    <InputAdornment position="start">
-                                                        <PriceCheck color="primary" />
-                                                    </InputAdornment>
-                                                }
-                                                label="ราคาต่อหน่วย"
+                                                error={!!errors.sku_code}
+                                                helperText={errors.sku_code}
+                                                slotProps={{
+                                                    input: {
+                                                        startAdornment: (
+                                                            <InputAdornment position="start">
+                                                                <QrCode color="primary" />
+                                                            </InputAdornment>
+                                                        ),
+                                                        endAdornment: (
+                                                            <InputAdornment position="end">
+                                                                <Button
+                                                                    variant="contained"
+                                                                    size="small"
+                                                                    onClick={handleSearchAPI}
+                                                                    disabled={searching}
+                                                                    disableElevation
+                                                                >
+                                                                    ค้นหา
+                                                                </Button>
+                                                            </InputAdornment>
+                                                        )
+                                                    }
+                                                }}
+                                                variant="outlined"
                                             />
-                                            {errors.price_per_unit && <FormHelperText>{errors.price_per_unit}</FormHelperText>}
-                                        </FormControl>
-                                    </Grid2>
+                                        </Grid2>
 
-                                    {/* Discount */}
-                                    <Grid2 size={{ xs: 12, md: 4 }}>
-                                        <FormControl fullWidth error={!!errors.discount} variant="outlined">
-                                            <InputLabel htmlFor="discount">ส่วนลด</InputLabel>
-                                            <OutlinedInput
-                                                size="small" id="discount"
-                                                name="discount" type="number"
-                                                value={data.discount}
+                                        {/* SKU Name */}
+                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                            <TextField
+                                                size="small" required fullWidth id="sku_name"
+                                                name="sku_name" label="ชื่อ SKU"
+                                                value={data.sku_name}
                                                 onChange={handleChange}
-                                                startAdornment={
-                                                    <InputAdornment position="start">
-                                                        <MoneyOff color="primary" />
-                                                    </InputAdornment>
-                                                }
-                                                label="ส่วนลด"
-                                            />
-                                            {errors.discount && <FormHelperText>{errors.discount}</FormHelperText>}
-                                        </FormControl>
-                                    </Grid2>
-                                </Grid2>
-                            </Card>
-                        </Grid2>
+                                                error={!!errors.sku_name}
+                                                helperText={errors.sku_name}
+                                                slotProps={{
+                                                    input: {
+                                                        startAdornment: (
+                                                            <InputAdornment position="start">
+                                                                <Inventory color="primary" />
+                                                            </InputAdornment>
+                                                        ),
+                                                    }
 
-                        <Grid2 size={12}>
-                            <Card sx={{ p: 3 }} variant="outlined">
-                                <Typography mb={3} variant="h6">ข้อมูลค่าเปิดเครื่อง</Typography>
-                                <Grid2 container spacing={3}>
-                                    {/* Startup Cost */}
-                                    <Grid2 size={{ xs: 12, md: 6 }}>
-                                        <FormControl fullWidth required error={!!errors.startup_cost} variant="outlined">
-                                            <InputLabel htmlFor="startup_cost">ค่าเปิดเครื่อง</InputLabel>
-                                            <OutlinedInput
-                                                size="small" id="startup_cost"
-                                                name="startup_cost" type="number"
-                                                value={data.startup_cost}
+                                                }}
+                                                variant="outlined"
+                                            />
+                                        </Grid2>
+
+
+                                    </Grid2>
+                                </Card>
+                            </Grid2>
+
+                            <Grid2 size={12}>
+                                <Card sx={{ p: 3 }} variant="outlined">
+                                    <Typography mb={3} variant="h6">รายละเอียดและราคา</Typography>
+
+                                    <Grid2 container spacing={3}>
+                                        {/* Unit */}
+                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                            <TextField
+                                                size="small" fullWidth id="unit"
+                                                name="unit" label="หน่วย"
+                                                value={data.unit}
                                                 onChange={handleChange}
-                                                startAdornment={
-                                                    <InputAdornment position="start">
-                                                        <MonetizationOn color="primary" />
-                                                    </InputAdornment>
-                                                }
-                                                label="ค่าเปิดเครื่อง"
-                                            />
-                                            {errors.startup_cost && <FormHelperText>{errors.startup_cost}</FormHelperText>}
-                                        </FormControl>
-                                    </Grid2>
-                                </Grid2>
-                            </Card>
-                        </Grid2>
+                                                slotProps={{
+                                                    input: {
+                                                        startAdornment: (
+                                                            <InputAdornment position="start">
+                                                                <Straighten color="primary" />
+                                                            </InputAdornment>
+                                                        ),
+                                                    }
 
-                        {/* Action Buttons */}
-                        <Grid2 size={12}>
-                            <Stack direction="row" spacing={2} justifyContent="flex-end">
-                                <Button
-                                    variant="outlined" color="error" startIcon={<Cancel />}
-                                    onClick={handleCancel} size="small"
-                                >
-                                    ยกเลิก
-                                </Button>
-                                <Button
-                                    loading={processing}
-                                    type="submit" variant="contained" color="primary"
-                                    startIcon={<Save />} size="small"
-                                >
-                                    บันทึกข้อมูล
-                                </Button>
-                            </Stack>
+                                                }}
+                                                variant="outlined"
+                                            />
+                                        </Grid2>
+
+                                        {/* Amount */}
+                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                            <TextField
+                                                size="small" fullWidth id="amount"
+                                                name="amount" label="จำนวน" type="number"
+                                                value={data.amount}
+                                                onChange={handleChange}
+                                                error={!!errors.amount}
+                                                helperText={errors.amount}
+                                                slotProps={{
+                                                    input: {
+                                                        startAdornment: (
+                                                            <InputAdornment position="start">
+                                                                <AspectRatio color="primary" />
+                                                            </InputAdornment>
+                                                        ),
+                                                    }
+
+                                                }}
+                                                variant="outlined"
+                                            />
+                                        </Grid2>
+
+                                        {/* Category */}
+                                        <Grid2 size={{ xs: 12, md: 4 }}>
+                                            <TextField
+                                                size="small" fullWidth label="หมวดหมู่สินค้า"
+                                                id="p_cat_name" name="p_cat_name"
+                                                value={data.p_cat_name}
+                                                onChange={handleChange}
+                                                slotProps={{
+                                                    input: {
+                                                        startAdornment: (
+                                                            <InputAdornment position="start">
+                                                                <Category color="primary" />
+                                                            </InputAdornment>
+                                                        ),
+                                                    }
+                                                }}
+                                                variant="outlined"
+                                            />
+                                        </Grid2>
+
+                                        {/* Price Per Unit */}
+                                        <Grid2 size={{ xs: 12, md: 4 }}>
+                                            <FormControl fullWidth error={!!errors.price_per_unit} variant="outlined">
+                                                <InputLabel htmlFor="price_per_unit">ราคาต่อหน่วย</InputLabel>
+                                                <OutlinedInput
+                                                    size="small" id="price_per_unit"
+                                                    name="price_per_unit" type="number"
+                                                    value={data.price_per_unit}
+                                                    onChange={handleChange}
+                                                    startAdornment={
+                                                        <InputAdornment position="start">
+                                                            <PriceCheck color="primary" />
+                                                        </InputAdornment>
+                                                    }
+                                                    label="ราคาต่อหน่วย"
+                                                />
+                                                {errors.price_per_unit && <FormHelperText>{errors.price_per_unit}</FormHelperText>}
+                                            </FormControl>
+                                        </Grid2>
+
+                                        {/* Discount */}
+                                        <Grid2 size={{ xs: 12, md: 4 }}>
+                                            <FormControl fullWidth error={!!errors.discount} variant="outlined">
+                                                <InputLabel htmlFor="discount">ส่วนลด</InputLabel>
+                                                <OutlinedInput
+                                                    size="small" id="discount"
+                                                    name="discount" type="number"
+                                                    value={data.discount}
+                                                    onChange={handleChange}
+                                                    startAdornment={
+                                                        <InputAdornment position="start">
+                                                            <MoneyOff color="primary" />
+                                                        </InputAdornment>
+                                                    }
+                                                    label="ส่วนลด"
+                                                />
+                                                {errors.discount && <FormHelperText>{errors.discount}</FormHelperText>}
+                                            </FormControl>
+                                        </Grid2>
+                                    </Grid2>
+                                </Card>
+                            </Grid2>
+
+                            <Grid2 size={12}>
+                                <Card sx={{ p: 3 }} variant="outlined">
+                                    <Typography mb={3} variant="h6">ข้อมูลค่าเปิดเครื่อง</Typography>
+                                    <Grid2 container spacing={3}>
+                                        {/* Startup Cost */}
+                                        <Grid2 size={{ xs: 12, md: 6 }}>
+                                            <FormControl fullWidth required error={!!errors.startup_cost} variant="outlined">
+                                                <InputLabel htmlFor="startup_cost">ค่าเปิดเครื่อง</InputLabel>
+                                                <OutlinedInput
+                                                    size="small" id="startup_cost"
+                                                    name="startup_cost" type="number"
+                                                    value={data.startup_cost}
+                                                    onChange={handleChange}
+                                                    startAdornment={
+                                                        <InputAdornment position="start">
+                                                            <MonetizationOn color="primary" />
+                                                        </InputAdornment>
+                                                    }
+                                                    label="ค่าเปิดเครื่อง"
+                                                />
+                                                {errors.startup_cost && <FormHelperText>{errors.startup_cost}</FormHelperText>}
+                                            </FormControl>
+                                        </Grid2>
+                                    </Grid2>
+                                </Card>
+                            </Grid2>
+
+                            {/* Action Buttons */}
+                            <Grid2 size={12}>
+                                <Stack direction="row" spacing={2} justifyContent="flex-end">
+                                    <Button
+                                        variant="outlined" color="error" startIcon={<Cancel />}
+                                        onClick={handleCancel} size="small"
+                                    >
+                                        ยกเลิก
+                                    </Button>
+                                    <Button
+                                        loading={processing}
+                                        type="submit" variant="contained" color="primary"
+                                        startIcon={<Save />} size="small"
+                                    >
+                                        บันทึกข้อมูล
+                                    </Button>
+                                </Stack>
+                            </Grid2>
                         </Grid2>
-                    </Grid2>
-                </Box>
+                    </Box>
                 </form>
-                
+
             </Paper>
         </AuthenticatedLayout>
     );

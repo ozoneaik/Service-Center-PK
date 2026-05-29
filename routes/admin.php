@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DiagramController;
 use App\Http\Controllers\Admin\JobFromServiceController;
+use App\Http\Controllers\Admin\ManagePointController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SaleManageController;
 use App\Http\Controllers\Admin\Skus\SkuController;
@@ -57,6 +58,7 @@ Route::middleware('adminPermission')->group(function () {
 
         Route::prefix('start-up-cost')->group(function () {
             Route::get('/', [StartUpCostController::class, 'index'])->name('startUpCost.index');
+            Route::get('/check-exist', [StartUpCostController::class, 'checkExist'])->name('startUpCost.checkExist');
             Route::get('/create', [StartUpCostController::class, 'create'])->name('startUpCost.create');
             Route::get('/edit/{id}', [StartUpCostController::class, 'edit'])->name('startUpCost.edit');
             Route::put('/update/{id}', [StartUpCostController::class, 'update'])->name('startUpCost.update');
@@ -139,5 +141,11 @@ Route::middleware('adminPermission')->group(function () {
             Route::get('/', [WithdrawReportController::class, 'index'])->name('admin.withdraw-report.index');
             Route::get('/export', [WithdrawReportController::class, 'export'])->name('admin.withdraw-report.export');
         });
+        // Route::prefix('manage-point')->group(function () {
+        //     Route::get('/', [ManagePointController::class, 'index'])->name('admin.manage-point.index');
+        //     Route::get('/create', [ManagePointController::class, 'create'])->name('admin.manage-point.create'); 
+        //     Route::post('/store', [ManagePointController::class, 'store'])->name('admin.manage-point.store'); 
+        //     Route::put('/update/{id}', [ManagePointController::class, 'update'])->name('admin.manage-point.update');
+        // });
     });
 });

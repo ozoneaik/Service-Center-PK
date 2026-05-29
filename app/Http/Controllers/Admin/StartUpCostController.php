@@ -34,6 +34,12 @@ class StartUpCostController extends Controller
         return Inertia::render('Admin/StartUpCost/SucCreate');
     }
 
+    public function checkExist(Request $request)
+    {
+        $exists = StartUpCost::where('sku_code', $request->sku_code)->exists();
+        return response()->json(['exists' => $exists]);
+    }
+
     public function store(Request $request){
         try{
             $request->validate([
