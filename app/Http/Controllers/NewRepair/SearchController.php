@@ -19,7 +19,7 @@ class SearchController extends Controller
     public function index(Request $request): Response
     {
         $user = Auth::user();
-        if ($user->role !== 'service' && $user->role !== 'admin') {
+        if ($user->role !== 'service' && $user->role !== 'admin' && $user->role !== 'sale') {
             // กรณีที่ 1: แสดงหน้า Error 403 Forbidden
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
 
