@@ -31,3 +31,4 @@ Route::get('/claim-detail/{claim_id}', [ApiSpareClaimController::class, 'apiGetC
 Route::get('/sales-shops', [ApiSpareClaimController::class, 'apiGetShops']);
 
 Route::post('/ass-repair/info', [AssRepairController::class, 'getRepairInfo']);
+Route::post('/ass-repair/group', [AssRepairController::class, 'getRepairInfoByGroup']);

@@ -175,4 +175,126 @@ class AssRepairController extends Controller
             'data'    => $data,
         ], 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
     }
+
+    public function getRepairInfoByGroup(Request $request): JsonResponse
+    {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'group_job' => 'required|string',
+        ], [
+            'group_job.required' => 'กรุณาระบุ group_job',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first(),
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        $jobs = JobList::where('group_job', $request->input('group_job'))->get();
+
+        if ($jobs->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ไม่พบข้อมูลงานซ่อมจาก group_job ที่ระบุ',
+            ], 404);
+        }
+
+        $results = $jobs->map(function (JobList $job) {
+            $store = StoreInformation::where('is_code_cust_id', $job->is_code_key)->first();
+            $symptomText = Symptom::findByJobId($job->job_id);
+
+            $historyProd = $job->serial_id
+                ? TblHistoryProd::where('serial_number', $job->serial_id)->first()
+                : null;
+
+            $warrantyExpire    = $historyProd?->insurance_expire ?: $job->insurance_expire;
+            $warrantyStartDate = $historyProd?->buy_date;
+
+            if (!empty($warrantyStartDate) && (empty($warrantyExpire) || $warrantyExpire === 'ไม่มีข้อมูล')) {
+                $months = (int) $job->warranty_period;
+                if ($months > 0) {
+                    try {
+                        $warrantyExpire = Carbon::parse($warrantyStartDate)->addMonths($months)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                    }
+                }
+            }
+
+            if ($warrantyExpire === 'ไม่มีข้อมูล' || trim($warrantyExpire ?? '') === '') {
+                $warrantyExpire = null;
+            }
+
+            $hasAnyData   = $historyProd || $warrantyExpire;
+            $isRegistered = (bool) $hasAnyData;
+
+            $onlineWarranty = [
+                'is_registered' => $isRegistered,
+                'status'        => null,
+                'expire_date'   => null,
+                'start_date'    => null,
+            ];
+
+            if ($warrantyExpire) {
+                try {
+                    $today      = now()->startOfDay();
+                    $expireDate = Carbon::parse($warrantyExpire)->startOfDay();
+
+                    if ($today->lte($expireDate)) {
+                        $onlineWarranty['status'] = 'อยู่ในประกัน';
+                    } else {
+                        $onlineWarranty['status']        = 'หมดประกัน';
+                        $onlineWarranty['is_registered'] = false;
+                    }
+
+                    $onlineWarranty['expire_date'] = $expireDate->format('Y-m-d');
+                } catch (\Exception $e) {
+                    $onlineWarranty['status']        = 'รูปแบบวันที่หมดประกันไม่ถูกต้อง';
+                    $onlineWarranty['is_registered'] = false;
+                }
+            } else {
+                $onlineWarranty['status']        = null;
+                $onlineWarranty['is_registered'] = false;
+            }
+
+            if ($warrantyStartDate) {
+                try {
+                    $onlineWarranty['start_date'] = Carbon::parse($warrantyStartDate)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    $onlineWarranty['start_date'] = null;
+                }
+            }
+
+            return [
+                'store_code'      => $store?->is_code_cust_id ?? null,
+                'store_name'      => $store?->shop_name ?? null,
+                'store_phone'     => $store?->phone ?? null,
+                'sale_id'         => $store?->sale_id ?? null,
+                'sale_name'       => $store?->gp?->name ?? null,
+                'repair_man_id'   => $job->repair_man_id ?? null,
+                'consumer_phone'  => $job->shop_under_sale_phone ?? null,
+                'consumer_name'   => $job->shop_under_sale_name ?? null,
+                'serial'          => $job->serial_id,
+                'pid'             => $job->pid,
+                'p_name'          => $job->p_name,
+                'model'           => $job->fac_model,
+                'product_group'   => null,
+                'warranty_doc'    => null,
+                'online_warranty' => $onlineWarranty,
+                'symptom'         => $symptomText,
+                'repair_note'     => null,
+                'mall_doc_no'     => null,
+                'job_type'        => 'ปกติ',
+                'so_no'           => null,
+                't_doc_no'        => null,
+                'serviceby'       => strtolower($job->status) === 'send' ? 'pumpkin' : 'psc',
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data'    => $results,
+        ], 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
+    }
 }
