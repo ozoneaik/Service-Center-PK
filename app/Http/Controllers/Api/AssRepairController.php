@@ -275,6 +275,7 @@ class AssRepairController extends Controller
 
             return [
                 'job_id'          => $job->job_id ?? null,
+                'group_job'       => $job->group_job ?? null,
                 'store_code'      => $store?->is_code_cust_id ?? null,
                 'store_name'      => $store?->shop_name ?? null,
                 'store_phone'     => $store?->phone ?? null,
