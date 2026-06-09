@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\JobList;
+use App\Models\SaleInformation;
 use App\Models\StoreInformation;
+use App\Models\Remark;
 use App\Models\Symptom;
 use App\Models\WarrantyProduct;
 use App\Models\TblHistoryProd;
@@ -71,6 +73,7 @@ class AssRepairController extends Controller
 
         // --- ค้นหา Symptom ---
         $symptomText = Symptom::findByJobId($job->job_id);
+        $remarkText  = Remark::findByJobId($job->job_id);
 
         // --- ประกันออนไลน์ (อ้างอิงจาก TblHistoryProd และ fallback ไป JobList) ---
         $historyProd = $job->serial_id
@@ -161,7 +164,7 @@ class AssRepairController extends Controller
             'warranty_doc'           => null,  // 14. ใบรับประกัน
             'online_warranty'        => $onlineWarranty, // 15. ประกันออนไลน์ (expire_date จาก warranty_product หรือ insurance_expire จาก job_list)
             'symptom'                => $symptomText,   // 16. อาการเบื้องต้น
-            'repair_note'            => null, // 17. หมายเหตุส่งซ่อม
+            'repair_note'            => $remarkText, // 17. หมายเหตุส่งซ่อม
             'mall_doc_no'            => null,   // 18. เลขที่เอกสารห้าง
             'job_type'               => 'ปกติ',  // 19. ประเภทงาน
             'so_no'                  => null,   // 20. เลขที่ SO
@@ -211,7 +214,9 @@ class AssRepairController extends Controller
 
         $results = $jobs->map(function (JobList $job) {
             $store = StoreInformation::where('is_code_cust_id', $job->is_code_key)->first();
+            $saleInfo    = $store?->sale_id ? SaleInformation::where('sale_code', $store->sale_id)->first() : null;
             $symptomText = Symptom::findByJobId($job->job_id);
+            $remarkText  = Remark::findByJobId($job->job_id);
 
             $historyProd = $job->serial_id
                 ? TblHistoryProd::where('serial_number', $job->serial_id)->first()
@@ -281,7 +286,7 @@ class AssRepairController extends Controller
                 'store_name'      => $store?->shop_name ?? null,
                 'store_phone'     => $store?->phone ?? null,
                 'sale_id'         => $store?->sale_id ?? null,
-                'sale_name'       => $store?->gp?->name ?? null,
+                'sale_name'       => $saleInfo?->name ?? null,
                 'repair_man_id'   => $job->repair_man_id ?? null,
                 'consumer_phone'  => $job->shop_under_sale_phone ?? null,
                 'consumer_name'   => $job->shop_under_sale_name ?? null,
@@ -289,11 +294,14 @@ class AssRepairController extends Controller
                 'pid'             => $job->pid,
                 'p_name'          => $job->p_name,
                 'model'           => $job->fac_model,
+                'warranty_condition' => $job->warranty_condition,
+                'warranty_note' => $job->warranty_note,
+                'warranty_period' => $job->warranty_period,
                 'product_group'   => null,
                 'warranty_doc'    => null,
                 'online_warranty' => $onlineWarranty,
                 'symptom'         => $symptomText,
-                'repair_note'     => null,
+                'repair_note'     => $remarkText,
                 'mall_doc_no'     => null,
                 'job_type'        => 'ปกติ',
                 'so_no'           => null,
@@ -340,6 +348,7 @@ class AssRepairController extends Controller
         $results = $jobs->map(function (JobList $job) {
             $store       = StoreInformation::where('is_code_cust_id', $job->is_code_key)->first();
             $symptomText = Symptom::findByJobId($job->job_id);
+            $remarkText  = Remark::findByJobId($job->job_id);
 
             $historyProd = $job->serial_id
                 ? TblHistoryProd::where('serial_number', $job->serial_id)->first()
@@ -405,29 +414,24 @@ class AssRepairController extends Controller
             return [
                 'status'          => $job->status,
                 'job_id'          => $job->job_id ?? null,
+                'serial'          => $job->serial_id,
                 'group_job'       => $job->group_job ?? null,
                 'store_code'      => $store?->is_code_cust_id ?? null,
                 'store_name'      => $store?->shop_name ?? null,
                 'store_phone'     => $store?->phone ?? null,
                 'sale_id'         => $store?->sale_id ?? null,
-                'sale_name'       => $store?->gp?->name ?? null,
-                'repair_man_id'   => $job->repair_man_id ?? null,
-                'consumer_phone'  => $job->shop_under_sale_phone ?? null,
-                'consumer_name'   => $job->shop_under_sale_name ?? null,
-                'serial'          => $job->serial_id,
+                'sale_name'       => $saleInfo?->name ?? null,
                 'pid'             => $job->pid,
                 'p_name'          => $job->p_name,
+                'p_base_unit'     => $job->p_base_unit,
+                'p_cat_id'        => $job->p_cat_id,
+                'p_cat_name'      => $job->p_cat_name,
+                'p_sub_cat_name'  => $job->p_sub_cat_name,
                 'model'           => $job->fac_model,
-                'product_group'   => null,
-                'warranty_doc'    => null,
-                'online_warranty' => $onlineWarranty,
-                'symptom'         => $symptomText,
-                'repair_note'     => null,
-                'mall_doc_no'     => null,
-                'job_type'        => 'ปกติ',
-                'so_no'           => null,
-                't_doc_no'        => null,
-                // 'serviceby'       => strtolower($job->status) === 'send' ? 'pumpkin' : 'psc',
+                'warranty_condition' => $job->warranty_condition,
+                'warranty_note' => $job->warranty_note,
+                'warranty_period' => $job->warranty_period,
+
             ];
         });
 
