@@ -32,3 +32,4 @@ Route::get('/sales-shops', [ApiSpareClaimController::class, 'apiGetShops']);
 
 Route::post('/ass-repair/info', [AssRepairController::class, 'getRepairInfo']);
 Route::post('/ass-repair/group', [AssRepairController::class, 'getRepairInfoByGroup']);
+Route::post('/ass-repair/serial', [AssRepairController::class, 'getRepairInfoBySerial']);
