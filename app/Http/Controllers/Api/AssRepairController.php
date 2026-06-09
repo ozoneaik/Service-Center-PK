@@ -197,7 +197,8 @@ class AssRepairController extends Controller
         $jobs = JobList::query()
             ->where(function ($q) use ($search) {
                 $q->where('group_job', $search)
-                  ->orWhere('job_id', $search);
+                  ->orWhere('job_id', $search)
+                  ->orWhere('serial_id', $search);
             })
             ->get();
 
@@ -303,6 +304,7 @@ class AssRepairController extends Controller
 
         return response()->json([
             'success' => true,
+            'job_ids' => $jobs->pluck('job_id')->values(),
             'data'    => $results,
         ], 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
     }
