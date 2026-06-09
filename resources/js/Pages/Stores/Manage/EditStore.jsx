@@ -271,7 +271,7 @@ export default function EditStore({ store, sales }) {
                                             )}
                                         </FormControl>
                                     </Grid2>
-                                    <Grid2 size={12}>
+                                    {/* <Grid2 size={12}>
                                         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                                             ตัวเลือกราคาสำหรับการสั่งซื้อ (เลือกได้ 1 อย่าง หรือไม่เลือก)
                                         </Typography>
@@ -319,7 +319,7 @@ export default function EditStore({ store, sales }) {
                                                 }
                                             />
                                         </Box>
-                                    </Grid2>
+                                    </Grid2> */}
                                 </Grid2>
                             </CardContent>
                         </Card>

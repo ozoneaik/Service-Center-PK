@@ -432,7 +432,7 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave, sales 
                             </FormControl>
                         </Grid2>
 
-                        <Grid2 size={12}>
+                        {/* <Grid2 size={12}>
                             <Typography variant="subtitle1" sx={{ fontWeight: 'medium', mb: 1 }}>
                                 ตัวเลือกราคาสำหรับการสั่งซื้อ (เลือกได้ 1 อย่าง หรือไม่เลือก)
                             </Typography>
@@ -468,7 +468,7 @@ export default function AddStore({ addStoreOpen, setAddStoreOpen, onSave, sales 
                                     label="ใช้ราคามาตรฐาน (Standard Price)"
                                 />
                             </Box>
-                        </Grid2>
+                        </Grid2> */}
                     </Grid2>
 
                     <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
