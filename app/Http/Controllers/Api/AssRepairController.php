@@ -192,7 +192,14 @@ class AssRepairController extends Controller
             ], 422);
         }
 
-        $jobs = JobList::where('group_job', $request->input('group_job'))->get();
+        $query = JobList::query()
+            ->where('group_job', $request->input('group_job'));
+
+        if ($request->filled('job_id')) {
+            $query->where('job_id', $request->input('job_id'));
+        }
+
+        $jobs = $query->get();
 
         if ($jobs->isEmpty()) {
             return response()->json([
