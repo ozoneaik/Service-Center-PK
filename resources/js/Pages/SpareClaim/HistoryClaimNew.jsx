@@ -1200,7 +1200,7 @@ export default function HistoryClaimNew({
 
     const isAcc = userRole === "acc";
     const canReceive = userRole === "admin" || userRole === "sale" || isAcc;
-    const ALLOWED_CODES = ["68091", "65002", "66504", "67465", "62169", "67487", "68263_ACC"];
+    const ALLOWED_CODES = ["68091", "65002", "66504", "67465", "62169", "67487", "68263_ACC", "69024"];
     const canSeeSpecialCol = ALLOWED_CODES.includes(userCode);
     const canSee =
         userRole === "admin" || userRole === "sale" || userRole === "acc";

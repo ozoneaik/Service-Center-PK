@@ -23,10 +23,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class SpareClaimController extends Controller
 {
@@ -71,7 +71,7 @@ class SpareClaimController extends Controller
             ->where('spare_parts.claim', true)
             ->where('spare_parts.claim_remark', 'เคลมด่วน')
             ->where('spare_parts.status', 'pending')
-            ->tap($applyShopFilter) // ใช้ tap เรียกฟังก์ชันกรอง
+            ->tap($applyShopFilter)  // ใช้ tap เรียกฟังก์ชันกรอง
             ->orderByDesc('spare_parts.created_at')
             ->get();
 
@@ -81,12 +81,13 @@ class SpareClaimController extends Controller
             ->select('spare_parts.*', 'job_lists.status as job_status', 'job_lists.is_code_key')
             ->where('spare_parts.claim', true)
             ->where(function ($q) {
-                $q->whereNull('spare_parts.claim_remark')
+                $q
+                    ->whereNull('spare_parts.claim_remark')
                     ->orWhere('spare_parts.claim_remark', '!=', 'เคลมด่วน');
             })
             ->where('spare_parts.status', 'pending')
             ->where('job_lists.status', 'success')
-            ->tap($applyShopFilter) // ใช้ tap เรียกฟังก์ชันกรอง
+            ->tap($applyShopFilter)  // ใช้ tap เรียกฟังก์ชันกรอง
             ->orderByDesc('spare_parts.created_at')
             ->get();
 
@@ -100,19 +101,19 @@ class SpareClaimController extends Controller
                 'sp_code' => $sp_code,
                 'sp_name' => $first->sp_name,
                 'sp_unit' => $first->sp_unit,
-                'qty'     => $items->sum('qty'),
-                'type'    => $first->claim_remark === 'เคลมด่วน' ? 'เคลมด่วน' : 'เคลมปกติ',
-                'detail'  => $items->values(),
+                'qty' => $items->sum('qty'),
+                'type' => $first->claim_remark === 'เคลมด่วน' ? 'เคลมด่วน' : 'เคลมปกติ',
+                'detail' => $items->values(),
             ];
         })->values();
 
         return Inertia::render('SpareClaim/ClaimMain', [
             'spareParts' => $grouped,
-            'shops' => $shops, // ส่งรายการร้านค้าไป Frontend
-            'filters' => [ // ส่งค่าที่เลือกปัจจุบันไป Frontend
+            'shops' => $shops,  // ส่งรายการร้านค้าไป Frontend
+            'filters' => [  // ส่งค่าที่เลือกปัจจุบันไป Frontend
                 'shop' => $selectedShop,
             ],
-            'isAdmin' => $user->role === 'admin' // ส่งสถานะแอดมินไป
+            'isAdmin' => $user->role === 'admin'  // ส่งสถานะแอดมินไป
         ]);
     }
 
@@ -135,7 +136,8 @@ class SpareClaimController extends Controller
                 foreach ($claim['detail'] as $k => $value) {
                     $sp = SparePart::query()
                         ->where('job_id', $value['job_id'])
-                        ->where('sp_code', $value['sp_code'])->first();
+                        ->where('sp_code', $value['sp_code'])
+                        ->first();
                     $sp->update(['status' => 'success']);
                     ClaimDetail::query()->create([
                         'claim_id' => $claim_id,
@@ -357,7 +359,7 @@ class SpareClaimController extends Controller
         $shops = [];
         $areas = [];
         $selectedShop = $request->query('shop');
-        $selectedShops = []; // multi-select สำหรับ admin
+        $selectedShops = [];  // multi-select สำหรับ admin
         $selectedArea = $request->query('area');
         $selectedReceiveStatus = $request->query('receive_status', 'all');
         $selectedStatus = $request->query('status');
@@ -413,7 +415,7 @@ class SpareClaimController extends Controller
                 Log::error('Failed to fetch sales shops: ' . $e->getMessage());
             }
         } else if ($userRole === 'acc') {
-            $specialAccCodes = ['68091', '65002', '66504', '67465', '62169', '67487', '68263_ACC'];
+            $specialAccCodes = ['68091', '65002', '66504', '67465', '62169', '67487', '68263_ACC', '69024'];
             if (in_array($user->user_code, $specialAccCodes)) {
                 $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
                     ->whereNotIn('is_code_cust_id', ['68263', '2760801005', '67132', 'How', '1760201010-V', '3062027-Q'])
@@ -433,7 +435,8 @@ class SpareClaimController extends Controller
             ->when($searchTerm, function ($q) use ($searchTerm) {
                 $q->where(function ($sub) use ($searchTerm) {
                     // ค้นหาจากเลขที่ใบเคลมหลัก
-                    $sub->where('claim_id', 'like', "%{$searchTerm}%")
+                    $sub
+                        ->where('claim_id', 'like', "%{$searchTerm}%")
                         // ค้นหาลึกลงไปในรายการอะไหล่ ว่ามี Job ID นี้หรือไม่
                         ->orWhereHas('list', function ($detailQuery) use ($searchTerm) {
                             $detailQuery->where('job_id', 'like', "%{$searchTerm}%");
@@ -477,7 +480,7 @@ class SpareClaimController extends Controller
             //     }
             // })
             ->where(function ($query) use ($user, $isSale, $selectedShop, $selectedShops, $selectedArea, $shops, $userRole) {
-                $specialAccCodes = ['68091', '65002', '66504', '67465', '62169', '67487', '68263_ACC'];
+                $specialAccCodes = ['68091', '65002', '66504', '67465', '62169', '67487', '68263_ACC', '69024'];
                 $isSpecialAcc = in_array($user->user_code, $specialAccCodes);
                 // --- กรณีเป็น ACC (บัญชี) ---
                 if ($userRole === 'acc') {
@@ -516,7 +519,7 @@ class SpareClaimController extends Controller
                 }
             })
             ->orderByDesc('created_at')
-            ->paginate(10) // ทำ Pagination หน้าละ 10 รายการ
+            ->paginate(10)  // ทำ Pagination หน้าละ 10 รายการ
             ->withQueryString();
 
         // 3. ปรับแต่งข้อมูล (Map ข้อมูลที่จำเป็นลงในแต่ละแถว)
@@ -541,7 +544,7 @@ class SpareClaimController extends Controller
                 ->orderByDesc('created_at')
                 ->first();
 
-            $h['acc_status'] = $accReturn ? $accReturn->status : null; // active, complete, partial
+            $h['acc_status'] = $accReturn ? $accReturn->status : null;  // active, complete, partial
             $h['acc_remark'] = $accReturn ? $accReturn->remark : null;
             $h['acc_job_no'] = $accReturn ? $accReturn->return_job_no : null;
             $h['acc_receive_date'] = $accReturn ? $accReturn->account_receive_date : null;
@@ -585,7 +588,7 @@ class SpareClaimController extends Controller
             'currentSale' => $currentSale,
             'filters' => [
                 'shop' => $selectedShop,
-                'shops' => $selectedShops, // multi-select shops (admin)
+                'shops' => $selectedShops,  // multi-select shops (admin)
                 'area' => $selectedArea,
                 'receive_status' => $selectedReceiveStatus,
                 'status' => $selectedStatus,
@@ -606,17 +609,17 @@ class SpareClaimController extends Controller
         $userRole = $user->role;
         $isSale = session('is_sales_rep', false) || $user->role === 'sale';
 
-        $selectedShop   = $request->query('shop');
-        $selectedShops  = array_values(array_filter((array) $request->query('shops', [])));
-        $selectedArea   = $request->query('area');
+        $selectedShop = $request->query('shop');
+        $selectedShops = array_values(array_filter((array) $request->query('shops', [])));
+        $selectedArea = $request->query('area');
         $selectedStatus = $request->query('status');
         $selectedReceiveStatus = $request->query('receive_status');
         $selectedAccStatus = $request->query('acc_status');
-        $dateFrom       = $request->query('date_from');
-        $dateTo         = $request->query('date_to');
-        $searchTerm     = $request->query('search');
+        $dateFrom = $request->query('date_from');
+        $dateTo = $request->query('date_to');
+        $searchTerm = $request->query('search');
 
-        $specialAccCodes = ['68091', '65002', '66504', '67465', '62169', '67487', '68263_ACC'];
+        $specialAccCodes = ['68091', '65002', '66504', '67465', '62169', '67487', '68263_ACC', '69024'];
         $isSpecialAcc = in_array($user->user_code, $specialAccCodes);
 
         $claims = Claim::query()
@@ -633,7 +636,8 @@ class SpareClaimController extends Controller
                 'sale_information.name as sale_name',
             )
             ->when($searchTerm, fn($q) => $q->where(function ($sub) use ($searchTerm) {
-                $sub->where('claims.claim_id', 'like', "%{$searchTerm}%")
+                $sub
+                    ->where('claims.claim_id', 'like', "%{$searchTerm}%")
                     ->orWhereHas('list', fn($d) => $d->where('job_id', 'like', "%{$searchTerm}%"))
                     ->orWhereHas('returnHeaders', fn($r) => $r->where('return_job_no', 'like', "%{$searchTerm}%"));
             }))
@@ -709,7 +713,7 @@ class SpareClaimController extends Controller
         $row = 2;
         foreach ($claims as $claim) {
             $sheet->setCellValue("A{$row}", $claim->claim_id);
-            $sheet->setCellValue("B{$row}", ''); // DINo placeholder
+            $sheet->setCellValue("B{$row}", '');  // DINo placeholder
             $sheet->setCellValue("C{$row}", $claim->created_at ? $claim->created_at->format('d/m/Y') : '');
             $sheet->setCellValue("D{$row}", $claim->updated_at ? $claim->updated_at->format('d/m/Y') : '');
             $sheet->setCellValue("E{$row}", $claim->user_id);
@@ -754,7 +758,7 @@ class SpareClaimController extends Controller
         $shopResponse = Http::withToken($token)
             ->asMultipart()
             ->post($dataUrl, [
-                'sale_code' => $saleCode, // รหัสเซลล์ที่ต้องการค้นหา
+                'sale_code' => $saleCode,  // รหัสเซลล์ที่ต้องการค้นหา
                 // 'search' => '' // ส่งค่าว่างหรือตัดออกถ้าไม่ใช้
             ]);
 
@@ -848,8 +852,8 @@ class SpareClaimController extends Controller
         $request->validate([
             'claim_id' => 'required|exists:claims,claim_id',
             'items' => 'required|array',
-            'items.*.id' => 'required', // id ของ claim_details
-            'items.*.qty' => 'required|numeric|min:1', // จำนวนที่รับในรอบนี้
+            'items.*.id' => 'required',  // id ของ claim_details
+            'items.*.qty' => 'required|numeric|min:1',  // จำนวนที่รับในรอบนี้
             'images' => 'required|array',
             'images.*' => 'image|max:10240',
             'remark' => 'nullable|string'
@@ -864,14 +868,14 @@ class SpareClaimController extends Controller
                 throw new \Exception('ไม่พบข้อมูล Claim ID');
             }
 
-            $shortClaimId = str_replace('C-', '', $request->claim_id); // ตัด C- ออกถ้ามี
+            $shortClaimId = str_replace('C-', '', $request->claim_id);  // ตัด C- ออกถ้ามี
             $returnJobNo = 'RT-' . $shortClaimId . '-' . rand(1000, 9999);
 
             $returnHeader = SpareReturnHeader::create([
                 'return_job_no' => $returnJobNo,
                 'claim_id' => $claim->claim_id,
                 'receive_by_sale' => Auth::user()->user_code,
-                'status' => 'active', // รอให้บัญชีตรวจสอบ
+                'status' => 'active',  // รอให้บัญชีตรวจสอบ
                 // 'remark' => $request->remark
                 'remark' => ''
             ]);
@@ -883,8 +887,8 @@ class SpareClaimController extends Controller
                 $detail = ClaimDetail::where('id', $item['id'])->lockForUpdate()->first();
 
                 if ($detail) {
-                    $qtyToReceive = $item['qty']; // จำนวนที่รับในรอบนี้
-                    $newTotalRcQty = $detail->rc_qty + $qtyToReceive; // ยอดสะสมเดิม + ยอดใหม่
+                    $qtyToReceive = $item['qty'];  // จำนวนที่รับในรอบนี้
+                    $newTotalRcQty = $detail->rc_qty + $qtyToReceive;  // ยอดสะสมเดิม + ยอดใหม่
 
                     // ป้องกันการรับเกิน
                     if ($newTotalRcQty > $detail->qty) {
@@ -917,17 +921,17 @@ class SpareClaimController extends Controller
             $totalQty = $allDetails->sum('qty');
             $totalReceived = $allDetails->sum('rc_qty');
 
-            $status = 'N'; // Active
+            $status = 'N';  // Active
             if ($totalReceived >= $totalQty) {
-                $status = 'Y'; // Complete
+                $status = 'Y';  // Complete
             } elseif ($totalReceived > 0) {
-                $status = 'P'; // Partial
+                $status = 'P';  // Partial
             }
 
             // อัปเดตสถานะหลักที่ตาราง claims
             $claim->update([
                 'receive_status' => $status,
-                'receive_by' => Auth::user()->user_code, // อัปเดตคนล่าสุดที่ทำรายการ
+                'receive_by' => Auth::user()->user_code,  // อัปเดตคนล่าสุดที่ทำรายการ
                 'updated_at' => now()
             ]);
 
@@ -979,7 +983,8 @@ class SpareClaimController extends Controller
 
     public function pendingShow(): Response
     {
-        $list = Claim::query()->leftJoin('claim_details', 'claim_details.claim_id', '=', 'claims.claim_id')
+        $list = Claim::query()
+            ->leftJoin('claim_details', 'claim_details.claim_id', '=', 'claims.claim_id')
             ->leftJoin('job_lists', 'claim_details.job_id', '=', 'job_lists.job_id')
             ->leftJoin('customer_in_jobs', 'job_lists.job_id', '=', 'customer_in_jobs.job_id')
             ->where('claim_details.status', 'pending')
@@ -1004,7 +1009,7 @@ class SpareClaimController extends Controller
         ]);
     }
 
-    //เพิ่มฟังก์ชั่น Check Status Order
+    // เพิ่มฟังก์ชั่น Check Status Order
     // public function checkStatusClaim(Request $request): JsonResponse
     // {
     //     $claim_id = $request->input('claim_id');
