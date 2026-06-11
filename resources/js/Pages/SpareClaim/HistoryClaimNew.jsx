@@ -44,6 +44,7 @@ import {
     Search,
     Info as InfoIcon,
     Refresh,
+    FileDownload,
 } from "@mui/icons-material";
 import axios from "axios";
 import { DateFormatTh } from "@/Components/DateFormat.jsx";
@@ -310,7 +311,7 @@ const Row = ({
                                                             size="small"
                                                             value={
                                                                 itemQuantities[
-                                                                    detail.id
+                                                                detail.id
                                                                 ] || ""
                                                             }
                                                             onChange={(e) =>
@@ -946,6 +947,7 @@ export default function HistoryClaimNew({
     areas,
     currentSale,
     userRole,
+    userCode,
 }) {
     const isMobile = useMediaQuery("(max-width:600px)");
 
@@ -1003,6 +1005,8 @@ export default function HistoryClaimNew({
     const [processing, setProcessing] = useState(false);
     const [search, setSearch] = useState(filters?.search || "");
     const [shopSearch, setShopSearch] = useState(filters?.shop || "");
+    const [dateFrom, setDateFrom] = useState(filters?.date_from || "");
+    const [dateTo, setDateTo] = useState(filters?.date_to || "");
 
     const [anchorEl, setAnchorEl] = useState(null);
 
@@ -1196,11 +1200,15 @@ export default function HistoryClaimNew({
 
     const isAcc = userRole === "acc";
     const canReceive = userRole === "admin" || userRole === "sale" || isAcc;
+    const ALLOWED_CODES = ["68091", "65002", "66504", "67465", "62169", "67487", "68263_ACC"];
+    const canSeeSpecialCol = ALLOWED_CODES.includes(userCode);
     const canSee =
         userRole === "admin" || userRole === "sale" || userRole === "acc";
     const handleClearFilters = () => {
-        setShopSearch(""); // ล้างค่าในช่องกรอกรหัสร้าน
-        setSearch(""); // ล้างค่าในช่องค้นหาเลขที่เอกสาร
+        setShopSearch("");
+        setSearch("");
+        setDateFrom("");
+        setDateTo("");
         router.get(
             route("spareClaim.history"),
             {
@@ -1210,6 +1218,8 @@ export default function HistoryClaimNew({
                 receive_status: "all",
                 status: "",
                 acc_status: "",
+                date_from: "",
+                date_to: "",
             },
             {
                 preserveState: true,
@@ -1254,28 +1264,35 @@ export default function HistoryClaimNew({
                 <TableHead sx={TABLE_HEADER_STYLE}>
                     <TableRow>
                         <TableCell>เลขที่เอกสารเคลม</TableCell>
+                        <TableCell align="center">เลขที่ DINo</TableCell>
+                        {canSee && <TableCell>ชื่อร้านค้า</TableCell>}
                         <TableCell>วันที่แจ้งเคลม</TableCell>
                         <TableCell>วันที่อัพเดท</TableCell>
-                        {userRole !== "acc" && (
+                        {/* {userRole !== "acc" && (
                             <TableCell>
                                 สถานะเคลมอะไหล่
                             </TableCell>
-                        )}
-                        <TableCell align="center">
-                            สถานะเซลล์รับคืนอะไหล่
+                        )} */}
+                        <TableCell>
+                            สถานะเคลมอะไหล่
                         </TableCell>
-                        {canSee && (
+                        {!canSeeSpecialCol && (
+                            <TableCell align="center">
+                                สถานะเซลล์รับคืนอะไหล่
+                            </TableCell>
+                        )}
+                        {canSee && !canSeeSpecialCol && (
                             <TableCell align="center">เลขที่ใบ RT</TableCell>
                         )}
-                        {canSee && (
+                        {canSee && !canSeeSpecialCol && (
                             <TableCell align="center">
                                 สถานะบัญชีรับอะไหล่
                             </TableCell>
                         )}
-                        {userRole !== "acc" && (
+                        {(userRole !== "acc" || canSeeSpecialCol) && (
                             <TableCell align="center">#</TableCell>
                         )}
-                        {canReceive && (
+                        {canReceive && !canSeeSpecialCol && (
                             <TableCell align="center">รับอะไหล่</TableCell>
                         )}
                     </TableRow>
@@ -1290,20 +1307,35 @@ export default function HistoryClaimNew({
                         return (
                             <TableRow key={item.id}>
                                 <TableCell>{item.claim_id}</TableCell>
+                                <TableCell align="center">
+                                    <Typography variant="body2" color="text.disabled">
+                                        {item.di_no || "-"}
+                                    </Typography>
+                                </TableCell>
+                                {canSee && (
+                                    <TableCell>
+                                        <Typography variant="body2" fontWeight="bold" noWrap>
+                                            {item.shop_name}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary" noWrap>
+                                            {item.user_id}
+                                        </Typography>
+                                    </TableCell>
+                                )}
                                 <TableCell>
                                     {DateFormatTh({ date: item.created_at })}
                                 </TableCell>
                                 <TableCell>
                                     {DateFormatTh({ date: item.updated_at })}
                                 </TableCell>
-                                {userRole !== "acc" && (
-                                    <TableCell>
-                                        <Box
-                                            display="flex"
-                                            alignItems="center"
-                                            gap={1}
-                                        >
-                                            {/* <Button
+                                {/* {userRole !== "acc" && ( */}
+                                <TableCell>
+                                    <Box
+                                        display="flex"
+                                        alignItems="center"
+                                        gap={1}
+                                    >
+                                        {/* <Button
                                                 color="info"
                                                 size="small"
                                                 onClick={() =>
@@ -1333,29 +1365,31 @@ export default function HistoryClaimNew({
                                                     "เช็คสถานะ"
                                                 )}
                                             </Button> */}
-                                            <StatusClaim status={item.status} />
-                                        </Box>
+                                        <StatusClaim status={item.status} />
+                                    </Box>
+                                </TableCell>
+                                {/* )} */}
+                                {!canSeeSpecialCol && (
+                                    <TableCell align="center">
+                                        <ReceiveStatusChip
+                                            status={item.receive_status || "N"}
+                                        />
                                     </TableCell>
                                 )}
-                                <TableCell align="center">
-                                    <ReceiveStatusChip
-                                        status={item.receive_status || "N"}
-                                    />
-                                </TableCell>
-                                {canSee && (
+                                {canSee && !canSeeSpecialCol && (
                                     <TableCell align="center">
                                         {/* ส่งค่า item.acc_job_no เข้าไปใน prop ชื่อ jobNo */}
                                         <RTCHIP jobNo={item.acc_job_no} />
                                     </TableCell>
                                 )}
-                                {canSee && (
+                                {canSee && !canSeeSpecialCol && (
                                     <TableCell TableCell align="center">
                                         <AccountStatusChip
                                             status={item.acc_status}
                                         />
                                     </TableCell>
                                 )}
-                                {userRole !== "acc" && (
+                                {(userRole !== "acc" || canSeeSpecialCol) && (
                                     <TableCell align="center">
                                         <Button
                                             onClick={() =>
@@ -1379,7 +1413,7 @@ export default function HistoryClaimNew({
                                         {isReceived ? 'ดูข้อมูล' : 'รับอะไหล่'}
                                     </Button>
                                 </TableCell> */}
-                                {canReceive && (
+                                {canReceive && !canSeeSpecialCol && (
                                     <TableCell align="center">
                                         <Button
                                             onClick={() =>
@@ -1455,7 +1489,26 @@ export default function HistoryClaimNew({
                                             {item.claim_id}
                                         </Typography>
                                     </BoxComponent>
+                                    <BoxComponent>
+                                        <Typography variant="subtitle2" sx={{ color: "text.secondary" }}>
+                                            เลขที่ DINo
+                                        </Typography>
+                                        <Typography variant="body2" color="text.disabled">
+                                            {item.di_no || "-"}
+                                        </Typography>
+                                    </BoxComponent>
                                     <Divider sx={{ my: 1 }} />
+                                    {canSee && (
+                                        <BoxComponent>
+                                            <Typography variant="subtitle2" sx={{ color: "text.secondary" }}>
+                                                ร้านค้า
+                                            </Typography>
+                                            <Box textAlign="right">
+                                                <Typography variant="body2" fontWeight="bold">{item.shop_name}</Typography>
+                                                <Typography variant="caption" color="text.secondary">{item.user_id}</Typography>
+                                            </Box>
+                                        </BoxComponent>
+                                    )}
                                     <BoxComponent>
                                         <Typography
                                             variant="subtitle2"
@@ -1495,7 +1548,7 @@ export default function HistoryClaimNew({
                                                 }
                                             >
                                                 {loadingClaimId ===
-                                                item.claim_id ? (
+                                                    item.claim_id ? (
                                                     <CircularProgress
                                                         size={16}
                                                         color="inherit"
@@ -1562,7 +1615,7 @@ export default function HistoryClaimNew({
                                     >
                                         รายละเอียด
                                     </Button>
-                                    {canReceive && (
+                                    {canReceive && !canSeeSpecialCol && (
                                         <Button
                                             onClick={() =>
                                                 handleOpenReceiveModal(item)
@@ -1594,7 +1647,7 @@ export default function HistoryClaimNew({
     }
 
     return (
-        <LayoutClaim headTitle={"ประวัติเคลม"}>
+        <LayoutClaim headTitle={"ประวัติเคลม"} userCode={userCode}>
             <Grid2 container spacing={2}>
                 <Grid2 size={12}>
                     <Paper
@@ -1660,9 +1713,10 @@ export default function HistoryClaimNew({
                         )} */}
 
                         {/* ส่วนการกรองร้านค้า */}
+                        {/* ถ้าเป็น canSeeSpecialCol ให้ใช้ Autocomplete แบบ multi-select */}
                         {userRole !== "service" && (
-                            <Box sx={{ minWidth: userRole === "acc" ? "250px" : "380px" }}>
-                                {userRole === "acc" ? (
+                            <Box sx={{ minWidth: userRole === "acc" && !canSeeSpecialCol ? "250px" : "380px" }}>
+                                {userRole === "acc" && !canSeeSpecialCol ? (
                                     // สำหรับ Accounting: ใช้ TextField เพื่อกรอกรหัสร้านค้าโดยตรง
                                     <TextField
                                         label="กรอกรหัสร้านค้า (IS-CODE)"
@@ -1706,10 +1760,10 @@ export default function HistoryClaimNew({
                                         options={
                                             filters?.area
                                                 ? shops.filter(
-                                                      (s) =>
-                                                          s.sale_area_code ===
-                                                          filters.area,
-                                                  )
+                                                    (s) =>
+                                                        s.sale_area_code ===
+                                                        filters.area,
+                                                )
                                                 : shops || []
                                         }
                                         getOptionLabel={(option) =>
@@ -1745,7 +1799,7 @@ export default function HistoryClaimNew({
                                                 label="เลือกร้านค้า (เลือกได้หลายร้าน)"
                                                 placeholder={
                                                     selectedShopsData.length ===
-                                                    0
+                                                        0
                                                         ? "พิมพ์เพื่อค้นหา..."
                                                         : ""
                                                 }
@@ -1810,7 +1864,7 @@ export default function HistoryClaimNew({
                                 fullWidth
                             />
                         </Box>
-                        {userRole !== "acc" && (
+                        {(userRole !== "acc" || canSeeSpecialCol) && (
                             <Box sx={{ minWidth: "200px" }}>
                                 <Autocomplete
                                     options={statusOptions}
@@ -1840,35 +1894,37 @@ export default function HistoryClaimNew({
                                 />
                             </Box>
                         )}
-                        <Box sx={{ minWidth: "150px" }}>
-                            <Autocomplete
-                                options={receiveStatusOptions}
-                                getOptionLabel={(option) => option.label}
-                                value={
-                                    receiveStatusOptions.find(
-                                        (opt) =>
-                                            opt.value ===
-                                            (filters?.receive_status || "all"),
-                                    ) || receiveStatusOptions[0]
-                                }
-                                onChange={(e, newValue) =>
-                                    handleFilterChange(
-                                        "receive_status",
-                                        newValue ? newValue.value : "all",
-                                    )
-                                }
-                                size="small"
-                                disableClearable
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        label="สถานะรับอะไหล่"
-                                        placeholder="ทั้งหมด"
-                                    />
-                                )}
-                            />
-                        </Box>
-                        {canSee && (
+                        {!canSeeSpecialCol && (
+                            <Box sx={{ minWidth: "150px" }}>
+                                <Autocomplete
+                                    options={receiveStatusOptions}
+                                    getOptionLabel={(option) => option.label}
+                                    value={
+                                        receiveStatusOptions.find(
+                                            (opt) =>
+                                                opt.value ===
+                                                (filters?.receive_status || "all"),
+                                        ) || receiveStatusOptions[0]
+                                    }
+                                    onChange={(e, newValue) =>
+                                        handleFilterChange(
+                                            "receive_status",
+                                            newValue ? newValue.value : "all",
+                                        )
+                                    }
+                                    size="small"
+                                    disableClearable
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            label="สถานะรับอะไหล่"
+                                            placeholder="ทั้งหมด"
+                                        />
+                                    )}
+                                />
+                            </Box>
+                        )}
+                        {canSee && !canSeeSpecialCol && (
                             <Box sx={{ minWidth: "180px" }}>
                                 <Autocomplete
                                     options={accStatusOptions}
@@ -1897,12 +1953,52 @@ export default function HistoryClaimNew({
                                 />
                             </Box>
                         )}
+                        <TextField
+                            label="วันที่เริ่มต้น"
+                            type="date"
+                            size="small"
+                            value={dateFrom}
+                            onChange={(e) => {
+                                setDateFrom(e.target.value);
+                                handleFilterChange("date_from", e.target.value);
+                            }}
+                            slotProps={{ inputLabel: { shrink: true } }}
+                            sx={{ minWidth: "160px" }}
+                        />
+                        <TextField
+                            label="วันที่สิ้นสุด"
+                            type="date"
+                            size="small"
+                            value={dateTo}
+                            onChange={(e) => {
+                                setDateTo(e.target.value);
+                                handleFilterChange("date_to", e.target.value);
+                            }}
+                            slotProps={{ inputLabel: { shrink: true } }}
+                            sx={{ minWidth: "160px" }}
+                        />
+                        {canSee && (
+                            <Button
+                                variant="contained"
+                                size="small"
+                                color="success"
+                                startIcon={<FileDownload />}
+                                href={route("spareClaim.history.export", {
+                                    ...filters,
+                                    search,
+                                })}
+                                target="_blank"
+                                sx={{ height: "38px", borderRadius: 1, whiteSpace: "nowrap" }}
+                            >
+                                Export Excel
+                            </Button>
+                        )}
                         <Button
                             variant="outlined"
                             size="small"
                             color="error"
                             onClick={() => {
-                                setSearch(""); // ล้าง State ในเครื่องด้วย
+                                setSearch(""); // ล้าง State ในเครื่องด้วย 
                                 handleClearFilters();
                             }}
                             sx={{ height: "38px", borderRadius: 1 }}

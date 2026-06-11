@@ -15,14 +15,18 @@ use App\Models\SpareReturnHeader;
 use App\Models\StoreInformation;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Inertia\Inertia;
-use Inertia\Response;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
+use Inertia\Response;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class SpareClaimController extends Controller
 {
@@ -71,7 +75,7 @@ class SpareClaimController extends Controller
             ->orderByDesc('spare_parts.created_at')
             ->get();
 
-        // 2. เคลมปกติ (ไม่ใช่เคลมด่วน แต่ job ปิดงานแล้ว) 
+        // 2. เคลมปกติ (ไม่ใช่เคลมด่วน แต่ job ปิดงานแล้ว)
         $normalParts = SparePart::query()
             ->leftJoin('job_lists', 'spare_parts.job_id', '=', 'job_lists.job_id')
             ->select('spare_parts.*', 'job_lists.status as job_status', 'job_lists.is_code_key')
@@ -147,15 +151,16 @@ class SpareClaimController extends Controller
             }
             $store_info = StoreInformation::query()->where('is_code_cust_id', Auth::user()->is_code_cust_id)->first();
             $text_claim_id = "รหัสเอกสารเคลม : $claim_id";
-            $text = "ศูนย์ซ่อม : " . $store_info->shop_name . "\n$text_claim_id" . "\nแจ้งเรื่อง : เคลมอะไหล่\nรายการ :\n\n" . implode("\n", $items);
+            $text = 'ศูนย์ซ่อม : ' . $store_info->shop_name . "\n$text_claim_id" . "\nแจ้งเรื่อง : เคลมอะไหล่\nรายการ :\n\n" . implode("\n", $items);
             $token_lark = StoreInformation::query()
                 ->leftJoin('sale_information', 'sale_information.sale_code', 'store_information.sale_id')
                 ->where('store_information.is_code_cust_id', Auth::user()->is_code_cust_id)
-                ->select('sale_information.lark_token')->first();
+                ->select('sale_information.lark_token')
+                ->first();
             $body = [
-                "receive_id" => $token_lark->lark_token,
-                "msg_type" => "text",
-                "content" => json_encode(["text" => $text], JSON_UNESCAPED_UNICODE)
+                'receive_id' => $token_lark->lark_token,
+                'msg_type' => 'text',
+                'content' => json_encode(['text' => $text], JSON_UNESCAPED_UNICODE)
             ];
             $response = Http::post('https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal', [
                 'app_id' => env('VITE_LARK_APP_ID'),
@@ -358,6 +363,8 @@ class SpareClaimController extends Controller
         $selectedStatus = $request->query('status');
         // เพิ่มการรับค่า Filter สถานะบัญชี
         $selectedAccStatus = $request->query('acc_status');
+        $dateFrom = $request->query('date_from');
+        $dateTo = $request->query('date_to');
 
         $isSale = session('is_sales_rep', false) || $user->role === 'sale';
         $currentSale = null;
@@ -403,12 +410,20 @@ class SpareClaimController extends Controller
                     'sale_area_name' => $item['sale_area_name']
                 ])->values();
             } catch (\Exception $e) {
-                Log::error("Failed to fetch sales shops: " . $e->getMessage());
+                Log::error('Failed to fetch sales shops: ' . $e->getMessage());
             }
         } else if ($userRole === 'acc') {
-            // สำหรับบัญชี ไม่ต้องส่ง $shops ไปทั้งหมด (ส่งเป็นค่าว่าง) 
-            // เพราะเราจะใช้การพิมพ์รหัสแล้วกด Enter เพื่อกรองแทน
-            $shops = [];
+            $specialAccCodes = ['68091', '65002', '66504', '67465', '62169', '67487', '68263_ACC'];
+            if (in_array($user->user_code, $specialAccCodes)) {
+                $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
+                    ->whereNotIn('is_code_cust_id', ['68263', '2760801005', '67132', 'How', '1760201010-V', '3062027-Q'])
+                    ->orderBy('shop_name')
+                    ->get();
+                $selectedShops = array_values(array_filter((array) $request->query('shops', [])));
+            } else {
+                // สำหรับบัญชีทั่วไป: ใช้การพิมพ์รหัสแล้วกด Enter เพื่อกรองแทน
+                $shops = [];
+            }
         } else {
             $selectedShop = $user->is_code_cust_id;
         }
@@ -432,6 +447,8 @@ class SpareClaimController extends Controller
                 return $q->where('receive_status', $selectedReceiveStatus);
             })
             ->when($selectedStatus, fn($q, $s) => $q->where('status', $s))
+            ->when($dateFrom, fn($q) => $q->whereDate('created_at', '>=', $dateFrom))
+            ->when($dateTo, fn($q) => $q->whereDate('created_at', '<=', $dateTo))
             // กรองตามสถานะบัญชี (ตรวจสอบข้ามตาราง spare_return_headers)
             ->when($selectedAccStatus, function ($q) use ($selectedAccStatus) {
                 return $q->whereHas('returnHeaders', function ($subQuery) use ($selectedAccStatus) {
@@ -460,11 +477,16 @@ class SpareClaimController extends Controller
             //     }
             // })
             ->where(function ($query) use ($user, $isSale, $selectedShop, $selectedShops, $selectedArea, $shops, $userRole) {
+                $specialAccCodes = ['68091', '65002', '66504', '67465', '62169', '67487', '68263_ACC'];
+                $isSpecialAcc = in_array($user->user_code, $specialAccCodes);
                 // --- กรณีเป็น ACC (บัญชี) ---
                 if ($userRole === 'acc') {
                     // ให้ดูได้ทุกร้าน ยกเว้นร้าน IS-CODE-001415445
                     $query->where('user_id', '!=', 'IS-CODE-001415445');
-                    if ($selectedShop) {
+                    if ($isSpecialAcc && !empty($selectedShops)) {
+                        // special acc เลือกร้านแบบ multi-select
+                        $query->whereIn('user_id', $selectedShops);
+                    } elseif ($selectedShop) {
                         $query->where('user_id', 'like', "%{$selectedShop}%");
                     }
                 }
@@ -498,7 +520,12 @@ class SpareClaimController extends Controller
             ->withQueryString();
 
         // 3. ปรับแต่งข้อมูล (Map ข้อมูลที่จำเป็นลงในแต่ละแถว)
-        $history->through(function ($h) {
+        // Pre-fetch shop names เพื่อไม่ให้เกิด N+1
+        $shopNames = StoreInformation::whereIn('is_code_cust_id', $history->pluck('user_id'))
+            ->pluck('shop_name', 'is_code_cust_id');
+
+        $history->through(function ($h) use ($shopNames) {
+            $h['shop_name'] = $shopNames[$h->user_id] ?? $h->user_id;
             // ดึงรายการสินค้า และ Map ยอดรับจริงจากฝั่งบัญชี (account_rc_qty)
             $h['list'] = ClaimDetail::where('claim_id', $h->claim_id)->get()->map(function ($detail) {
                 $accDetail = SpareReturnDetail::where('claim_detail_id', $detail->id)
@@ -529,7 +556,7 @@ class SpareClaimController extends Controller
                     ->filter(fn($e) => !empty($e->remark))
                     ->unique('remark')
                     ->map(function ($e) {
-                        return "[" . $e->created_at->format('d/m/Y H:i') . "] : " . $e->remark;
+                        return '[' . $e->created_at->format('d/m/Y H:i') . '] : ' . $e->remark;
                     })
                     ->implode("\n");
 
@@ -563,10 +590,149 @@ class SpareClaimController extends Controller
                 'receive_status' => $selectedReceiveStatus,
                 'status' => $selectedStatus,
                 'acc_status' => $selectedAccStatus,
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
                 'search' => $searchTerm,
             ],
             'userRole' => $user->role,
-            'isAdmin' => $user->role === 'admin' || $isSale
+            'isAdmin' => $user->role === 'admin' || $isSale,
+            'userCode' => auth()->user()->user_code,
+        ]);
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $user = Auth::user();
+        $userRole = $user->role;
+        $isSale = session('is_sales_rep', false) || $user->role === 'sale';
+
+        $selectedShop   = $request->query('shop');
+        $selectedShops  = array_values(array_filter((array) $request->query('shops', [])));
+        $selectedArea   = $request->query('area');
+        $selectedStatus = $request->query('status');
+        $selectedReceiveStatus = $request->query('receive_status');
+        $selectedAccStatus = $request->query('acc_status');
+        $dateFrom       = $request->query('date_from');
+        $dateTo         = $request->query('date_to');
+        $searchTerm     = $request->query('search');
+
+        $specialAccCodes = ['68091', '65002', '66504', '67465', '62169', '67487', '68263_ACC'];
+        $isSpecialAcc = in_array($user->user_code, $specialAccCodes);
+
+        $claims = Claim::query()
+            ->leftJoin('store_information', 'claims.user_id', '=', 'store_information.is_code_cust_id')
+            ->leftJoin('sale_information', 'store_information.sale_id', '=', 'sale_information.sale_code')
+            ->select(
+                'claims.claim_id',
+                'claims.created_at',
+                'claims.updated_at',
+                'claims.status',
+                'claims.user_id',
+                'store_information.shop_name',
+                'store_information.sale_id as sale_code',
+                'sale_information.name as sale_name',
+            )
+            ->when($searchTerm, fn($q) => $q->where(function ($sub) use ($searchTerm) {
+                $sub->where('claims.claim_id', 'like', "%{$searchTerm}%")
+                    ->orWhereHas('list', fn($d) => $d->where('job_id', 'like', "%{$searchTerm}%"))
+                    ->orWhereHas('returnHeaders', fn($r) => $r->where('return_job_no', 'like', "%{$searchTerm}%"));
+            }))
+            ->when($selectedReceiveStatus && $selectedReceiveStatus !== 'all', fn($q) => $q->where('claims.receive_status', $selectedReceiveStatus))
+            ->when($selectedStatus, fn($q) => $q->where('claims.status', $selectedStatus))
+            ->when($dateFrom, fn($q) => $q->whereDate('claims.created_at', '>=', $dateFrom))
+            ->when($dateTo, fn($q) => $q->whereDate('claims.created_at', '<=', $dateTo))
+            ->when($selectedAccStatus, fn($q) => $q->whereHas('returnHeaders', fn($sub) => $sub->where('status', $selectedAccStatus)))
+            ->where(function ($query) use ($user, $userRole, $isSale, $selectedShop, $selectedShops, $selectedArea, $isSpecialAcc) {
+                if ($userRole === 'acc') {
+                    $query->where('claims.user_id', '!=', 'IS-CODE-001415445');
+                    if ($isSpecialAcc && !empty($selectedShops)) {
+                        $query->whereIn('claims.user_id', $selectedShops);
+                    } elseif ($selectedShop) {
+                        $query->where('claims.user_id', 'like', "%{$selectedShop}%");
+                    }
+                } elseif ($userRole === 'admin') {
+                    if (!empty($selectedShops)) {
+                        $query->whereIn('claims.user_id', $selectedShops);
+                    }
+                } elseif ($isSale) {
+                    if ($selectedShop) {
+                        $query->where('claims.user_id', $selectedShop);
+                    } else {
+                        // จำกัดเฉพาะร้านที่ sale ดูแล (ป้องกัน export ข้อมูลทั้งหมด)
+                        $query->where('claims.user_id', 'none');
+                    }
+                } else {
+                    $query->where('claims.user_id', $user->is_code_cust_id);
+                }
+            })
+            ->orderByDesc('claims.created_at')
+            ->get();
+
+        $statusMap = [
+            'pending' => 'กำลังตรวจสอบคำขอเคลม',
+            'รอรับงานซ่อม' => 'กำลังตรวจสอบคำขอเคลม',
+            'พักงานซ่อม' => 'กำลังตรวจสอบคำขอเคลม',
+            'กำลังซ่อม' => 'กำลังตรวจสอบคำขอเคลม',
+            'รอปิดงานซ่อม' => 'กำลังตรวจสอบคำขอเคลม',
+            'เปิดออเดอร์แล้ว' => 'อนุมัติคำสั่งส่งเคลม',
+            'รอเปิดSO' => 'อนุมัติคำสั่งส่งเคลม',
+            'approved' => 'อนุมัติคำสั่งส่งเคลม',
+            'rejected' => 'ไม่อนุมัติ',
+            'กำลังจัดสินค้า' => 'กำลังจัดเตรียมสินค้า',
+            'แพ็คสินค้าเสร็จ' => 'กำลังจัดเตรียมสินค้า',
+            'พร้อมส่ง' => 'กำลังจัดเตรียมสินค้า',
+            'กำลังจัดเตรียมสินค้า' => 'กำลังจัดเตรียมสินค้า',
+            'กำลังส่ง' => 'อยู่ระหว่างจัดส่ง',
+            'เตรียมส่ง' => 'อยู่ระหว่างจัดส่ง',
+            'อยู่ระหว่างจัดส่ง' => 'อยู่ระหว่างจัดส่ง',
+            'บัญชีรับงานแล้ว' => 'จัดส่งสำเร็จ',
+            'ส่งของแล้ว' => 'จัดส่งสำเร็จ',
+            'จัดส่งสำเร็จ' => 'จัดส่งสำเร็จ',
+        ];
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('ประวัติเคลมอะไหล่');
+
+        // Header row
+        $headers = ['เลขที่เอกสารเคลม', 'เลขที่ DINo', 'วันที่แจ้งเคลม', 'วันที่อัพเดท', 'รหัสร้านค้า', 'ชื่อร้านค้า', 'รหัสเซลล์', 'ชื่อเซลล์', 'สถานะเคลมอะไหล่'];
+        $sheet->fromArray($headers, null, 'A1');
+
+        $sheet->getStyle('A1:I1')->applyFromArray([
+            'font' => ['bold' => true, 'name' => 'Angsana New', 'size' => 14],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF4472C4']],
+        ]);
+        $sheet->getStyle('A1:I1')->getFont()->getColor()->setARGB('FFFFFFFF');
+        $sheet->getRowDimension(1)->setRowHeight(25);
+
+        $row = 2;
+        foreach ($claims as $claim) {
+            $sheet->setCellValue("A{$row}", $claim->claim_id);
+            $sheet->setCellValue("B{$row}", ''); // DINo placeholder
+            $sheet->setCellValue("C{$row}", $claim->created_at ? $claim->created_at->format('d/m/Y') : '');
+            $sheet->setCellValue("D{$row}", $claim->updated_at ? $claim->updated_at->format('d/m/Y') : '');
+            $sheet->setCellValue("E{$row}", $claim->user_id);
+            $sheet->setCellValue("F{$row}", $claim->shop_name ?? '-');
+            $sheet->setCellValue("G{$row}", $claim->sale_code ?? '-');
+            $sheet->setCellValue("H{$row}", $claim->sale_name ?? '-');
+            $sheet->setCellValue("I{$row}", $statusMap[$claim->status] ?? ($claim->status ?? '-'));
+            $row++;
+        }
+
+        // Auto width
+        foreach (range('A', 'I') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $filename = 'ประวัติเคลมอะไหล่_' . now()->format('Ymd_His') . '.xlsx';
+        $writer = new Xlsx($spreadsheet);
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control' => 'max-age=0',
         ]);
     }
 
@@ -743,7 +909,7 @@ class SpareClaimController extends Controller
             }
 
             if (!$hasUpdate) {
-                throw new \Exception("ไม่มีรายการสินค้าที่ถูกบันทึก");
+                throw new \Exception('ไม่มีรายการสินค้าที่ถูกบันทึก');
             }
 
             // 4. คำนวณสถานะรวมของเอกสาร Claim (Logic Active/Partial/Complete)
@@ -795,7 +961,7 @@ class SpareClaimController extends Controller
             return redirect()->back()->with('success', "สร้างใบรับคืนเลขที่ $returnJobNo สำเร็จ");
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Error receiving claim: " . $e->getMessage());
+            Log::error('Error receiving claim: ' . $e->getMessage());
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
     }

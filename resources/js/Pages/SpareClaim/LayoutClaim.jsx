@@ -4,12 +4,14 @@ import React from "react";
 import { Button, Container, Grid2, Stack, useMediaQuery } from "@mui/material";
 import { Article, History } from "@mui/icons-material";
 
-export default function LayoutClaim({ children, headTitle = '' }) {
+export default function LayoutClaim({ userCode, children, headTitle = '' }) {
     const isMobile = useMediaQuery('(max-width:700px)');
     const { auth } = usePage().props;
     const isSale = auth.user?.role === 'sale' || auth.user?.is_sale;
     const isAcc = auth.user?.role === 'acc';
     const isAdmin = auth.user?.role === 'admin';
+    const ALLOWED_CODES = ["68091", "65002", "66504", "67465", "62169", "67487", "68263_ACC"];
+    const canSeeSpecialCol = ALLOWED_CODES.includes(userCode);
     return (
         <AuthenticatedLayout>
             <Head title={headTitle} />
@@ -27,7 +29,7 @@ export default function LayoutClaim({ children, headTitle = '' }) {
                                     แจ้งเคลมอะไหล่
                                 </Button>
                             )}
-                            {(isAcc || isAdmin) && (
+                            {(isAcc || isAdmin) && !canSeeSpecialCol && (
                                 <Button
                                     fullWidth={isMobile} startIcon={<Article />}
                                     component={Link} href={'/accounting/spare-return'}

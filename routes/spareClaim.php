@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('spare-claim')->group(function () {
     Route::get('/index', [SpareClaimController::class, 'index'])->name('spareClaim.index');
     Route::get('/history', [SpareClaimController::class, 'historyShow'])->name('spareClaim.history');
+    Route::get('/history/export', [SpareClaimController::class, 'exportExcel'])->name('spareClaim.history.export');
     Route::get('/history/detail/{claim_id}', [SpareClaimController::class, 'historyDetail'])->name('spareClaim.historyDetail');
     Route::get('/pending', [SpareClaimController::class, 'pendingShow'])->name('spareClaim.pending');
     Route::post('/store', [SpareClaimController::class, 'store'])->name('spareClaim.store');
