@@ -65,6 +65,7 @@
             margin-bottom: 10px;
             padding: 15px;
             border: 1px solid #5b5b5b;
+            page-break-inside: avoid;
         }
 
         .product-title {
@@ -77,10 +78,19 @@
         }
 
         .product-description {
-            font-size : 14px;
+            font-size: 14px;
             color: #7f8c8d;
             line-height: 1.5;
             text-align: justify;
+        }
+
+        .barcode-container {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .product-info-container {
+            /* ลบ margin-right ออกแล้ว */
         }
 
         .signature-section {
@@ -128,8 +138,16 @@
         <div class="info-section">
             <table class="info-table">
                 <tr>
-                    <td class="label">กลุ่มงาน: {{ $group_job_id ?? '-' }}</td>
-                    <td class="label" style="text-align: right;">วันที่: {{ \Carbon\Carbon::now()->format('d/m/Y') }}
+                    <td style="vertical-align: middle;">
+                        <div class="label">กลุ่มงาน: {{ $group_job_id ?? '-' }}</div>
+                        <div class="label" style="margin-top: 10px;">วันที่: {{ \Carbon\Carbon::now()->format('d/m/Y') }}</div>
+                    </td>
+                    <td class="barcode-container" style="width: 260px;">
+                        <img src="https://barcode.tec-it.com/barcode.ashx?data={{ $group_job_id ?? '-' }}&code=Code128&hidehrt=1"
+                            style="max-height: 60px; max-width: 250px;" alt="Barcode">
+                        <div style="font-size: 13px; font-weight: bold; color: #000; margin-top: 5px;">
+                            {{ $group_job_id ?? '-' }}
+                        </div>
                     </td>
                 </tr>
             </table>
@@ -138,14 +156,19 @@
 
         @foreach ($group_job as $job)
             <div class="product-item">
-                <div class="product-title">
-                    {{ $job['p_name'] }}
+
+                <div class="product-info-container">
+                    <div class="product-title">
+                        {{ $job['p_name'] }}
+                    </div>
+                    <div class="product-description">
+                        รหัสสินค้า : {{ $job['pid'] }} | ซีเรียล : {{ $job['serial_id'] }} | Job ID :
+                        {{ $job['job_id'] }}
+                        <br/>
+                        ประเภท : {{ $job['p_cat_name'] }} | ประเภทย่อย : {{ $job['p_sub_cat_name'] }}
+                    </div>
                 </div>
-                <div class="product-description">
-                    รหัสสินค้า : {{ $job['pid'] }} | ซีเรียล : {{ $job['serial_id'] }} | Job ID : {{ $job['job_id'] }}
-                    <br/>
-                    ประเภท : {{ $job['p_cat_name'] }} | ประเภทย่อย : {{ $job['p_sub_cat_name'] }}
-                </div>
+
             </div>
         @endforeach
 
