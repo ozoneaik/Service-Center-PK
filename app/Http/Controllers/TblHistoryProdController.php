@@ -222,9 +222,12 @@ class TblHistoryProdController extends Controller
                             $accPeriod = (int)($acc['warranty_period'] ?? 0);
                             $accExpireDate = $dateWarranty->copy()->addMonths($accPeriod);
 
+                            // เช็กว่ามีซีเรียลเฉพาะของอุปกรณ์เสริมหรือไม่ ถ้าไม่มีถึงจะใช้ซีเรียลเครื่องหลัก
+                            $accSerialNumber = !empty($acc['serial_label']) ? $acc['serial_label'] : $serial_id;
+
                             TblHistoryProd::create([
-                                'serial_number'    => $serial_id, // ใช้ซีเรียลเดียวกับเครื่องหลัก
-                                'model_code'       => $accSku,    // ใช้ SKU ของอุปกรณ์เสริม
+                                'serial_number'    => $accSerialNumber, // เปลี่ยนมาใช้ตัวแปรนี้
+                                'model_code'       => $accSku,
                                 'product_name'     => $acc['product_name'] ?? '',
                                 'model_name'       => $acc['product_name'] ?? '',
                                 'buy_date'         => $dateWarranty->toDateString(),
@@ -240,9 +243,6 @@ class TblHistoryProdController extends Controller
                                 'create_at'        => Carbon::now(),
                                 'updated_at'       => Carbon::now(),
                                 'updated_by'       => Auth::user()->user_code ?? null,
-
-                                // 'sku_main'         => $pid,
-                                // 'product_type'     => 'accessory',
                             ]);
                         }
                     }

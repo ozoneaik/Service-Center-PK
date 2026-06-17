@@ -81,6 +81,54 @@ class SearchController extends Controller
     //     }
     // }
 
+    private function filterPowerAccessoriesByHistory(array $powerAccessories, array $batteryHistory): array
+    {
+        // 1. ถ้าไม่มีประวัติการแยก/สลับเลย ให้แสดงตามปกติ (ดักกรองตัวที่ is_removed เป็น true ทิ้งไป)
+        if (empty($batteryHistory)) {
+            foreach (['battery', 'charger'] as $type) {
+                if (isset($powerAccessories[$type])) {
+                    $powerAccessories[$type] = array_values(array_filter(
+                        $powerAccessories[$type],
+                        fn($item) => empty($item['is_removed'])
+                    ));
+                }
+            }
+            return $powerAccessories;
+        }
+
+        // 2. ถ้ามีประวัติ ให้ยึด History เป็น Source of Truth
+        $historyByType = collect($batteryHistory)->groupBy('type_sku');
+
+        foreach (['battery', 'charger'] as $type) {
+            if (!isset($powerAccessories[$type])) {
+                continue;
+            }
+
+            // 3. ดึงเฉพาะ SN ที่สถานะยังเป็น 'active' และยังไม่ถูก remove ใน history
+            $activeSns = [];
+            if ($historyByType->has($type)) {
+                $activeSns = $historyByType->get($type)
+                    ->filter(fn($h) => ($h['battery_status'] ?? '') === 'active' && empty($h['removed_at']))
+                    ->pluck('battery_sn_new')
+                    ->filter()
+                    ->values()
+                    ->toArray();
+            }
+
+            // 4. ตัดสินใจแสดงผล
+            if (empty($activeSns)) {
+                $powerAccessories[$type] = [];
+            } else {
+                $powerAccessories[$type] = array_values(array_filter(
+                    $powerAccessories[$type],
+                    fn($item) => in_array($item['current_sn'] ?? '', $activeSns)
+                ));
+            }
+        }
+
+        return $powerAccessories;
+    }
+
     public function search(Request $request): JsonResponse
     {
         $request->validate(['SN' => 'required'], ['SN.required' => 'กรุณากรอกรหัสซีเรียล']);
@@ -665,6 +713,14 @@ class SearchController extends Controller
             $data = $response->json();
             if (($data['status'] ?? '') !== 'SUCCESS') {
                 throw new \Exception($data['message'] ?? 'ไม่พบข้อมูลสินค้าในระบบ');
+            }
+
+            // กรอง power_accessories ด้วยประวัติ battery_history ก่อนนำไปใช้งานต่อ
+            if (!empty($data['power_accessories'])) {
+                $data['power_accessories'] = $this->filterPowerAccessoriesByHistory(
+                    $data['power_accessories'],
+                    $data['battery_history'] ?? []
+                );
             }
 
             $assets = $data['assets'] ?? [];

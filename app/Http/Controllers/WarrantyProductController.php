@@ -212,6 +212,54 @@ class WarrantyProductController extends Controller
     //     }
     // }
 
+    private function filterPowerAccessoriesByHistory(array $powerAccessories, array $batteryHistory): array
+    {
+        // 1. ถ้าไม่มีประวัติการแยก/สลับเลย ให้แสดงตามปกติ (ดักกรองตัวที่ is_removed เป็น true ทิ้งไป)
+        if (empty($batteryHistory)) {
+            foreach (['battery', 'charger'] as $type) {
+                if (isset($powerAccessories[$type])) {
+                    $powerAccessories[$type] = array_values(array_filter(
+                        $powerAccessories[$type],
+                        fn($item) => empty($item['is_removed'])
+                    ));
+                }
+            }
+            return $powerAccessories;
+        }
+
+        // 2. ถ้ามีประวัติ ให้ยึด History เป็น Source of Truth
+        $historyByType = collect($batteryHistory)->groupBy('type_sku');
+
+        foreach (['battery', 'charger'] as $type) {
+            if (!isset($powerAccessories[$type])) {
+                continue;
+            }
+
+            // 3. ดึงเฉพาะ SN ที่สถานะยังเป็น 'active' และยังไม่ถูก remove ใน history
+            $activeSns = [];
+            if ($historyByType->has($type)) {
+                $activeSns = $historyByType->get($type)
+                    ->filter(fn($h) => ($h['battery_status'] ?? '') === 'active' && empty($h['removed_at']))
+                    ->pluck('battery_sn_new')
+                    ->filter()
+                    ->values()
+                    ->toArray();
+            }
+
+            // 4. ตัดสินใจแสดงผล
+            if (empty($activeSns)) {
+                $powerAccessories[$type] = [];
+            } else {
+                $powerAccessories[$type] = array_values(array_filter(
+                    $powerAccessories[$type],
+                    fn($item) => in_array($item['current_sn'] ?? '', $activeSns)
+                ));
+            }
+        }
+
+        return $powerAccessories;
+    }
+
     public function search(Request $request): JsonResponse
     {
         $request->validate(['serial_id' => 'required'], [
@@ -325,6 +373,14 @@ class WarrantyProductController extends Controller
 
             $power_accessories = $data['power_accessories'] ?? null;
             $sn_hd = $data['sn_hd'] ?? null;
+
+            if (!empty($power_accessories)) {
+                $power_accessories = $this->filterPowerAccessoriesByHistory(
+                    $power_accessories,
+                    $data['battery_history'] ?? []
+                );
+            }
+
             if (!empty($power_accessories) && is_array($power_accessories)) {
                 foreach ($power_accessories as $category => &$accessories_list) {
                     foreach ($accessories_list as &$acc) {
