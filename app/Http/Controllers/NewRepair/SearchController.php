@@ -676,6 +676,11 @@ class SearchController extends Controller
             $snHd       = $data['sn_hd'] ?? [];
             $targetDm   = $snHd['DM'] ?? null;
 
+            // ถ้าค้นด้วย serial อุปกรณ์ (reverse lookup) ให้ใช้ serial เครื่องหลักจาก main_assets
+            $effectiveSerial = ($searchType !== 'serial' && !empty($data['main_assets']['serial']))
+                ? $data['main_assets']['serial']
+                : ($formData['sn'] ?? null);
+
             if ($searchType === 'serial' && $targetDm) {
                 foreach ($dmList as $pidKey => $dms) {
                     if (isset($dms[$targetDm])) {
@@ -722,8 +727,8 @@ class SearchController extends Controller
                 }
             }
 
-            if (isset($formData['sn']) && !$warranty_expire) {
-                $warranty_expire = $this->findWarranty($formData['sn'], $warranty_expire);
+            if (!empty($effectiveSerial) && !$warranty_expire) {
+                $warranty_expire = $this->findWarranty($effectiveSerial, $warranty_expire);
             }
 
             $skuItems = [];
@@ -839,7 +844,7 @@ class SearchController extends Controller
                     'sp_by_dm'           => $spByDm,
                     'model_options'      => array_values(array_unique(array_filter($modelOptions))),
                     'allow_model_select' => true,
-                    'serial_id'          => $formData['sn'] ?? '9999',
+                    'serial_id'          => $effectiveSerial ?? '9999',
                     'active_layout'      => 'outside',
                     'warrantyperiod'     => $assetItem['warrantyperiod'] ?? '',
                     'warrantycondition'  => $assetItem['warrantycondition'] ?? '',
