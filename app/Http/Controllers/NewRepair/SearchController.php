@@ -5,6 +5,7 @@ namespace App\Http\Controllers\NewRepair;
 use App\Http\Controllers\Controller;
 use App\Models\JobList;
 use App\Models\WarrantyProduct;
+use App\Services\PowerAccessoriesService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -869,6 +870,11 @@ class SearchController extends Controller
                 $skuItem['listbehavior'] = $behaviorForPid;
             }
             unset($skuItem);
+
+            // Filter removed accessories and replace serial_label with current_sn
+            if (!empty($data['power_accessories'])) {
+                $data['power_accessories'] = PowerAccessoriesService::filterForDisplay($data['power_accessories']);
+            }
 
             $hasMultiDm = count(array_unique(array_filter($modelOptionsGlobal))) > 1;
             return [

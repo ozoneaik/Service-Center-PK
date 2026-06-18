@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\logStamp;
 use App\Models\TblHistoryProd;
+use App\Services\PowerAccessoriesService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -216,15 +217,18 @@ class TblHistoryProdController extends Controller
             if (!empty($powerAccessories) && is_array($powerAccessories)) {
                 foreach ($powerAccessories as $category => $accList) {
                     foreach ($accList as $acc) {
+                        if (PowerAccessoriesService::isRemoved($acc)) continue;
+
                         $accSku = $acc['accessory_sku'] ?? null;
 
                         if ($accSku) {
+                            $accSerial = PowerAccessoriesService::resolveSerial($acc, $serial_id);
                             $accPeriod = (int)($acc['warranty_period'] ?? 0);
                             $accExpireDate = $dateWarranty->copy()->addMonths($accPeriod);
 
                             TblHistoryProd::create([
-                                'serial_number'    => $serial_id, // ใช้ซีเรียลเดียวกับเครื่องหลัก
-                                'model_code'       => $accSku,    // ใช้ SKU ของอุปกรณ์เสริม
+                                'serial_number'    => $accSerial,
+                                'model_code'       => $accSku,
                                 'product_name'     => $acc['product_name'] ?? '',
                                 'model_name'       => $acc['product_name'] ?? '',
                                 'buy_date'         => $dateWarranty->toDateString(),

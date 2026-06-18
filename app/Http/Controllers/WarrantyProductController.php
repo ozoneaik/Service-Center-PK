@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\logStamp;
 use App\Models\WarrantyProduct;
+use App\Services\PowerAccessoriesService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -323,35 +324,41 @@ class WarrantyProductController extends Controller
                 $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
             }
 
-            $power_accessories = $data['power_accessories'] ?? null;
             $sn_hd = $data['sn_hd'] ?? null;
-            if (!empty($power_accessories) && is_array($power_accessories)) {
-                foreach ($power_accessories as $category => &$accessories_list) {
-                    foreach ($accessories_list as &$acc) {
-                        $acc['qty'] = 1;
-                        if ($category === 'battery' && isset($sn_hd['batteryQty'])) {
-                            $acc['qty'] = $sn_hd['batteryQty'];
-                        } elseif ($category === 'charger' && isset($sn_hd['chargerQty'])) {
-                            $acc['qty'] = $sn_hd['chargerQty'];
-                        }
-                        $acc_sku = $acc['accessory_sku'] ?? null;
-                        $acc['image_url'] = null;
 
-                        if ($acc_sku) {
-                            try {
-                                $accResponse = Http::timeout(5)->get($URL, ['search' => $acc_sku]);
-                                if ($accResponse->successful()) {
-                                    $accData = $accResponse->json();
-                                    if (!empty($accData['main_assets']['imagesku']) && is_array($accData['main_assets']['imagesku'])) {
-                                        $acc['image_url'] = $accData['main_assets']['imagesku'][0];
-                                    }
+            // Filter removed accessories and replace serial_label with current_sn via service
+            $power_accessories = PowerAccessoriesService::filterForDisplay(
+                $data['power_accessories'] ?? null
+            );
+
+            // Enrich remaining items with qty and product image
+            foreach ($power_accessories as $category => &$accessories_list) {
+                foreach ($accessories_list as &$acc) {
+                    $acc['qty'] = 1;
+                    if ($category === 'battery' && isset($sn_hd['batteryQty'])) {
+                        $acc['qty'] = $sn_hd['batteryQty'];
+                    } elseif ($category === 'charger' && isset($sn_hd['chargerQty'])) {
+                        $acc['qty'] = $sn_hd['chargerQty'];
+                    }
+                    $acc_sku = $acc['accessory_sku'] ?? null;
+                    $acc['image_url'] = null;
+
+                    if ($acc_sku) {
+                        try {
+                            $accResponse = Http::timeout(5)->get($URL, ['search' => $acc_sku]);
+                            if ($accResponse->successful()) {
+                                $accData = $accResponse->json();
+                                if (!empty($accData['main_assets']['imagesku']) && is_array($accData['main_assets']['imagesku'])) {
+                                    $acc['image_url'] = $accData['main_assets']['imagesku'][0];
                                 }
-                            } catch (\Exception $e) {
                             }
+                        } catch (\Exception $e) {
                         }
                     }
                 }
+                unset($acc);
             }
+            unset($accessories_list);
 
             // เพิ่ม Logic ดึงรายการสินค้าในชุด Combo
             $is_combo = $data['is_combo'] ?? false;
@@ -642,13 +649,16 @@ class WarrantyProductController extends Controller
             if (!empty($power_accessories)) {
                 foreach ($power_accessories as $acc_category => $accessories_list) {
                     foreach ($accessories_list as $acc) {
+                        if (PowerAccessoriesService::isRemoved($acc)) continue;
+
                         $acc_sku = $acc['accessory_sku'] ?? null;
                         if ($acc_sku) {
+                            $acc_serial = PowerAccessoriesService::resolveSerial($acc, $serial_id);
                             $acc_period = (int)($acc['warranty_period'] ?? 0);
                             $acc_expire_date = $dateWarranty->copy()->addMonths($acc_period);
 
                             WarrantyProduct::query()->create([
-                                'serial_id' => $serial_id,
+                                'serial_id' => $acc_serial,
                                 'pid' => $acc_sku,
                                 'p_name' => $acc['product_name'] ?? '',
                                 'date_warranty' => $dateWarranty->toDateString(),
