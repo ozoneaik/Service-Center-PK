@@ -449,7 +449,18 @@ class SpareClaimController extends Controller
             ->when($selectedReceiveStatus && $selectedReceiveStatus !== 'all', function ($q) use ($selectedReceiveStatus) {
                 return $q->where('receive_status', $selectedReceiveStatus);
             })
-            ->when($selectedStatus, fn($q, $s) => $q->where('status', $s))
+            ->when($selectedStatus, function ($q) use ($selectedStatus) {
+                $statusGroups = [
+                    'pending'               => ['pending', 'รอรับงานซ่อม', 'พักงานซ่อม', 'กำลังซ่อม', 'รอปิดงานซ่อม'],
+                    'approved'              => ['approved', 'เปิดออเดอร์แล้ว', 'รอเปิดSO'],
+                    'กำลังจัดเตรียมสินค้า'  => ['กำลังจัดเตรียมสินค้า', 'กำลังจัดสินค้า', 'แพ็คสินค้าเสร็จ', 'พร้อมส่ง'],
+                    'อยู่ระหว่างจัดส่ง'     => ['อยู่ระหว่างจัดส่ง', 'กำลังส่ง', 'เตรียมส่ง'],
+                    'จัดส่งสำเร็จ'          => ['จัดส่งสำเร็จ', 'บัญชีรับงานแล้ว', 'ส่งของแล้ว'],
+                    'ไม่อนุมัติ'            => ['rejected'],
+                ];
+                $statuses = $statusGroups[$selectedStatus] ?? [$selectedStatus];
+                return $q->whereIn('status', $statuses);
+            })
             ->when($dateFrom, fn($q) => $q->whereDate('created_at', '>=', $dateFrom))
             ->when($dateTo, fn($q) => $q->whereDate('created_at', '<=', $dateTo))
             // กรองตามสถานะบัญชี (ตรวจสอบข้ามตาราง spare_return_headers)
