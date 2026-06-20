@@ -349,25 +349,6 @@ const FilterForm = ({
                     <MenuItem value={"send"}>ส่งไปยังศูนย์ซ่อม PK</MenuItem>
                     <MenuItem value={"success"}>ปิดการซ่อมแล้ว</MenuItem>
                     <MenuItem value={"canceled"}>ยกเลิกการซ่อมแล้ว</MenuItem>
-                    <MenuItem value={"บัญชีรับงานแล้ว"}>
-                        บัญชีรับงานแล้ว
-                    </MenuItem>
-                    <MenuItem value={"ส่งของแล้ว"}>ส่งของแล้ว</MenuItem>
-                    <MenuItem value={"กำลังส่ง"}>กำลังส่ง</MenuItem>
-                    <MenuItem value={"เตรียมส่ง"}>เตรียมส่ง</MenuItem>
-                    <MenuItem value={"พร้อมส่ง"}>พร้อมส่ง</MenuItem>
-                    <MenuItem value={"แพ็คสินค้าเสร็จ"}>
-                        แพ็คสินค้าเสร็จ
-                    </MenuItem>
-                    <MenuItem value={"กำลังจัดสินค้า"}>กำลังจัดสินค้า</MenuItem>
-                    <MenuItem value={"เปิดออเดอร์แล้ว"}>
-                        เปิดออเดอร์แล้ว
-                    </MenuItem>
-                    <MenuItem value={"รอเปิดSO"}>รอเปิดSO</MenuItem>
-                    <MenuItem value={"รอปิดงานซ่อม"}>รอปิดงานซ่อม</MenuItem>
-                    <MenuItem value={"กำลังซ่อม"}>กำลังซ่อม</MenuItem>
-                    <MenuItem value={"พักงานซ่อม"}>พักงานซ่อม</MenuItem>
-                    <MenuItem value={"รอรับงานซ่อม"}>รอรับงานซ่อม</MenuItem>
                 </Select>
             </Grid2>
             <Grid2 size={{ md: 2, xs: 12 }}>
