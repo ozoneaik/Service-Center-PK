@@ -11,6 +11,7 @@ use App\Models\Remark;
 use App\Models\StoreInformation;
 use App\Models\WarrantyProduct;
 use App\Models\Symptom;
+use App\Services\PowerAccessoriesService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -199,6 +200,7 @@ class SaleRepairController extends Controller
             $insurance_expire = $response['expire_date'] ?? $findDetail['insurance_expire'] ?? null;
             $buy_date         = $response['buy_date'] ?? $findDetail['buy_date'] ?? null;
             $warrantyexpire   = $response['data_from_api']['warrantyexpire'] ?? null;
+            $warrantyperiod   = $sku['warrantyperiod'] ?? $findDetail['warranty_period'] ?? 0;
 
             if (!empty($serial) && str_starts_with($serial, '9999')) {
                 $warranty_expire = null;
@@ -256,10 +258,33 @@ class SaleRepairController extends Controller
                 $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
                 $warranty_color = 'orange';
             } elseif (!empty($buy_date) && empty($insurance_expire)) {
-                // เพิ่มเงื่อนไข: มีวันซื้อ (buy_date) แต่ไม่มีวันหมดประกัน (insurance_expire)
-                $warranty_status = true;
-                $warranty_text = 'อยู่ในประกัน';
-                $warranty_color = 'green';
+                $months = (int) ($warrantyperiod ?? 0);
+                if ($months > 0) {
+                    try {
+                        $insurance_expire = Carbon::parse($buy_date)->addMonths($months)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                    }
+                }
+
+                if (!empty($insurance_expire)) {
+                    try {
+                        $expireDate = Carbon::parse($insurance_expire);
+                        if ($expireDate->isFuture()) {
+                            $warranty_status = true;
+                            $warranty_text = 'อยู่ในประกัน';
+                            $warranty_color = 'green';
+                        } else {
+                            $warranty_status = false;
+                            $warranty_text = 'หมดอายุการรับประกัน';
+                            $warranty_color = 'red';
+                        }
+                    } catch (\Exception $e) {
+                    }
+                } else {
+                    $warranty_status = true;
+                    $warranty_text = 'อยู่ในประกัน';
+                    $warranty_color = 'green';
+                }
             } elseif ($warrantyexpire === true) {
                 $warranty_status = true;
                 $warranty_text = 'อยู่ในประกัน';
@@ -405,6 +430,11 @@ class SaleRepairController extends Controller
             $snHd       = $data['sn_hd'] ?? [];
             $targetDm   = $snHd['DM'] ?? null;
 
+            // ถ้าค้นด้วย serial อุปกรณ์ (reverse lookup) ให้ใช้ serial เครื่องหลักจาก main_assets
+            $effectiveSerial = ($searchType !== 'serial' && !empty($data['main_assets']['serial']))
+                ? $data['main_assets']['serial']
+                : ($formData['sn'] ?? null);
+
             if ($searchType === 'serial' && $targetDm) {
                 foreach ($dmList as $pidKey => $dms) {
                     if (isset($dms[$targetDm])) {
@@ -438,9 +468,25 @@ class SaleRepairController extends Controller
             $insurance_expire = $data['insurance_expire'] ?? null;
             $buy_date         = $data['buy_date']         ?? null;
 
+            // คำนวณวันที่หมดประกัน ถ้ามี buy_date แต่ไม่มี insurance_expire
+            if (!empty($buy_date) && empty($insurance_expire)) {
+                $mainAsset = $assets[$skumain] ?? $assets[$sku] ?? reset($assets);
+                $warrantyperiod = $mainAsset['warrantyperiod'] ?? 0;
+                $months = (int) $warrantyperiod;
+                if ($months > 0) {
+                    try {
+                        $insurance_expire = Carbon::parse($buy_date)->addMonths($months)->format('Y-m-d');
+                        if (Carbon::parse($insurance_expire)->isFuture()) {
+                            $warranty_expire = true;
+                        }
+                    } catch (\Exception $e) {
+                    }
+                }
+            }
+
             // ตรวจสอบประกันเพิ่มเติมจาก Local DB หาก API บอกว่าหมด หรือไม่มีข้อมูล
-            if (isset($formData['sn']) && !$warranty_expire) {
-                $warranty_expire = $this->findWarranty($formData['sn'], $warranty_expire);
+            if (!empty($effectiveSerial) && !$warranty_expire) {
+                $warranty_expire = $this->findWarranty($effectiveSerial, $warranty_expire);
             }
 
             $skuItems            = [];
@@ -467,16 +513,25 @@ class SaleRepairController extends Controller
 
                 // --- จัดการ Diagram (DM) และ อะไหล่ (SP) ---
                 if (!empty($dmList[$pidItem]) && is_array($dmList[$pidItem])) {
+                    $allRawModels = collect($dmList[$pidItem])->map(fn($item) => trim($item['modelfg'] ?? ''))->toArray();
+                    $hasDuplicateModel = count($allRawModels) !== count(array_unique($allRawModels));
+
                     foreach ($dmList[$pidItem] as $dmKey => $dmData) {
 
-                        // Model FG
-                        $modelfg = trim($dmData['modelfg'] ?? '');
-                        if ($modelfg === '') {
-                            $modelfg = $facmodel ?: $pidItem;
+                        $rawModelfg = trim($dmData['modelfg'] ?? '');
+
+                        if ($hasDuplicateModel) {
+                            $displayName = ($rawModelfg ?: $facmodel) . " (DM" . str_pad($dmKey, 2, "0", STR_PAD_LEFT) . ")";
+                        } else {
+                            if ($rawModelfg === '') {
+                                $displayName = $facmodel . " (DM" . str_pad($dmKey, 2, "0", STR_PAD_LEFT) . ")";
+                            } else {
+                                $displayName = $rawModelfg;
+                            }
                         }
 
-                        $modelOptions[]       = $modelfg;
-                        $modelOptionsGlobal[] = $modelfg;
+                        $modelOptions[]       = $displayName;
+                        $modelOptionsGlobal[] = $displayName;
 
                         // รูป Diagram 1-5
                         for ($i = 1; $i <= 5; $i++) {
@@ -490,7 +545,7 @@ class SaleRepairController extends Controller
 
                             $diagramLayers[] = [
                                 'pid'       => $pidItem,
-                                'modelfg'   => $modelfg,
+                                'modelfg'   => $displayName,
                                 'layer'     => "รูปที่ {$i}",
                                 'path_file' => $imgUrl,
                                 'layout'    => $i,
@@ -518,7 +573,7 @@ class SaleRepairController extends Controller
                                     'spunit'            => $sp['spunit'] ?? 'ชิ้น',
                                     'layout'            => $layoutStr,
                                     'tracking_number'   => $sp['tracking_number'] ?? '',
-                                    'modelfg'           => $modelfg,
+                                    'modelfg'           => $displayName,
                                     'pid'               => $pidItem,
                                     'pname'             => $assetItem['pname'] ?? '',
                                     'imagesku'          => $assetItem['imagesku'][0] ?? null,
@@ -561,9 +616,9 @@ class SaleRepairController extends Controller
                     'diagram_layers'     => $diagramLayers,
                     'sp'                 => $spListAll,
                     'sp_by_dm'           => $spByDm,
-                    'model_options'      => $modelOptions,
+                    'model_options'      => array_values(array_unique(array_filter($modelOptions))),
                     'allow_model_select' => true,
-                    'serial_id'          => $formData['sn'] ?? '9999',
+                    'serial_id'          => $effectiveSerial ?? '9999',
                     'active_layout'      => 'outside',
                     'warrantyperiod'     => $warrantyperiod,
                     'warrantycondition'  => $warrantycondition,
@@ -597,6 +652,11 @@ class SaleRepairController extends Controller
                 $skuItem['listbehavior'] = $behaviorForPid;
             }
             unset($skuItem);
+
+            // Filter removed accessories and replace serial_label with current_sn
+            if (!empty($data['power_accessories'])) {
+                $data['power_accessories'] = PowerAccessoriesService::filterForDisplay($data['power_accessories']);
+            }
 
             $hasMultiDm = count(array_unique(array_filter($modelOptionsGlobal))) > 1;
             return [

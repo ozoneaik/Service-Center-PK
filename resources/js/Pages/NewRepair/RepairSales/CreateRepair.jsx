@@ -1,6 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router } from "@inertiajs/react";
 import { SelectSku } from "../SelectSku";
+import { SelectAccessory } from "../SelectAccessory";
 import { useEffect, useRef, useState } from "react";
 import { Box, Button, Container, Grid2, InputAdornment, Paper, Stack, TextField } from "@mui/material";
 import { Search } from "@mui/icons-material";
@@ -32,6 +33,9 @@ export default function CreateRepair({ DATA }) {
 
     const [comboSets, setComboSets] = useState();
     const [openSelSku, setOpenSelSku] = useState(false);
+
+    const [accSets, setAccSets] = useState();
+    const [openSelAcc, setOpenSelAcc] = useState(false);
 
     const scrollRef = useRef(null);
 
@@ -111,7 +115,30 @@ export default function CreateRepair({ DATA }) {
                 const insurance_expire = data.data.data_from_api?.insurance_expire || null;
                 const buy_date = data.data.buy_date || null;
                 const addWarranty = data.data.warranty_expire;
-                const expire_date = data.data.expire_date || insurance_expire || null;
+                let expire_date = data.data.expire_date || insurance_expire || null;
+
+                if (!expire_date && buy_date) {
+                    const sku_list_0 = data.data.sku_list?.[0];
+                    const wp =
+                        sku_list_0?.warrantyperiod ||
+                        sku_list_0?.warranty_period ||
+                        "";
+                    const months = parseInt(wp, 10);
+                    if (!isNaN(months) && months > 0) {
+                        const expireDate = new Date(buy_date);
+                        expireDate.setMonth(expireDate.getMonth() + months);
+                        expire_date = expireDate.toISOString().split("T")[0];
+                    }
+                }
+
+                const power_accessories =
+                    data.data.data_from_api?.power_accessories || null;
+                const has_accessories =
+                    power_accessories &&
+                    ((power_accessories.battery &&
+                        power_accessories.battery.length > 0) ||
+                        (power_accessories.charger &&
+                            power_accessories.charger.length > 0));
 
                 if (combo_set) {
                     setOpenSelSku(true);
@@ -123,6 +150,64 @@ export default function CreateRepair({ DATA }) {
                         buy_date,
                     }));
                     setComboSets(sku_list);
+                } else if (has_accessories) {
+                    let main_sku = data.data.sku_list[0];
+                    let acc_list = [];
+
+                    acc_list.push({
+                        ...main_sku,
+                        warranty_status: addWarranty,
+                        expire_date,
+                        buy_date,
+                        display_type: "main",
+                        display_name: "ตัวเครื่องหลัก",
+                        target_serial: main_sku.serial_id || main_sku.serial,
+                    });
+
+                    if (power_accessories.battery) {
+                        power_accessories.battery.forEach((bat, idx) => {
+                            acc_list.push({
+                                ...main_sku,
+                                pid: bat.accessory_sku,
+                                pname: bat.product_name,
+                                serial_id: bat.serial_label,
+                                serial: bat.serial_label,
+                                display_type: "battery",
+                                display_name: `แบตเตอรี่ ก้อนที่ ${idx + 1}`,
+                                target_serial: bat.serial_label,
+                                warrantyperiod: bat.warranty_period,
+                                warrantycondition: bat.warranty_condition,
+                                warrantynote: bat.warranty_note,
+                                warranty_status: addWarranty,
+                                expire_date,
+                                buy_date,
+                            });
+                        });
+                    }
+
+                    if (power_accessories.charger) {
+                        power_accessories.charger.forEach((chg, idx) => {
+                            acc_list.push({
+                                ...main_sku,
+                                pid: chg.accessory_sku,
+                                pname: chg.product_name,
+                                serial_id: chg.serial_label,
+                                serial: chg.serial_label,
+                                display_type: "charger",
+                                display_name: `แท่นชาร์จ ${idx + 1}`,
+                                target_serial: chg.serial_label,
+                                warrantyperiod: chg.warranty_period,
+                                warrantycondition: chg.warranty_condition,
+                                warrantynote: chg.warranty_note,
+                                warranty_status: addWarranty,
+                                expire_date,
+                                buy_date,
+                            });
+                        });
+                    }
+
+                    setAccSets(acc_list);
+                    setOpenSelAcc(true);
                 } else {
                     let sku_item = data.data.sku_list[0];
                     sku_item = {
@@ -178,6 +263,12 @@ export default function CreateRepair({ DATA }) {
                         onSelect={(sku) => setDetail(sku)}
                     />
                 }
+                {openSelAcc &&
+                    <SelectAccessory
+                        accessoryList={accSets} open={openSelAcc} setOpen={setOpenSelAcc}
+                        onSelect={(item) => setDetail(item)}
+                    />
+                }
                 <Container sx={{ mt: 3 }}>
                     <Grid2 container spacing={2}>
                         <Grid2 size={12}>
@@ -193,7 +284,7 @@ export default function CreateRepair({ DATA }) {
                                 <Grid2 size={12}>
                                     {!miniSize && (
                                         <ProductDetail
-                                            serial={detail.serial || detail.serial_id}
+                                            serial={detail.target_serial || detail.serial || detail.serial_id}
                                             imagesku={detail.imagesku || detail.image_sku}
                                             pname={detail.pname || detail.p_name}
                                             pid={detail.pid}
@@ -217,13 +308,13 @@ export default function CreateRepair({ DATA }) {
                                     <Grid2 size={12}>
                                         <PathDetail
                                             name={menuNames[menuSel] || 'อื่นๆ'}
-                                            Sn={detail.serial || detail.serial_id}
+                                            Sn={detail.target_serial || detail.serial || detail.serial_id}
                                             job_id={detail.job_id} jobStatus={detail.status}
                                         />
                                         {menuSel === 1 &&
-                                            <RepairSaleMain productDetail={detail} serial_id={detail.serial_id || detail.serial} />}
+                                            <RepairSaleMain productDetail={detail} serial_id={detail.target_serial || detail.serial_id || detail.serial} />}
                                         {menuSel === 2 &&
-                                            <ListHistoryRepair serial_id={detail.serial || detail.serial_id} />}
+                                            <ListHistoryRepair serial_id={detail.target_serial || detail.serial || detail.serial_id} />}
                                     </Grid2>
                                 )}
                             </>
