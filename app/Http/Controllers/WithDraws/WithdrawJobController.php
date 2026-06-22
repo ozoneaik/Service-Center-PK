@@ -504,6 +504,8 @@ class WithdrawJobController extends Controller
                     $sp = StockSparePart::create([
                         'sp_code'        => $item->sp_code,
                         'sp_name'        => $item->sp_name,
+                        'sku_code'       => $item->sku_code ?? '',
+                        'sku_name'       => $item->sku_name ?? '',
                         'sp_unit'        => $item->sp_unit ?? 'ชิ้น',
                         'qty_sp'         => 0,
                         'is_code_cust_id' => $job->is_code_cust_id,
