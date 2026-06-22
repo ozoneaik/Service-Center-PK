@@ -69,7 +69,7 @@ const TableDetail = ({ stocks, stock_job_add_type, stock_job_remove_type, stock_
     });
 
     return (
-        <Table>
+        <Table stickyHeader>
             <TableHead>
                 <TableRow sx={TABLE_HEADER_STYLE}>
                     {tableHeaders.map((head, index) => (
@@ -394,7 +394,7 @@ export default function StockSpList({ stocks, store, job_pending, stock_job_add_
                                     stock_job_remove_type={stock_job_remove_type}
                                 />
                             ) : (
-                                <Paper variant='outlined' sx={{ p: 2, overflowX: 'auto' }}>
+                                <Paper variant='outlined' sx={{ p: 0, overflow: 'auto', maxHeight: 'calc(100vh - 280px)' }}>
                                     <TableDetail
                                         stocks={stocks}
                                         stock_job_add_type={stock_job_add_type}
@@ -415,7 +415,9 @@ export default function StockSpList({ stocks, store, job_pending, stock_job_add_
 }
 
 const TABLE_HEADER_STYLE = {
-    backgroundColor: '#c7c7c7',
-    fontWeight: 'bold',
-    fontSize: 16
+    '& th': {
+        backgroundColor: '#c7c7c7',
+        fontWeight: 'bold',
+        fontSize: 16,
+    }
 };
