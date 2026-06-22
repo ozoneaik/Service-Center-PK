@@ -218,8 +218,10 @@ class OrderController extends Controller
                     ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
                     ->first();
 
-                $spList[$i]['added'] = (bool)$cart;
-                $spList[$i]['remark'] = 'มาจากการสั่งซื้อ';
+                $spList[$i]['added']   = (bool)$cart;
+                $spList[$i]['cartId']  = $cart?->id;
+                $spList[$i]['cartQty'] = $cart?->qty ?? 0;
+                $spList[$i]['remark']  = 'มาจากการสั่งซื้อ';
             }
 
             // if (collect($modelOptions)->contains(fn($m) => str_starts_with($m, 'DM'))) {

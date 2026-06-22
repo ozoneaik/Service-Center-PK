@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
 import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
-import { ArrowBack, Check, Delete, Add, Remove, FileUpload } from "@mui/icons-material";
+import { ArrowBack, Check, Delete, Add, Remove, FileUpload, AddShoppingCart } from "@mui/icons-material";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 import Swal from "sweetalert2";
 
@@ -337,14 +337,26 @@ export default function CartList({ groupSku, totalSp, flash }) {
                                 <Grid2 key={index} size={12}>
                                     <Card variant="outlined" sx={{ mb: 2 }}>
                                         <CardContent>
-                                            <Stack direction="row" alignItems="center" spacing={2}
+                                            <Stack direction="row" alignItems="center" justifyContent="space-between"
                                                 sx={{ mb: 2, backgroundColor: '#0000000D', p: 1 }}>
-                                                <Avatar
-                                                    src={group.sku_image_path} variant="square"
-                                                    sx={{ width: 48, height: 48 }}
-                                                />
-                                                <Typography
-                                                    variant="h6">กลุ่มสินค้า: {group.sku_code} | {group.sku_name}</Typography>
+                                                <Stack direction="row" alignItems="center" spacing={2}>
+                                                    <Avatar
+                                                        src={group.sku_image_path} variant="square"
+                                                        sx={{ width: 48, height: 48 }}
+                                                    />
+                                                    <Typography variant="h6">
+                                                        กลุ่มสินค้า: {group.sku_code} | {group.sku_name}
+                                                    </Typography>
+                                                </Stack>
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    startIcon={<AddShoppingCart />}
+                                                    component={Link}
+                                                    href={route('orders.list', { sku: group.sku_code })}
+                                                >
+                                                    เพิ่มอะไหล่
+                                                </Button>
                                             </Stack>
                                             <Stack direction="column" spacing={1}>
                                                 <React.Fragment>

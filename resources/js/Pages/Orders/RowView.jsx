@@ -1,31 +1,32 @@
-import { Button, Card, CardContent, Chip, Grid2, Stack, Typography } from "@mui/material";
+import { Button, Card, CardContent, Chip, Grid2, IconButton, Stack, Typography } from "@mui/material";
 import { Box, useMediaQuery, useTheme } from "@mui/material";
 import { AlertDialog } from "@/Components/AlertDialog.js";
 import { useState } from "react";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 export default function RowView({ spList, setSpList }) {
-    const [loading, setLoading] = useState(false);
+    const [loadingMap, setLoadingMap] = useState({});
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [openSpImage, setOpenSpImage] = useState(false);
     const [spImage, setSpImage] = useState('');
 
+    const setItemLoading = (spcode, val) =>
+        setLoadingMap(prev => ({ ...prev, [spcode]: val }));
+
     const handleAddToCart = async (item) => {
         try {
-            setLoading(true);
-            const { data, status } = await axios.post('/orders/carts/add-cart', {
-                ...item
-            });
+            setItemLoading(item.spcode, true);
+            const { data, status } = await axios.post('/orders/carts/add-cart', { ...item });
             if (status === 200) {
-                setSpList(spList.map(sp => {
-                    if ((sp.spcode === item.spcode) && (item.remark === 'มาจากการสั่งซื้อ')) {
-                        return { ...sp, added: true }
-                    }
-                    return sp;
-                }));
-            } else {
-
+                setSpList(spList.map(sp =>
+                    sp.spcode === item.spcode
+                        ? { ...sp, added: true, cartId: data.cart.id, cartQty: 1 }
+                        : sp
+                ));
             }
         } catch (error) {
             AlertDialog({
@@ -33,10 +34,37 @@ export default function RowView({ spList, setSpList }) {
                 text: error.response.data.message
             });
         } finally {
-            setLoading(false);
+            setItemLoading(item.spcode, false);
         }
+    };
 
-    }
+    const handleQtyChange = async (item, direction) => {
+        try {
+            setItemLoading(item.spcode, true);
+            if (direction === 'remove' && item.cartQty <= 1) {
+                await axios.delete(`/orders/carts/delete/${item.cartId}`);
+                setSpList(spList.map(sp =>
+                    sp.spcode === item.spcode
+                        ? { ...sp, added: false, cartId: null, cartQty: 0 }
+                        : sp
+                ));
+            } else {
+                const { data } = await axios.post(`/orders/carts/add-remove/${direction}`, { id: item.cartId });
+                setSpList(spList.map(sp =>
+                    sp.spcode === item.spcode
+                        ? { ...sp, cartQty: data.sp.qty }
+                        : sp
+                ));
+            }
+        } catch (error) {
+            AlertDialog({
+                title: 'เกิดข้อผิดพลาด',
+                text: error.response?.data?.message || 'เกิดข้อผิดพลาด'
+            });
+        } finally {
+            setItemLoading(item.spcode, false);
+        }
+    };
 
     return (
         <>
@@ -67,16 +95,12 @@ export default function RowView({ spList, setSpList }) {
                             </Typography>
                             <Chip
                                 size="small"
-
                                 label={`${item.tracking_number ?? '-'}`}
                                 color="default"
                                 sx={{
                                     fontWeight: 'bold',
                                     fontSize: '14px',
-                                    // margin: 0.5,
                                     padding: 1,
-                                    // minWidth: 1,
-                                    // borderRadius: '8px',
                                     display: 'flex', justifyContent: 'center',
                                 }}
                             />
@@ -142,24 +166,43 @@ export default function RowView({ spList, setSpList }) {
                                 </Stack>
                                 <Box sx={{ width: isMobile ? '100%' : 'auto' }}>
                                     {item.added ? (
-                                        <Button
-                                            disabled
-                                            color='inherit'
-                                            fullWidth={isMobile}
+                                        <Stack
+                                            direction="row"
+                                            alignItems="center"
+                                            justifyContent={isMobile ? 'center' : 'flex-end'}
+                                            spacing={1}
                                         >
-                                            เพิ่มในตะกร้าแล้ว
-                                        </Button>
+                                            <IconButton
+                                                size="small"
+                                                disabled={loadingMap[item.spcode]}
+                                                onClick={() => handleQtyChange(item, 'remove')}
+                                                color={item.cartQty <= 1 ? 'error' : 'default'}
+                                            >
+                                                {item.cartQty <= 1 ? <DeleteIcon fontSize="small" /> : <RemoveIcon fontSize="small" />}
+                                            </IconButton>
+                                            <Typography fontWeight="bold" minWidth={24} textAlign="center">
+                                                {item.cartQty ?? 1}
+                                            </Typography>
+                                            <IconButton
+                                                size="small"
+                                                disabled={loadingMap[item.spcode]}
+                                                onClick={() => handleQtyChange(item, 'add')}
+                                                color="primary"
+                                            >
+                                                <AddIcon fontSize="small" />
+                                            </IconButton>
+                                        </Stack>
                                     ) : (
                                         !isNaN(parseFloat(item.price_per_unit)) &&
                                         <Button
-                                            disabled={isNaN(parseFloat(item.price_per_unit)) || loading}
+                                            disabled={isNaN(parseFloat(item.price_per_unit)) || loadingMap[item.spcode]}
                                             variant='contained'
                                             size="small"
                                             color='primary'
                                             fullWidth={isMobile}
                                             onClick={() => handleAddToCart(item)}
                                         >
-                                            {loading ? 'กำลังเพิ่ม...' : 'เพิ่มลงในตะกร้า'}
+                                            {loadingMap[item.spcode] ? 'กำลังเพิ่ม...' : 'เพิ่มลงในตะกร้า'}
                                         </Button>
                                     )}
                                 </Box>

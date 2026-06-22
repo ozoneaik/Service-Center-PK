@@ -46,7 +46,8 @@ const listMenu = [
         icon: <BugReportIcon sx={{ fontSize: 40 }} />,
         color: '#F44336',
         bgGradient: 'linear-gradient(135deg, #F44336 0%, #EF5350 100%)',
-        description: 'ติดตามสถานะการเคลมและการรับประกันอะไหล่'
+        description: 'ติดตามสถานะการเคลมและการรับประกันอะไหล่',
+        routeUrl: 'spareClaim.history'
     },
     {
         name: 'รายการค่าเปิดเครื่อง',
@@ -63,7 +64,16 @@ const listMenu = [
         bgGradient: 'linear-gradient(135deg, #607D8B 0%, #90A4AE 100%)',
         description: 'รายงานการเบิกอะไหล่',
         routeUrl: 'report.withdraw-report.index'
-    }
+    },
+    // {
+    //     name: 'จัดการคะแนนอะไหล่ (นอกประกัน)',
+    //     icon: <TrendingUpIcon sx={{ fontSize: 40 }} />, // หรือใช้ StarIcon
+    //     color: '#E91E63',
+    //     bgGradient: 'linear-gradient(135deg, #E91E63 0%, #F06292 100%)',
+    //     description: 'จัดการและกำหนดคะแนนสำหรับอะไหล่นอกเงื่อนไขการประกัน',
+    //     routeUrl: 'admin.manage-point.index'
+    // },
+    
     // {
     //     name: 'ออกใบเสนอราคา',
     //     icon: <Article sx={{ fontSize: 40 }} />,
