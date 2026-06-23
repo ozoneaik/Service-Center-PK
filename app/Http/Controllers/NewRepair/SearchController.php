@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\JobList;
 use App\Models\WarrantyProduct;
 use App\Services\PowerAccessoriesService;
+use App\Services\WarrantySearchService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -89,14 +90,25 @@ class SearchController extends Controller
         try {
             $SN = trim($request->input('SN'));
             $PID = trim($request->input('PID', ''));
+            $selectedSkumain = $request->input('selected_skumain');
 
             if ($SN === '9999' && empty($PID)) {
                 throw new \Exception('<span>กรุณากรอกรหัสสินค้า<br>เนื่องจากคุณได้กรอกหมายเลขซีเรียลเป็น 9999</span>');
             }
 
+            if ($SN !== '9999' && !$selectedSkumain) {
+                $rawData = WarrantySearchService::fetchRaw($SN);
+                if (WarrantySearchService::hasMultipleSkumain($rawData)) {
+                    return response()->json([
+                        'needs_selection' => true,
+                        'options' => WarrantySearchService::extractOptions($rawData),
+                    ]);
+                }
+            }
+
             $formData = $SN === '9999'
                 ? ['pid' => $PID]
-                : ['sn' => $SN];
+                : ['sn' => $SN, 'selected_skumain' => $selectedSkumain];
 
             $response = $this->fetchDataFromApi($formData);
 
@@ -647,23 +659,38 @@ class SearchController extends Controller
         try {
             $URL = env('VITE_WARRANTY_SN_API_GETDATA');
             $sku = $formData['pid'] ?? $formData['sn'] ?? null;
+            $selectedSkumain = $formData['selected_skumain'] ?? null;
             if (!$sku) {
                 throw new \Exception('ไม่พบรหัสสินค้า');
             }
 
-            $response = Http::timeout(15)->get($URL, ['search' => $sku]);
-            $elapsed  = number_format(microtime(true) - $start, 2);
+            if ($selectedSkumain && isset($formData['sn'])) {
+                // Two-phase: getdatadup (new) for serial context + getdata (old) for product content
+                // getdata is called with the selected skumain PID so it returns only that product's data.
+                $data    = WarrantySearchService::fetchMerged($sku, $selectedSkumain);
+                $elapsed = number_format(microtime(true) - $start, 2);
 
-            Log::info('⏱️ [Repair Search API]', [
-                'sku' => $sku,
-                'elapsed_sec' => $elapsed,
-            ]);
+                Log::info('⏱️ [Repair Search API — merged]', [
+                    'serial'           => $sku,
+                    'selected_skumain' => $selectedSkumain,
+                    'elapsed_sec'      => $elapsed,
+                ]);
+            } else {
+                $response = Http::timeout(15)->get($URL, ['search' => $sku]);
+                $elapsed  = number_format(microtime(true) - $start, 2);
 
-            if (!$response->successful()) {
-                throw new \Exception('API ตอบกลับไม่สำเร็จ');
+                Log::info('⏱️ [Repair Search API]', [
+                    'sku' => $sku,
+                    'elapsed_sec' => $elapsed,
+                ]);
+
+                if (!$response->successful()) {
+                    throw new \Exception('API ตอบกลับไม่สำเร็จ');
+                }
+
+                $data = $response->json();
             }
 
-            $data = $response->json();
             if (($data['status'] ?? '') !== 'SUCCESS') {
                 throw new \Exception($data['message'] ?? 'ไม่พบข้อมูลสินค้าในระบบ');
             }
@@ -710,25 +737,63 @@ class SearchController extends Controller
             $insurance_expire = $data['insurance_expire'] ?? null;
             $buy_date         = $data['buy_date']         ?? null;
 
-            // --- คำนวณวันที่หมดประกัน ถ้ามี buy_date แต่ไม่มี insurance_expire ---
-            if (!empty($buy_date) && empty($insurance_expire)) {
-                $mainAsset = $assets[$skumain] ?? $assets[$sku] ?? reset($assets);
-                $warrantyperiod = $mainAsset['warrantyperiod'] ?? 0;
-                $months = (int) $warrantyperiod;
-                if ($months > 0) {
+            $effectivePid = $selectedSkumain ?? $skumain ?? null;
+
+            if (!empty($effectiveSerial) && $selectedSkumain) {
+                // Multi-skumain: API คืน warrantyexpire ในระดับ serial (ไม่ใช่ต่อ pid)
+                // ต้องเช็คจาก DB ต่อรายสินค้าเท่านั้น เพื่อป้องกันแสดงสถานะผิดเมื่อลงทะเบียนแค่บาง pid
+                // เคลียร์ serial-level dates ใน $data เพื่อป้องกัน frontend fallback ดึงข้อมูล serial-level ผิด
+                $data['insurance_expire'] = null;
+                $data['buy_date']         = null;
+                $data['warrantyexpire']   = false;
+
+                [$dbExpire, $dbBuyDate] = $this->resolveWarrantyDatesByPid($effectiveSerial, $selectedSkumain);
+                $insurance_expire = $dbExpire;
+                $buy_date         = $dbBuyDate;
+
+                if (!empty($insurance_expire)) {
                     try {
-                        $insurance_expire = \Carbon\Carbon::parse($buy_date)->addMonths($months)->format('Y-m-d');
-                        if (\Carbon\Carbon::parse($insurance_expire)->isFuture()) {
+                        $warranty_expire = \Carbon\Carbon::parse($insurance_expire)->isFuture();
+                    } catch (\Exception $e) {
+                        $warranty_expire = false;
+                    }
+                } elseif (!empty($buy_date)) {
+                    $mainAsset = $assets[$selectedSkumain] ?? $assets[$skumain] ?? reset($assets);
+                    $months = (int)($mainAsset['warrantyperiod'] ?? 0);
+                    if ($months > 0) {
+                        try {
+                            $insurance_expire = \Carbon\Carbon::parse($buy_date)->addMonths($months)->format('Y-m-d');
+                            $warranty_expire  = \Carbon\Carbon::parse($insurance_expire)->isFuture();
+                        } catch (\Exception $e) {
                             $warranty_expire = true;
                         }
-                    } catch (\Exception $e) {
-                        // ignore
+                    } else {
+                        $warranty_expire = true;
+                    }
+                } else {
+                    // ไม่มีข้อมูลใน DB สำหรับ pid นี้ = ยังไม่ได้ลงทะเบียน
+                    $warranty_expire = false;
+                }
+            } else {
+                // Single-product หรือ PID search → ใช้ข้อมูล API + fallback DB
+                if (!empty($buy_date) && empty($insurance_expire)) {
+                    $mainAsset = $assets[$skumain] ?? $assets[$sku] ?? reset($assets);
+                    $months = (int)($mainAsset['warrantyperiod'] ?? 0);
+                    if ($months > 0) {
+                        try {
+                            $insurance_expire = \Carbon\Carbon::parse($buy_date)->addMonths($months)->format('Y-m-d');
+                            if (\Carbon\Carbon::parse($insurance_expire)->isFuture()) {
+                                $warranty_expire = true;
+                            }
+                        } catch (\Exception $e) {
+                            // ignore
+                        }
                     }
                 }
-            }
 
-            if (!empty($effectiveSerial) && !$warranty_expire) {
-                $warranty_expire = $this->findWarranty($effectiveSerial, $warranty_expire);
+                if (!empty($effectiveSerial) && !$warranty_expire) {
+                    $warranty_expire = $this->findWarranty($effectiveSerial, $warranty_expire, $effectivePid);
+                }
             }
 
             $skuItems = [];
@@ -899,6 +964,228 @@ class SearchController extends Controller
         }
     }
 
+    // private function searchFromHistory($job_id)
+    // {
+    //     try {
+    //         $findDetail = JobList::query()
+    //             ->where('job_id', $job_id)
+    //             ->orderBy('id', 'desc')
+    //             ->first();
+
+    //         if (!$findDetail) {
+    //             throw new \Exception('ไม่พบข้อมูลงานซ่อมในระบบ');
+    //         }
+
+    //         $pid = $findDetail['pid'] ?? null;
+    //         $serial = $findDetail['serial_id'] ?? null;
+
+    //         if (!$pid) {
+    //             throw new \Exception('ไม่พบรหัสสินค้า (pid) ของงานซ่อมนี้');
+    //         }
+
+    //         // ค้นหาด้วย serial ก่อน ถ้าไม่เจอ fallback ด้วย pid
+    //         if (!empty($serial) && !in_array($serial, ['-', 'ไม่มีข้อมูล', 'N/A'], true)) {
+    //             $response = $this->fetchDataFromApi([
+    //                 'sn' => $serial,
+    //                 'views' => 'single',
+    //             ]);
+    //             if (!$response['status']) {
+    //                 Log::warning('🔁 serial search failed, retrying with pid', [
+    //                     'serial' => $serial,
+    //                     'pid' => $pid,
+    //                 ]);
+    //                 $response = $this->fetchDataFromApi([
+    //                     'pid' => $pid,
+    //                     'views' => 'single',
+    //                 ]);
+    //             }
+    //         } else {
+    //             $response = $this->fetchDataFromApi([
+    //                 'pid' => $pid,
+    //                 'views' => 'single',
+    //             ]);
+    //         }
+
+    //         if (!$response['status']) {
+    //             throw new \Exception($response['message'] ?? 'ไม่สามารถดึงข้อมูลสินค้าได้');
+    //         }
+
+    //         // Extract ข้อมูลสินค้า
+    //         $sku = $response['sku_list'][0] ?? [];
+    //         $sp = $sku['sp'] ?? [];
+    //         $diagram_layers = $sku['diagram_layers'] ?? [];
+    //         $model_options = $sku['model_options'] ?? [];
+    //         $active_layout = $sku['active_layout'] ?? 'outside';
+
+    //         // $listbehavior = $response['listbehavior'] ?? [];
+
+    //         //ผูก behavior เฉพาะ pid นี้เข้าไป
+    //         $listbehavior = $sku['listbehavior'] ?? [];
+
+    //         // ดึงค่ารับประกัน
+    //         $warranty_expire  = $response['warranty_expire'] ?? null;
+    //         $insurance_expire = $response['expire_date'] ?? $findDetail['insurance_expire'] ?? null;
+    //         $buy_date         = $response['buy_date'] ?? $findDetail['buy_date'] ?? null;
+    //         $warrantyexpire   = $response['data_from_api']['warrantyexpire'] ?? null;
+
+    //         if (!empty($serial) && str_starts_with($serial, '9999')) {
+
+    //             $warranty_expire = null;
+    //             $insurance_expire = null;
+    //             $buy_date = null;
+    //             $warrantyexpire = false;
+
+    //             if (isset($response['data_from_api'])) {
+    //                 $response['data_from_api']['warrantyexpire']   = null;
+    //                 $response['data_from_api']['insurance_expire'] = null;
+    //                 $response['data_from_api']['buy_date']         = null;
+    //             }
+
+    //             Log::info('🔧 Apply 9999 warranty reset in history mode', [
+    //                 'serial' => $serial,
+    //             ]);
+    //         }
+
+    //         // Normalize
+    //         $insurance_expire = trim($insurance_expire ?? '');
+    //         $buy_date = trim($buy_date ?? '');
+    //         if (in_array($insurance_expire, ['', '-', 'ไม่มีข้อมูล'], true)) $insurance_expire = null;
+    //         if (in_array($buy_date, ['', '-', 'ไม่มีข้อมูล'], true)) $buy_date = null;
+
+    //         // ตรวจสถานะประกัน
+    //         // $warranty_status = false;
+    //         // $warranty_text = 'ไม่อยู่ในประกัน';
+    //         // $warranty_color = 'red';
+
+    //         // // ถ้าไม่มีวันหมดประกัน + ไม่มีวันซื้อ = ยังไม่ได้ลงทะเบียน
+    //         // if (empty($insurance_expire) && empty($buy_date)) {
+    //         //     $warranty_status = false;
+    //         //     $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
+    //         //     $warranty_color = 'orange';
+    //         // } elseif ($warrantyexpire === true) {
+    //         //     $warranty_status = true;
+    //         //     $warranty_text = 'อยู่ในประกัน';
+    //         //     $warranty_color = 'green';
+    //         // } elseif (!empty($insurance_expire) && strtotime($insurance_expire)) {
+    //         //     try {
+    //         //         $expireDate = Carbon::parse($insurance_expire);
+    //         //         if ($expireDate->isFuture()) {
+    //         //             $warranty_status = true;
+    //         //             $warranty_text = 'อยู่ในประกัน';
+    //         //             $warranty_color = 'green';
+    //         //         } else {
+    //         //             $warranty_status = false;
+    //         //             $warranty_text = 'หมดอายุการรับประกัน';
+    //         //             $warranty_color = 'red';
+    //         //         }
+    //         //     } catch (\Exception $e) {
+    //         //     }
+    //         // } else {
+    //         //     $warranty_status = false;
+    //         //     $warranty_text = 'ไม่อยู่ในประกัน';
+    //         //     $warranty_color = 'red';
+    //         // }
+
+    //         // ตรวจสถานะประกัน
+    //         $warranty_status = false;
+    //         $warranty_text = 'ไม่อยู่ในประกัน';
+    //         $warranty_color = 'red';
+
+    //         // ถ้าไม่มีวันหมดประกัน + ไม่มีวันซื้อ = ยังไม่ได้ลงทะเบียน
+    //         if (empty($insurance_expire) && empty($buy_date)) {
+    //             $warranty_status = false;
+    //             $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
+    //             $warranty_color = 'orange';
+    //         } elseif (!empty($buy_date) && empty($insurance_expire)) {
+    //             $months = (int) ($warrantyperiod ?? 0);
+    //             if ($months > 0) {
+    //                 try {
+    //                     $insurance_expire = \Carbon\Carbon::parse($buy_date)->addMonths($months)->format('Y-m-d');
+    //                 } catch (\Exception $e) {
+    //                 }
+    //             }
+
+    //             if (!empty($insurance_expire)) {
+    //                 try {
+    //                     $expireDate = \Carbon\Carbon::parse($insurance_expire);
+    //                     if ($expireDate->isFuture()) {
+    //                         $warranty_status = true;
+    //                         $warranty_text = 'อยู่ในประกัน';
+    //                         $warranty_color = 'green';
+    //                     } else {
+    //                         $warranty_status = false;
+    //                         $warranty_text = 'หมดอายุการรับประกัน';
+    //                         $warranty_color = 'red';
+    //                     }
+    //                 } catch (\Exception $e) {
+    //                 }
+    //             } else {
+    //                 $warranty_status = true;
+    //                 $warranty_text = 'อยู่ในประกัน';
+    //                 $warranty_color = 'green';
+    //             }
+    //         } elseif ($warrantyexpire === true) {
+    //             $warranty_status = true;
+    //             $warranty_text = 'อยู่ในประกัน';
+    //             $warranty_color = 'green';
+    //         } elseif (!empty($insurance_expire) && strtotime($insurance_expire)) {
+    //             try {
+    //                 $expireDate = \Carbon\Carbon::parse($insurance_expire);
+    //                 if ($expireDate->isFuture()) {
+    //                     $warranty_status = true;
+    //                     $warranty_text = 'อยู่ในประกัน';
+    //                     $warranty_color = 'green';
+    //                 } else {
+    //                     $warranty_status = false;
+    //                     $warranty_text = 'หมดอายุการรับประกัน';
+    //                     $warranty_color = 'red';
+    //                 }
+    //             } catch (\Exception $e) {
+    //             }
+    //         } else {
+    //             $warranty_status = false;
+    //             $warranty_text = 'ไม่อยู่ในประกัน';
+    //             $warranty_color = 'red';
+    //         }
+
+    //         // รวมข้อมูลทั้งหมด
+    //         $sku['job_id'] = $findDetail['job_id'];
+    //         $sku['job_status'] = $findDetail['status'] ?? null;
+    //         $sku['remark'] = $findDetail['remark'] ?? null;
+    //         $sku['serial_id'] = (string) ($serial ?? '9999');
+    //         $sku['diagram_layers'] = $diagram_layers;
+    //         $sku['model_options'] = $model_options;
+    //         $sku['listbehavior'] = $listbehavior;
+    //         $sku['active_layout'] = $active_layout;
+    //         $sku['warranty_status'] = $warranty_status;
+    //         $sku['warranty_text'] = $warranty_text;
+    //         $sku['warranty_color'] = $warranty_color;
+    //         $sku['expire_date'] = $insurance_expire;
+    //         $sku['buy_date'] = $buy_date;
+
+    //         Log::info('✅ searchFromHistory done', [
+    //             'job_id' => $job_id,
+    //             'serial' => $serial,
+    //             'pid' => $pid,
+    //             'warrantyexpire' => $warrantyexpire,
+    //             'expire' => $insurance_expire,
+    //             'buy_date' => $buy_date,
+    //             'text' => $warranty_text,
+    //         ]);
+
+    //         return $sku;
+    //     } catch (\Exception $e) {
+    //         Log::error("❌ searchFromHistory Error: {$e->getMessage()}");
+    //         return [
+    //             'status' => false,
+    //             'message' => $e->getMessage(),
+    //             'sp' => [],
+    //             'diagram_layers' => [],
+    //             'model_options' => [],
+    //         ];
+    //     }
+    // }
+
     private function searchFromHistory($job_id)
     {
         try {
@@ -918,12 +1205,22 @@ class SearchController extends Controller
                 throw new \Exception('ไม่พบรหัสสินค้า (pid) ของงานซ่อมนี้');
             }
 
-            // ค้นหาด้วย serial ก่อน ถ้าไม่เจอ fallback ด้วย pid
-            if (!empty($serial) && !in_array($serial, ['-', 'ไม่มีข้อมูล', 'N/A'], true)) {
+            // เช็คว่า Serial ว่าง, ไม่มีข้อมูล หรือขึ้นต้นด้วย 9999 ให้ค้นหาจาก PID โดยตรง
+            if (empty($serial) || in_array($serial, ['-', 'ไม่มีข้อมูล', 'N/A'], true) || str_starts_with($serial, '9999')) {
                 $response = $this->fetchDataFromApi([
-                    'sn' => $serial,
+                    'pid' => $pid,
                     'views' => 'single',
                 ]);
+            } else {
+                // ค้นหาด้วย serial + ระบุ PID เป็น selected_skumain 
+                // เพื่อบังคับให้ดึงข้อมูลสินค้าตัวที่ตรงกับตอนแจ้งซ่อมเป๊ะๆ (แก้ปัญหา Combo Set)
+                $response = $this->fetchDataFromApi([
+                    'sn' => $serial,
+                    'selected_skumain' => $pid,
+                    'views' => 'single',
+                ]);
+                
+                // ถ้าดึงด้วยคู่ Serial+PID ไม่สำเร็จ ให้ Fallback กลับไปดึงด้วย PID อย่างเดียว
                 if (!$response['status']) {
                     Log::warning('🔁 serial search failed, retrying with pid', [
                         'serial' => $serial,
@@ -934,11 +1231,6 @@ class SearchController extends Controller
                         'views' => 'single',
                     ]);
                 }
-            } else {
-                $response = $this->fetchDataFromApi([
-                    'pid' => $pid,
-                    'views' => 'single',
-                ]);
             }
 
             if (!$response['status']) {
@@ -951,10 +1243,9 @@ class SearchController extends Controller
             $diagram_layers = $sku['diagram_layers'] ?? [];
             $model_options = $sku['model_options'] ?? [];
             $active_layout = $sku['active_layout'] ?? 'outside';
+            $warrantyperiod = $sku['warrantyperiod'] ?? 0;
 
-            // $listbehavior = $response['listbehavior'] ?? [];
-
-            //ผูก behavior เฉพาะ pid นี้เข้าไป
+            // ผูก behavior เฉพาะ pid นี้เข้าไป
             $listbehavior = $sku['listbehavior'] ?? [];
 
             // ดึงค่ารับประกัน
@@ -986,40 +1277,6 @@ class SearchController extends Controller
             $buy_date = trim($buy_date ?? '');
             if (in_array($insurance_expire, ['', '-', 'ไม่มีข้อมูล'], true)) $insurance_expire = null;
             if (in_array($buy_date, ['', '-', 'ไม่มีข้อมูล'], true)) $buy_date = null;
-
-            // ตรวจสถานะประกัน
-            // $warranty_status = false;
-            // $warranty_text = 'ไม่อยู่ในประกัน';
-            // $warranty_color = 'red';
-
-            // // ถ้าไม่มีวันหมดประกัน + ไม่มีวันซื้อ = ยังไม่ได้ลงทะเบียน
-            // if (empty($insurance_expire) && empty($buy_date)) {
-            //     $warranty_status = false;
-            //     $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
-            //     $warranty_color = 'orange';
-            // } elseif ($warrantyexpire === true) {
-            //     $warranty_status = true;
-            //     $warranty_text = 'อยู่ในประกัน';
-            //     $warranty_color = 'green';
-            // } elseif (!empty($insurance_expire) && strtotime($insurance_expire)) {
-            //     try {
-            //         $expireDate = Carbon::parse($insurance_expire);
-            //         if ($expireDate->isFuture()) {
-            //             $warranty_status = true;
-            //             $warranty_text = 'อยู่ในประกัน';
-            //             $warranty_color = 'green';
-            //         } else {
-            //             $warranty_status = false;
-            //             $warranty_text = 'หมดอายุการรับประกัน';
-            //             $warranty_color = 'red';
-            //         }
-            //     } catch (\Exception $e) {
-            //     }
-            // } else {
-            //     $warranty_status = false;
-            //     $warranty_text = 'ไม่อยู่ในประกัน';
-            //     $warranty_color = 'red';
-            // }
 
             // ตรวจสถานะประกัน
             $warranty_status = false;
@@ -1120,11 +1377,36 @@ class SearchController extends Controller
             ];
         }
     }
+    
 
-
-    private function findWarranty($serial_id, $warranty_expire = false)
+    private function resolveWarrantyDatesByPid(string $serial, string $pid): array
     {
-        $findWarranty = WarrantyProduct::query()->where('serial_id', $serial_id)->first();
+        $history = \App\Models\TblHistoryProd::where('serial_number', $serial)
+            ->where('model_code', $pid)
+            ->where('status', 'enabled')
+            ->orderByDesc('create_at')
+            ->first();
+        if ($history) {
+            return [$history->insurance_expire, $history->buy_date];
+        }
+
+        $local = WarrantyProduct::where('serial_id', $serial)
+            ->where('pid', $pid)
+            ->first();
+        if ($local) {
+            return [$local->expire_date, $local->date_warranty];
+        }
+
+        return [null, null];
+    }
+
+    private function findWarranty($serial_id, $warranty_expire = false, ?string $model_code = null)
+    {
+        $query = WarrantyProduct::query()->where('serial_id', $serial_id);
+        if ($model_code) {
+            $query->where('pid', $model_code);
+        }
+        $findWarranty = $query->first();
         if ($findWarranty) {
             $dateWarranty = Carbon::parse($findWarranty->date_warranty);
             $expireDate = Carbon::parse($findWarranty->expire_date);
@@ -1132,6 +1414,7 @@ class SearchController extends Controller
             if ($now->greaterThanOrEqualTo($dateWarranty) && $now->lessThanOrEqualTo($expireDate)) {
                 return true;
             } else return false;
-        } else $warranty_expire;
+        }
+        return $warranty_expire;
     }
 }

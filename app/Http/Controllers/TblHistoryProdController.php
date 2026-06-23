@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\logStamp;
 use App\Models\TblHistoryProd;
 use App\Services\PowerAccessoriesService;
+use App\Services\WarrantySearchService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -150,23 +151,99 @@ class TblHistoryProdController extends Controller
         }
 
         $serial_id      = $request->input('serial_id');
-        $pid            = $request->input('pid');
-        $warrantyPeriod = (int) $request->input('warrantyperiod');
-        $expireDate     = $dateWarranty->copy()->addMonths($warrantyPeriod);
+        $selected_skumain = $request->input('selected_skumain');
 
-        // รับข้อมูล power_accessories จาก Frontend
+        // Re-verify product data:
+        // Detection  → getdatadup (new API) to handle multiple-skumain serials.
+        // Product data → getdata   (old API) called with the selected skumain PID.
+        $pid            = $request->input('pid');
+        $pname          = $request->input('pname');
+        $facmodel       = $request->input('facmodel');
+        $warrantyPeriod = (int) $request->input('warrantyperiod');
+        $otherModelCodes = [];
+        try {
+            $rawData     = WarrantySearchService::fetchRaw($serial_id);
+            if (WarrantySearchService::hasMultipleSkumain($rawData) && !$selected_skumain) {
+                return response()->json([
+                    'message' => 'กรุณาเลือกสินค้าที่ต้องการลงทะเบียนก่อนบันทึก'
+                ], 422);
+            }
+            if ($selected_skumain && !isset($rawData[$selected_skumain])) {
+                return response()->json([
+                    'message' => 'ไม่พบสินค้าที่เลือกในข้อมูลหมายเลขซีเรียลนี้'
+                ], 422);
+            }
+            $selectedKey = $selected_skumain ?? array_key_first($rawData);
+
+            // Use getdata (old API) with the selected skumain PID for authoritative product details.
+            try {
+                $productData    = WarrantySearchService::fetchBySkumain($selectedKey);
+                $mainAsset      = ($productData['assets'][$selectedKey] ?? $productData['assets'][array_key_first($productData['assets'] ?? [])] ?? []);
+                $pid            = $productData['skumain'] ?? $mainAsset['pid'] ?? $pid;
+                $pname          = $mainAsset['pname'] ?? $pname;
+                $facmodel       = $mainAsset['facmodel'] ?? $facmodel;
+                $warrantyPeriod = (int)($mainAsset['warrantyperiod'] ?? $warrantyPeriod);
+            } catch (\Exception $e) {
+                // Fallback to getdatadup data if getdata call fails
+                Log::warning("warranty-history.store getdata verify failed [{$selectedKey}]: " . $e->getMessage());
+                $result = isset($rawData[$selectedKey]) ? $rawData[$selectedKey] : reset($rawData);
+                $main   = $result['main_assets'] ?? [];
+                if (!empty($main)) {
+                    $pid            = $main['pid'] ?? $pid;
+                    $pname          = $main['pname'] ?? $pname;
+                    $facmodel       = $main['facmodel'] ?? $facmodel;
+                    $warrantyPeriod = (int)($main['warrantyperiod'] ?? $warrantyPeriod);
+                }
+            }
+
+            // outer key ของ rawData = skumain = model_code — เก็บของ skumain ที่ไม่ได้เลือก
+            foreach ($rawData as $modelCode => $_) {
+                if ($modelCode !== $selectedKey) {
+                    $otherModelCodes[] = $modelCode;
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning("warranty-history.store API verify failed [{$serial_id}]: " . $e->getMessage());
+            // ถ้า serial ไม่ใช่ 9999 และ API verify ล้มเหลว ให้หยุดเพื่อป้องกันบันทึกด้วยข้อมูลที่ไม่ได้รับการตรวจสอบ
+            if (!str_starts_with((string) $serial_id, '9999')) {
+                return response()->json([
+                    'message' => 'ไม่สามารถยืนยันข้อมูลสินค้ากับระบบได้ กรุณาลองใหม่อีกครั้ง'
+                ], 503);
+            }
+        }
+
+        $expireDate = $dateWarranty->copy()->addMonths($warrantyPeriod);
+
+        // รับข้อมูล power_accessories และ combo_items จาก Frontend
         $powerAccessories = json_decode($request->input('power_accessories'), true);
         $comboItems = json_decode($request->input('combo_items'), true);
+
+        // กรอง combo_items และ power_accessories ที่ตรงกับ model_code ของ skumain อื่นออก
+        if (!empty($otherModelCodes)) {
+            $comboItems = array_values(array_filter(
+                $comboItems ?? [],
+                fn($item) => !in_array($item['pid'] ?? null, $otherModelCodes)
+            ));
+            foreach ($powerAccessories ?? [] as $cat => &$accList) {
+                $accList = array_values(array_filter(
+                    $accList,
+                    fn($acc) => !in_array($acc['accessory_sku'] ?? null, $otherModelCodes)
+                ));
+            }
+            unset($accList);
+        }
 
         logStamp::query()->create([
             'description' => Auth::user()->user_code . " พยายามลงทะเบียนรับประกัน $serial_id"
         ]);
 
-        // เช็คว่าเคยลงทะเบียน Serial นี้ไปแล้วหรือยัง (เช็คแค่ record เดียวก็พอรู้แล้วว่าลงไปแล้ว)
-        $existing = TblHistoryProd::where('serial_number', $serial_id)->first();
+        // เช็คด้วย serial_number + model_code คู่กัน เพราะ serial เดียวกันอาจลงทะเบียนกับ model ต่างกันได้
+        $existing = TblHistoryProd::where('serial_number', $serial_id)
+            ->where('model_code', $pid)
+            ->first();
         if ($existing) {
             return response()->json([
-                'message' => "Serial Number {$serial_id} ถูกลงทะเบียนแล้ว"
+                'message' => "Serial Number {$serial_id} ได้ลงทะเบียนสินค้า {$pid} ไปแล้ว"
             ], 422);
         }
 
@@ -192,8 +269,8 @@ class TblHistoryProdController extends Controller
             $mainItem = TblHistoryProd::create([
                 'serial_number'    => $serial_id,
                 'model_code'       => $pid,
-                'product_name'     => $request->input('pname'),
-                'model_name'       => $request->input('facmodel'),
+                'product_name'     => $pname,
+                'model_name'       => $facmodel,
                 'buy_date'         => $dateWarranty->toDateString(),
                 'insurance_expire' => $expireDate->toDateString(),
                 'cust_tel'         => $request->input('cust_tel', ''),

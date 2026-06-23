@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\logStamp;
 use App\Models\WarrantyProduct;
 use App\Services\PowerAccessoriesService;
+use App\Services\WarrantySearchService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -220,6 +220,7 @@ class WarrantyProductController extends Controller
         ]);
 
         $serial_id = trim($request->input('serial_id'));
+        $selected_skumain = $request->input('selected_skumain');
 
         logStamp::query()->create([
             'description' => Auth::user()->user_code . " ค้นหาหมายเลขซีเรียล {$serial_id} ในหน้าลงทะเบียนรับประกัน"
@@ -227,188 +228,38 @@ class WarrantyProductController extends Controller
 
         try {
             $start = microtime(true);
-            $URL = env('VITE_WARRANTY_SN_API_GETDATA');
-
-            $response = Http::timeout(15)->get($URL, ['search' => $serial_id]);
+            $rawData = WarrantySearchService::fetchRaw($serial_id);
             $elapsed = number_format(microtime(true) - $start, 2);
 
-            if (!$response->successful()) {
-                throw new \Exception('API ตอบกลับไม่สำเร็จ');
+            // When multiple products match the serial and the user hasn't chosen yet,
+            // return a selection payload instead of a product.
+            if (WarrantySearchService::hasMultipleSkumain($rawData) && !$selected_skumain) {
+                return response()->json([
+                    'needs_selection' => true,
+                    'options'         => WarrantySearchService::extractOptions($rawData),
+                    'elapsed'         => $elapsed,
+                    'time'            => Carbon::now(),
+                ]);
             }
 
-            $data = $response->json();
-            if (($data['status'] ?? '') !== 'SUCCESS') {
-                throw new \Exception($data['message'] ?? 'ไม่พบหมายเลขซีเรียลในระบบ');
-            }
+            // Use the explicitly selected skumain, or fall back to the only result.
+            $result = ($selected_skumain && isset($rawData[$selected_skumain]))
+                ? $rawData[$selected_skumain]
+                : reset($rawData);
 
-            if (!str_contains($data['search_type'] ?? '', 'serial')) {
-                throw new \Exception('ระบบอนุญาตให้ค้นหาด้วยหมายเลขซีเรียล (Serial) เท่านั้น');
-            }
-
-            // --- เริ่มแก้: ดึงข้อมูลจาก main_assets เป็นหลัก ---
-            $main_assets = $data['main_assets'] ?? [];
-
-            // ตรวจสอบว่ามี main_assets หรือไม่ (ถ้ามีให้ยึดข้อมูลจาก main_assets เลย ครอบคลุมทั้ง Combo และ Accessory)
-            if (!empty($main_assets)) {
-                $pid = $main_assets['pid'] ?? ($data['skumain'] ?? '');
-                $pname = $main_assets['pname'] ?? '';
-                $facmodel = $main_assets['facmodel'] ?? $pid;
-                $display_serial = $main_assets['serial'] ?? $serial_id; // บังคับใช้ Serial ของเครื่องหลักเสมอ
-                $imagesku = $main_assets['imagesku'][0] ?? null;
-                $warrantyperiod = $main_assets['warrantyperiod'] ?? '';
-                $warrantycondition = $main_assets['warrantycondition'] ?? '';
-                $warrantynote = $main_assets['warrantynote'] ?? '';
-            } else {
-                // Fallback กรณีไม่มีชุด main_assets ส่งมา ให้ดึงจาก assets แทน
-                $assets = $data['assets'] ?? [];
-                $pid = $data['skumain'] ?? array_key_first($assets);
-                $asset = $assets[$pid] ?? [];
-
-                $pname = $asset['pname'] ?? '';
-                $facmodel = $asset['facmodel'] ?? $pid;
-                $display_serial = $serial_id;
-                $imagesku = $asset['imagesku'][0] ?? null;
-                $warrantyperiod = $asset['warrantyperiod'] ?? '';
-                $warrantycondition = $asset['warrantycondition'] ?? '';
-                $warrantynote = $asset['warrantynote'] ?? '';
-            }
-            // --- จบแก้ ---
-
-            $insurance_expire = $data['insurance_expire'] ?? null;
-            $buy_date = $data['buy_date'] ?? null;
-
-            if (empty($insurance_expire) || empty($buy_date)) {
-                $local = WarrantyProduct::where('serial_id', $display_serial)->first();
-                if ($local) {
-                    $insurance_expire = $insurance_expire ?: $local->expire_date;
-                    $buy_date = $buy_date ?: $local->date_warranty;
-                }
-            }
-
-            $warranty_status = false;
-            $warranty_color = 'red';
-            $warranty_text = 'ไม่อยู่ในประกัน';
-
-            $warrantyexpire = $data['warrantyexpire'] ?? null;
-
-            if ($warrantyexpire === true) {
-                $warranty_status = true;
-                $warranty_color = 'green';
-                $warranty_text = 'อยู่ในประกัน';
-            } elseif (!empty($insurance_expire)) {
-                try {
-                    $expireDate = Carbon::parse($insurance_expire);
-                    if ($expireDate->isFuture()) {
-                        $warranty_status = true;
-                        $warranty_color = 'green';
-                        $warranty_text = 'อยู่ในประกัน';
-                    } else {
-                        $warranty_status = false;
-                        $warranty_color = 'red';
-                        $warranty_text = 'หมดอายุการรับประกัน';
-                    }
-                } catch (\Exception $e) {
-                    $warranty_text = 'ไม่สามารถระบุวันหมดประกันได้';
-                }
-            } elseif (!empty($buy_date) && empty($insurance_expire)) {
-                $warranty_status = true;
-                $warranty_color = 'green';
-                $warranty_text = 'อยู่ในประกัน';
-            } elseif ($warrantyexpire === false && empty($buy_date)) {
-                $warranty_status = false;
-                $warranty_color = 'orange';
-                $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
-            } else {
-                $warranty_status = false;
-                $warranty_color = 'orange';
-                $warranty_text = 'ยังไม่ได้ลงทะเบียนรับประกัน';
-            }
-
-            $sn_hd = $data['sn_hd'] ?? null;
-
-            // Filter removed accessories and replace serial_label with current_sn via service
-            $power_accessories = PowerAccessoriesService::filterForDisplay(
-                $data['power_accessories'] ?? null
-            );
-
-            // Enrich remaining items with qty and product image
-            foreach ($power_accessories as $category => &$accessories_list) {
-                foreach ($accessories_list as &$acc) {
-                    $acc['qty'] = 1;
-                    if ($category === 'battery' && isset($sn_hd['batteryQty'])) {
-                        $acc['qty'] = $sn_hd['batteryQty'];
-                    } elseif ($category === 'charger' && isset($sn_hd['chargerQty'])) {
-                        $acc['qty'] = $sn_hd['chargerQty'];
-                    }
-                    $acc_sku = $acc['accessory_sku'] ?? null;
-                    $acc['image_url'] = null;
-
-                    if ($acc_sku) {
-                        try {
-                            $accResponse = Http::timeout(5)->get($URL, ['search' => $acc_sku]);
-                            if ($accResponse->successful()) {
-                                $accData = $accResponse->json();
-                                if (!empty($accData['main_assets']['imagesku']) && is_array($accData['main_assets']['imagesku'])) {
-                                    $acc['image_url'] = $accData['main_assets']['imagesku'][0];
-                                }
-                            }
-                        } catch (\Exception $e) {
-                        }
-                    }
-                }
-                unset($acc);
-            }
-            unset($accessories_list);
-
-            // เพิ่ม Logic ดึงรายการสินค้าในชุด Combo
-            $is_combo = $data['is_combo'] ?? false;
-            $combo_items = [];
-            if ($is_combo && !empty($data['skuset'])) {
-                foreach ($data['skuset'] as $sku_item) {
-                    if (isset($data['assets'][$sku_item])) {
-                        $c_asset = $data['assets'][$sku_item];
-                        $combo_items[] = [
-                            'pid' => $sku_item,
-                            'pname' => $c_asset['pname'] ?? '',
-                            'facmodel' => $c_asset['facmodel'] ?? $sku_item,
-                            'imagesku' => $c_asset['imagesku'][0] ?? null,
-                            'warrantyperiod' => $c_asset['warrantyperiod'] ?? '',
-                            'warrantycondition' => $c_asset['warrantycondition'] ?? '',
-                            'warrantynote' => $c_asset['warrantynote'] ?? '',
-                        ];
-                    }
-                }
-            }
-
-            $real_product = [
-                'pid' => $pid,
-                'pname' => $pname,
-                'facmodel' => $facmodel,
-                'serial_id' => $display_serial,
-                'imagesku' => $imagesku,
-                'warrantyperiod' => $warrantyperiod,
-                'warrantycondition' => $warrantycondition,
-                'warrantynote' => $warrantynote,
-                'insurance_expire' => $insurance_expire,
-                'buy_date' => $buy_date,
-                'warranty_status' => $warranty_status,
-                'power_accessories' => $power_accessories,
-                'is_combo' => $is_combo,
-                'combo_items' => $combo_items,
-                'sn_hd' => $sn_hd,
-            ];
+            $processed   = WarrantySearchService::processResult($result, $serial_id, $selected_skumain ?? null);
+            $real_product = $processed['real_product'];
 
             Log::info("Search Warranty Result: " . json_encode($real_product, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
             return response()->json([
                 'message' => 'success',
-                'searchResults' => $data,
                 'getRealProduct' => $real_product,
-                'warrantyAt' => $buy_date,
-                'expire_date' => $insurance_expire,
-                'warranty_status' => $warranty_status,
-                'warranty_color' => $warranty_color,
-                'warranty_text' => $warranty_text,
+                'warrantyAt' => $processed['buy_date'],
+                'expire_date' => $processed['insurance_expire'],
+                'warranty_status' => $processed['warranty_status'],
+                'warranty_color' => $processed['warranty_color'],
+                'warranty_text' => $processed['warranty_text'],
                 'time' => Carbon::now(),
                 'elapsed' => $elapsed,
             ]);
@@ -596,6 +447,7 @@ class WarrantyProductController extends Controller
         }
 
         $serial_id = $request->input('serial_id');
+        $selected_skumain = $request->input('selected_skumain');
         $power_accessories = json_decode($request->input('power_accessories'), true);
         $combo_items = json_decode($request->input('combo_items'), true); // ✅ ดึงรายการ Combo ส่งมาจาก Frontend
 
@@ -603,16 +455,81 @@ class WarrantyProductController extends Controller
             'description' => Auth::user()->user_code . " พยายามลงทะเบียนรับประกัน $serial_id"
         ]);
 
-        $existingWarranty = WarrantyProduct::where('serial_id', $serial_id)->first();
+        // Re-verify product data:
+        // Detection  → getdatadup (new API) to handle multiple-skumain serials.
+        // Product data → getdata   (old API) called with the selected skumain PID.
+        $pid             = $request->input('pid');
+        $p_name          = $request->input('p_name');
+        $warranty_period  = (int) $request->input('warrantyperiod');
+        $otherModelCodes  = [];
+        try {
+            $rawData     = WarrantySearchService::fetchRaw($serial_id);
+            if (WarrantySearchService::hasMultipleSkumain($rawData) && !$selected_skumain) {
+                return response()->json([
+                    'message' => 'กรุณาเลือกสินค้าที่ต้องการลงทะเบียนก่อนบันทึก'
+                ], 422);
+            }
+            if ($selected_skumain && !isset($rawData[$selected_skumain])) {
+                return response()->json([
+                    'message' => 'ไม่พบสินค้าที่เลือกในข้อมูลหมายเลขซีเรียลนี้'
+                ], 422);
+            }
+            $selectedKey = $selected_skumain ?? array_key_first($rawData);
+
+            // Use getdata (old API) with the selected skumain PID for authoritative product details.
+            try {
+                $productData     = WarrantySearchService::fetchBySkumain($selectedKey);
+                $mainAsset       = ($productData['assets'][$selectedKey] ?? $productData['assets'][array_key_first($productData['assets'] ?? [])] ?? []);
+                $pid             = $productData['skumain'] ?? $mainAsset['pid'] ?? $pid;
+                $p_name          = $mainAsset['pname'] ?? $p_name;
+                $warranty_period = (int)($mainAsset['warrantyperiod'] ?? $warranty_period);
+            } catch (\Exception $e) {
+                // Fallback to getdatadup data if getdata call fails
+                Log::warning("warranty.store getdata verify failed [{$selectedKey}]: " . $e->getMessage());
+                $result = isset($rawData[$selectedKey]) ? $rawData[$selectedKey] : reset($rawData);
+                $main   = $result['main_assets'] ?? [];
+                if (!empty($main)) {
+                    $pid             = $main['pid'] ?? $pid;
+                    $p_name          = $main['pname'] ?? $p_name;
+                    $warranty_period = (int)($main['warrantyperiod'] ?? $warranty_period);
+                }
+            }
+
+            // outer key ของ rawData = skumain — เก็บของ skumain ที่ไม่ได้เลือก
+            foreach ($rawData as $modelCode => $_) {
+                if ($modelCode !== $selectedKey) {
+                    $otherModelCodes[] = $modelCode;
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning("warranty.store API verify failed [{$serial_id}]: " . $e->getMessage());
+        }
+
+        // กรอง combo_items และ power_accessories ที่ตรงกับ model_code ของ skumain อื่นออก
+        if (!empty($otherModelCodes)) {
+            $combo_items = array_values(array_filter(
+                $combo_items ?? [],
+                fn($item) => !in_array($item['pid'] ?? null, $otherModelCodes)
+            ));
+            foreach ($power_accessories ?? [] as $cat => &$accList) {
+                $accList = array_values(array_filter(
+                    $accList,
+                    fn($acc) => !in_array($acc['accessory_sku'] ?? null, $otherModelCodes)
+                ));
+            }
+            unset($accList);
+        }
+
+        // เช็คด้วย serial_id + pid คู่กัน เพราะ serial เดียวกันอาจลงทะเบียนกับ model ต่างกันได้
+        $existingWarranty = WarrantyProduct::where('serial_id', $serial_id)
+            ->where('pid', $pid)
+            ->first();
         if ($existingWarranty) {
             return response()->json([
-                'message' => 'ซีเรียลนัมเบอร์นี้ได้ลงทะเบียนรับประกันไปแล้ว'
+                'message' => "ซีเรียลนัมเบอร์ {$serial_id} ได้ลงทะเบียนรับประกันสินค้า {$pid} ไปแล้ว"
             ], 422);
         }
 
-        $pid = $request->input('pid');
-        $p_name = $request->input('p_name');
-        $warranty_period = (int) $request->input('warrantyperiod');
         $expire_date = $dateWarranty->copy()->addMonths($warranty_period);
 
         $evidenceFilePath = null;

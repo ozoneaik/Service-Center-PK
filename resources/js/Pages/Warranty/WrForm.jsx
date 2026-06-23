@@ -13,10 +13,6 @@ import {
     Dialog,
     DialogContent,
     IconButton,
-    DialogTitle,
-    ListItemButton,
-    ListItemAvatar,
-    ListItemText,
 } from "@mui/material";
 import {
     Search,
@@ -29,15 +25,15 @@ import {
 import { useRef, useState } from "react";
 import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
 import ProductDetail from "@/Components/ProductDetail.jsx";
-import { Avatar, List, ListItem } from "flowbite-react";
 
 export default function WrForm() {
     const search = useRef(null);
-    const fileInputRef = useRef(null); // เพิ่ม ref สำหรับ file input
+    const fileInputRef = useRef(null);
     const [loading, setLoading] = useState(false);
     const [registering, setRegistering] = useState(false);
 
     const [product, setProduct] = useState(null);
+    const [skumainOptions, setSkumainOptions] = useState(null); // multiple-skumain selection
     const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false);
     const [isPendingApproval, setIsPendingApproval] = useState(false);
 
@@ -48,6 +44,7 @@ export default function WrForm() {
 
     // state ใหม่
     const [custTel, setCustTel] = useState("");
+    const [selectedSkumain, setSelectedSkumain] = useState(null); // skumain ที่ผู้ใช้เลือก
     const [previewAccImage, setPreviewAccImage] = useState(null);
 
     const handleRedirectToRepair = () => {
@@ -57,68 +54,70 @@ export default function WrForm() {
         });
     };
 
+    const applyProductData = (data) => {
+        setProduct(data.getRealProduct);
+        setProduct((prev) => ({ ...prev, expire_date: data.expire_date }));
+
+        if (data.expire_date?.trim()) {
+            setIsAlreadyRegistered(true);
+            setIsPendingApproval(false);
+        } else if (data.warrantyAt?.trim()) {
+            setIsAlreadyRegistered(true);
+            setIsPendingApproval(false);
+        } else {
+            setIsAlreadyRegistered(false);
+            setIsPendingApproval(false);
+        }
+    };
+
     const handleSearch = async (e) => {
         e.preventDefault();
         setProduct(null);
+        setSkumainOptions(null);
+        setSelectedSkumain(null);
         setIsAlreadyRegistered(false);
         setIsPendingApproval(false);
         setSelectedDay("");
         setSelectedFile(null);
         setFilePreview(null);
         setCustTel("");
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
+        if (fileInputRef.current) fileInputRef.current.value = "";
+
         try {
             setLoading(true);
-            const { data, status } = await axios.post(
-                route("warranty.search", {
-                    serial_id: search.current.value,
-                }),
-            );
-
-            console.log(data, status);
-            setProduct(data.getRealProduct);
-            const expire_date = data.expire_date;
-            setProduct((prevProduct) => ({
-                ...prevProduct,
-                expire_date,
-            }));
-
-            // Check if already registered
-            // if (data.expire_date && data.expire_date.trim() !== '') {
-            //     setIsAlreadyRegistered(true);
-            // } else {
-            //     setIsAlreadyRegistered(false);
-            // }
-
-            // ตรวจสอบสถานะการลงทะเบียน
-            if (data.expire_date && data.expire_date.trim() !== "") {
-                // มีวันหมดประกัน = ลงทะเบียนเรียบร้อย
-                setIsAlreadyRegistered(true);
-                setIsPendingApproval(false);
-            } else if (data.warrantyAt && data.warrantyAt.trim() !== "") {
-                // มีวันซื้อ (warrantyAt) แต่ไม่มีวันหมดประกัน = อยู่ในประกัน (เปลี่ยนจากรออนุมัติ)
-                setIsAlreadyRegistered(true);
-                setIsPendingApproval(false);
-            } else {
-                // ไม่มีทั้งคู่ = ยังไม่ได้ลงทะเบียน
-                setIsAlreadyRegistered(false);
-                setIsPendingApproval(false);
-            }
-        } catch (error) {
-            const serverMessage = error.response?.data?.message;
-            const errorMessage =
-                serverMessage || error.message || "เกิดข้อผิดพลาด";
-
-            console.log("Message to show:", errorMessage);
-
-            AlertDialog({
-                icon: "error",
-                title: "แจ้งเตือน",
-                text: errorMessage,
-                message: errorMessage,
+            const { data } = await axios.post(route("warranty.search"), {
+                serial_id: search.current.value,
             });
+
+            if (data.needs_selection) {
+                setSkumainOptions(data.options);
+                return;
+            }
+
+            applyProductData(data);
+        } catch (error) {
+            const errorMessage =
+                error.response?.data?.message || error.message || "เกิดข้อผิดพลาด";
+            AlertDialog({ icon: "error", title: "แจ้งเตือน", text: errorMessage });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSkumainSelect = async (skumain) => {
+        try {
+            setLoading(true);
+            setSkumainOptions(null);
+            setSelectedSkumain(skumain);
+            const { data } = await axios.post(route("warranty.search"), {
+                serial_id: search.current.value,
+                selected_skumain: skumain,
+            });
+            applyProductData(data);
+        } catch (error) {
+            const errorMessage =
+                error.response?.data?.message || error.message || "เกิดข้อผิดพลาด";
+            AlertDialog({ icon: "error", title: "แจ้งเตือน", text: errorMessage });
         } finally {
             setLoading(false);
         }
@@ -171,6 +170,9 @@ export default function WrForm() {
                             );
                             formData.append("cust_tel", custTel);
                             formData.append("evidence_file", selectedFile);
+                            if (selectedSkumain) {
+                                formData.append("selected_skumain", selectedSkumain);
+                            }
 
                             if (product.power_accessories) {
                                 formData.append(
@@ -319,9 +321,106 @@ export default function WrForm() {
                         </form>
                     </Grid2>
 
+                    {/* --- skumain selection: shown when serial maps to multiple products --- */}
+                    {skumainOptions && !product && (
+                        <Grid2 size={12}>
+                            <Paper
+                                elevation={2}
+                                sx={{ p: 3, borderLeft: "4px solid #1976d2" }}
+                            >
+                                <Typography variant="h6" gutterBottom color="primary">
+                                    กรุณาเลือกสินค้าที่ต้องการลงทะเบียน
+                                </Typography>
+                                <Stack spacing={2} sx={{ mt: 2 }}>
+                                    {skumainOptions.map((opt) => (
+                                        <Box
+                                            key={opt.skumain}
+                                            onClick={() => handleSkumainSelect(opt.skumain)}
+                                            sx={{
+                                                p: 2,
+                                                border: "1px solid #e0e0e0",
+                                                borderRadius: 2,
+                                                bgcolor: "#fafafa",
+                                                display: "flex",
+                                                gap: 2,
+                                                alignItems: "center",
+                                                cursor: "pointer",
+                                                transition: "all 0.15s",
+                                                "&:hover": {
+                                                    bgcolor: "#e3f2fd",
+                                                    borderColor: "#1976d2",
+                                                },
+                                            }}
+                                        >
+                                            <img
+                                                src={
+                                                    opt.imagesku ||
+                                                    `https://images.dcpumpkin.com/images/product/500/${opt.pid}.jpg`
+                                                }
+                                                alt={opt.pname}
+                                                onError={(e) => {
+                                                    e.target.src =
+                                                        "https://images.dcpumpkin.com/images/product/500/default.jpg";
+                                                }}
+                                                style={{
+                                                    width: 80,
+                                                    height: 80,
+                                                    objectFit: "contain",
+                                                    borderRadius: 4,
+                                                    border: "1px solid #ddd",
+                                                    backgroundColor: "#fff",
+                                                    flexShrink: 0,
+                                                }}
+                                            />
+                                            <Box flex={1}>
+                                                <Typography
+                                                    variant="subtitle1"
+                                                    fontWeight="bold"
+                                                >
+                                                    {opt.pname}
+                                                </Typography>
+                                                <Stack
+                                                    direction="row"
+                                                    spacing={3}
+                                                    flexWrap="wrap"
+                                                    sx={{ mt: 0.5 }}
+                                                >
+                                                    <Typography
+                                                        variant="body2"
+                                                        color="text.secondary"
+                                                    >
+                                                        <b>SKU:</b> {opt.pid}
+                                                    </Typography>
+                                                    {opt.facmodel && (
+                                                        <Typography
+                                                            variant="body2"
+                                                            color="text.secondary"
+                                                        >
+                                                            <b>รุ่น:</b>{" "}
+                                                            {opt.facmodel}
+                                                        </Typography>
+                                                    )}
+                                                    {opt.warrantyperiod && (
+                                                        <Typography
+                                                            variant="body2"
+                                                            color="success.main"
+                                                        >
+                                                            <b>ประกัน:</b>{" "}
+                                                            {opt.warrantyperiod} เดือน
+                                                        </Typography>
+                                                    )}
+                                                </Stack>
+                                            </Box>
+                                        </Box>
+                                    ))}
+                                </Stack>
+                            </Paper>
+                        </Grid2>
+                    )}
+
                     {product && (
                         <Grid2 size={12}>
-                            {/* <ProductDetail {...product} serial={search.current.value} /> */}
+                             {/* <ProductDetail {...product} serial={search.current.value} /> */}
                             <ProductDetail
                                 {...product}
                                 serial={product.serial_id}

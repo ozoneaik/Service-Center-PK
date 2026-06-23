@@ -40,6 +40,9 @@ export default function Repair({ DATA }) {
 
     const [comboSets, setComboSets] = useState();
     const [openSelSku, setOpenSelSku] = useState(false);
+    const [skumainOptions, setSkumainOptions] = useState();
+    const [openSelSkumain, setOpenSelSkumain] = useState(false);
+    const [pendingSearch, setPendingSearch] = useState({ sn: "", pid: "" });
 
     const [accSets, setAccSets] = useState();
     const [openSelAcc, setOpenSelAcc] = useState(false);
@@ -204,7 +207,12 @@ export default function Repair({ DATA }) {
     //     }
     // };
 
-    const handleSearch = async (e, autoSn = null, autoPid = null) => {
+    const handleSearch = async (
+        e,
+        autoSn = null,
+        autoPid = null,
+        selectedSkumain = null,
+    ) => {
         // ป้องกัน Error กรณีเรียกฟังก์ชันอัตโนมัติแบบไม่มี Event
         if (e) e.preventDefault();
 
@@ -228,8 +236,18 @@ export default function Repair({ DATA }) {
                     {
                         SN: currentSn,
                         PID: currentPid,
+                        ...(selectedSkumain
+                            ? { selected_skumain: selectedSkumain }
+                            : {}),
                     },
                 );
+
+                if (data.needs_selection) {
+                    setPendingSearch({ sn: currentSn, pid: currentPid });
+                    setSkumainOptions(data.options || []);
+                    setOpenSelSkumain(true);
+                    return;
+                }
 
                 // flag combo: รองรับทั้งของใหม่/เก่า
                 const combo_set = data.data.combo_set ?? data.is_combo ?? false;
@@ -364,9 +382,28 @@ export default function Repair({ DATA }) {
         }
     };
 
+    const handleSkumainSelect = (option) => {
+        setOpenSelSkumain(false);
+        handleSearch(
+            null,
+            pendingSearch.sn,
+            pendingSearch.pid,
+            option.skumain || option.pid,
+        );
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title={"แจ้งซ่อม"} />
+            {openSelSkumain && (
+                <SelectSku
+                    sku_list={skumainOptions}
+                    open={openSelSkumain}
+                    setOpen={setOpenSelSkumain}
+                    onSelect={handleSkumainSelect}
+                />
+            )}
+
             {openSelSku && (
                 <SelectSku
                     sku_list={comboSets}
