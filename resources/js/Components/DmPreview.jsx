@@ -184,15 +184,18 @@ export default function DmPreview({
           raw = Array.isArray(data) ? data : [];
         }
 
+        const ts = Date.now();
+        const withTs = (url) => url ? `${url}?t=${ts}` : null;
+
         // map ให้มี layout เป็นเลขและ path_file ปลอดภัย
         const mapped = (raw || []).map((x, i) => ({
           ...x,
           layer: x?.layer || `รูปที่ ${i + 1}`,
-          path_file: x?.path_file || x?.img_url || null,
+          path_file: withTs(x?.path_file || x?.img_url || null),
           layout: Number(x?.layout || i + 1),
           typedm: x?.typedm || dm_type,
-          pdf_path: x?.pdf_path || null,
-          manual_pdf_path: x?.manual_pdf_path || null,
+          pdf_path: withTs(x?.pdf_path || null),
+          manual_pdf_path: withTs(x?.manual_pdf_path || null),
         })).filter(x => !!x.path_file);
 
         if (!active) return;
