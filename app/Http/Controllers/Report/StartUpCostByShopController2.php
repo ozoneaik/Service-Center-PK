@@ -22,6 +22,126 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class StartUpCostByShopController2 extends Controller
 {
+    // public function index(Request $request)
+    // {
+    //     if (Auth::user()->role !== 'admin' && Auth::user()->role !== 'acc') {
+    //         return redirect()->route('report.g-start-up-cost-shop.index');
+    //     }
+
+    //     $selected_shops = array_values(array_filter((array) $request->input('shops', [])));
+    //     $is_all_shops = empty($selected_shops);
+    //     $selected_shop = $is_all_shops ? 'all' : (count($selected_shops) === 1 ? $selected_shops[0] : 'multi');
+    //     $shop = $is_all_shops ? null : $selected_shops[0];
+
+    //     // รับค่าวันที่จาก Request
+    //     $start_date = $request->query('start_date');
+    //     $end_date = $request->query('end_date');
+    //     $status = $request->query('status', 'WaitJob');
+
+    //     // รายชื่อร้านทั้งหมด
+    //     $shops = StoreInformation::where('is_active', 'Y')
+    //         ->select('is_code_cust_id', 'shop_name')
+    //         ->get();
+
+    //     $activeShopIds = $shops->pluck('is_code_cust_id')->toArray();
+
+    //     if ($is_all_shops) {
+    //         $current_shop_name = 'ทั้งหมด';
+    //     } else {
+    //         $current_shop_name = StoreInformation::where('is_code_cust_id', $shop)
+    //             ->value('shop_name');
+    //     }
+
+    //     $query = JobList::query()
+    //         ->leftJoin('store_information', 'job_lists.is_code_key', '=', 'store_information.is_code_cust_id')
+    //         ->select('job_lists.*', 'store_information.shop_name')
+    //         ->where('job_lists.status', 'success')
+    //         ->where('job_lists.warranty', true)
+    //         ->where('job_lists.stuc_status', 'Y')
+    //         ->whereExists(function ($sub) {
+    //             $sub->select(DB::raw(1))
+    //                 ->from('spare_parts')
+    //                 ->whereColumn('spare_parts.job_id', 'job_lists.job_id')
+    //                 ->where('spare_parts.sp_code', '!=', 'SV001');
+    //         });
+
+    //     if (!$is_all_shops) {
+    //         // กรณีเลือกร้านบางร้าน
+    //         $query->whereIn('job_lists.is_code_key', $selected_shops);
+    //     } else {
+    //         // กรณีเลือกทั้งหมด: ให้ดึงมาเฉพาะ Job ของร้านที่ Active เท่านั้น
+    //         $query->whereIn('job_lists.is_code_key', $activeShopIds);
+    //     }
+
+    //     switch ($status) {
+    //         case 'WaitJob': // Y และยังไม่มีเลข CT
+    //             $query->where('job_lists.stuc_status', 'Y')->whereNull('job_lists.stuc_doc_no');
+    //             break;
+    //         case 'WaitCN': // Y, มีเลข CT แล้ว, แต่ยังไม่มี CN
+    //             $query->where('job_lists.stuc_status', 'Y')
+    //                 ->whereNotNull('job_lists.stuc_doc_no')
+    //                 ->whereNull('job_lists.cn_doc');
+    //             break;
+    //         case 'HasCN': // Y และ มีเลข CN แล้ว
+    //             $query->where('job_lists.stuc_status', 'Y')->whereNotNull('job_lists.cn_doc');
+    //             break;
+    //         case 'Paid': // สถานะเป็น P
+    //             $query->where('job_lists.stuc_status', 'P');
+    //             break;
+    //         case 'All':
+    //         default:
+    //             break;
+    //     }
+
+    //     // เพิ่มเงื่อนไขกรองวันที่ ถ้ามีการส่งมา
+    //     if ($start_date && $end_date) {
+    //         try {
+    //             $start = Carbon::createFromFormat('Y-m', $start_date)->startOfMonth()->format('Y-m-d H:i:s');
+    //             $end = Carbon::createFromFormat('Y-m', $end_date)->endOfMonth()->format('Y-m-d H:i:s');
+    //             $query->whereBetween('job_lists.close_job_at', [$start, $end]);
+    //         } catch (\Exception $e) {
+    //         }
+    //     }
+
+    //     $jobs = (clone $query)->orderBy('job_lists.created_at', 'desc')->paginate(10);
+    //     $jobs_all = (clone $query)->orderBy('job_lists.created_at', 'desc')->get();
+
+    //     foreach ($jobs as $key => $job) {
+    //         $start_up_cost = StartUpCost::query()->where('sku_code', $job['pid'])->first();
+    //         $jobs[$key]['start_up_cost'] = $start_up_cost ? (float) $start_up_cost->startup_cost : 0;
+    //     }
+
+    //     $total_start_up_cost = 0;
+    //     foreach ($jobs_all as $job) {
+    //         $start_up_cost = StartUpCost::query()->where('sku_code', $job['pid'])->first();
+    //         $total_start_up_cost += $start_up_cost ? (float) $start_up_cost->startup_cost : 0;
+    //     }
+
+    //     $all_selectable_ids = (clone $query)
+    //         ->whereNull('job_lists.stuc_doc_no')
+    //         ->pluck('job_lists.job_id')
+    //         ->toArray();
+
+    //     return Inertia::render(
+    //         'Reports/StartUpCostByShop/SucBsList2',
+    //         [
+    //             'jobs' => $jobs,
+    //             'all_selectable_ids' => $all_selectable_ids,
+    //             'total_start_up_cost' => $total_start_up_cost,
+    //             'shops' => $shops,
+    //             'selected_shop' => $selected_shop,
+    //             'selected_shops' => $selected_shops,
+    //             'current_shop_name' => $current_shop_name,
+    //             'is_admin' => Auth::user()->role === 'admin',
+    //             'is_acc' => Auth::user()->role === 'acc',
+    //             'filters' => [
+    //                 'start_date' => $start_date,
+    //                 'end_date' => $end_date,
+    //                 'status' => $status,
+    //             ]
+    //         ]
+    //     );
+    // }
     public function index(Request $request)
     {
         if (Auth::user()->role !== 'admin' && Auth::user()->role !== 'acc') {
@@ -45,11 +165,14 @@ class StartUpCostByShopController2 extends Controller
 
         $activeShopIds = $shops->pluck('is_code_cust_id')->toArray();
 
+        // ปรับการแสดงผลชื่อร้านค้าให้รองรับกรณีเลือกหลายร้านเหมือนหน้า docList
         if ($is_all_shops) {
             $current_shop_name = 'ทั้งหมด';
+        } elseif (count($selected_shops) === 1) {
+            $current_shop_name = StoreInformation::where('is_code_cust_id', $shop)->value('shop_name');
         } else {
-            $current_shop_name = StoreInformation::where('is_code_cust_id', $shop)
-                ->value('shop_name');
+            $shopNames = StoreInformation::whereIn('is_code_cust_id', $selected_shops)->pluck('shop_name')->toArray();
+            $current_shop_name = implode(', ', $shopNames);
         }
 
         $query = JobList::query()
@@ -57,7 +180,7 @@ class StartUpCostByShopController2 extends Controller
             ->select('job_lists.*', 'store_information.shop_name')
             ->where('job_lists.status', 'success')
             ->where('job_lists.warranty', true)
-            // ->where('job_lists.stuc_status', 'Y')
+            // เอา ->where('job_lists.stuc_status', 'Y') ออก เพื่อไม่ให้ไปบล็อกสถานะ Paid (P)
             ->whereExists(function ($sub) {
                 $sub->select(DB::raw(1))
                     ->from('spare_parts')
@@ -73,6 +196,7 @@ class StartUpCostByShopController2 extends Controller
             $query->whereIn('job_lists.is_code_key', $activeShopIds);
         }
 
+        // จัดการ Status แบบเด็ดขาดตรงนี้
         switch ($status) {
             case 'WaitJob': // Y และยังไม่มีเลข CT
                 $query->where('job_lists.stuc_status', 'Y')->whereNull('job_lists.stuc_doc_no');
@@ -90,6 +214,7 @@ class StartUpCostByShopController2 extends Controller
                 break;
             case 'All':
             default:
+                // ดึงทั้ง Y และ P มาแสดง
                 $query->whereIn('job_lists.stuc_status', ['Y', 'P']);
                 break;
         }
@@ -157,7 +282,7 @@ class StartUpCostByShopController2 extends Controller
         $query = JobList::query()
             ->where('status', 'success')
             ->where('warranty', true)
-            // ->where('job_lists.stuc_status', 'Y')
+            ->where('job_lists.stuc_status', 'Y')
             ->whereExists(function ($sub) {
                 $sub->select(DB::raw(1))
                     ->from('spare_parts')
@@ -183,11 +308,6 @@ class StartUpCostByShopController2 extends Controller
                 break;
             case 'Paid':
                 $query->where('stuc_status', 'P');
-                break;
-            case 'All':
-            default:
-                // ดึงทั้งสถานะ Y และ P
-                $query->whereIn('stuc_status', ['Y', 'P']);
                 break;
         }
 
