@@ -57,7 +57,7 @@ class StartUpCostByShopController2 extends Controller
             ->select('job_lists.*', 'store_information.shop_name')
             ->where('job_lists.status', 'success')
             ->where('job_lists.warranty', true)
-            ->whereIn('job_lists.stuc_status', ['Y', 'P'])
+            ->where('job_lists.stuc_status', 'Y')
             ->whereExists(function ($sub) {
                 $sub->select(DB::raw(1))
                     ->from('spare_parts')
@@ -156,7 +156,7 @@ class StartUpCostByShopController2 extends Controller
         $query = JobList::query()
             ->where('status', 'success')
             ->where('warranty', true)
-            ->whereIn('stuc_status', ['Y', 'P'])
+            ->where('job_lists.stuc_status', 'Y')
             ->whereExists(function ($sub) {
                 $sub->select(DB::raw(1))
                     ->from('spare_parts')
