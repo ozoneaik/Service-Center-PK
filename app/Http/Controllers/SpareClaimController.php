@@ -359,7 +359,7 @@ class SpareClaimController extends Controller
         $shops = [];
         $areas = [];
         $selectedShop = $request->query('shop');
-        $selectedShops = [];  // multi-select สำหรับ admin
+        $selectedShops = array_values(array_filter((array) $request->query('shops', [])));
         $selectedArea = $request->query('area');
         $selectedReceiveStatus = $request->query('receive_status', 'all');
         $selectedStatus = $request->query('status');
@@ -382,8 +382,6 @@ class SpareClaimController extends Controller
                 ->orderBy('shop_name')
                 ->get();
 
-            // รับ shops[] สำหรับ multi-select (admin เลือกได้หลายร้าน)
-            $selectedShops = array_values(array_filter((array) $request->query('shops', [])));
         } else if ($isSale) {
             try {
                 $apiShops = $this->fetchShopsForSale($user->user_code);
@@ -514,7 +512,9 @@ class SpareClaimController extends Controller
                 }
                 // --- กรณีเป็น Sale ---
                 elseif ($isSale) {
-                    if ($selectedShop) {
+                    if (!empty($selectedShops)) {
+                        $query->whereIn('user_id', $selectedShops);
+                    } elseif ($selectedShop) {
                         $query->where('user_id', $selectedShop);
                     } elseif ($selectedArea) {
                         $shopIdsInArea = collect($shops)->where('sale_area_code', $selectedArea)->pluck('is_code_cust_id')->toArray();
