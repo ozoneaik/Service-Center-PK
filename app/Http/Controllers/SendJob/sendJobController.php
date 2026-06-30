@@ -501,94 +501,19 @@ class sendJobController extends Controller
     public function sendJobList(Request $request): Response
     {
         logStamp::query()->create(['description' => Auth::user()->user_code . " ดูเมนู ส่งซ่อมพิมคินฯ"]);
-        $user = Auth::user();
-        $isAdmin = $user->role === 'admin';
-        $isSale = session('is_sales_rep', false) || $user->role === 'sale';
-        $shops = [];
-        $areas = [];
-        $currentSale = null;
-        $selectedShop = $request->query('shop');
-        $selectedArea = $request->query('area');
-
         $query = JobList::query();
-
-        if ($isAdmin) {
-            $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
-                ->whereNotIn('is_code_cust_id', ['68263', '2760801005', '67132', 'How'])
-                ->orderBy('shop_name')
-                ->get();
-            if ($selectedShop) {
-                $query->where('is_code_key', $selectedShop);
-            }
-        } elseif ($isSale) {
-            try {
-                $apiShops = $this->fetchShopsForSale($user->user_code);
-                $collectionShops = collect($apiShops);
-                $saleData = $collectionShops->first();
-                $currentSale = [
-                    'name' => $saleData['sale_name'] ?? $user->name,
-                    'code' => $user->user_code
-                ];
-                $apiCustIds = $collectionShops->pluck('cust_id')->toArray();
-                $existingInDb = StoreInformation::whereIn('is_code_cust_id', $apiCustIds)
-                    ->pluck('is_code_cust_id')->toArray();
-                $collectionShops = $collectionShops->whereIn('cust_id', $existingInDb);
-
-                $areas = $collectionShops->map(fn($item) => [
-                    'code' => $item['sale_area_code'],
-                    'name' => $item['sale_area_name']
-                ])->unique('code')->values();
-
-                $shops = $collectionShops->map(fn($item) => [
-                    'is_code_cust_id' => $item['cust_id'],
-                    'shop_name'       => $item['cust_name'],
-                    'sale_area_code'  => $item['sale_area_code'],
-                    'sale_area_name'  => $item['sale_area_name']
-                ])->values();
-
-                if ($selectedShop) {
-                    $query->where('is_code_key', $selectedShop);
-                } elseif ($selectedArea) {
-                    $shopIds = $collectionShops->where('sale_area_code', $selectedArea)->pluck('cust_id')->toArray();
-                    $query->whereIn('is_code_key', $shopIds ?: ['none']);
-                } else {
-                    $myShopIds = $collectionShops->pluck('cust_id')->toArray();
-                    $query->whereIn('is_code_key', $myShopIds ?: ['none']);
-                }
-            } catch (\Exception $e) {
-                Log::error('sendJobList sale filter error: ' . $e->getMessage());
-                $query->where('is_code_key', 'none');
-            }
-        } else {
-            $query->where('is_code_key', $user->is_code_cust_id);
-        }
-
-        if ($request->filled('searchSku') && $request->filled('searchSn')) {
-            $query->where('pid', 'like', "%{$request->searchSku}%")
-                  ->where('serial_id', 'like', "%{$request->searchSn}%");
-        } elseif ($request->filled('searchSku')) {
+        if (isset($request->searchSku) && isset($request->searchSn)) {
+            $query->where('pid', 'like', "%{$request->searchSku}%")->where('serial_id', 'like', "%{$request->searchSn}%");
+        } elseif (isset($request->searchSku)) {
             $query->where('pid', 'like', "%{$request->searchSku}%");
-        } elseif ($request->filled('searchSn')) {
+        } elseif (isset($request->searchSn)) {
             $query->where('serial_id', 'like', "%{$request->searchSn}%");
         }
-
-        $jobs = $query->where('status', 'pending')
+        $jobs = $query->where('is_code_key', Auth::user()->is_code_cust_id)
+            ->where('status', 'pending')
             ->whereNull('group_job')
-            ->orderBy('id', 'desc')
-            ->get();
-
-        return Inertia::render('SendJobs/SenJobList', [
-            'jobs'        => $jobs,
-            'isAdmin'     => $isAdmin || $isSale,
-            'isSale'      => $isSale,
-            'shops'       => $shops,
-            'areas'       => $areas,
-            'currentSale' => $currentSale,
-            'filters'     => [
-                'shop' => $selectedShop,
-                'area' => $selectedArea,
-            ],
-        ]);
+            ->orderBy('id', 'desc')->get();
+        return Inertia::render('SendJobs/SenJobList', ['jobs' => $jobs]);
     }
 
     public function updateJobSelect(Request $request): \Illuminate\Http\RedirectResponse
@@ -675,53 +600,19 @@ class sendJobController extends Controller
     {
         $user = Auth::user();
         $isAdmin = $user->role === 'admin';
-        $isSale = session('is_sales_rep', false) || $user->role === 'sale';
         $shops = [];
-        $areas = [];
-        $currentSale = null;
 
+        // โหลดข้อมูลร้านค้า เฉพาะ Admin และกรองร้านที่ไม่ต้องการออก
         if ($isAdmin) {
             $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
                 ->whereNotIn('is_code_cust_id', ['68263', '2760801005', '67132', 'How'])
                 ->orderBy('shop_name')
                 ->get();
-        } elseif ($isSale) {
-            try {
-                $apiShops = $this->fetchShopsForSale($user->user_code);
-                $collectionShops = collect($apiShops);
-                $saleData = $collectionShops->first();
-                $currentSale = [
-                    'name' => $saleData['sale_name'] ?? $user->name,
-                    'code' => $user->user_code
-                ];
-                $apiCustIds = $collectionShops->pluck('cust_id')->toArray();
-                $existingInDb = StoreInformation::whereIn('is_code_cust_id', $apiCustIds)
-                    ->pluck('is_code_cust_id')->toArray();
-                $collectionShops = $collectionShops->whereIn('cust_id', $existingInDb);
-
-                $areas = $collectionShops->map(fn($item) => [
-                    'code' => $item['sale_area_code'],
-                    'name' => $item['sale_area_name']
-                ])->unique('code')->values();
-
-                $shops = $collectionShops->map(fn($item) => [
-                    'is_code_cust_id' => $item['cust_id'],
-                    'shop_name' => $item['cust_name'],
-                    'sale_name' => $item['sale_name'] ?? '-',
-                    'sale_area_code' => $item['sale_area_code'],
-                    'sale_area_name' => $item['sale_area_name']
-                ])->values();
-            } catch (\Exception $e) {
-                Log::error('Failed to fetch sales shops for sendJob: ' . $e->getMessage());
-            }
         }
 
         return Inertia::render('SendJobs/SuccessSendJobs', [
-            'isAdmin' => $isAdmin || $isSale,
-            'isSale' => $isSale,
-            'shops' => $shops,
-            'areas' => $areas,
-            'currentSale' => $currentSale,
+            'isAdmin' => $isAdmin,
+            'shops' => $shops
         ]);
     }
 
@@ -730,7 +621,7 @@ class sendJobController extends Controller
         $jobId = $request->input('job_id');
         $serialId = $request->input('serial_id');
         $groupJob = $request->input('group_job');
-        $shops = array_values(array_filter((array) $request->input('shops', [])));
+        $shops = array_values(array_filter((array) $request->input('shops', []))); // รับค่า shops array
 
         if (!empty($jobId) || !empty($serialId)) {
             if (empty($jobId) || empty($serialId)) {
@@ -748,25 +639,12 @@ class sendJobController extends Controller
 
         try {
             $user = Auth::user();
-            $isSale = session('is_sales_rep', false) || $user->role === 'sale';
             $query = JobList::query();
 
+            // เช็คสิทธิ์
             if ($user->role === 'admin') {
                 if (!empty($shops)) {
                     $query->whereIn('is_code_key', $shops);
-                }
-            } elseif ($isSale) {
-                try {
-                    $saleShops = collect($this->fetchShopsForSale($user->user_code));
-                    if (!empty($shops)) {
-                        $query->whereIn('is_code_key', $shops);
-                    } else {
-                        $myShopIds = $saleShops->pluck('cust_id')->toArray();
-                        $query->whereIn('is_code_key', $myShopIds ?: ['none']);
-                    }
-                } catch (\Exception $e) {
-                    Log::error('searchSendJobs sale filter error: ' . $e->getMessage());
-                    $query->where('is_code_key', 'none');
                 }
             } else {
                 $query->where('is_code_key', $user->is_code_cust_id);
@@ -807,31 +685,13 @@ class sendJobController extends Controller
     {
         try {
             $user = Auth::user();
-            $isSale = session('is_sales_rep', false) || $user->role === 'sale';
             $query = JobList::query();
 
+            // เช็คสิทธิ์ Admin
             if ($user->role === 'admin') {
                 $adminShops = array_values(array_filter((array) $request->input('shops', [])));
                 if (!empty($adminShops)) {
                     $query->whereIn('is_code_key', $adminShops);
-                }
-            } elseif ($isSale) {
-                $selectedShop = $request->input('shop');
-                $selectedArea = $request->input('area');
-                try {
-                    $saleShops = collect($this->fetchShopsForSale($user->user_code));
-                    if ($selectedShop) {
-                        $query->where('is_code_key', $selectedShop);
-                    } elseif ($selectedArea) {
-                        $shopIds = $saleShops->where('sale_area_code', $selectedArea)->pluck('cust_id')->toArray();
-                        $query->whereIn('is_code_key', $shopIds ?: ['none']);
-                    } else {
-                        $myShopIds = $saleShops->pluck('cust_id')->toArray();
-                        $query->whereIn('is_code_key', $myShopIds ?: ['none']);
-                    }
-                } catch (\Exception $e) {
-                    Log::error('getAllSendJobs sale filter error: ' . $e->getMessage());
-                    $query->where('is_code_key', 'none');
                 }
             } else {
                 $query->where('is_code_key', $user->is_code_cust_id);
@@ -1187,38 +1047,6 @@ class sendJobController extends Controller
         }
     }
     
-    private function fetchShopsForSale(string $saleCode): array
-    {
-        $authResponse = Http::post('https://pkapi.pumpkin.tools/api/auth/login', [
-            'username' => 'B63333',
-            'password' => '!Nut#63333',
-        ]);
-
-        if (!$authResponse->successful()) {
-            throw new \Exception('Failed to login to external API');
-        }
-
-        $token = $authResponse->json()['access_token'];
-
-        $shopResponse = Http::withToken($token)
-            ->asMultipart()
-            ->post('https://pkapi.pumpkin.tools/api/getCustInSales', [
-                'sale_code' => $saleCode,
-            ]);
-
-        if (!$shopResponse->successful()) {
-            throw new \Exception('Failed to fetch customers from external API');
-        }
-
-        $result = $shopResponse->json();
-
-        if (isset($result['status']) && $result['status'] == true) {
-            return $result['data'];
-        }
-
-        return [];
-    }
-
     /**
      * Map สถานะที่ได้จาก PK API → สถานะใน DB ของเรา (4 ค่า)
      *
@@ -1277,20 +1105,10 @@ class sendJobController extends Controller
         // จำกัดสูงสุด 50 รายการต่อ request เพื่อป้องกัน timeout
         $jobIds = array_slice($jobIds, 0, 50);
 
+        // กรองเฉพาะ job_ids ที่ user มีสิทธิ์เข้าถึง
         $batchUser  = Auth::user();
-        $isBatchSale = session('is_sales_rep', false) || $batchUser->role === 'sale';
         $authQuery  = JobList::whereIn('job_id', $jobIds)->select('job_id');
-        if ($batchUser->role === 'admin') {
-            // admin เห็นทุกร้าน
-        } elseif ($isBatchSale) {
-            try {
-                $saleShopIds = collect($this->fetchShopsForSale($batchUser->user_code))->pluck('cust_id')->toArray();
-                $authQuery->whereIn('is_code_key', $saleShopIds ?: ['none']);
-            } catch (\Exception $e) {
-                Log::error('batchCheckJobStatus sale filter error: ' . $e->getMessage());
-                $authQuery->where('is_code_key', 'none');
-            }
-        } else {
+        if ($batchUser->role !== 'admin') {
             $authQuery->where('is_code_key', $batchUser->is_code_cust_id);
         }
         $jobIds = $authQuery->pluck('job_id')->toArray();
@@ -1380,36 +1198,15 @@ class sendJobController extends Controller
     {
         try {
             $user = Auth::user();
-            $isSale = session('is_sales_rep', false) || $user->role === 'sale';
             $query = JobList::query()
                 ->where('status', 'success')
                 ->whereNotNull('group_job');
 
+            // เช็คสิทธิ์ Admin
             if ($user->role === 'admin') {
                 $adminShops = array_values(array_filter((array) $request->input('shops', [])));
                 if (!empty($adminShops)) {
                     $query->whereIn('is_code_key', $adminShops);
-                }
-            } elseif ($isSale) {
-                $selectedShop = $request->input('shop');
-                $selectedArea = $request->input('area');
-                $selectedShops = array_values(array_filter((array) $request->input('shops', [])));
-                try {
-                    $saleShops = collect($this->fetchShopsForSale($user->user_code));
-                    if (!empty($selectedShops)) {
-                        $query->whereIn('is_code_key', $selectedShops);
-                    } elseif ($selectedShop) {
-                        $query->where('is_code_key', $selectedShop);
-                    } elseif ($selectedArea) {
-                        $shopIds = $saleShops->where('sale_area_code', $selectedArea)->pluck('cust_id')->toArray();
-                        $query->whereIn('is_code_key', $shopIds ?: ['none']);
-                    } else {
-                        $myShopIds = $saleShops->pluck('cust_id')->toArray();
-                        $query->whereIn('is_code_key', $myShopIds ?: ['none']);
-                    }
-                } catch (\Exception $e) {
-                    Log::error('historySuccessJobs sale filter error: ' . $e->getMessage());
-                    $query->where('is_code_key', 'none');
                 }
             } else {
                 $query->where('is_code_key', $user->is_code_cust_id);
