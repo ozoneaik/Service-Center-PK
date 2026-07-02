@@ -2,9 +2,13 @@
 
 use App\Http\Controllers\Orders\OrderController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::prefix('orders')->group(function () {
     Route::get('/list', [OrderController::class, 'index'])->name('orders.list');
+    Route::get('/check-diagram', fn() => Inertia::render('Orders/CheckDiagram'))->name('orders.checkDiagram');
+    Route::get('/search-sp', [OrderController::class, 'searchSpJson'])->name('orders.searchSp');
+    Route::get('/diagram', fn() => Inertia::render('Orders/OrderDiagram'))->name('orders.diagram');
     // Route::get('/search', [OrderController::class, 'search'])->name('orders.search');
     Route::get('/history', [OrderController::class, 'history'])->name('orders.history');
     Route::get('/history-detail/{order_id}', [OrderController::class, 'historyDetail'])->name('orders.historyDetail');
@@ -16,7 +20,8 @@ Route::prefix('orders')->group(function () {
     // Route::post('/update-status', [OrderController::class, 'updateOrderStatusFromNode']);
 
 //    Cart Route
-    Route::get('/carts',[OrderController::class,'cartList'])->name('orders.carts');
+    // Route::get('/carts',[OrderController::class,'cartList'])->name('orders.carts');
+    Route::get('/carts/json',[OrderController::class,'cartListJson'])->name('orders.carts.json');
     Route::post('/carts/add-remove/{condition}',[OrderController::class,'AddOrRemoveQtySp'])->name('orders.AddOrRemoveQtySp');
     Route::post('/carts/add-cart',[OrderController::class,'addCart'])->name('orders.addCart');
     Route::post('/carts/store',[OrderController::class,'createOrder'])->name('orders.createOrder');

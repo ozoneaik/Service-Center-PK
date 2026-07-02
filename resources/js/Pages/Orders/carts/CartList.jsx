@@ -1,86 +1,54 @@
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import { Head, Link, router, usePage } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import {
-    Avatar, Box, Button, Card, CardContent, Divider, Grid2, IconButton, Stack, Typography, useMediaQuery
+    Avatar, Box, Button, Card, CardContent, Divider, Grid2, IconButton, LinearProgress, Stack, Typography, useMediaQuery, CircularProgress, Paper
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
 import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
-import { ArrowBack, Check, Delete, Add, Remove, FileUpload, AddShoppingCart } from "@mui/icons-material";
+import { Check, Delete, Add, Remove, FileUpload, AddShoppingCart } from "@mui/icons-material";
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 import Swal from "sweetalert2";
 
-const ListSp = ({ sps, sku_code, setGroups, groups }) => {
+const ListSp = ({ sps, onUpdateQty, onRemove, operatingCartId, removingIds }) => {
     const [SpPreview, setSpPreview] = useState(false);
     const [SpImage, setSpImage] = useState('');
     const isMobile = useMediaQuery('(max-width:600px)');
-    const updateQuantity = async (id, condition = 'add') => {
-        try {
-            const API_URL = `/orders/carts/add-remove/${condition}`;
-            const { data, status } = await axios.post(API_URL, { id: id });
-            if (status === 200) {
-                const updatedGroups = groups.map(group => {
-                    return {
-                        ...group,
-                        list: group.list.map(sp =>
-                            sp.id === id ? { ...sp, qty: data.sp.qty } : sp
-                        )
-                    };
-                });
-                setGroups(updatedGroups);
-            }
-        } catch (error) {
-            console.log(error.response?.data?.message || error.message);
-            AlertDialog({
-                title: 'เกิดข้อผิดพลาด',
-                text: 'ไม่สามารถเพิ่มหรือลดสินค้าลงตะกร้าได้'
-            });
-        }
+
+    const QtyControls = ({ sp }) => {
+        const isOperating = operatingCartId === sp.id;
+        const isRemoving = removingIds?.has(sp.id);
+        return (
+            <Stack direction="row" spacing={1} alignItems="center">
+                <IconButton size="small" disabled={sp.qty <= 1 || isOperating || isRemoving} onClick={() => onUpdateQty(sp.id, 'remove')}>
+                    <Remove />
+                </IconButton>
+                <Box sx={{ width: '60px', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {isOperating
+                        ? <CircularProgress size={18} />
+                        : <Typography variant="body1">{sp.qty}</Typography>
+                    }
+                </Box>
+                <IconButton size="small" disabled={isOperating || isRemoving} onClick={() => onUpdateQty(sp.id, 'add')}>
+                    <Add />
+                </IconButton>
+                <IconButton color="error" size="small" disabled={isOperating || isRemoving} onClick={() => onRemove(sp)}>
+                    {isRemoving ? <CircularProgress size={18} color="error" /> : <Delete />}
+                </IconButton>
+            </Stack>
+        );
     };
-
-    const handleRemove = (sp) => {
-        AlertDialogQuestion({
-            title: `ยืนยันการลบอะไหล่ ${sp.sp_code}`,
-            text: `คุณต้องการลบอะไหล่ ${sp.sp_code} ${sp.sp_name} ออกจากตะกร้า ใช่หรือไม่?`,
-            onPassed: async (confirm) => confirm && await onRemoveSp(sp.id)
-        });
-    }
-
-    const onRemoveSp = async (id) => {
-        try {
-            const { status } = await axios.delete(`/orders/carts/delete/${id}`);
-            const updatedGroups = groups.map(group => {
-                return {
-                    ...group,
-                    list: group.list.filter(sp => sp.id !== id)
-                };
-            });
-            setGroups(updatedGroups);
-        } catch (error) {
-            AlertDialog({
-                title: 'เกิดข้อผิดพลาด',
-                text: error.response.data.message
-            })
-        }
-
-    }
 
     return (
         <>
             {SpPreview && <SpPreviewImage open={SpPreview} setOpen={setSpPreview} imagePath={SpImage} />}
-            {sps.map((sp, index) => {
+            {sps.map((sp) => {
                 const sp_image = `${import.meta.env.VITE_IMAGE_SP_NEW}/${sp.sp_code}.jpg`;
                 return (
-                    <React.Fragment key={index}>
+                    <React.Fragment key={sp.id ?? sp.sp_code}>
                         <Stack direction='row' width='100%' justifyContent='space-between' alignItems='center'>
                             <Stack direction='row' spacing={2} alignItems='center'>
                                 <img src={sp_image} alt={'ไม่พบรูปภาพ'} width='100'
-                                    onClick={() => {
-                                        setSpImage(sp_image);
-                                        setSpPreview(true)
-                                    }}
-                                    onError={(e) => {
-                                        e.target.src = import.meta.env.VITE_IMAGE_DEFAULT
-                                    }}
+                                    onClick={() => { setSpImage(sp_image); setSpPreview(true); }}
+                                    onError={(e) => { e.target.src = import.meta.env.VITE_IMAGE_DEFAULT; }}
                                 />
                                 <Stack direction='column' spacing={1}>
                                     <Typography fontWeight='bold'>{sp.sp_code}</Typography>
@@ -91,63 +59,97 @@ const ListSp = ({ sps, sku_code, setGroups, groups }) => {
                                     </Typography>
                                 </Stack>
                             </Stack>
-
-                            {!isMobile && (
-
-                                <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mt: { xs: 1, sm: 0 } }}>
-                                    <IconButton
-                                        disabled={sp.qty <= 1} size="small"
-                                        onClick={() => updateQuantity(sp.id, 'remove')}
-                                    >
-                                        <Remove />
-                                    </IconButton>
-                                    <Typography variant="body1" sx={{ width: '60px', textAlign: 'center' }}>
-                                        {sp.qty}
-                                    </Typography>
-                                    <IconButton size="small" onClick={() => updateQuantity(sp.id)}>
-                                        <Add />
-                                    </IconButton>
-                                    <IconButton color="error" size="small" onClick={() => handleRemove(sp)}>
-                                        <Delete />
-                                    </IconButton>
-                                </Stack>
-
-                            )}
+                            {!isMobile && <QtyControls sp={sp} />}
                         </Stack>
                         {isMobile && (
                             <Stack direction="row" justifyContent='center' alignItems='center'>
-                                <IconButton
-                                    disabled={sp.qty <= 1} size="small"
-                                    onClick={() => updateQuantity(sp.id, 'remove')}
-                                >
-                                    <Remove />
-                                </IconButton>
-                                <Typography variant="body1" sx={{ width: '60px', textAlign: 'center' }}>
-                                    {sp.qty}
-                                </Typography>
-                                <IconButton size="small" onClick={() => updateQuantity(sp.id)}>
-                                    <Add />
-                                </IconButton>
-                                <IconButton color="error" size="small" onClick={() => handleRemove(sp)}>
-                                    <Delete />
-                                </IconButton>
+                                <QtyControls sp={sp} />
                             </Stack>
-
                         )}
                         <Divider />
                     </React.Fragment>
-                )
+                );
             })}
         </>
-    )
+    );
 }
 
-export default function CartList({ groupSku, totalSp, flash }) {
-    const [groups, setGroups] = useState(groupSku);
+export default function CartList({ refreshCounter, onSuccess, onDataLoaded, onCartUpdate, operatingCartId, isLoading }) {
+    const [groups, setGroups] = useState([]);
+    const [totalSp, setTotalSp] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [removingIds, setRemovingIds] = useState(new Set());
     const user = usePage().props.auth.user;
     const [address, setAddress] = useState(user.store_info.address);
     const [phone, setPhone] = useState(user.store_info.phone);
     const [processing, setProcessing] = useState(false);
+
+    useEffect(() => {
+        fetchCart();
+    }, [refreshCounter]);
+
+    const fetchCart = async () => {
+        setLoading(true);
+        try {
+            const { data } = await axios.get(route('orders.carts.json'));
+            setGroups(data.groups);
+            setTotalSp(data.totalSp);
+            if (onDataLoaded) onDataLoaded(data.totalSp, data.groups);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const updateQtyOptimistic = (id, condition) => {
+        const updated = groups.map(g => ({
+            ...g,
+            list: g.list.map(item =>
+                item.id === id
+                    ? { ...item, qty: condition === 'add' ? Number(item.qty) + 1 : Math.max(1, Number(item.qty) - 1) }
+                    : item
+            ),
+        }));
+        setGroups(updated);
+        return updated;
+    };
+
+    const handleUpdateQty = async (id, condition = 'add') => {
+        const updated = updateQtyOptimistic(id, condition);
+        if (onCartUpdate) onCartUpdate(updated);
+        try {
+            await axios.post(`/orders/carts/add-remove/${condition}`, { id });
+        } catch {
+            fetchCart();
+        }
+    };
+
+    const handleRemove = (sp) => {
+        AlertDialogQuestion({
+            title: `ยืนยันการลบอะไหล่ ${sp.sp_code}`,
+            text: `คุณต้องการลบอะไหล่ ${sp.sp_code} ${sp.sp_name} ออกจากตะกร้า ใช่หรือไม่?`,
+            onPassed: async (confirm) => {
+                if (!confirm) return;
+                setRemovingIds(prev => new Set([...prev, sp.id]));
+                try {
+                    await axios.delete(`/orders/carts/delete/${sp.id}`);
+                    const updated = groups
+                        .map(g => ({ ...g, list: g.list.filter(item => item.id !== sp.id) }))
+                        .filter(g => g.list.length > 0);
+                    setGroups(updated);
+                    setTotalSp(prev => Math.max(0, prev - 1));
+                    if (onCartUpdate) onCartUpdate(updated, -1);
+                    fetchCart();
+                } catch {
+                    fetchCart();
+                } finally {
+                    setRemovingIds(prev => { const next = new Set(prev); next.delete(sp.id); return next; });
+                }
+            },
+        });
+    };
+
     const totalPrice = useMemo(() => {
         return groups.reduce((total, group) => {
             return total + group.list.reduce((sum, sp) => {
@@ -259,79 +261,44 @@ export default function CartList({ groupSku, totalSp, flash }) {
         try {
             setProcessing(true);
             const URL = '/orders/carts/store'
-            const { data, status } = await axios.post(URL, {
+            const { data } = await axios.post(URL, {
                 groups: groups,
                 address: address,
                 phone: phone
             });
-            console.log(data, status);
-            router.visit(route('orders.success', { message: data.message }));
+            Swal.fire({ title: 'สำเร็จ', text: data.message, icon: 'success', timer: 2500, showConfirmButton: false });
+            if (onSuccess) onSuccess();
+            setGroups([]);
         } catch (error) {
-            AlertDialog({
-                title: 'เกิดข้อผิดพลาด',
-                text: error.response.data.message
-            })
+            AlertDialog({ title: 'เกิดข้อผิดพลาด', text: error.response?.data?.message });
         } finally {
             setProcessing(false);
         }
     }
 
-    useEffect(() => {
-        if (flash?.success) {
-            Swal.fire({
-                title: flash.success,
-                icon: 'success',
-                timer: 2500,
-                showConfirmButton: false,
-            });
-        }
-        if (flash?.error) {
-            Swal.fire({
-                title: 'เกิดข้อผิดพลาด',
-                text: flash.error,
-                icon: 'error'
-            });
-        }
-        // if (flash?.pdf_url) {
-        //     window.open(flash.pdf_url, '_blank');
-        // }
-        if (flash?.pdf_url) {
-            const newWindow = window.open(flash.pdf_url, '_blank');
-            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-                Swal.fire({
-                    title: '⚠️ ไม่สามารถเปิดไฟล์ PDF ได้',
-                    text: 'เบราว์เซอร์ของคุณอาจบล็อกหน้าต่างป๊อปอัปไว้ กรุณาอนุญาตการเปิดป๊อปอัป หรือคลิกปุ่มด้านล่างเพื่อเปิดใหม่',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'เปิด PDF อีกครั้ง',
-                    cancelButtonText: 'ยกเลิก'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.open(flash.pdf_url, '_blank');
-                    }
-                });
-            }
-        }
-    }, [flash]);
+    // Remove flash useEffect as it's not needed for SPA drawer
 
     return (
-        <AuthenticatedLayout>
-            <Head title='ตะกร้าสินค้า' />
-            <Box sx={{ p: 2, height: '90%', display: 'flex', flexDirection: 'column', bgcolor: 'white' }}>
+        <Paper id="cart-section" variant="outlined" sx={{ borderRadius: 2, overflow: "hidden", mt: 3 }}>
+            <Box sx={{ px: 1.5, py: 1.5, borderBottom: "1px solid", borderColor: "divider", bgcolor: "#fafafa" }}>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                    <AddShoppingCart sx={{ fontSize: 20, color: "text.secondary" }} />
+                    <Typography variant="h6" fontWeight="bold">ตะกร้าสินค้า</Typography>
+                </Stack>
+            </Box>
+            {isLoading && <LinearProgress />}
+            <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', bgcolor: 'white' }}>
                 <Box sx={{ flexGrow: 1, overflow: 'auto', mb: 2 }}>
+                    {loading && groups.length === 0 ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+                            <CircularProgress />
+                        </Box>
+                    ) : groups.length === 0 ? (
+                        <Box textAlign="center" py={5} color="text.secondary">
+                            <Typography>ตะกร้าสินค้าว่างเปล่า</Typography>
+                        </Box>
+                    ) : (
                     <Grid2 container spacing={2}>
-                        <Grid2 size={12}>
-                            <Stack direction='row' spacing={2} justifyContent='space-between'>
-                                <Button
-                                    startIcon={<ArrowBack />}
-                                    size='small' variant='contained'
-                                    component={Link} href={route('orders.list')}
-                                >
-                                    กลับไปยังหน้าสั่งซื้ออะไหล่
-                                </Button>
-                                <Typography variant='h6' fontWeight='bold'>ตะกร้าสินค้า</Typography>
-                            </Stack>
-                        </Grid2>
                         {groups.map((group, index) => {
                             return (
                                 <Grid2 key={index} size={12}>
@@ -352,8 +319,10 @@ export default function CartList({ groupSku, totalSp, flash }) {
                                                     size="small"
                                                     variant="outlined"
                                                     startIcon={<AddShoppingCart />}
-                                                    component={Link}
-                                                    href={route('orders.list', { sku: group.sku_code })}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        router.visit(route('orders.diagram') + '?sku=' + group.sku_code + '&model=' + encodeURIComponent(group.sku_name));
+                                                    }}
                                                 >
                                                     เพิ่มอะไหล่
                                                 </Button>
@@ -361,10 +330,12 @@ export default function CartList({ groupSku, totalSp, flash }) {
                                             <Stack direction="column" spacing={1}>
                                                 <React.Fragment>
                                                     <ListSp
-                                                        groups={groups}
-                                                        setGroups={setGroups}
                                                         sps={group.list}
                                                         sku_code={group.sku_code}
+                                                        onUpdateQty={handleUpdateQty}
+                                                        onRemove={handleRemove}
+                                                        operatingCartId={operatingCartId}
+                                                        removingIds={removingIds}
                                                     />
                                                 </React.Fragment>
                                             </Stack>
@@ -374,6 +345,7 @@ export default function CartList({ groupSku, totalSp, flash }) {
                             )
                         })}
                     </Grid2>
+                    )}
                 </Box>
                 <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
                     <Grid2 container spacing={2} alignItems="center">
@@ -407,7 +379,7 @@ export default function CartList({ groupSku, totalSp, flash }) {
                     </Grid2>
                 </Box>
             </Box>
-        </AuthenticatedLayout>
+        </Paper>
     )
 }
 

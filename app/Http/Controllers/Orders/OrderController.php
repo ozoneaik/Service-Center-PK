@@ -508,6 +508,7 @@ class OrderController extends Controller
                 ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
                 ->where('is_active', false)
                 ->where('sku_code', $group->sku_code)
+                ->where('sku_name', $group->sku_name)
                 ->get();
 
             // อัพเดทราคาในตะกร้าตาม flag ปัจจุบัน
@@ -533,6 +534,177 @@ class OrderController extends Controller
                 'pdf_url' => session('pdf_url'),
             ]
         ]);
+    }
+
+    public function cartListJson(): JsonResponse
+    {
+        $sku_image_path = env('VITE_IMAGE_PID');
+        $groupSku = Cart::query()
+            ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+            ->where('is_active', false)
+            ->select('sku_code', 'sku_name')
+            ->groupBy('sku_code', 'sku_name')
+            ->get();
+
+        // ดึง flag discount ปัจจุบันของร้าน
+        $storeInfo = Auth::user()->store_info;
+        $useDisc40p = $storeInfo->use_disc_40p ?? false;
+        $useDisc20p = $storeInfo->use_disc_20p ?? false;
+        $useStdPrice = $storeInfo->use_std_price ?? false;
+
+        // เก็บราคาจาก API ตาม sku_code เพื่อ reprice
+        $apiUrl = env('VITE_WARRANTY_SN_API_GETDATA');
+        $spPriceMap = []; // sp_code => new_price
+
+        // ดึงราคาล่าสุดจาก API ตาม sku_code ที่อยู่ในตะกร้า
+        $uniqueSkus = $groupSku->pluck('sku_code')->unique();
+        foreach ($uniqueSkus as $skuCode) {
+            try {
+                $response = Http::timeout(10)->get($apiUrl, ['search' => $skuCode]);
+                if (!$response->successful()) continue;
+
+                $data = $response->json();
+                if (($data['status'] ?? '') !== 'SUCCESS') continue;
+
+                $spAll = $data['sp'] ?? [];
+                $pid = $data['skumain'] ?? $skuCode;
+
+                // loop ผ่าน DM list
+                if (!empty($spAll[$pid])) {
+                    foreach ($spAll[$pid] as $dmKey => $dmParts) {
+                        foreach ($dmParts as $sp) {
+                            $spcode = $sp['spcode'] ?? null;
+                            if (!$spcode) continue;
+
+                            // คำนวณราคาตาม flag ปัจจุบัน
+                            if ($useDisc40p) {
+                                $price = floatval($sp['disc40p'] ?? $sp['disc40p20p'] ?? $sp['disc20p'] ?? 0);
+                            } elseif ($useDisc20p) {
+                                $price = floatval($sp['disc20p'] ?? $sp['disc40p20p'] ?? 0);
+                            } elseif ($useStdPrice) {
+                                $price = floatval($sp['stdprice'] ?? 0);
+                            } else {
+                                $price = floatval($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0);
+                            }
+
+                            $spPriceMap[$spcode] = $price;
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning("Cart reprice: ไม่สามารถดึงราคาสำหรับ SKU {$skuCode}", ['error' => $e->getMessage()]);
+                continue;
+            }
+        }
+
+        $totalSp = 0;
+        $totalPrice = 0;
+        foreach ($groupSku as $group) {
+            $group['sku_image_path'] = $sku_image_path . $group['sku_code'] . ".jpg";
+            $group['list'] = Cart::query()
+                ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                ->where('is_active', false)
+                ->where('sku_code', $group->sku_code)
+                ->where('sku_name', $group->sku_name)
+                ->get();
+            
+            // อัพเดทราคาในตะกร้าตาม flag ปัจจุบัน
+            foreach ($group['list'] as $cartItem) {
+                if (isset($spPriceMap[$cartItem->sp_code])) {
+                    $newPrice = $spPriceMap[$cartItem->sp_code];
+                    if (floatval($cartItem->price_per_unit) !== $newPrice) {
+                        $cartItem->update(['price_per_unit' => $newPrice]);
+                        $cartItem->price_per_unit = $newPrice;
+                    }
+                }
+            }
+
+            $totalSp += $group['list']->count();
+            foreach ($group['list'] as $item) {
+                $totalPrice += floatval($item->price_per_unit) * floatval($item->qty);
+            }
+        }
+
+        return response()->json([
+            'groups'     => $groupSku,
+            'totalSp'    => $totalSp,
+            'totalPrice' => $totalPrice,
+        ]);
+    }
+
+    public function searchSpJson(Request $request): JsonResponse
+    {
+        $sku = trim($request->sku ?? '');
+        $dm  = trim($request->dm  ?? '');
+
+        try {
+            $apiUrl   = env('VITE_WARRANTY_SN_API_GETDATA');
+            $response = Http::timeout(15)->get($apiUrl, ['search' => $sku]);
+            $data     = $response->json();
+
+            if (($data['status'] ?? '') !== 'SUCCESS') {
+                return response()->json(['sp' => []]);
+            }
+
+            $pid    = $data['skumain'] ?? $sku;
+            $spAll  = $data['sp']      ?? [];
+            $assets = $data['assets']  ?? [];
+            $asset  = $assets[$pid]    ?? (reset($assets) ?: []);
+
+            $storeInfo   = Auth::user()->store_info;
+            $useDisc40p  = $storeInfo->use_disc_40p  ?? false;
+            $useDisc20p  = $storeInfo->use_disc_20p  ?? false;
+            $useStdPrice = $storeInfo->use_std_price ?? false;
+
+            // กรองเฉพาะ DM ที่ระบุ ถ้าส่ง dm มา
+            $dmData = ($dm && isset($spAll[$pid][$dm]))
+                ? [$dm => $spAll[$pid][$dm]]
+                : ($spAll[$pid] ?? []);
+
+            $spMap = [];
+            foreach ($dmData as $dmKey => $spItems) {
+                foreach ($spItems as $sp) {
+                    $spcode = $sp['spcode'] ?? null;
+                    if (!$spcode) continue;
+                    if (isset($spMap[$spcode])) continue; // เอาอันแรกพอ
+
+                    if ($useDisc40p) {
+                        $price = floatval($sp['disc40p'] ?? $sp['disc40p20p'] ?? $sp['disc20p'] ?? 0);
+                    } elseif ($useDisc20p) {
+                        $price = floatval($sp['disc20p'] ?? $sp['disc40p20p'] ?? 0);
+                    } elseif ($useStdPrice) {
+                        $price = floatval($sp['stdprice'] ?? 0);
+                    } else {
+                        $price = floatval($sp['disc40p20p'] ?? $sp['disc40p'] ?? $sp['disc20p'] ?? 0);
+                    }
+
+                    $spMap[$spcode] = [
+                        'price_per_unit'    => $price,
+                        'stdprice_per_unit' => floatval($sp['stdprice'] ?? 0),
+                        'spunit'            => $sp['spunit'] ?? 'ชิ้น',
+                    ];
+                }
+            }
+
+            // เติม cart status สำหรับแต่ละ sp_code
+            $cartItems = Cart::query()
+                ->where('is_code_cust_id', Auth::user()->is_code_cust_id)
+                ->where('is_active', false)
+                ->whereIn('sp_code', array_keys($spMap))
+                ->get()
+                ->keyBy('sp_code');
+
+            foreach ($spMap as $spcode => &$spData) {
+                $cart = $cartItems->get($spcode);
+                $spData['cart_added'] = (bool) $cart;
+                $spData['cart_id']    = $cart?->id;
+                $spData['cart_qty']   = $cart?->qty ?? 0;
+            }
+
+            return response()->json(['sp' => $spMap]);
+        } catch (\Exception $e) {
+            return response()->json(['sp' => [], 'error' => $e->getMessage()]);
+        }
     }
 
     public function addCart(Request $request): JsonResponse
