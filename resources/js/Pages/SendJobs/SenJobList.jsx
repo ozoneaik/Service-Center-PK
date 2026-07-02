@@ -3,26 +3,40 @@ import {Head, router, useForm, usePage} from "@inertiajs/react";
 import {
     Button, Card, Grid2, Paper, Stack, Typography,
     Table, TableBody, TableCell, TableHead, TableRow, Alert, TextField, Divider, useMediaQuery,
-    CardContent, Box
+    CardContent, Box, MenuItem, Select, FormControl, InputLabel
 } from "@mui/material";
 import Checkbox from "@mui/material/Checkbox";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {DateFormatTh} from "@/Components/DateFormat.jsx";
 import {Search} from '@mui/icons-material';
 import {AlertDialogQuestion} from "@/Components/AlertDialog.js";
 
-const tableHeads = ['เลขที่ JOB', 'ข้อมูลเบื้องต้น', 'สร้างเมื่อ'];
-
-export default function SenJobList({jobs}) {
+export default function SenJobList({jobs, shops = [], isSale = false}) {
 
     const isMobile = useMediaQuery('(max-width:600px)');
-    const {data, setData, post, processing, errors} = useForm({
+    const {data, setData, post, processing} = useForm({
         selectedJobs: []
     });
     const [showAlert, setShowAlert] = useState(false);
     const [searchSku, setSearchSku] = useState('');
     const [searchSn, setSearchSn] = useState('');
+    const [selectedShop, setSelectedShop] = useState('');
     const {flash} = usePage().props;
+
+    const shopMap = useMemo(() => {
+        const map = {};
+        shops.forEach(s => { map[s.is_code_cust_id] = s.shop_name; });
+        return map;
+    }, [shops]);
+
+    const displayedJobs = useMemo(() => {
+        if (!selectedShop) return jobs;
+        return jobs.filter(j => j.is_code_key === selectedShop);
+    }, [jobs, selectedShop]);
+
+    const showShopCol = isSale;
+    const showShopFilter = isSale && shops.length > 1;
+    const canSend = !isSale;
 
     useEffect(() => {
         const savedSelectedJob = localStorage.getItem('selectedJobs');
@@ -33,7 +47,11 @@ export default function SenJobList({jobs}) {
         }
     }, []);
 
-    const handleSelectJob = (job, index, e) => {
+    useEffect(() => {
+        setData('selectedJobs', []);
+    }, [selectedShop]);
+
+    const handleSelectJob = (job, _index, e) => {
         const checked = e.target.checked;
         if (checked) {
             // เพิ่ม job ที่เลือก
@@ -90,10 +108,8 @@ export default function SenJobList({jobs}) {
     // สำหรับ Mobile View - การเลือกทั้งหมด
     const handleSelectAllMobile = (e) => {
         if (e.target.checked) {
-            // เลือกทั้งหมด
-            setData('selectedJobs', jobs);
+            setData('selectedJobs', displayedJobs);
         } else {
-            // ยกเลิกการเลือกทั้งหมด
             setData('selectedJobs', []);
         }
     }
@@ -106,8 +122,28 @@ export default function SenJobList({jobs}) {
                     <Grid2 size={12}>
                         <Stack direction='row' justifyContent='space-between' alignItems='center'>
                             <Typography variant='h6' fontWeight='bold'>ส่งซ่อมพัมคินฯ</Typography>
-                            <Typography variant='body1'>รายการทั้งหมด {jobs.length} รายการ</Typography>
+                            <Typography variant='body1'>รายการทั้งหมด {displayedJobs.length} รายการ</Typography>
                         </Stack>
+
+                        {/* ตัวกรองร้านค้า — แสดงเฉพาะ sale ที่ดูแลมากกว่า 1 ร้าน */}
+                        {showShopFilter && (
+                            <FormControl size='small' sx={{mt: 2, minWidth: 260}}>
+                                <InputLabel>กรองตามร้านค้า</InputLabel>
+                                <Select
+                                    value={selectedShop}
+                                    label='กรองตามร้านค้า'
+                                    onChange={e => setSelectedShop(e.target.value)}
+                                >
+                                    <MenuItem value=''>ทั้งหมด</MenuItem>
+                                    {shops.map(s => (
+                                        <MenuItem key={s.is_code_cust_id} value={s.is_code_cust_id}>
+                                            {s.shop_name}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        )}
+
                         <form onSubmit={handleSearch}>
                             <Stack direction={{md: 'row', sm: 'column'}} gap={2} mt={2}>
                                 <TextField
@@ -143,22 +179,24 @@ export default function SenJobList({jobs}) {
                     {isMobile ? (
                         <Grid2 size={12}>
                             {/* เลือกทั้งหมด สำหรับ Mobile */}
-                            <Card variant='outlined' sx={{mb: 2, p: 2}}>
-                                <Stack direction='row' alignItems='center' spacing={1}>
-                                    <Checkbox
-                                        checked={data.selectedJobs.length === jobs.length}
-                                        indeterminate={data.selectedJobs.length > 0 && data.selectedJobs.length < jobs.length}
-                                        onChange={handleSelectAllMobile}
-                                    />
-                                    <Typography variant='body2' fontWeight='bold'>
-                                        เลือกทั้งหมด ({data.selectedJobs.length}/{jobs.length})
-                                    </Typography>
-                                </Stack>
-                            </Card>
+                            {canSend && (
+                                <Card variant='outlined' sx={{mb: 2, p: 2}}>
+                                    <Stack direction='row' alignItems='center' spacing={1}>
+                                        <Checkbox
+                                            checked={data.selectedJobs.length === displayedJobs.length && displayedJobs.length > 0}
+                                            indeterminate={data.selectedJobs.length > 0 && data.selectedJobs.length < displayedJobs.length}
+                                            onChange={handleSelectAllMobile}
+                                        />
+                                        <Typography variant='body2' fontWeight='bold'>
+                                            เลือกทั้งหมด ({data.selectedJobs.length}/{displayedJobs.length})
+                                        </Typography>
+                                    </Stack>
+                                </Card>
+                            )}
 
                             {/* รายการ Jobs สำหรับ Mobile */}
                             <Stack spacing={2}>
-                                {jobs.map((job, index) => {
+                                {displayedJobs.map((job, index) => {
                                     const isJobSelected = isSelected(job.job_id);
                                     return (
                                         <Card
@@ -171,10 +209,12 @@ export default function SenJobList({jobs}) {
                                         >
                                             <CardContent>
                                                 <Stack direction='row' alignItems='flex-start' spacing={2}>
-                                                    <Checkbox
-                                                        checked={isJobSelected}
-                                                        onChange={(e) => handleSelectJob(job, index, e)}
-                                                    />
+                                                    {canSend && (
+                                                        <Checkbox
+                                                            checked={isJobSelected}
+                                                            onChange={(e) => handleSelectJob(job, index, e)}
+                                                        />
+                                                    )}
                                                     <Box flex={1}>
                                                         <Typography variant='h6' fontWeight='bold' color='primary'
                                                                     gutterBottom>
@@ -182,6 +222,14 @@ export default function SenJobList({jobs}) {
                                                         </Typography>
 
                                                         <Stack spacing={1}>
+                                                            {showShopCol && (
+                                                                <Box>
+                                                                    <Typography variant='body2' color='text.secondary'>ร้านค้า</Typography>
+                                                                    <Typography variant='body1' fontWeight='medium'>
+                                                                        {shopMap[job.is_code_key] ?? job.is_code_key}
+                                                                    </Typography>
+                                                                </Box>
+                                                            )}
                                                             <Box>
                                                                 <Typography variant='body2' color='text.secondary'>
                                                                     หมายเลขซีเรียล
@@ -235,28 +283,29 @@ export default function SenJobList({jobs}) {
                                 <Table>
                                     <TableHead>
                                         <TableRow sx={TABLE_HEADER_STYLE}>
-                                            <TableCell>
-                                                <Checkbox
-                                                    checked={data.selectedJobs.length === jobs.length}
-                                                    indeterminate={data.selectedJobs.length > 0 && data.selectedJobs.length < jobs.length}
-                                                    onChange={(e) => {
-                                                        if (e.target.checked) {
-                                                            // เลือกทั้งหมด
-                                                            setData('selectedJobs', jobs);
-                                                        } else {
-                                                            // ยกเลิกการเลือกทั้งหมด
-                                                            setData('selectedJobs', []);
-                                                        }
-                                                    }}
-                                                />
-                                            </TableCell>
-                                            {tableHeads.map((item, index) => (
-                                                <TableCell key={index}>{item}</TableCell>
-                                            ))}
+                                            {canSend && (
+                                                <TableCell>
+                                                    <Checkbox
+                                                        checked={data.selectedJobs.length === displayedJobs.length && displayedJobs.length > 0}
+                                                        indeterminate={data.selectedJobs.length > 0 && data.selectedJobs.length < displayedJobs.length}
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                setData('selectedJobs', displayedJobs);
+                                                            } else {
+                                                                setData('selectedJobs', []);
+                                                            }
+                                                        }}
+                                                    />
+                                                </TableCell>
+                                            )}
+                                            {showShopCol && <TableCell>ร้านค้า</TableCell>}
+                                            <TableCell>เลขที่ JOB</TableCell>
+                                            <TableCell>ข้อมูลเบื้องต้น</TableCell>
+                                            <TableCell>สร้างเมื่อ</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {jobs.map((job, index) => {
+                                        {displayedJobs.map((job, index) => {
                                             const isJobSelected = isSelected(job.job_id);
                                             return (
                                                 <TableRow
@@ -266,12 +315,17 @@ export default function SenJobList({jobs}) {
                                                         transition: 'background-color 0.3s ease'
                                                     }}
                                                 >
-                                                    <TableCell>
-                                                        <Checkbox
-                                                            checked={isJobSelected}
-                                                            onClick={(e) => handleSelectJob(job, index, e)}
-                                                        />
-                                                    </TableCell>
+                                                    {canSend && (
+                                                        <TableCell>
+                                                            <Checkbox
+                                                                checked={isJobSelected}
+                                                                onClick={(e) => handleSelectJob(job, index, e)}
+                                                            />
+                                                        </TableCell>
+                                                    )}
+                                                    {showShopCol && (
+                                                        <TableCell>{shopMap[job.is_code_key] ?? job.is_code_key}</TableCell>
+                                                    )}
                                                     <TableCell>{job.job_id}</TableCell>
                                                     <TableCell>
                                                         หมายเลขซีเรียล : {job.serial_id}
@@ -291,7 +345,7 @@ export default function SenJobList({jobs}) {
                             </Card>
                         </Grid2>
                     )}
-                    {!isMobile && (
+                    {!isMobile && canSend && (
                         <Grid2 size={12}>
                             <Stack direction='row-reverse'>
                                 <Button
@@ -307,7 +361,7 @@ export default function SenJobList({jobs}) {
                     )}
 
                 </Grid2>
-                {isMobile && (
+                {isMobile && canSend && (
                     <Box
                         position="fixed" bottom={0} left={0} p={2}
                         width="100%" zIndex={1000} bgcolor="white" boxShadow={3}

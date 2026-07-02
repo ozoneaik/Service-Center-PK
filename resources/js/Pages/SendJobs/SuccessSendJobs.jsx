@@ -1540,8 +1540,7 @@ import {
     Chip,
 } from "@mui/material";
 
-// เพิ่ม props isAdmin และ shops
-export default function SuccessSendJobs({ isAdmin, shops }) {
+export default function SuccessSendJobs({ isAdmin, isSale, shops }) {
     const [jobs, setJobs] = useState([]);
     const [selectedJobIds, setSelectedJobIds] = useState([]);
     const [searchLoading, setSearchLoading] = useState(false);
@@ -1558,6 +1557,14 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
     // Auto / Batch check state
     const [batchChecking, setBatchChecking] = useState(false);
     const [lastBatchCheck, setLastBatchCheck] = useState(null);
+
+    const showShopCol = isAdmin || isSale;
+
+    const shopMap = useMemo(() => {
+        const map = {};
+        (shops || []).forEach(s => { map[s.is_code_cust_id] = s.shop_name; });
+        return map;
+    }, [shops]);
 
     const { data, setData, reset } = useForm({
         job_id: "",
@@ -2101,8 +2108,8 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                         </div>
                     </div>
 
-                    {/* การกรองร้านค้าสำหรับ Admin (multi-select) */}
-                    {isAdmin && (
+                    {/* การกรองร้านค้าสำหรับ Admin / Sale (multi-select) */}
+                    {(isAdmin || isSale) && (
                         <div className="mb-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                             <Typography variant="body2" fontWeight="bold" sx={{ whiteSpace: "nowrap" }}>
                                 🔍 เลือกร้านค้า:
@@ -2758,6 +2765,11 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                                                             />
                                                         )}
                                                 </th>
+                                                {showShopCol && (
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        ร้านค้า
+                                                    </th>
+                                                )}
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                     Group Job
                                                 </th>
@@ -2850,6 +2862,11 @@ export default function SuccessSendJobs({ isAdmin, shops }) {
                                                                 </span>
                                                             )}
                                                         </td>
+                                                        {showShopCol && (
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                {shopMap[job.is_code_key] ?? job.is_code_key}
+                                                            </td>
+                                                        )}
                                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                             {job.group_job}
                                                         </td>

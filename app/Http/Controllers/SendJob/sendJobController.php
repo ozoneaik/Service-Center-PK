@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\JobList;
 use App\Models\logStamp;
 use App\Models\StoreInformation;
+use App\Services\StoreAccessService;
 use Carbon\Carbon;
 use GuzzleHttp\Promise\Utils;
 use Illuminate\Http\Client\ConnectionException;
@@ -21,6 +22,8 @@ use Inertia\Response;
 
 class sendJobController extends Controller
 {
+    public function __construct(private StoreAccessService $storeAccess) {}
+
     // public function sendJobList(Request $request): Response
     // {
     //     logStamp::query()->create(['description' => Auth::user()->user_code . " ดูเมนู ส่งซ่อมพิมคินฯ"]);
@@ -500,7 +503,8 @@ class sendJobController extends Controller
 
     public function sendJobList(Request $request): Response
     {
-        logStamp::query()->create(['description' => Auth::user()->user_code . " ดูเมนู ส่งซ่อมพิมคินฯ"]);
+        $user = Auth::user();
+        logStamp::query()->create(['description' => $user->user_code . " ดูเมนู ส่งซ่อมพิมคินฯ"]);
         $query = JobList::query();
         if (isset($request->searchSku) && isset($request->searchSn)) {
             $query->where('pid', 'like', "%{$request->searchSku}%")->where('serial_id', 'like', "%{$request->searchSn}%");
@@ -509,34 +513,49 @@ class sendJobController extends Controller
         } elseif (isset($request->searchSn)) {
             $query->where('serial_id', 'like', "%{$request->searchSn}%");
         }
-        $jobs = $query->where('is_code_key', Auth::user()->is_code_cust_id)
-            ->where('status', 'pending')
+        $this->storeAccess->applyStoreScope($query, $user);
+        $jobs = $query->where('status', 'pending')
             ->whereNull('group_job')
             ->orderBy('id', 'desc')->get();
-        return Inertia::render('SendJobs/SenJobList', ['jobs' => $jobs]);
+        return Inertia::render('SendJobs/SenJobList', [
+            'jobs'   => $jobs,
+            'shops'  => $this->storeAccess->getAccessibleShops($user),
+            'isSale' => $user->role === 'sale',
+        ]);
     }
 
     public function updateJobSelect(Request $request): \Illuminate\Http\RedirectResponse
     {
+        $user = Auth::user();
+        if ($user->role === 'sale') {
+            return Redirect::route('sendJobs.list')->with('error', 'ไม่มีสิทธิ์ส่งงานไปยัง PK');
+        }
         $selectedJob = $request->selectedJobs;
         try {
             $group_job = time() . rand(1000, 9999);
             $created_at = Carbon::now();
             DB::beginTransaction();
             if (count($selectedJob) > 0) {
-                foreach ($selectedJob as $job) {
-                    $findJob = JobList::query()->where('job_id', $job['job_id'])->first();
-                    $findJob->status = 'send';
-                    $findJob->group_job = $group_job;
-                    $findJob->created_at = $created_at;
-                    $findJob->updated_at = $created_at;
-                    $findJob->save();
+                $jobIds = array_column($selectedJob, 'job_id');
+                $allowedQuery = JobList::query()->whereIn('job_id', $jobIds);
+                $this->storeAccess->applyStoreScope($allowedQuery, $user);
+                $allowedIds = $allowedQuery->pluck('job_id')->toArray();
+
+                if (empty($allowedIds)) {
+                    throw new \Exception('ไม่มีจ็อบที่มีสิทธิ์ส่ง');
                 }
+
+                JobList::whereIn('job_id', $allowedIds)->update([
+                    'status'     => 'send',
+                    'group_job'  => $group_job,
+                    'created_at' => $created_at,
+                    'updated_at' => $created_at,
+                ]);
             } else {
                 throw new \Exception('ไม่มีจ็อบที่ต้องการส่ง');
             }
             DB::commit();
-            logStamp::query()->create(['description' => Auth::user()->user_code . " กดส่งส่งซ่อมพิมคินฯ สำเร็จ $group_job"]);
+            logStamp::query()->create(['description' => $user->user_code . " กดส่งส่งซ่อมพิมคินฯ สำเร็จ $group_job"]);
             return Redirect::route('sendJobs.docJobList')->with('success', 'ส่งไปยัง PK สำเร็จ');
         } catch (\Exception $exception) {
             DB::rollBack();
@@ -546,11 +565,11 @@ class sendJobController extends Controller
 
     public function docJobList(): Response
     {
-        logStamp::query()->create(['description' => Auth::user()->user_code . " ดูเมนู ออกเอกสารส่งกลับ"]);
-        $groups = JobList::query()
-            ->where('is_code_key', Auth::user()->is_code_cust_id)
-            ->where('status', 'send')
-            ->select('print_at', 'group_job', 'print_updated_at', 'counter_print', 'created_at')
+        $user = Auth::user();
+        logStamp::query()->create(['description' => $user->user_code . " ดูเมนู ออกเอกสารส่งกลับ"]);
+        $query = JobList::query()->where('status', 'send');
+        $this->storeAccess->applyStoreScope($query, $user);
+        $groups = $query->select('print_at', 'group_job', 'print_updated_at', 'counter_print', 'created_at')
             ->groupBy('group_job', 'print_at', 'print_updated_at', 'counter_print', 'created_at')
             ->orderBy('created_at', 'desc')
             ->get();
@@ -560,13 +579,13 @@ class sendJobController extends Controller
     public function groupDetail($job_group): JsonResponse
     {
         try {
-            $job_group = JobList::query()
-                ->where('group_job', $job_group)
-                ->select('serial_id', 'job_id', 'pid', 'p_name', 'updated_at', 'status', 'ticket_code')
-                ->get();
+            $user = Auth::user();
+            $query = JobList::query()->where('group_job', $job_group);
+            $this->storeAccess->applyStoreScope($query, $user);
+            $result = $query->select('serial_id', 'job_id', 'pid', 'p_name', 'updated_at', 'status', 'ticket_code')->get();
             return response()->json([
                 'message' => 'success',
-                'group' => $job_group
+                'group' => $result
             ]);
         } catch (\Exception $exception) {
             return response()->json([
@@ -578,8 +597,11 @@ class sendJobController extends Controller
 
     public function printJobList($job_group): Response
     {
-        logStamp::query()->create(['description' => Auth::user()->user_code . " พิมพ์เอกสาร ออกเอกสารส่งกลับ $job_group"]);
-        $job_groups = JobList::query()->where('group_job', $job_group)->get();
+        $user = Auth::user();
+        logStamp::query()->create(['description' => $user->user_code . " พิมพ์เอกสาร ออกเอกสารส่งกลับ $job_group"]);
+        $printQuery = JobList::query()->where('group_job', $job_group);
+        $this->storeAccess->applyStoreScope($printQuery, $user);
+        $job_groups = $printQuery->get();
         if ($job_groups->isEmpty()) {
             $job_groups = [];
         } else {
@@ -600,19 +622,12 @@ class sendJobController extends Controller
     {
         $user = Auth::user();
         $isAdmin = $user->role === 'admin';
-        $shops = [];
-
-        // โหลดข้อมูลร้านค้า เฉพาะ Admin และกรองร้านที่ไม่ต้องการออก
-        if ($isAdmin) {
-            $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
-                ->whereNotIn('is_code_cust_id', ['68263', '2760801005', '67132', 'How'])
-                ->orderBy('shop_name')
-                ->get();
-        }
+        $isSale  = $user->role === 'sale';
 
         return Inertia::render('SendJobs/SuccessSendJobs', [
             'isAdmin' => $isAdmin,
-            'shops' => $shops
+            'isSale'  => $isSale,
+            'shops' => $this->storeAccess->getAccessibleShops($user),
         ]);
     }
 
@@ -642,15 +657,11 @@ class sendJobController extends Controller
             $query = JobList::query();
 
             // เช็คสิทธิ์
-            if ($user->role === 'admin') {
-                if (!empty($shops)) {
-                    $query->whereIn('is_code_key', $shops);
-                }
-            } else {
-                $query->where('is_code_key', $user->is_code_cust_id);
-            }
+            $this->storeAccess->applyStoreScope($query, $user, 'is_code_key', $shops);
 
-            $query->whereIn('status', ['send', 'pending']);
+            $query->whereIn('status', ['send', 'pending'])
+                  ->whereNotNull('group_job')
+                  ->where('group_job', '!=', '');
 
             if (!empty($jobId) && !empty($serialId)) {
                 $query->where('job_id', 'like', "%{$jobId}%")
@@ -688,14 +699,8 @@ class sendJobController extends Controller
             $query = JobList::query();
 
             // เช็คสิทธิ์ Admin
-            if ($user->role === 'admin') {
-                $adminShops = array_values(array_filter((array) $request->input('shops', [])));
-                if (!empty($adminShops)) {
-                    $query->whereIn('is_code_key', $adminShops);
-                }
-            } else {
-                $query->where('is_code_key', $user->is_code_cust_id);
-            }
+            $adminShops = array_values(array_filter((array) $request->input('shops', [])));
+            $this->storeAccess->applyStoreScope($query, $user, 'is_code_key', $adminShops);
 
             // แสดง send + pending ที่มี group_job (ส่งซ่อมไปแล้ว ไม่ว่า PK จะรับแล้วหรือยัง)
             $query->whereIn('status', ['send', 'pending'])
@@ -756,11 +761,9 @@ class sendJobController extends Controller
 
             $jobQuery = JobList::query()
                 ->whereIn('job_id', $jobIds)
-                ->where('status', 'pending');
+                ->whereIn('status', ['send', 'pending']);
 
-            if ($user->role !== 'admin') {
-                $jobQuery->where('is_code_key', $user->is_code_cust_id);
-            }
+            $this->storeAccess->applyStoreScope($jobQuery, $user);
 
             $updatedCount = $jobQuery->update([
                     'status' => 'success',
@@ -1108,9 +1111,7 @@ class sendJobController extends Controller
         // กรองเฉพาะ job_ids ที่ user มีสิทธิ์เข้าถึง
         $batchUser  = Auth::user();
         $authQuery  = JobList::whereIn('job_id', $jobIds)->select('job_id');
-        if ($batchUser->role !== 'admin') {
-            $authQuery->where('is_code_key', $batchUser->is_code_cust_id);
-        }
+        $this->storeAccess->applyStoreScope($authQuery, $batchUser);
         $jobIds = $authQuery->pluck('job_id')->toArray();
 
         $total  = count($jobIds);
@@ -1203,14 +1204,8 @@ class sendJobController extends Controller
                 ->whereNotNull('group_job');
 
             // เช็คสิทธิ์ Admin
-            if ($user->role === 'admin') {
-                $adminShops = array_values(array_filter((array) $request->input('shops', [])));
-                if (!empty($adminShops)) {
-                    $query->whereIn('is_code_key', $adminShops);
-                }
-            } else {
-                $query->where('is_code_key', $user->is_code_cust_id);
-            }
+            $adminShops = array_values(array_filter((array) $request->input('shops', [])));
+            $this->storeAccess->applyStoreScope($query, $user, 'is_code_key', $adminShops);
 
             if ($request->filled('group_job')) {
                 $query->where('group_job', 'like', '%' . $request->input('group_job') . '%');

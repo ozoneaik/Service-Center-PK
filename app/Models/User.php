@@ -65,7 +65,7 @@ class User extends Authenticatable
 
     public function sale_info()
     {
-        return $this->hasOne(SaleInformation::class, 'is_code_cust_id', 'is_code_cust_id');
+        return $this->hasOne(SaleInformation::class, 'sale_code', 'user_code');
     }
 
     public function access_menu(){
