@@ -80,7 +80,7 @@ export default function ModalEditUser({open, setOpen, user, onSave, listMenu}) {
     };
 
     return (
-        <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
+        <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="md">
             <DialogTitle sx={{backgroundColor: 'primary.main', color: 'white'}}>
                 <Stack direction='row' spacing={2} alignItems='center'>
                     <Edit/>&nbsp;
@@ -201,48 +201,76 @@ export default function ModalEditUser({open, setOpen, user, onSave, listMenu}) {
 
                         {!userData.admin_that_branch && (
                             <Grid2 size={12}>
-                                <Typography variant="subtitle2" sx={{mb: 1}}>สิทธิ์การเข้าถึงเมนู</Typography>
-                                <Box display='flex' flexWrap='wrap'>
-                                    {/* {listMenu.map((item, index) => (
-                                        <FormControlLabel
-                                            key={index}
-                                            label={item.menu_name}
-                                            control={
-                                                <Checkbox
-                                                    checked={isMenuChecked(item.id)}
-                                                    onChange={(e) => handleMenuChange(item.id, e.target.checked)}
-                                                />
-                                            }
-                                        />
-                                    ))} */}
-                                    {listMenu.map((item, index) => {
-                                        // [แก้ไข] เพิ่ม Logic การตรวจสอบสิทธิ์
-                                        // ตรวจสอบว่าเป็นเมนู "เซลล์แจ้งซ่อม" หรือไม่ (เช็คจากชื่อ หรือ redirect_route ตาม Seeder)
-                                        const isSaleRepairMenu = item.menu_name === 'เซลล์แจ้งซ่อม' || item.redirect_route === 'repair.sale.index';
-                                        const isAccReceive = item.menu_name === 'บัญชีรับอะไหล่' || item.redirect_route === 'accounting.return.index';
+                                <Typography variant="subtitle2" sx={{mb: 1.5}}>สิทธิ์การเข้าถึงเมนู</Typography>
+                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 1.5}}>
+                                    {(() => {
+                                        const isAdminOnly = (item) =>
+                                            item.menu_name === 'เซลล์แจ้งซ่อม' || item.redirect_route === 'repair.sale.index' ||
+                                            item.menu_name === 'บัญชีรับอะไหล่' || item.redirect_route === 'accounting.return.index';
 
-                                        // ถ้าเป็นเมนูเซลล์แจ้งซ่อม และ คนที่ Login ไม่ใช่ Admin -> ให้ข้ามไปเลย (ไม่แสดง)
-                                        if (isSaleRepairMenu && currentUserRole !== 'admin') {
-                                            return null;
-                                        }
+                                        const grouped = {};
+                                        listMenu.forEach(item => {
+                                            if (!grouped[item.group]) grouped[item.group] = [];
+                                            grouped[item.group].push(item);
+                                        });
 
-                                        if (isAccReceive && currentUserRole !== 'admin') {
-                                            return null;
-                                        }
+                                        return Object.entries(grouped).map(([groupId, items]) => {
+                                            const header = items.find(item => item.main_menu);
+                                            const subItems = items.filter(item => !item.main_menu);
 
-                                        return (
-                                            <FormControlLabel
-                                                key={index}
-                                                label={item.menu_name}
-                                                control={
-                                                    <Checkbox
-                                                        checked={isMenuChecked(item.id)}
-                                                        onChange={(e) => handleMenuChange(item.id, e.target.checked)}
-                                                    />
-                                                }
-                                            />
-                                        );
-                                    })}
+                                            const visibleSubItems = subItems.filter(item =>
+                                                !isAdminOnly(item) || currentUserRole === 'admin'
+                                            );
+                                            const showHeaderCheckbox = header?.redirect_route &&
+                                                (!isAdminOnly(header) || currentUserRole === 'admin');
+
+                                            if (!showHeaderCheckbox && visibleSubItems.length === 0) return null;
+
+                                            const isStandalone = header?.redirect_route && subItems.length === 0;
+
+                                            return (
+                                                <Box
+                                                    key={groupId}
+                                                    sx={{border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden'}}
+                                                >
+                                                    {!isStandalone && (
+                                                        <Box sx={{px: 1.5, py: 0.75, bgcolor: 'grey.100', borderBottom: '1px solid', borderColor: 'divider'}}>
+                                                            <Typography variant="caption" fontWeight={600} color="text.secondary">
+                                                                {header?.menu_name}
+                                                            </Typography>
+                                                        </Box>
+                                                    )}
+                                                    <Box sx={{px: 1, py: 0.5, display: 'flex', flexWrap: 'wrap'}}>
+                                                        {showHeaderCheckbox && (
+                                                            <FormControlLabel
+                                                                label={<Typography variant="body2">{header.menu_name}</Typography>}
+                                                                control={
+                                                                    <Checkbox
+                                                                        size="small"
+                                                                        checked={isMenuChecked(header.id)}
+                                                                        onChange={(e) => handleMenuChange(header.id, e.target.checked)}
+                                                                    />
+                                                                }
+                                                            />
+                                                        )}
+                                                        {visibleSubItems.map((item, index) => (
+                                                            <FormControlLabel
+                                                                key={index}
+                                                                label={<Typography variant="body2">{item.menu_name}</Typography>}
+                                                                control={
+                                                                    <Checkbox
+                                                                        size="small"
+                                                                        checked={isMenuChecked(item.id)}
+                                                                        onChange={(e) => handleMenuChange(item.id, e.target.checked)}
+                                                                    />
+                                                                }
+                                                            />
+                                                        ))}
+                                                    </Box>
+                                                </Box>
+                                            );
+                                        });
+                                    })()}
                                 </Box>
                             </Grid2>
                         )}

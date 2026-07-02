@@ -367,35 +367,77 @@ export default function UserStore({list_menu}) {
                                     <Grid2 container spacing={3}>
                                         <Grid2 size={12}>
                                             {data.admin_that_branch ? (
-                                                <span style={{color: "red", backgroundColor: 'white'}}>
+                                                <Typography variant="body2" color="error">
                                                     หากเลือกผู้ดูแลระบบในร้านจะไม่สามารถกรอกได้
-                                                </span>
+                                                </Typography>
                                             ) : (
-                                                <Box sx={{
-                                                    display: 'flex', alignItems: 'center',
-                                                    gap: 1, flexWrap: 'wrap'
-                                                }}>
-                                                    {list_menu.map((item) => {
-                                                        const current = data.access_menu.find(i => i.menu_id === item.id);
-                                                        return (
-                                                            <FormControlLabel
-                                                                key={item.id}
+                                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 1.5}}>
+                                                    {(() => {
+                                                        const isAdminOnly = (item) =>
+                                                            item.menu_name === 'เซลล์แจ้งซ่อม' || item.redirect_route === 'repair.sale.index' ||
+                                                            item.menu_name === 'บัญชีรับอะไหล่' || item.redirect_route === 'accounting.return.index';
 
-                                                                name={item.id.toString()}
-                                                                control={
-                                                                    <Checkbox
-                                                                        checked={current ? current.is_checked : false}
-                                                                        onChange={handleSelectMenu}
-                                                                        disabled={data.admin_that_branch}
-                                                                    />
-                                                                }
-                                                                label={`${item.menu_name} (${item.id})`}
-                                                            />
-                                                        );
-                                                    })}
+                                                        const grouped = {};
+                                                        list_menu.forEach(item => {
+                                                            if (!grouped[item.group]) grouped[item.group] = [];
+                                                            grouped[item.group].push(item);
+                                                        });
+
+                                                        const renderCheckbox = (item) => {
+                                                            const current = data.access_menu.find(i => i.menu_id === item.id);
+                                                            return (
+                                                                <FormControlLabel
+                                                                    key={item.id}
+                                                                    label={<Typography variant="body2">{item.menu_name}</Typography>}
+                                                                    control={
+                                                                        <Checkbox
+                                                                            size="small"
+                                                                            name={item.id.toString()}
+                                                                            checked={current ? current.is_checked : false}
+                                                                            onChange={handleSelectMenu}
+                                                                        />
+                                                                    }
+                                                                />
+                                                            );
+                                                        };
+
+                                                        return Object.entries(grouped).map(([groupId, items]) => {
+                                                            const header = items.find(item => item.main_menu);
+                                                            const subItems = items.filter(item => !item.main_menu);
+
+                                                            const visibleSubItems = subItems.filter(item =>
+                                                                !isAdminOnly(item) || auth?.user?.role === 'admin'
+                                                            );
+                                                            const showHeaderCheckbox = header?.redirect_route &&
+                                                                (!isAdminOnly(header) || auth?.user?.role === 'admin');
+
+                                                            if (!showHeaderCheckbox && visibleSubItems.length === 0) return null;
+
+                                                            const isStandalone = header?.redirect_route && subItems.length === 0;
+
+                                                            return (
+                                                                <Box
+                                                                    key={groupId}
+                                                                    sx={{border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden'}}
+                                                                >
+                                                                    {!isStandalone && (
+                                                                        <Box sx={{px: 1.5, py: 0.75, bgcolor: 'grey.100', borderBottom: '1px solid', borderColor: 'divider'}}>
+                                                                            <Typography variant="caption" fontWeight={600} color="text.secondary">
+                                                                                {header?.menu_name}
+                                                                            </Typography>
+                                                                        </Box>
+                                                                    )}
+                                                                    <Box sx={{px: 1, py: 0.5, display: 'flex', flexWrap: 'wrap'}}>
+                                                                        {showHeaderCheckbox && renderCheckbox(header)}
+                                                                        {visibleSubItems.map(item => renderCheckbox(item))}
+                                                                    </Box>
+                                                                </Box>
+                                                            );
+                                                        });
+                                                    })()}
                                                 </Box>
                                             )}
-
+                                            
                                         </Grid2>
                                     </Grid2>
                                 </CardContent>
