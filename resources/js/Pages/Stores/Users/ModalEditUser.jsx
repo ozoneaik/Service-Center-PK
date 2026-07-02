@@ -1,7 +1,7 @@
 import {useState, useEffect} from "react";
 import {
     Dialog, DialogContent, DialogTitle, TextField, Button,
-    FormControlLabel, Checkbox, Box, Grid2, Typography, InputAdornment, Stack, Divider
+    FormControlLabel, Checkbox, Box, Grid2, Typography, InputAdornment, Stack
 } from "@mui/material";
 import {router, usePage} from '@inertiajs/react';
 import LoginIcon from "@mui/icons-material/Login";
@@ -58,25 +58,52 @@ export default function ModalEditUser({open, setOpen, user, onSave, listMenu}) {
         return userData.access_menu.some(access => access.menu_code === menuId);
     }
 
-    // จัดการการเปลี่ยนแปลง checkbox ของ menu
     const handleMenuChange = (menuId, checked) => {
+        const menuItem = listMenu.find(m => m.id === menuId);
         let newAccessMenu = [...userData.access_menu];
 
         if (checked) {
-            // เพิ่ม menu ใหม่
-            newAccessMenu.push({
-                user_code: userData.user_code,
-                menu_code: menuId
-            });
+            newAccessMenu.push({ user_code: userData.user_code, menu_code: menuId });
+            // auto-add root when first child in group is checked
+            if (menuItem && !menuItem.main_menu) {
+                const groupRoot = listMenu.find(m => m.group === menuItem.group && m.main_menu && !m.redirect_route);
+                if (groupRoot && !newAccessMenu.some(a => a.menu_code === groupRoot.id)) {
+                    newAccessMenu.push({ user_code: userData.user_code, menu_code: groupRoot.id });
+                }
+            }
         } else {
-            // ลบ menu ออก
-            newAccessMenu = newAccessMenu.filter(access => access.menu_code !== menuId);
+            newAccessMenu = newAccessMenu.filter(a => a.menu_code !== menuId);
+            // auto-remove root when all children in group are unchecked
+            if (menuItem && !menuItem.main_menu) {
+                const groupRoot = listMenu.find(m => m.group === menuItem.group && m.main_menu && !m.redirect_route);
+                if (groupRoot) {
+                    const anyChildLeft = listMenu
+                        .filter(m => m.group === menuItem.group && !m.main_menu)
+                        .some(m => newAccessMenu.some(a => a.menu_code === m.id));
+                    if (!anyChildLeft) newAccessMenu = newAccessMenu.filter(a => a.menu_code !== groupRoot.id);
+                }
+            }
         }
 
-        setUserData({
-            ...userData,
-            access_menu: newAccessMenu
-        });
+        setUserData({ ...userData, access_menu: newAccessMenu });
+    };
+
+    const handleSelectAllInGroup = (groupId, items, checked) => {
+        const groupRoot = listMenu.find(m => m.group === groupId && m.main_menu && !m.redirect_route);
+        let newAccessMenu = [...userData.access_menu];
+        const targets = [...items];
+        if (groupRoot) targets.push(groupRoot);
+
+        if (checked) {
+            targets.forEach(item => {
+                if (!newAccessMenu.some(a => a.menu_code === item.id))
+                    newAccessMenu.push({ user_code: userData.user_code, menu_code: item.id });
+            });
+        } else {
+            const removeIds = targets.map(m => m.id);
+            newAccessMenu = newAccessMenu.filter(a => !removeIds.includes(a.menu_code));
+        }
+        setUserData({ ...userData, access_menu: newAccessMenu });
     };
 
     return (
@@ -227,6 +254,8 @@ export default function ModalEditUser({open, setOpen, user, onSave, listMenu}) {
                                             if (!showHeaderCheckbox && visibleSubItems.length === 0) return null;
 
                                             const isStandalone = header?.redirect_route && subItems.length === 0;
+                                            const allChecked = visibleSubItems.length > 0 && visibleSubItems.every(m => isMenuChecked(m.id));
+                                            const someChecked = visibleSubItems.some(m => isMenuChecked(m.id));
 
                                             return (
                                                 <Box
@@ -234,10 +263,23 @@ export default function ModalEditUser({open, setOpen, user, onSave, listMenu}) {
                                                     sx={{border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden'}}
                                                 >
                                                     {!isStandalone && (
-                                                        <Box sx={{px: 1.5, py: 0.75, bgcolor: 'grey.100', borderBottom: '1px solid', borderColor: 'divider'}}>
+                                                        <Box sx={{px: 1.5, py: 0.5, bgcolor: 'grey.100', borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                                                             <Typography variant="caption" fontWeight={600} color="text.secondary">
                                                                 {header?.menu_name}
                                                             </Typography>
+                                                            <FormControlLabel
+                                                                sx={{mr: 0}}
+                                                                labelPlacement="start"
+                                                                label={<Typography variant="caption" color="text.secondary">เลือกทั้งหมด</Typography>}
+                                                                control={
+                                                                    <Checkbox
+                                                                        size="small"
+                                                                        checked={allChecked}
+                                                                        indeterminate={someChecked && !allChecked}
+                                                                        onChange={(e) => handleSelectAllInGroup(parseInt(groupId), visibleSubItems, e.target.checked)}
+                                                                    />
+                                                                }
+                                                            />
                                                         </Box>
                                                     )}
                                                     <Box sx={{px: 1, py: 0.5, display: 'flex', flexWrap: 'wrap'}}>

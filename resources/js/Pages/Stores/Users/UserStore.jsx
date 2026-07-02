@@ -65,9 +65,38 @@ export default function UserStore({list_menu}) {
     const handleSelectMenu = (e) => {
         const {name, checked} = e.target;
         const menuId = parseInt(name);
+        const menuItem = list_menu.find(m => m.id === menuId);
+
+        let updatedAccess = data.access_menu.map(item =>
+            item.menu_id === menuId ? {...item, is_checked: checked} : item
+        );
+
+        // auto-manage root (header with no redirect_route) for the group
+        if (menuItem && !menuItem.main_menu) {
+            const groupRoot = list_menu.find(m => m.group === menuItem.group && m.main_menu && !m.redirect_route);
+            if (groupRoot) {
+                const anyChildChecked = list_menu
+                    .filter(m => m.group === menuItem.group && !m.main_menu)
+                    .some(m => {
+                        const a = updatedAccess.find(a => a.menu_id === m.id);
+                        return a ? a.is_checked : false;
+                    });
+                updatedAccess = updatedAccess.map(item =>
+                    item.menu_id === groupRoot.id ? {...item, is_checked: anyChildChecked} : item
+                );
+            }
+        }
+
+        setData('access_menu', updatedAccess);
+    };
+
+    const handleSelectAllInGroup = (groupId, items, checked) => {
+        const groupRoot = list_menu.find(m => m.group === groupId && m.main_menu && !m.redirect_route);
+        const targetIds = items.map(m => m.id);
+        if (groupRoot) targetIds.push(groupRoot.id);
 
         const updatedAccess = data.access_menu.map(item =>
-            item.menu_id === menuId ? {...item, is_checked: checked} : item
+            targetIds.includes(item.menu_id) ? {...item, is_checked: checked} : item
         );
         setData('access_menu', updatedAccess);
     };
@@ -414,6 +443,14 @@ export default function UserStore({list_menu}) {
                                                             if (!showHeaderCheckbox && visibleSubItems.length === 0) return null;
 
                                                             const isStandalone = header?.redirect_route && subItems.length === 0;
+                                                            const allChecked = visibleSubItems.length > 0 && visibleSubItems.every(m => {
+                                                                const a = data.access_menu.find(ac => ac.menu_id === m.id);
+                                                                return a ? a.is_checked : false;
+                                                            });
+                                                            const someChecked = visibleSubItems.some(m => {
+                                                                const a = data.access_menu.find(ac => ac.menu_id === m.id);
+                                                                return a ? a.is_checked : false;
+                                                            });
 
                                                             return (
                                                                 <Box
@@ -421,10 +458,23 @@ export default function UserStore({list_menu}) {
                                                                     sx={{border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden'}}
                                                                 >
                                                                     {!isStandalone && (
-                                                                        <Box sx={{px: 1.5, py: 0.75, bgcolor: 'grey.100', borderBottom: '1px solid', borderColor: 'divider'}}>
+                                                                        <Box sx={{px: 1.5, py: 0.5, bgcolor: 'grey.100', borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                                                                             <Typography variant="caption" fontWeight={600} color="text.secondary">
                                                                                 {header?.menu_name}
                                                                             </Typography>
+                                                                            <FormControlLabel
+                                                                                sx={{mr: 0}}
+                                                                                labelPlacement="start"
+                                                                                label={<Typography variant="caption" color="text.secondary">เลือกทั้งหมด</Typography>}
+                                                                                control={
+                                                                                    <Checkbox
+                                                                                        size="small"
+                                                                                        checked={allChecked}
+                                                                                        indeterminate={someChecked && !allChecked}
+                                                                                        onChange={(e) => handleSelectAllInGroup(parseInt(groupId), visibleSubItems, e.target.checked)}
+                                                                                    />
+                                                                                }
+                                                                            />
                                                                         </Box>
                                                                     )}
                                                                     <Box sx={{px: 1, py: 0.5, display: 'flex', flexWrap: 'wrap'}}>
