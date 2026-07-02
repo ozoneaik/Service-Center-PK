@@ -1,7 +1,8 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {Head, Link, router, useForm, usePage} from "@inertiajs/react";
 import {
-    Alert, Box, Button, Chip, Grid2, Paper, Stack, Table,
+    Alert, Box, Button, Chip, FormControl, Grid2, InputLabel, MenuItem,
+    Paper, Select, Stack, Table,
     TableBody, TableCell, TableHead, TableRow, Typography
 } from "@mui/material";
 import React, {useState} from "react";
@@ -18,6 +19,16 @@ export default function UserList({users, list_menu}) {
     const [showAlert, setShowAlert] = useState(false);
     const [open, setOpen] = useState(false);
     const [userSelected, setUserSelected] = useState();
+    const [filterRole, setFilterRole] = useState('all');
+    const [filterAdmin, setFilterAdmin] = useState('all');
+
+    const roles = [...new Set(users.map(u => u.role).filter(Boolean))];
+
+    const filteredUsers = users.filter(u => {
+        const roleMatch = filterRole === 'all' || u.role === filterRole;
+        const adminMatch = filterAdmin === 'all' || (filterAdmin === 'yes' ? u.admin_that_branch : !u.admin_that_branch);
+        return roleMatch && adminMatch;
+    });
 
 
     const handleDelete = (user_code, name) => {
@@ -71,6 +82,25 @@ export default function UserList({users, list_menu}) {
                             </Grid2>
                         )}
                         <Grid2 size={12}>
+                            <Stack direction='row' spacing={2}>
+                                <FormControl size="small" sx={{minWidth: 160}}>
+                                    <InputLabel>สิทธิ์</InputLabel>
+                                    <Select value={filterRole} label="สิทธิ์" onChange={e => setFilterRole(e.target.value)}>
+                                        <MenuItem value="all">ทั้งหมด</MenuItem>
+                                        {roles.map(r => <MenuItem key={r} value={r}>{r}</MenuItem>)}
+                                    </Select>
+                                </FormControl>
+                                <FormControl size="small" sx={{minWidth: 160}}>
+                                    <InputLabel>เจ้าของร้าน</InputLabel>
+                                    <Select value={filterAdmin} label="เจ้าของร้าน" onChange={e => setFilterAdmin(e.target.value)}>
+                                        <MenuItem value="all">ทั้งหมด</MenuItem>
+                                        <MenuItem value="yes">ใช่</MenuItem>
+                                        <MenuItem value="no">ไม่ใช่</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Stack>
+                        </Grid2>
+                        <Grid2 size={12}>
                             <Box sx={{overflowX: 'auto'}}>
                                 <Table>
                                     <TableHead>
@@ -84,7 +114,7 @@ export default function UserList({users, list_menu}) {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {users.map((user, index) => {
+                                        {filteredUsers.map((user, index) => {
                                             return (
                                                 <TableRow key={index}>
                                                     <TableCell>{user.user_code}</TableCell>
