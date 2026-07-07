@@ -90,7 +90,7 @@ export default function Dashboard() {
                                 '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 }
                             }}
                         >
-                            <CardActionArea onClick={() => redirectPage('orders.list')}>
+                            <CardActionArea onClick={() => redirectPage('orders.diagram')}>
                                 <CardContent sx={{ p: 3 }}>
                                     <Avatar sx={{ bgcolor: 'success.light', width: 64, height: 64, mx: 'auto', mb: 2 }}>
                                         <ShoppingCartIcon sx={{ fontSize: 32 }} />
@@ -120,7 +120,7 @@ export default function Dashboard() {
                                 '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 }
                             }}
                         >
-                            <CardActionArea onClick={() => redirectPage('orders.list')}>
+                            <CardActionArea onClick={() => redirectPage('orders.diagram')}>
                                 <CardContent sx={{ p: 3 }}>
                                     <Avatar sx={{ bgcolor: 'secondary.light', width: 64, height: 64, mx: 'auto', mb: 2 }}>
                                         <InventoryIcon sx={{ fontSize: 32 }} />
