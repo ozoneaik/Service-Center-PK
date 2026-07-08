@@ -98,6 +98,12 @@ export default function AdminMainPage() {
             icon: <Handyman />,
             path: route('admin.spare-parts.index'),
             color: '#8f8f8f',
+        },
+        {
+            text: "ร้านค้าตัวแทน (ไม่ใช่ศูนย์ซ่อม)",
+            icon: <StoreIcon />,
+            path: route('admin.dealer-shops.index'),
+            color: '#e65100',
         }
     ];
 

@@ -13,6 +13,7 @@ use App\Http\Controllers\NewRepair\SearchController;
 use App\Http\Controllers\ReceiveRepair\ReceiveRepairController;
 use App\Http\Controllers\SaleRepair\JobForSaleController;
 use App\Http\Controllers\SaleRepair\SaleRepairController;
+use App\Http\Controllers\SaleRepair\SalesDealerJobController;
 use App\Http\Controllers\SendJob\sendJobController;
 use Illuminate\Support\Facades\Route;
 
@@ -83,6 +84,12 @@ Route::prefix('repair-sale')->group(function () {
 
     Route::post('/confirm-send', [JobForSaleController::class, 'confirmSendJob'])->name('repair.sale.confirm.send');
     Route::post('/cancel', [JobForSaleController::class, 'cancelJob'])->name('repair.sale.cancel');
+});
+
+Route::prefix('sale-dealer-jobs')->group(function () {
+    Route::get('/', [SalesDealerJobController::class, 'index'])->name('sale.dealer.jobs.index');
+    Route::get('/dealer-list', [SalesDealerJobController::class, 'getDealerList'])->name('sale.dealer.jobs.dealers');
+    Route::post('/list', [SalesDealerJobController::class, 'getJobs'])->name('sale.dealer.jobs.list');
 });
 
 Route::prefix('receive-repair')->middleware(['auth'])->group(function () {

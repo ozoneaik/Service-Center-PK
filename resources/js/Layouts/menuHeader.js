@@ -1,4 +1,4 @@
-export function getMenuHeaders(user) {
+export function getMenuHeaders(_user) {
     return [
         {
             name: 'แจ้งซ่อม',
@@ -20,7 +20,7 @@ export function getMenuHeaders(user) {
                     routeUrl: 'sendJobs.docJobList'
                 },
                 {
-                    name: 'รับงานส่งกลับจากพัมคินฯ',
+                    name: 'ตรวจสอบสถานะส่งซ่อมพัมคินฯ',
                     routeUrl: 'sendJobs.successJobList'
                 }
             ]
@@ -48,7 +48,7 @@ export function getMenuHeaders(user) {
         },
         {
             name: 'สั่งซื้ออะไหล่และตรวจสอบไดอะแกรม',
-            routeUrl: 'orders.list'
+            routeUrl: 'orders.diagram'
         },
         {
             name: "เบิกอะไหล่สินค้า",
@@ -65,6 +65,19 @@ export function getMenuHeaders(user) {
         {
             name: 'ประวัติซ่อม',
             routeUrl: 'repair.sale.index'
+        },
+        {
+            name: 'แจ้งซ่อม (ร้านค้า)',
+            childs: [
+                {
+                    name: 'แจ้งซ่อมสินค้า',
+                    routeUrl: 'dealerRepair.index'
+                },
+                {
+                    name: 'ประวัติการแจ้งซ่อม',
+                    routeUrl: 'dealerRepair.history'
+                }
+            ]
         },
     ];
 }

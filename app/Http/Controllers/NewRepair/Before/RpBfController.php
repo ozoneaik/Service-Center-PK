@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AccessoriesNote;
 use App\Models\CustomerInJob;
 use App\Models\FileUpload;
+use App\Models\JobList;
 use App\Models\Remark;
 use App\Models\StoreInformation;
 use App\Models\Symptom;
@@ -14,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -305,7 +307,45 @@ class RpBfController extends Controller
             } catch (\Exception $smsException) {
                 Log::error("SMS Exception Job: {$job_id} - " . $smsException->getMessage());
             }
-            // -------------------------------------------------------------
+
+            // ส่ง Lark แจ้ง Sale เฉพาะ job ที่มาจาก dealer
+            try {
+                $job = JobList::where('job_id', $job_id)->first();
+                if ($job && $job->created_job_from === 'dealer') {
+                    $larkInfo = StoreInformation::query()
+                        ->leftJoin('sale_information', 'sale_information.sale_code', '=', 'store_information.sale_id')
+                        ->where('store_information.is_code_cust_id', $job->dealer_code)
+                        ->select('store_information.shop_name', 'sale_information.lark_token')
+                        ->first();
+
+                    if ($larkInfo && !empty($larkInfo->lark_token)) {
+                        $symptomText = $remark_symptom_accessory['symptom'] ?? '-';
+                        $text = "ร้านค้าแจ้งซ่อม\n"
+                            . "ร้าน : {$larkInfo->shop_name}\n"
+                            . "รหัส Job : {$job_id}\n"
+                            . "Serial : {$job->serial_id}\n"
+                            . "สินค้า : {$job->p_name}\n"
+                            . "อาการ : {$symptomText}";
+
+                        $authResp = Http::post('https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal', [
+                            'app_id' => env('VITE_LARK_APP_ID'),
+                            'app_secret' => env('VITE_LARK_APP_SECRET'),
+                        ]);
+
+                        if ($authResp->successful()) {
+                            $token = $authResp->json()['tenant_access_token'];
+                            Http::withHeaders(['Authorization' => 'Bearer ' . $token])
+                                ->post('https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=open_id', [
+                                    'receive_id' => $larkInfo->lark_token,
+                                    'msg_type' => 'text',
+                                    'content' => json_encode(['text' => $text], JSON_UNESCAPED_UNICODE),
+                                ]);
+                        }
+                    }
+                }
+            } catch (\Exception $larkException) {
+                Log::error("Lark Notify Exception Job: {$job_id} - " . $larkException->getMessage());
+            }
 
             return back()->with('success', "บันทึกข้อมูลสำเร็จ กรุณากรอกฟอร์ม บันทึกการซ่อมต่อ");
         } catch (\Exception $e) {

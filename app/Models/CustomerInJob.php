@@ -22,6 +22,8 @@ class CustomerInJob extends Model
         'is_code_cust_id',
         'delivery_type',
         'shop_under_sale_id',
+        'dealer_contact_name',
+        'dealer_contact_phone',
     ];
 
     public static function findByJobId($job_id): array

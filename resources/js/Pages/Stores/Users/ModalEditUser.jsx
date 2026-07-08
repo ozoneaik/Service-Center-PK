@@ -7,8 +7,12 @@ import {router, usePage} from '@inertiajs/react';
 import LoginIcon from "@mui/icons-material/Login";
 import {AccountCircle, AlternateEmail, Password, Edit} from "@mui/icons-material";
 
+const isAdminOnly = (item) =>
+    item.menu_name === 'เซลล์แจ้งซ่อม' || item.redirect_route === 'repair.sale.index' ||
+    item.menu_name === 'บัญชีรับอะไหล่' || item.redirect_route === 'accounting.return.index';
+
 export default function ModalEditUser({open, setOpen, user, onSave, listMenu}) {
-    const { auth } = usePage().props; 
+    const { auth } = usePage().props;
     const currentUserRole = auth.user.role;
     const [userData, setUserData] = useState({
         user_code: '', name: '', email: '', role: '', admin_that_branch: false,
@@ -73,13 +77,15 @@ export default function ModalEditUser({open, setOpen, user, onSave, listMenu}) {
             }
         } else {
             newAccessMenu = newAccessMenu.filter(a => a.menu_code !== menuId);
-            // auto-remove root when all children in group are unchecked
+            // auto-remove root when all visible children in group are unchecked
             if (menuItem && !menuItem.main_menu) {
                 const groupRoot = listMenu.find(m => m.group === menuItem.group && m.main_menu && !m.redirect_route);
                 if (groupRoot) {
-                    const anyChildLeft = listMenu
-                        .filter(m => m.group === menuItem.group && !m.main_menu)
-                        .some(m => newAccessMenu.some(a => a.menu_code === m.id));
+                    const visibleGroupChildren = listMenu.filter(m =>
+                        m.group === menuItem.group && !m.main_menu &&
+                        (!isAdminOnly(m) || currentUserRole === 'admin')
+                    );
+                    const anyChildLeft = visibleGroupChildren.some(m => newAccessMenu.some(a => a.menu_code === m.id));
                     if (!anyChildLeft) newAccessMenu = newAccessMenu.filter(a => a.menu_code !== groupRoot.id);
                 }
             }
@@ -231,10 +237,6 @@ export default function ModalEditUser({open, setOpen, user, onSave, listMenu}) {
                                 <Typography variant="subtitle2" sx={{mb: 1.5}}>สิทธิ์การเข้าถึงเมนู</Typography>
                                 <Box sx={{display: 'flex', flexDirection: 'column', gap: 1.5}}>
                                     {(() => {
-                                        const isAdminOnly = (item) =>
-                                            item.menu_name === 'เซลล์แจ้งซ่อม' || item.redirect_route === 'repair.sale.index' ||
-                                            item.menu_name === 'บัญชีรับอะไหล่' || item.redirect_route === 'accounting.return.index';
-
                                         const grouped = {};
                                         listMenu.forEach(item => {
                                             if (!grouped[item.group]) grouped[item.group] = [];

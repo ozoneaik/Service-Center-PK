@@ -15,7 +15,7 @@ const textQuestion = `
 <span style="color: red">⚠️ เมื่อบันทึกแล้ว จะไม่สามารถย้อนกลับมาแก้ไขในหน้านี้ได้</span>
 `
 
-export default function RpTab1Form({ JOB, setJOB, form1Saved, setForm1Saved, setMainStep,setTabValue }) {
+export default function RpTab1Form({ JOB, setJOB, form1Saved, setForm1Saved, setMainStep, setTabValue, dealerInfo }) {
     const [loadingJob, setLoadingJob] = useState(false);
     const { data, setData, processing, post } = useForm({
         job_id: JOB.job_id,
@@ -30,7 +30,7 @@ export default function RpTab1Form({ JOB, setJOB, form1Saved, setForm1Saved, set
         try {
             setLoadingJob(true);
             const { data, status } = await axios.get(route('repair.before.index', { job_id: JOB.job_id }));
-            const customer = data.form.customer;
+            let customer = data.form.customer;
             const remark_symptom_accessory = data.form.remark_symptom_accessory;
             const file_befores = data.form.file_befores;
             const saved = data.saved || false;
@@ -38,6 +38,14 @@ export default function RpTab1Form({ JOB, setJOB, form1Saved, setForm1Saved, set
                 setForm1Saved(true);
             } else {
                 setForm1Saved(false);
+            }
+            if (dealerInfo && !customer?.name && !customer?.phone) {
+                customer = {
+                    ...customer,
+                    name: dealerInfo.shop_name || '',
+                    phone: dealerInfo.phone || '',
+                    address: dealerInfo.address || '',
+                };
             }
             setData('customer', customer)
             setData('remark_symptom_accessory', remark_symptom_accessory)

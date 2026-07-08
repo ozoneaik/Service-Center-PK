@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AdminBranchAccess;
+use App\Http\Middleware\DealerAccess;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\MenuAccess;
 use App\Http\Middleware\UserAccess;
@@ -25,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'adminPermission' => UserAccess::class,
             'AdminBranchAccess' => AdminBranchAccess::class,
             'menuAccess' => MenuAccess::class,
+            'dealerAccess' => DealerAccess::class,
         ]);
 
         //

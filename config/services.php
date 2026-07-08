@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'pk_api' => [
+        'base_url' => env('PK_API_BASE_URL', 'https://pkapi.pumpkin.tools/api'),
+        'username' => env('PK_API_USERNAME'),
+        'password' => env('PK_API_PASSWORD'),
+    ],
+
 ];

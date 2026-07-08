@@ -12,7 +12,7 @@ import {
     VisibilityOff, Warning
 } from "@mui/icons-material";
 import axios from "axios";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import LoginIcon from '@mui/icons-material/Login';
 
 export default function UserCreate({menu_list}) {
@@ -151,14 +151,57 @@ export default function UserCreate({menu_list}) {
     const passwordStrength = checkPasswordStrength(data.password);
 
 
-    const handleSelectMenu = (e) => {
-        const {name, checked} = e.target;
-        const menuId = parseInt(name);
+    const groupedMenus = useMemo(() => {
+        const groups = {};
+        menu_list.forEach((item) => {
+            if (item.main_menu) groups[item.group] = {header: item, children: []};
+        });
+        menu_list.forEach((item) => {
+            if (!item.main_menu && groups[item.group]) groups[item.group].children.push(item);
+        });
+        return Object.values(groups);
+    }, [menu_list]);
 
-        const updatedAccess = data.menu_access.map(item =>
-            item.menu_id === menuId ? {...item, is_checked: checked} : item
-        );
-        setData('menu_access', updatedAccess);
+    const isMenuChecked = (menuId) => {
+        const item = data.menu_access.find(i => i.menu_id === menuId);
+        return item ? item.is_checked : false;
+    };
+
+    const applyChecked = (ids, checked, prev) =>
+        prev.map(item => ids.includes(item.menu_id) ? {...item, is_checked: checked} : item);
+
+    const handleMenuChange = (menuId, checked) => {
+        const parentGroup = groupedMenus.find(g => g.children.some(c => c.id === menuId));
+        let next = applyChecked([menuId], checked, data.menu_access);
+
+        if (checked) {
+            if (parentGroup && !isMenuChecked(parentGroup.header.id)) {
+                next = applyChecked([parentGroup.header.id], true, next);
+            }
+        } else {
+            if (parentGroup) {
+                const anyChildLeft = parentGroup.children.some(c => {
+                    const found = next.find(i => i.menu_id === c.id);
+                    return found?.is_checked;
+                });
+                if (!anyChildLeft) next = applyChecked([parentGroup.header.id], false, next);
+            }
+        }
+        setData('menu_access', next);
+    };
+
+    const handleGroupToggle = (group, checked) => {
+        const ids = [group.header.id, ...group.children.map(c => c.id)];
+        setData('menu_access', applyChecked(ids, checked, data.menu_access));
+    };
+
+    const isGroupAllChecked = (group) =>
+        [group.header, ...group.children].every(m => isMenuChecked(m.id));
+
+    const isGroupPartialChecked = (group) => {
+        const all = [group.header, ...group.children];
+        const count = all.filter(m => isMenuChecked(m.id)).length;
+        return count > 0 && count < all.length;
     };
 
 
@@ -389,23 +432,64 @@ export default function UserCreate({menu_list}) {
                                     </Typography>
                                 </Box>
                                 <CardContent>
-                                    <Box display='flex' flexWrap='wrap'>
-                                        {menu_list.map((item, index) => {
-                                            const current = data.menu_access.find(i => i.menu_id === item.id)
-                                            return (
-                                                <FormControlLabel
-                                                    key={index} label={item.menu_name} name={item.id.toString()}
-                                                    control={
-                                                        <Checkbox
-                                                            checked={current ? current.is_checked : false}
-                                                            onChange={handleSelectMenu}
-                                                            disabled={data.admin_that_branch}
+                                    <Stack spacing={1.5}>
+                                        {groupedMenus.map((group, gi) => (
+                                            <Paper key={gi} variant="outlined" sx={{overflow: 'hidden'}}>
+                                                <Box sx={{
+                                                    px: 1.5, py: 0.5, bgcolor: 'grey.100',
+                                                    borderBottom: '1px solid', borderColor: 'divider',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+                                                }}>
+                                                    <Typography variant="caption" fontWeight={600} color="text.secondary">
+                                                        {group.header.menu_name}
+                                                    </Typography>
+                                                    <FormControlLabel
+                                                        sx={{mr: 0}}
+                                                        labelPlacement="start"
+                                                        label={<Typography variant="caption" color="text.secondary">เลือกทั้งหมด</Typography>}
+                                                        control={
+                                                            <Checkbox
+                                                                size="small"
+                                                                checked={isGroupAllChecked(group)}
+                                                                indeterminate={isGroupPartialChecked(group)}
+                                                                disabled={data.admin_that_branch}
+                                                                onChange={(e) => handleGroupToggle(group, e.target.checked)}
+                                                            />
+                                                        }
+                                                    />
+                                                </Box>
+                                                <Box sx={{px: 1, py: 0.5, display: 'flex', flexWrap: 'wrap'}}>
+                                                    {group.header.redirect_route && (
+                                                        <FormControlLabel
+                                                            label={<Typography variant="body2">{group.header.menu_name}</Typography>}
+                                                            control={
+                                                                <Checkbox
+                                                                    size="small"
+                                                                    checked={isMenuChecked(group.header.id)}
+                                                                    disabled={data.admin_that_branch}
+                                                                    onChange={(e) => handleMenuChange(group.header.id, e.target.checked)}
+                                                                />
+                                                            }
                                                         />
-                                                    }
-                                                />
-                                            )
-                                        })}
-                                    </Box>
+                                                    )}
+                                                    {group.children.map((child, ci) => (
+                                                        <FormControlLabel
+                                                            key={ci}
+                                                            label={<Typography variant="body2">{child.menu_name}</Typography>}
+                                                            control={
+                                                                <Checkbox
+                                                                    size="small"
+                                                                    checked={isMenuChecked(child.id)}
+                                                                    disabled={data.admin_that_branch}
+                                                                    onChange={(e) => handleMenuChange(child.id, e.target.checked)}
+                                                                />
+                                                            }
+                                                        />
+                                                    ))}
+                                                </Box>
+                                            </Paper>
+                                        ))}
+                                    </Stack>
                                 </CardContent>
                             </Card>
 

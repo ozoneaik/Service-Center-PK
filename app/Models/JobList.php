@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class JobList extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'job_id',
         'pid',
@@ -21,6 +24,7 @@ class JobList extends Model
         'serial_id',
         'image_sku',
         'status',
+        'is_active',
         'warranty',
         'auth_key',
         'is_code_key',
@@ -46,6 +50,9 @@ class JobList extends Model
         'shop_under_sale_phone',
         'created_job_from',
         'ticket_code',
-        'ass_status'
+        'ass_status',
+        'dealer_code',
+        'dealer_name',
+        'dealer_phone',
     ];
 }

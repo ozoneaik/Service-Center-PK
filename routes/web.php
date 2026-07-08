@@ -74,6 +74,9 @@ Route::middleware('auth')->group(function () {
     // จัดการ stock
     require __DIR__ . '/stockSp.php';
 
+    // แจ้งซ่อมสำหรับร้านค้าที่ไม่ใช่ศูนย์ซ่อม (Dealer)
+    require __DIR__ . '/dealerRepair.php';
+
 
     Route::prefix('history')->group(function () {
         Route::get('/index', [HistoryRepairController::class, 'index'])->name('history.index');

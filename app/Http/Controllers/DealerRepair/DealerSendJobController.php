@@ -1,0 +1,458 @@
+<?php
+
+namespace App\Http\Controllers\DealerRepair;
+
+use App\Http\Controllers\Controller;
+use App\Models\JobList;
+use App\Models\StoreInformation;
+use App\Traits\FetchesPkApi;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class DealerSendJobController extends Controller
+{
+    use FetchesPkApi;
+    public function sendJobList(Request $request): Response
+    {
+        $dealerCode = Auth::user()->is_code_cust_id;
+
+        $query = JobList::query()
+            ->where('dealer_code', $dealerCode)
+            ->where('status', 'pending')
+            ->whereNull('group_job');
+
+        if ($request->searchSku) {
+            $query->where('pid', 'like', "%{$request->searchSku}%");
+        }
+        if ($request->searchSn) {
+            $query->where('serial_id', 'like', "%{$request->searchSn}%");
+        }
+
+        $jobs = $query->orderBy('id', 'desc')->get();
+
+        return Inertia::render('DealerRepair/SendJob/DealerSendJobList', [
+            'jobs' => $jobs,
+        ]);
+    }
+
+    public function updateJobSelect(Request $request): RedirectResponse
+    {
+        $user       = Auth::user();
+        $dealerCode = $user->is_code_cust_id;
+        $selected   = $request->selectedJobs;
+
+        try {
+            if (empty($selected)) {
+                throw new \Exception('ไม่มีจ็อบที่ต้องการส่ง');
+            }
+
+            DB::beginTransaction();
+
+            $group_job  = time() . rand(1000, 9999);
+            $now        = Carbon::now();
+            $jobIds     = array_column($selected, 'job_id');
+
+            $allowedJobs = JobList::whereIn('job_id', $jobIds)
+                ->where('dealer_code', $dealerCode)
+                ->get(['job_id', 'serial_id']);
+
+            $allowedIds = $allowedJobs->pluck('job_id')->toArray();
+
+            if (empty($allowedIds)) {
+                throw new \Exception('ไม่มีจ็อบที่มีสิทธิ์ส่ง');
+            }
+
+            JobList::whereIn('job_id', $allowedIds)->update([
+                'status'     => 'send',
+                'group_job'  => $group_job,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            DB::commit();
+
+            // แจ้ง Lark ของ sale ที่ดูแลร้านนี้
+            try {
+                $larkInfo = StoreInformation::query()
+                    ->leftJoin('sale_information', 'sale_information.sale_code', '=', 'store_information.sale_id')
+                    ->where('store_information.is_code_cust_id', $dealerCode)
+                    ->select('store_information.shop_name', 'sale_information.lark_token', 'store_information.is_code_cust_id')
+                    ->first();
+
+                if ($larkInfo && !empty($larkInfo->lark_token)) {
+                    $jobCount  = count($allowedIds);
+                    $jobLines  = $allowedJobs->map(fn($j) => "job_id: {$j->job_id}  serial: {$j->serial_id}")->implode("\n");
+                    $pdfUrl    = route('dom-pdf.index', $group_job);
+                    $text      = "ร้านค้าส่งซ่อม PK\n"
+                        . "ร้าน : {$larkInfo->shop_name}\n"
+                        . "รหัสร้าน: {$larkInfo->is_code_cust_id}\n"
+                        . "เลขกลุ่มงาน : {$group_job}\n"
+                        . "จำนวน : {$jobCount} รายการ\n"
+                        . "รหัส Job และ Serial :\n{$jobLines}\n"
+                        . "ใบรายงานส่ง : {$pdfUrl}";
+
+                    $authResp = Http::post('https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal', [
+                        'app_id'     => env('VITE_LARK_APP_ID'),
+                        'app_secret' => env('VITE_LARK_APP_SECRET'),
+                    ]);
+
+                    if ($authResp->successful()) {
+                        $token = $authResp->json()['tenant_access_token'];
+                        Http::withHeaders(['Authorization' => 'Bearer ' . $token])
+                            ->post('https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=open_id', [
+                                'receive_id' => $larkInfo->lark_token,
+                                'msg_type'   => 'text',
+                                'content'    => json_encode(['text' => $text], JSON_UNESCAPED_UNICODE),
+                            ]);
+                    }
+                }
+            } catch (\Exception $larkException) {
+                Log::error("Lark Notify SendJob Exception dealer={$dealerCode} - " . $larkException->getMessage());
+            }
+
+            return redirect()->route('dealerRepair.send.doc')->with('success', 'ส่งไปยัง PK สำเร็จ');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('dealerRepair.send.list')->with('error', $e->getMessage());
+        }
+    }
+
+    public function docJobList(): Response
+    {
+        [$dealerCodes, $isSale] = $this->getAuthorizedDealerCodes();
+
+        if ($isSale) {
+            $groups = JobList::query()
+                ->join('store_information as si', 'si.is_code_cust_id', '=', 'job_lists.dealer_code')
+                ->whereIn('job_lists.dealer_code', $dealerCodes)
+                ->where('job_lists.status', 'send')
+                ->select('job_lists.print_at', 'job_lists.group_job', 'job_lists.print_updated_at',
+                    'job_lists.counter_print', 'job_lists.created_at',
+                    'job_lists.dealer_code', 'si.shop_name as dealer_shop_name')
+                ->groupBy('job_lists.group_job', 'job_lists.print_at', 'job_lists.print_updated_at',
+                    'job_lists.counter_print', 'job_lists.created_at',
+                    'job_lists.dealer_code', 'si.shop_name')
+                ->orderBy('job_lists.created_at', 'desc')
+                ->get();
+        } else {
+            $groups = JobList::query()
+                ->whereIn('dealer_code', $dealerCodes)
+                ->where('status', 'send')
+                ->select('print_at', 'group_job', 'print_updated_at', 'counter_print', 'created_at')
+                ->groupBy('group_job', 'print_at', 'print_updated_at', 'counter_print', 'created_at')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        return Inertia::render('DealerRepair/SendJob/DealerDocSendJob', [
+            'groups'  => $groups,
+            'is_sale' => $isSale,
+        ]);
+    }
+
+    public function groupDetail(string $job_group): JsonResponse
+    {
+        try {
+            [$dealerCodes] = $this->getAuthorizedDealerCodes();
+
+            $result = JobList::query()
+                ->where('group_job', $job_group)
+                ->whereIn('dealer_code', $dealerCodes)
+                ->select('serial_id', 'job_id', 'pid', 'p_name', 'updated_at', 'status', 'ticket_code')
+                ->get();
+
+            return response()->json(['message' => 'success', 'group' => $result]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage(), 'group' => []], 400);
+        }
+    }
+
+    public function trackPage(): Response
+    {
+        return Inertia::render('DealerRepair/SendJob/DealerSuccessSendJobs', [
+            'is_sale' => Auth::user()->role === 'sale',
+        ]);
+    }
+
+    public function getAllSendJobs(Request $request): JsonResponse
+    {
+        try {
+            [$dealerCodes, $isSale] = $this->getAuthorizedDealerCodes();
+
+            $query = JobList::query()
+                ->when($isSale, fn($q) => $q->join('store_information as si', 'si.is_code_cust_id', '=', 'job_lists.dealer_code'))
+                ->whereIn('job_lists.dealer_code', $dealerCodes)
+                ->whereIn('job_lists.status', ['send', 'pending'])
+                ->whereNotNull('job_lists.group_job')
+                ->where('job_lists.group_job', '!=', '');
+
+            if ($request->filled('group_job')) {
+                $query->where('job_lists.group_job', 'like', '%' . $request->input('group_job') . '%');
+            }
+            if ($request->filled('job_id')) {
+                $query->where('job_lists.job_id', 'like', '%' . $request->input('job_id') . '%');
+            }
+            if ($request->filled('serial_id')) {
+                $query->where('job_lists.serial_id', 'like', '%' . $request->input('serial_id') . '%');
+            }
+            if ($request->filled('pid')) {
+                $query->where('job_lists.pid', 'like', '%' . $request->input('pid') . '%');
+            }
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $query->whereBetween('job_lists.created_at', [$request->input('start_date'), $request->input('end_date')]);
+            }
+            if ($request->filled('status')) {
+                $query->where('job_lists.status', $request->input('status'));
+            }
+
+            $select = $isSale
+                ? ['job_lists.*', 'si.shop_name as dealer_shop_name']
+                : ['job_lists.*'];
+
+            $jobs = $query->select($select)->orderBy('job_lists.created_at', 'asc')->get();
+
+            return response()->json(['message' => 'success', 'jobs' => $jobs]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage(), 'jobs' => []], 500);
+        }
+    }
+
+    public function historySuccessJobs(Request $request): JsonResponse
+    {
+        try {
+            [$dealerCodes, $isSale] = $this->getAuthorizedDealerCodes();
+
+            $query = JobList::query()
+                ->when($isSale, fn($q) => $q->join('store_information as si', 'si.is_code_cust_id', '=', 'job_lists.dealer_code'))
+                ->whereIn('job_lists.dealer_code', $dealerCodes)
+                ->where('job_lists.status', 'success')
+                ->whereNotNull('job_lists.group_job');
+
+            if ($request->filled('group_job')) {
+                $query->where('job_lists.group_job', 'like', '%' . $request->input('group_job') . '%');
+            }
+            if ($request->filled('job_id')) {
+                $query->where('job_lists.job_id', 'like', '%' . $request->input('job_id') . '%');
+            }
+            if ($request->filled('serial_id')) {
+                $query->where('job_lists.serial_id', 'like', '%' . $request->input('serial_id') . '%');
+            }
+            if ($request->filled('pid')) {
+                $query->where('job_lists.pid', 'like', '%' . $request->input('pid') . '%');
+            }
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $query->whereBetween('job_lists.updated_at', [$request->input('start_date'), $request->input('end_date') . ' 23:59:59']);
+            }
+
+            $select = $isSale
+                ? ['job_lists.*', 'si.shop_name as dealer_shop_name']
+                : ['job_lists.*'];
+
+            $jobs = $query->select($select)->orderBy('job_lists.updated_at', 'desc')->get();
+
+            return response()->json(['message' => 'success', 'jobs' => $jobs]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage(), 'jobs' => []], 500);
+        }
+    }
+
+    public function finishSendJob(Request $request): JsonResponse
+    {
+        $jobsToFinish = $request->input('jobs_to_finish');
+
+        if (empty($jobsToFinish) || !is_array($jobsToFinish)) {
+            return response()->json(['message' => 'ไม่มี Job ID ที่เลือก'], 400);
+        }
+
+        [$dealerCodes] = $this->getAuthorizedDealerCodes();
+        $jobIds        = array_column($jobsToFinish, 'job_id');
+
+        try {
+            DB::beginTransaction();
+            $now = Carbon::now();
+
+            $updated = JobList::whereIn('job_id', $jobIds)
+                ->whereIn('dealer_code', $dealerCodes)
+                ->whereIn('status', ['send', 'pending'])
+                ->update([
+                    'status'       => 'success',
+                    'close_job_at' => $now,
+                    'close_job_by' => Auth::user()->user_code,
+                    'updated_at'   => $now,
+                ]);
+
+            if ($updated > 0) {
+                DB::commit();
+                return response()->json(['message' => "ปิดงานสำเร็จ {$updated} รายการ", 'success' => true]);
+            }
+
+            DB::rollBack();
+            return response()->json(['message' => 'ไม่พบรายการที่สามารถปิดได้', 'success' => false], 404);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'เกิดข้อผิดพลาด: ' . $e->getMessage(), 'success' => false], 500);
+        }
+    }
+
+    public function checkJobStatus(Request $request): JsonResponse
+    {
+        $jobId           = $request->input('job_id');
+        [$dealerCodes]   = $this->getAuthorizedDealerCodes();
+
+        if (empty($jobId)) {
+            return response()->json(['message' => 'กรุณากรอก Job ID', 'status' => false], 400);
+        }
+
+        try {
+            $job = JobList::where('job_id', $jobId)
+                ->whereIn('dealer_code', $dealerCodes)
+                ->first();
+
+            if (!$job) {
+                throw new \Exception("ไม่พบข้อมูล Job ID นี้ในระบบ");
+            }
+
+            $response = Http::timeout(10)->post('https://afterservice-sv.pumpkin.tools/sv/callpsc.php', [
+                'ticketcode' => $jobId,
+            ]);
+
+            if (!$response->successful()) {
+                throw new \Exception("API ภายนอกล้มเหลว (HTTP {$response->status()})");
+            }
+
+            $json = $response->json();
+            if (!$json || !is_array($json)) {
+                throw new \Exception("API ตอบกลับมาในรูปแบบที่ไม่ใช่ JSON");
+            }
+
+            $externalStatus = $json['status'] ?? null;
+            $assNo          = $json['assno']  ?? null;
+
+            if (!$externalStatus) {
+                throw new \Exception("ไม่ได้รับสถานะที่ถูกต้อง");
+            }
+
+            $mappedStatus = $this->mapApiStatus($externalStatus);
+            $now          = Carbon::now();
+            $updateData   = ['status' => $mappedStatus, 'ass_status' => $externalStatus, 'updated_at' => $now];
+
+            if ($mappedStatus === 'success') {
+                $updateData['close_job_at'] = $now;
+                $updateData['close_job_by'] = 'API';
+            }
+
+            $ticketForResponse = $job->ticket_code;
+            if ($assNo) {
+                $updateData['ticket_code'] = $assNo;
+                $ticketForResponse         = $assNo;
+            }
+
+            DB::beginTransaction();
+            JobList::where('job_id', $jobId)->update($updateData);
+            DB::commit();
+
+            return response()->json([
+                'status'      => 'success',
+                'api_status'  => $mappedStatus,
+                'ticket_code' => $ticketForResponse,
+                'message'     => 'ดึงสถานะสำเร็จ',
+            ]);
+        } catch (\Exception $e) {
+            if (DB::transactionLevel() > 0) DB::rollBack();
+            Log::error('DealerSendJob checkJobStatus: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => 'เช็คสถานะล้มเหลว: ' . $e->getMessage()], 400);
+        }
+    }
+
+    public function batchCheckJobStatus(Request $request): JsonResponse
+    {
+        $jobIds        = $request->input('job_ids', []);
+        [$dealerCodes] = $this->getAuthorizedDealerCodes();
+
+        if (empty($jobIds) || !is_array($jobIds)) {
+            return response()->json(['message' => 'ไม่มี Job ID ที่ต้องการเช็คสถานะ'], 400);
+        }
+
+        $jobIds = array_slice($jobIds, 0, 50);
+        $jobIds = JobList::whereIn('job_id', $jobIds)
+            ->whereIn('dealer_code', $dealerCodes)
+            ->pluck('job_id')
+            ->toArray();
+
+        $total   = count($jobIds);
+        $updated = 0;
+        $failed  = 0;
+
+        foreach ($jobIds as $jobId) {
+            try {
+                $response = Http::timeout(10)->post('https://afterservice-sv.pumpkin.tools/sv/callpsc.php', [
+                    'ticketcode' => $jobId,
+                ]);
+
+                if (!$response->successful()) { $failed++; continue; }
+
+                $json = $response->json();
+                if (!$json || !is_array($json)) { $failed++; continue; }
+
+                $externalStatus = $json['status'] ?? null;
+                $assNo          = $json['assno']  ?? null;
+                if (empty($externalStatus)) { $failed++; continue; }
+
+                $mappedStatus = $this->mapApiStatus($externalStatus);
+                $now          = Carbon::now();
+                $updateData   = ['status' => $mappedStatus, 'ass_status' => $externalStatus, 'updated_at' => $now];
+
+                if ($mappedStatus === 'success') {
+                    $updateData['close_job_at'] = $now;
+                    $updateData['close_job_by'] = 'API';
+                }
+                if ($assNo) $updateData['ticket_code'] = $assNo;
+
+                JobList::where('job_id', $jobId)->update($updateData);
+                $updated++;
+            } catch (\Exception $e) {
+                $failed++;
+            }
+            usleep(100_000);
+        }
+
+        $msg = "เช็คสถานะสำเร็จ {$updated}/{$total} รายการ";
+        if ($failed > 0) $msg .= " (ไม่สำเร็จ {$failed} รายการ)";
+
+        return response()->json(['message' => $msg, 'updated' => $updated, 'failed' => $failed, 'total' => $total]);
+    }
+
+    private function getAuthorizedDealerCodes(): array
+    {
+        $user   = Auth::user();
+        $isSale = $user->role === 'sale';
+
+        if ($isSale) {
+            $custIds     = $this->fetchCustIds($user->user_code);
+            $dealerCodes = StoreInformation::whereIn('is_code_cust_id', $custIds)
+                ->where('shop_type', 'dealer')
+                ->pluck('is_code_cust_id')
+                ->toArray();
+        } else {
+            $dealerCodes = [$user->is_code_cust_id];
+        }
+
+        return [$dealerCodes, $isSale];
+    }
+
+    private function mapApiStatus(string $apiStatus): string
+    {
+        if (in_array($apiStatus, ['ไม่พบข้อมูล', 'send'], true)) return 'send';
+        if (in_array($apiStatus, ['canceled', 'ยกเลิกคำสั่งซื้อ', 'ยกเลิก'], true)) return 'canceled';
+        if (in_array($apiStatus, ['บัญชีรับงานแล้ว', 'ส่งของแล้ว', 'จัดส่งสำเร็จ', 'ส่งสำเร็จ', 'จบงาน'], true)) return 'success';
+        return 'pending';
+    }
+}

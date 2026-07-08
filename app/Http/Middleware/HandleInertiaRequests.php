@@ -198,7 +198,7 @@ class HandleInertiaRequests extends Middleware
             $saleRouteName = 'repair.sale.index';
 
             if ($user->role === 'sale') {
-                // กรณีเป็น SALE: เช็คว่ามีเมนูนี้หรือยัง ถ้ายังไม่มีให้ "ยัด" เข้าไปเลย
+                // บังคับเมนู "เซลล์แจ้งซ่อม"
                 $hasSaleMenu = $access_menu->contains('redirect_route', $saleRouteName);
 
                 if (!$hasSaleMenu) {
@@ -206,14 +206,33 @@ class HandleInertiaRequests extends Middleware
                     if ($saleMenu) {
                         $access_menu->push($saleMenu);
 
-                        // [เพิ่มเติม] ต้องดึงหัวข้อหลัก (Main Menu) ของ Group 1 มาด้วย 
-                        // ไม่งั้นเมนูย่อยอาจจะไม่มีที่เกาะ (ถ้า Sale ไม่ได้สิทธิ์ Group 1 มาก่อน)
                         $groupId = $saleMenu->group;
                         $hasHeader = $access_menu->where('group', $groupId)->where('main_menu', true)->isNotEmpty();
 
                         if (!$hasHeader) {
                             $headerMenu = ListMenu::where('group', $groupId)->where('main_menu', true)->first();
                             if ($headerMenu) $access_menu->push($headerMenu);
+                        }
+                    }
+                }
+
+                // ถ้า sale มีเมนู "งานส่งซ่อม (ร้านค้า) ในความดูแล" (sale.dealer.jobs.index)
+                // ให้ได้รับ "เอกสารส่งซ่อม" และ "ติดตามสถานะ" ของ dealer อัตโนมัติ
+                if ($access_menu->contains('redirect_route', 'sale.dealer.jobs.index')) {
+                    $autoRoutes = ['dealerRepair.send.doc', 'dealerRepair.send.track'];
+                    foreach ($autoRoutes as $autoRoute) {
+                        if (!$access_menu->contains('redirect_route', $autoRoute)) {
+                            $menu = ListMenu::where('redirect_route', $autoRoute)->first();
+                            if ($menu) {
+                                $access_menu->push($menu);
+
+                                $groupId   = $menu->group;
+                                $hasHeader = $access_menu->where('group', $groupId)->where('main_menu', true)->isNotEmpty();
+                                if (!$hasHeader) {
+                                    $headerMenu = ListMenu::where('group', $groupId)->where('main_menu', true)->first();
+                                    if ($headerMenu) $access_menu->push($headerMenu);
+                                }
+                            }
                         }
                     }
                 }

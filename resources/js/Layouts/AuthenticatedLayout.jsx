@@ -60,7 +60,9 @@ export default function AuthenticatedLayout({ header, children }) {
             });
         }
     });
-    const formatedMenu = Object.values(groupedMenu);
+    const formatedMenu = Object.values(groupedMenu).filter(
+        (menu) => menu.routerUrl || menu.childs.length > 0
+    );
     
 
     return (

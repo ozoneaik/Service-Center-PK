@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DealerShopController;
 use App\Http\Controllers\Admin\DiagramController;
 use App\Http\Controllers\Admin\JobFromServiceController;
 use App\Http\Controllers\Admin\ManagePointController;
@@ -140,6 +141,13 @@ Route::middleware('adminPermission')->group(function () {
         Route::prefix('withdraw-report')->group(function () {
             Route::get('/', [WithdrawReportController::class, 'index'])->name('admin.withdraw-report.index');
             Route::get('/export', [WithdrawReportController::class, 'export'])->name('admin.withdraw-report.export');
+        });
+
+        // จัดการร้านค้าที่ไม่ใช่ศูนย์ซ่อม (Dealer)
+        Route::prefix('dealer-shops')->group(function () {
+            Route::get('/', [DealerShopController::class, 'index'])->name('admin.dealer-shops.index');
+            Route::get('/create', [DealerShopController::class, 'create'])->name('admin.dealer-shops.create');
+            Route::post('/store', [DealerShopController::class, 'store'])->name('admin.dealer-shops.store');
         });
         // Route::prefix('manage-point')->group(function () {
         //     Route::get('/', [ManagePointController::class, 'index'])->name('admin.manage-point.index');
