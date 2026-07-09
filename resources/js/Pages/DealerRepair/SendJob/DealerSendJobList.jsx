@@ -1,11 +1,11 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import { Head, router, useForm, usePage } from "@inertiajs/react";
 import {
-    Alert, Autocomplete, Box, Button, Card, CardContent, Checkbox, Divider,
+    Alert, Autocomplete, Box, Button, Card, CardContent, Checkbox, Chip, Divider,
     Grid2, Paper, Stack, Table, TableBody, TableCell,
-    TableHead, TableRow, TextField, Typography, useMediaQuery,
+    TableHead, TableRow, TextField, Tooltip, Typography, useMediaQuery,
 } from "@mui/material";
-import { Search, Store } from "@mui/icons-material";
+import { Search, Store, Warning } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { DateFormatTh } from "@/Components/DateFormat.jsx";
 import { AlertDialogQuestion } from "@/Components/AlertDialog.js";
@@ -29,6 +29,7 @@ export default function DealerSendJobList({ jobs, dealer_list = [], selected_dea
     const isSelected = (jobId) => data.selectedJobs.some((j) => j.job_id === jobId);
 
     const handleSelect = (job, e) => {
+        if (!job.before_form_complete) return;
         const checked = e.target.checked;
         setData((prev) => ({
             ...prev,
@@ -41,8 +42,10 @@ export default function DealerSendJobList({ jobs, dealer_list = [], selected_dea
     };
 
     const handleSelectAll = (e) => {
-        setData("selectedJobs", e.target.checked ? jobs : []);
+        setData("selectedJobs", e.target.checked ? jobs.filter(j => j.before_form_complete) : []);
     };
+
+    const completeCount = jobs.filter(j => j.before_form_complete).length;
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -145,25 +148,45 @@ export default function DealerSendJobList({ jobs, dealer_list = [], selected_dea
                             <Card variant="outlined" sx={{ mb: 2, p: 2 }}>
                                 <Stack direction="row" alignItems="center" spacing={1}>
                                     <Checkbox
-                                        checked={data.selectedJobs.length === jobs.length && jobs.length > 0}
-                                        indeterminate={data.selectedJobs.length > 0 && data.selectedJobs.length < jobs.length}
+                                        checked={data.selectedJobs.length === completeCount && completeCount > 0}
+                                        indeterminate={data.selectedJobs.length > 0 && data.selectedJobs.length < completeCount}
                                         onChange={handleSelectAll}
                                     />
                                     <Typography variant="body2" fontWeight="bold">
-                                        เลือกทั้งหมด ({data.selectedJobs.length}/{jobs.length})
+                                        เลือกทั้งหมด ({data.selectedJobs.length}/{completeCount} รายการที่พร้อมส่ง)
                                     </Typography>
                                 </Stack>
                             </Card>
                             <Stack spacing={2}>
                                 {jobs.map((job, i) => (
-                                    <Card key={i} variant="outlined" sx={{ bgcolor: isSelected(job.job_id) ? "#f0f0f0" : "inherit" }}>
+                                    <Card
+                                        key={i} variant="outlined"
+                                        sx={{ bgcolor: isSelected(job.job_id) ? "#f0f0f0" : job.before_form_complete ? "inherit" : "#fff8e1" }}
+                                    >
                                         <CardContent>
                                             <Stack direction="row" alignItems="flex-start" spacing={2}>
-                                                <Checkbox checked={isSelected(job.job_id)} onChange={(e) => handleSelect(job, e)} />
+                                                <Tooltip title={!job.before_form_complete ? "กรุณาบันทึกข้อมูลแจ้งซ่อมก่อน" : ""}>
+                                                    <span>
+                                                        <Checkbox
+                                                            checked={isSelected(job.job_id)}
+                                                            disabled={!job.before_form_complete}
+                                                            onChange={(e) => handleSelect(job, e)}
+                                                        />
+                                                    </span>
+                                                </Tooltip>
                                                 <Box flex={1}>
-                                                    <Typography variant="h6" fontWeight="bold" color="primary" gutterBottom>
-                                                        JOB: {job.job_id}
-                                                    </Typography>
+                                                    <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
+                                                        <Typography variant="h6" fontWeight="bold" color="primary">
+                                                            JOB: {job.job_id}
+                                                        </Typography>
+                                                        {!job.before_form_complete && (
+                                                            <Chip
+                                                                icon={<Warning />}
+                                                                label="ยังไม่ได้บันทึกข้อมูลแจ้งซ่อม"
+                                                                color="warning" size="small"
+                                                            />
+                                                        )}
+                                                    </Stack>
                                                     <Stack spacing={1}>
                                                         {is_sale && job.dealer_shop_name && (
                                                             <Box>
@@ -204,14 +227,15 @@ export default function DealerSendJobList({ jobs, dealer_list = [], selected_dea
                                         <TableRow sx={HEADER_STYLE}>
                                             <TableCell>
                                                 <Checkbox
-                                                    checked={data.selectedJobs.length === jobs.length && jobs.length > 0}
-                                                    indeterminate={data.selectedJobs.length > 0 && data.selectedJobs.length < jobs.length}
+                                                    checked={data.selectedJobs.length === completeCount && completeCount > 0}
+                                                    indeterminate={data.selectedJobs.length > 0 && data.selectedJobs.length < completeCount}
                                                     onChange={handleSelectAll}
                                                 />
                                             </TableCell>
                                             <TableCell>เลขที่ JOB</TableCell>
                                             {is_sale && <TableCell>ร้านค้า</TableCell>}
                                             <TableCell>ข้อมูลเบื้องต้น</TableCell>
+                                            <TableCell>สถานะ</TableCell>
                                             <TableCell>สร้างเมื่อ</TableCell>
                                         </TableRow>
                                     </TableHead>
@@ -219,13 +243,18 @@ export default function DealerSendJobList({ jobs, dealer_list = [], selected_dea
                                         {jobs.map((job, i) => (
                                             <TableRow
                                                 key={i}
-                                                sx={{ bgcolor: isSelected(job.job_id) ? "#f0f0f0" : "inherit" }}
+                                                sx={{ bgcolor: isSelected(job.job_id) ? "#f0f0f0" : job.before_form_complete ? "inherit" : "#fff8e1" }}
                                             >
                                                 <TableCell>
-                                                    <Checkbox
-                                                        checked={isSelected(job.job_id)}
-                                                        onClick={(e) => handleSelect(job, e)}
-                                                    />
+                                                    <Tooltip title={!job.before_form_complete ? "กรุณาบันทึกข้อมูลแจ้งซ่อมก่อน" : ""}>
+                                                        <span>
+                                                            <Checkbox
+                                                                checked={isSelected(job.job_id)}
+                                                                disabled={!job.before_form_complete}
+                                                                onClick={(e) => handleSelect(job, e)}
+                                                            />
+                                                        </span>
+                                                    </Tooltip>
                                                 </TableCell>
                                                 <TableCell>{job.job_id}</TableCell>
                                                 {is_sale && <TableCell>{job.dealer_shop_name || "-"}</TableCell>}
@@ -233,6 +262,12 @@ export default function DealerSendJobList({ jobs, dealer_list = [], selected_dea
                                                     หมายเลขซีเรียล : {job.serial_id}<br />
                                                     รหัสสินค้า : {job.pid}<br />
                                                     ชื่อสินค้า : {job.p_name}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {job.before_form_complete
+                                                        ? <Chip label="พร้อมส่ง" color="success" size="small" />
+                                                        : <Chip icon={<Warning />} label="ยังไม่ได้บันทึกข้อมูล" color="warning" size="small" />
+                                                    }
                                                 </TableCell>
                                                 <TableCell><DateFormatTh date={job.created_at} /></TableCell>
                                             </TableRow>

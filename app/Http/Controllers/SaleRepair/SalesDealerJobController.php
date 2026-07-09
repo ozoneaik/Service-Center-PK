@@ -4,7 +4,6 @@ namespace App\Http\Controllers\SaleRepair;
 
 use App\Http\Controllers\Controller;
 use App\Models\JobList;
-use App\Models\StoreInformation;
 use App\Traits\FetchesPkApi;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,15 +30,7 @@ class SalesDealerJobController extends Controller
     public function getDealerList(): JsonResponse
     {
         try {
-            $saleCode = Auth::user()->user_code;
-            $custIds  = $this->fetchCustIds($saleCode);
-
-            $dealers = StoreInformation::whereIn('is_code_cust_id', $custIds)
-                ->where('shop_type', 'dealer')
-                ->select('is_code_cust_id', 'shop_name')
-                ->orderBy('shop_name')
-                ->get();
-
+            $dealers = $this->getManagedDealerList(Auth::user()->user_code);
             return response()->json(['dealers' => $dealers]);
         } catch (\Exception $e) {
             Log::error('SalesDealerJobController::getDealerList: ' . $e->getMessage());
@@ -50,54 +41,56 @@ class SalesDealerJobController extends Controller
     public function getJobs(Request $request): JsonResponse
     {
         try {
-            $saleCode = Auth::user()->user_code;
-            $custIds  = $this->fetchCustIds($saleCode);
+            $saleCode   = Auth::user()->user_code;
+            $dealerList = $this->getManagedDealerList($saleCode);
 
-            if (empty($custIds)) {
-                return response()->json(['jobs' => [], 'message' => 'ไม่พบร้านค้าในความดูแล']);
-            }
-
-            $dealerCodes = StoreInformation::whereIn('is_code_cust_id', $custIds)
-                ->where('shop_type', 'dealer')
-                ->pluck('is_code_cust_id')
-                ->toArray();
-
-            if (empty($dealerCodes)) {
-                return response()->json(['jobs' => [], 'message' => 'ยังไม่มีร้านค้า (Dealer) ในความดูแลที่อยู่ในระบบ']);
-            }
+            $dealerCodes   = $dealerList->pluck('is_code_cust_id')->toArray();
+            $dealerNameMap = $dealerList->pluck('shop_name', 'is_code_cust_id')->toArray();
 
             $query = JobList::query()
-                ->join('store_information as si', 'si.is_code_cust_id', '=', 'job_lists.dealer_code')
-                ->whereIn('job_lists.dealer_code', $dealerCodes)
-                ->whereNotNull('job_lists.group_job')
-                ->whereIn('job_lists.status', ['send', 'pending', 'success']);
+                ->where(function ($q) use ($dealerCodes, $saleCode) {
+                    // jobs ที่ sale สร้างเอง
+                    $q->where('user_key', $saleCode);
+                    // jobs ที่ร้านค้าในพอร์ตสร้าง (ถ้า API คืนข้อมูลมา)
+                    if (!empty($dealerCodes)) {
+                        $q->orWhereIn('dealer_code', $dealerCodes);
+                    }
+                })
+                ->whereIn('status', ['send', 'pending', 'success', 'canceled']);
 
             if ($request->filled('dealer_code')) {
-                $query->where('job_lists.dealer_code', $request->dealer_code);
+                $query->where('dealer_code', $request->dealer_code);
             }
             if ($request->filled('status')) {
-                $query->where('job_lists.status', $request->status);
+                $query->where('status', $request->status);
             }
             if ($request->filled('job_id')) {
-                $query->where('job_lists.job_id', 'like', '%' . $request->job_id . '%');
+                $query->where('job_id', 'like', '%' . $request->job_id . '%');
             }
             if ($request->filled('serial_id')) {
-                $query->where('job_lists.serial_id', 'like', '%' . $request->serial_id . '%');
+                $query->where('serial_id', 'like', '%' . $request->serial_id . '%');
             }
             if ($request->filled('group_job')) {
-                $query->where('job_lists.group_job', 'like', '%' . $request->group_job . '%');
+                $query->where('group_job', 'like', '%' . $request->group_job . '%');
             }
             if ($request->filled('start_date') && $request->filled('end_date')) {
-                $query->whereBetween('job_lists.created_at', [
+                $query->whereBetween('created_at', [
                     $request->start_date,
                     $request->end_date . ' 23:59:59',
                 ]);
             }
 
-            $jobs = $query
-                ->select('job_lists.*', 'si.shop_name as dealer_shop_name')
-                ->orderBy('job_lists.created_at', 'desc')
-                ->get();
+            $jobs = $query->orderBy('created_at', 'desc')->get();
+
+            $completeIds = $this->getFormCompleteJobIds($jobs->pluck('job_id')->toArray());
+
+            $jobs = $jobs->map(function ($job) use ($dealerNameMap, $completeIds) {
+                $job->dealer_shop_name    = $dealerNameMap[$job->dealer_code]
+                    ?? $job->dealer_name
+                    ?? $job->dealer_code;
+                $job->before_form_complete = in_array($job->job_id, $completeIds);
+                return $job;
+            });
 
             return response()->json(['jobs' => $jobs, 'message' => 'success']);
         } catch (\Exception $e) {

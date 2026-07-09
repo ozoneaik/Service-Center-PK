@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\JobList;
 use App\Models\StoreInformation;
 use App\Traits\FetchesPkApi;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -21,15 +22,11 @@ class DealerSearchController extends Controller
         $isSale = $user->role === 'sale';
 
         if ($isSale) {
-            $dealerList = $this->getManagedDealerList($user->user_code);
-            $dealerCodes = $dealerList->pluck('is_code_cust_id')->toArray();
-
             $selectedDealer = $request->dealer_code;
-            if ($selectedDealer && !in_array($selectedDealer, $dealerCodes)) {
-                abort(403, 'ไม่มีสิทธิ์เข้าถึงร้านค้านี้');
-            }
 
             if (isset($request->job_id)) {
+                $dealerCodes = $this->fetchCustIds($user->user_code);
+
                 $job = JobList::query()
                     ->where('job_id', $request->job_id)
                     ->whereIn('dealer_code', $dealerCodes)
@@ -45,14 +42,12 @@ class DealerSearchController extends Controller
                     'auto_sn'         => $autoSn,
                     'auto_pid'        => $job->pid,
                     'auto_job_sn'     => $job->serial_id,
-                    'dealer_list'     => $dealerList,
                     'selected_dealer' => $job->dealer_code,
                     'is_sale'         => true,
                 ]);
             }
 
             return Inertia::render('DealerRepair/DealerRepair', [
-                'dealer_list'     => $dealerList,
                 'selected_dealer' => $selectedDealer,
                 'is_sale'         => true,
             ]);
@@ -135,14 +130,14 @@ class DealerSearchController extends Controller
         ]);
     }
 
-    private function getManagedDealerList(string $saleCode)
+    public function dealerList(): JsonResponse
     {
-        $custIds = $this->fetchCustIds($saleCode);
-
-        return StoreInformation::whereIn('is_code_cust_id', $custIds)
-            ->where('shop_type', 'dealer')
-            ->select('is_code_cust_id', 'shop_name', 'phone', 'address')
-            ->orderBy('shop_name')
-            ->get();
+        $user = Auth::user();
+        if ($user->role !== 'sale') {
+            return response()->json(['dealers' => []]);
+        }
+        return response()->json([
+            'dealers' => $this->getManagedDealerList($user->user_code),
+        ]);
     }
 }

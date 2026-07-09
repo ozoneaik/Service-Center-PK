@@ -3,7 +3,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 
-export default function RpCustomerForm({data, setData,form1Saved}) {
+export default function RpCustomerForm({ data, setData, form1Saved, checkPhoneRoute = 'repair.check.phone' }) {
     const [loadingPhone, setLoadingPhone] = useState(false);
     // const handleChange = (e) => {
     //     const {name, value} = e.target;
@@ -25,7 +25,7 @@ export default function RpCustomerForm({data, setData,form1Saved}) {
         if (name === 'phone' && value.length === 10) {
             setLoadingPhone(true);
             try {
-                const res = await axios.get(route('repair.check.phone'), {
+                const res = await axios.get(route(checkPhoneRoute), {
                     params: { phone: value }
                 });
 
@@ -60,7 +60,7 @@ export default function RpCustomerForm({data, setData,form1Saved}) {
                     // disabled={form1Saved}
                     value={data.customer?.phone || ''}
                     id='phone' name='phone' size='small'
-                    placeholder='ตัวอย่าง : 081-234-5678' type='number'
+                    placeholder='ตัวอย่าง : 081-234-5678'
                     required onChange={handleChange}
                     slotProps={{
                         input: {

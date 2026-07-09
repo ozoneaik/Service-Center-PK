@@ -88,8 +88,11 @@ Route::prefix('repair-sale')->group(function () {
 
 Route::prefix('sale-dealer-jobs')->group(function () {
     Route::get('/', [SalesDealerJobController::class, 'index'])->name('sale.dealer.jobs.index');
-    Route::get('/dealer-list', [SalesDealerJobController::class, 'getDealerList'])->name('sale.dealer.jobs.dealers');
-    Route::post('/list', [SalesDealerJobController::class, 'getJobs'])->name('sale.dealer.jobs.list');
+
+    Route::withoutMiddleware('menuAccess')->group(function () {
+        Route::get('/dealer-list', [SalesDealerJobController::class, 'getDealerList'])->name('sale.dealer.jobs.dealers');
+        Route::post('/list', [SalesDealerJobController::class, 'getJobs'])->name('sale.dealer.jobs.list');
+    });
 });
 
 Route::prefix('receive-repair')->middleware(['auth'])->group(function () {

@@ -70,7 +70,7 @@ export default function DealerHistory({ jobs, dealer_list = [], selected_dealer 
     return (
         <AuthenticatedLayout>
             <Head title="ประวัติการแจ้งซ่อม (ร้านค้า)" />
-            <Container maxWidth="xl" sx={{ mt: 3 }}>
+            <Container maxWidth="l" sx={{ mt: 3, mb: 3 }}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
                         <Typography variant="h6" fontWeight="bold">

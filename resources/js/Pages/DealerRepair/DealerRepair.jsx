@@ -32,7 +32,7 @@ const menuNames = {
 
 export default function DealerRepair({
     auto_sn, auto_pid, auto_job_sn,
-    dealer_list = [], selected_dealer = null, is_sale = false,
+    selected_dealer = null, is_sale = false,
 }) {
     const [SN, setSN] = useState("");
     const [PID, setPID] = useState("");
@@ -43,9 +43,11 @@ export default function DealerRepair({
     const [miniSize, setMiniSize] = useState(false);
     const [autoJobSn, setAutoJobSn] = useState(auto_job_sn || null);
 
-    // sale: ร้านที่เลือกอยู่
+    // sale: dealer list fetched async
+    const [dealerList, setDealerList] = useState([]);
+    const [dealerListLoading, setDealerListLoading] = useState(false);
     const [selectedDealerCode, setSelectedDealerCode] = useState(selected_dealer || null);
-    const selectedDealerInfo = dealer_list.find(d => d.is_code_cust_id === selectedDealerCode) || null;
+    const selectedDealerInfo = dealerList.find(d => d.is_code_cust_id === selectedDealerCode) || null;
 
     const [comboSets, setComboSets] = useState();
     const [openSelSku, setOpenSelSku] = useState(false);
@@ -57,6 +59,14 @@ export default function DealerRepair({
     const [openSelAcc, setOpenSelAcc] = useState(false);
 
     const scrollRef = useRef(null);
+
+    useEffect(() => {
+        if (!is_sale) return;
+        setDealerListLoading(true);
+        axios.get(route("dealerRepair.dealer.list"))
+            .then(({ data }) => setDealerList(data.dealers || []))
+            .finally(() => setDealerListLoading(false));
+    }, []);
 
     useEffect(() => {
         if (auto_sn) {
@@ -241,15 +251,16 @@ export default function DealerRepair({
                                     </Typography>
                                 </Stack>
                                 <Autocomplete
-                                    options={dealer_list}
+                                    options={dealerList}
+                                    loading={dealerListLoading}
                                     getOptionLabel={(o) => `${o.shop_name} (${o.is_code_cust_id})`}
-                                    value={dealer_list.find(d => d.is_code_cust_id === selectedDealerCode) || null}
+                                    value={dealerList.find(d => d.is_code_cust_id === selectedDealerCode) || null}
                                     onChange={handleDealerChange}
                                     renderInput={(params) => (
                                         <TextField
                                             {...params}
                                             size="small"
-                                            placeholder="พิมพ์ชื่อร้านหรือรหัสร้านเพื่อค้นหา"
+                                            placeholder={dealerListLoading ? "กำลังโหลดรายการร้านค้า..." : "พิมพ์ชื่อร้านหรือรหัสร้านเพื่อค้นหา"}
                                         />
                                     )}
                                 />

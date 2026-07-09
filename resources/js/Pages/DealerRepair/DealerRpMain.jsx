@@ -221,6 +221,10 @@ export default function DealerRpMain({ productDetail, serial_id, dealerCode = nu
                         form1Saved={form1Saved} setForm1Saved={setForm1Saved}
                         setMainStep={() => {}} setTabValue={() => {}}
                         dealerInfo={effectiveInfo}
+                        beforeIndexRoute="dealerRepair.before.index"
+                        beforeStoreRoute="dealerRepair.before.store"
+                        checkPhoneRoute="dealerRepair.check.phone"
+                        workReceiptRoute="dealerRepair.before.work.receipt"
                     />
                 </Grid2>
             ) : (

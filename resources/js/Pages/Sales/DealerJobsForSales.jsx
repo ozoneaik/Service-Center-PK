@@ -10,17 +10,29 @@ import { Refresh, Search } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const STATUS_LABEL = {
-    send:    "ส่งซ่อมไปยัง PK",
-    pending: "PK รับงานแล้ว",
-    success: "ปิดงานแล้ว",
-    canceled: "ยกเลิก",
+const getStatusLabel = (status, groupJob, formComplete) => {
+    if (status === "pending" && !groupJob) {
+        return formComplete ? "รอออกเอกสาร" : "รอบันทึกข้อมูลซ่อม";
+    }
+    const map = {
+        pending:  "รอออกเอกสาร",
+        send:     "ส่งซ่อมไปยัง PK",
+        success:  "ปิดงานแล้ว",
+        canceled: "ยกเลิก",
+    };
+    return map[status] ?? status;
 };
-const STATUS_COLOR = {
-    send:    "warning",
-    pending: "info",
-    success: "success",
-    canceled: "error",
+const getStatusColor = (status, groupJob, formComplete) => {
+    if (status === "pending" && !groupJob) {
+        return formComplete ? "info" : "default";
+    }
+    const map = {
+        pending:  "info",
+        send:     "warning",
+        success:  "success",
+        canceled: "error",
+    };
+    return map[status] ?? "default";
 };
 
 const EMPTY_FILTERS = {
@@ -136,7 +148,12 @@ export default function DealerJobsForSales() {
                                                 onChange={set("status")}
                                             >
                                                 <MenuItem value="">ทั้งหมด</MenuItem>
-                                                {Object.entries(STATUS_LABEL).map(([k, v]) => (
+                                                {[
+                                                    ["pending", "รอส่งซ่อม / PK รับงานแล้ว"],
+                                                    ["send",    "ส่งซ่อมไปยัง PK"],
+                                                    ["success", "ปิดงานแล้ว"],
+                                                    ["canceled","ยกเลิก"],
+                                                ].map(([k, v]) => (
                                                     <MenuItem key={k} value={k}>{v}</MenuItem>
                                                 ))}
                                             </Select>
@@ -261,8 +278,8 @@ export default function DealerJobsForSales() {
                                                 </TableCell>
                                                 <TableCell>
                                                     <Chip
-                                                        label={STATUS_LABEL[job.status] ?? job.status}
-                                                        color={STATUS_COLOR[job.status] ?? "default"}
+                                                        label={getStatusLabel(job.status, job.group_job, job.before_form_complete)}
+                                                        color={getStatusColor(job.status, job.group_job, job.before_form_complete)}
                                                         size="small"
                                                     />
                                                 </TableCell>

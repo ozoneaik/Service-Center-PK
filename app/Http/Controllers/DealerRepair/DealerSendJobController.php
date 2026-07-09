@@ -26,33 +26,37 @@ class DealerSendJobController extends Controller
         $isSale = $user->role === 'sale';
 
         if ($isSale) {
-            $custIds    = $this->fetchCustIds($user->user_code);
-            $dealerList = StoreInformation::whereIn('is_code_cust_id', $custIds)
-                ->where('shop_type', 'dealer')
-                ->select('is_code_cust_id', 'shop_name')
-                ->orderBy('shop_name')
-                ->get();
-            $dealerCodes    = $dealerList->pluck('is_code_cust_id')->toArray();
+            $dealerList    = $this->getManagedDealerList($user->user_code);
+            $dealerCodes   = $dealerList->pluck('is_code_cust_id')->toArray();
+            $dealerNameMap = $dealerList->pluck('shop_name', 'is_code_cust_id')->toArray();
             $selectedDealer = $request->dealer_code;
 
             $query = JobList::query()
-                ->join('store_information as si', 'si.is_code_cust_id', '=', 'job_lists.dealer_code')
-                ->whereIn('job_lists.dealer_code', $dealerCodes)
-                ->where('job_lists.status', 'pending')
-                ->whereNull('job_lists.group_job')
-                ->when($selectedDealer, fn($q) => $q->where('job_lists.dealer_code', $selectedDealer));
+                ->whereIn('dealer_code', $dealerCodes)
+                ->where('status', 'pending')
+                ->whereNull('group_job')
+                ->when($selectedDealer, fn($q) => $q->where('dealer_code', $selectedDealer));
 
             if ($request->searchSku) {
-                $query->where('job_lists.pid', 'like', "%{$request->searchSku}%");
+                $query->where('pid', 'like', "%{$request->searchSku}%");
             }
             if ($request->searchSn) {
-                $query->where('job_lists.serial_id', 'like', "%{$request->searchSn}%");
+                $query->where('serial_id', 'like', "%{$request->searchSn}%");
             }
 
-            $jobs = $query->select('job_lists.*', 'si.shop_name as dealer_shop_name')
-                ->orderBy('job_lists.dealer_code')
-                ->orderBy('job_lists.id', 'desc')
-                ->get();
+            $jobs = $query->orderBy('dealer_code')
+                ->orderBy('id', 'desc')
+                ->get()
+                ->map(function ($job) use ($dealerNameMap) {
+                    $job->dealer_shop_name = $dealerNameMap[$job->dealer_code] ?? $job->dealer_code;
+                    return $job;
+                });
+
+            $completeIds = $this->getFormCompleteJobIds($jobs->pluck('job_id')->toArray());
+            $jobs = $jobs->map(function ($job) use ($completeIds) {
+                $job->before_form_complete = in_array($job->job_id, $completeIds);
+                return $job;
+            });
 
             return Inertia::render('DealerRepair/SendJob/DealerSendJobList', [
                 'jobs'            => $jobs,
@@ -77,6 +81,12 @@ class DealerSendJobController extends Controller
 
         $jobs = $query->orderBy('id', 'desc')->get();
 
+        $completeIds = $this->getFormCompleteJobIds($jobs->pluck('job_id')->toArray());
+        $jobs = $jobs->map(function ($job) use ($completeIds) {
+            $job->before_form_complete = in_array($job->job_id, $completeIds);
+            return $job;
+        });
+
         return Inertia::render('DealerRepair/SendJob/DealerSendJobList', [
             'jobs' => $jobs,
         ]);
@@ -89,6 +99,17 @@ class DealerSendJobController extends Controller
         try {
             if (empty($selected)) {
                 throw new \Exception('ไม่มีจ็อบที่ต้องการส่ง');
+            }
+
+            $selectedJobIds  = array_column($selected, 'job_id');
+            $completeJobIds  = $this->getFormCompleteJobIds($selectedJobIds);
+            $incompleteJobIds = array_diff($selectedJobIds, $completeJobIds);
+
+            if (!empty($incompleteJobIds)) {
+                throw new \Exception(
+                    'กรุณาบันทึกข้อมูลแจ้งซ่อม (ข้อมูลลูกค้า + อาการ + รูปภาพ) ก่อนส่งซ่อม: ' .
+                    implode(', ', $incompleteJobIds)
+                );
             }
 
             [$dealerCodes] = $this->getAuthorizedDealerCodes();
@@ -172,7 +193,7 @@ class DealerSendJobController extends Controller
 
         if ($isSale) {
             $groups = JobList::query()
-                ->join('store_information as si', 'si.is_code_cust_id', '=', 'job_lists.dealer_code')
+                ->leftJoin('store_information as si', 'si.is_code_cust_id', '=', 'job_lists.dealer_code')
                 ->whereIn('job_lists.dealer_code', $dealerCodes)
                 ->where('job_lists.status', 'send')
                 ->select('job_lists.print_at', 'job_lists.group_job', 'job_lists.print_updated_at',
@@ -229,7 +250,7 @@ class DealerSendJobController extends Controller
             [$dealerCodes, $isSale] = $this->getAuthorizedDealerCodes();
 
             $query = JobList::query()
-                ->when($isSale, fn($q) => $q->join('store_information as si', 'si.is_code_cust_id', '=', 'job_lists.dealer_code'))
+                ->when($isSale, fn($q) => $q->leftJoin('store_information as si', 'si.is_code_cust_id', '=', 'job_lists.dealer_code'))
                 ->whereIn('job_lists.dealer_code', $dealerCodes)
                 ->whereIn('job_lists.status', ['send', 'pending'])
                 ->whereNotNull('job_lists.group_job')
@@ -272,7 +293,7 @@ class DealerSendJobController extends Controller
             [$dealerCodes, $isSale] = $this->getAuthorizedDealerCodes();
 
             $query = JobList::query()
-                ->when($isSale, fn($q) => $q->join('store_information as si', 'si.is_code_cust_id', '=', 'job_lists.dealer_code'))
+                ->when($isSale, fn($q) => $q->leftJoin('store_information as si', 'si.is_code_cust_id', '=', 'job_lists.dealer_code'))
                 ->whereIn('job_lists.dealer_code', $dealerCodes)
                 ->where('job_lists.status', 'success')
                 ->whereNotNull('job_lists.group_job');
@@ -476,15 +497,9 @@ class DealerSendJobController extends Controller
         $user   = Auth::user();
         $isSale = $user->role === 'sale';
 
-        if ($isSale) {
-            $custIds     = $this->fetchCustIds($user->user_code);
-            $dealerCodes = StoreInformation::whereIn('is_code_cust_id', $custIds)
-                ->where('shop_type', 'dealer')
-                ->pluck('is_code_cust_id')
-                ->toArray();
-        } else {
-            $dealerCodes = [$user->is_code_cust_id];
-        }
+        $dealerCodes = $isSale
+            ? $this->fetchCustIds($user->user_code)
+            : [$user->is_code_cust_id];
 
         return [$dealerCodes, $isSale];
     }

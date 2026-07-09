@@ -15,7 +15,13 @@ const textQuestion = `
 <span style="color: red">⚠️ เมื่อบันทึกแล้ว จะไม่สามารถย้อนกลับมาแก้ไขในหน้านี้ได้</span>
 `
 
-export default function RpTab1Form({ JOB, setJOB, form1Saved, setForm1Saved, setMainStep, setTabValue, dealerInfo }) {
+export default function RpTab1Form({
+    JOB, setJOB, form1Saved, setForm1Saved, setMainStep, setTabValue, dealerInfo,
+    beforeIndexRoute = 'repair.before.index',
+    beforeStoreRoute = 'repair.before.store',
+    checkPhoneRoute = 'repair.check.phone',
+    workReceiptRoute = 'repair.before.work.receipt',
+}) {
     const [loadingJob, setLoadingJob] = useState(false);
     const { data, setData, processing, post } = useForm({
         job_id: JOB.job_id,
@@ -29,7 +35,7 @@ export default function RpTab1Form({ JOB, setJOB, form1Saved, setForm1Saved, set
     const fetchData = async () => {
         try {
             setLoadingJob(true);
-            const { data, status } = await axios.get(route('repair.before.index', { job_id: JOB.job_id }));
+            const { data, status } = await axios.get(route(beforeIndexRoute, { job_id: JOB.job_id }));
             let customer = data.form.customer;
             const remark_symptom_accessory = data.form.remark_symptom_accessory;
             const file_befores = data.form.file_befores;
@@ -61,7 +67,7 @@ export default function RpTab1Form({ JOB, setJOB, form1Saved, setForm1Saved, set
             text: textQuestion,
             onPassed: (confirm) => {
                 if (confirm) {
-                    post(route('repair.before.store'), {
+                    post(route(beforeStoreRoute), {
                         preserveState: true,
                         preserveScroll: true,
                         forceFormData: true,
@@ -145,7 +151,7 @@ export default function RpTab1Form({ JOB, setJOB, form1Saved, setForm1Saved, set
                                 >
                                     <CardContent>
                                         <HeaderTitle headTitle='ข้อมูลลูกค้า' />
-                                        <RpCustomerForm form1Saved={form1Saved} data={data} setData={setData} />
+                                        <RpCustomerForm form1Saved={form1Saved} data={data} setData={setData} checkPhoneRoute={checkPhoneRoute} />
                                     </CardContent>
                                 </Card>
                             </Grid2>
@@ -185,7 +191,7 @@ export default function RpTab1Form({ JOB, setJOB, form1Saved, setForm1Saved, set
                                     >
                                         <CardContent>
                                             <HeaderTitle headTitle='ใบรับงานสินค้า' />
-                                            <RpWorkReceipt form1Saved={form1Saved} JOB={JOB} />
+                                            <RpWorkReceipt form1Saved={form1Saved} JOB={JOB} workReceiptRoute={workReceiptRoute} />
                                         </CardContent>
                                     </Card>
                                 </Grid2>
