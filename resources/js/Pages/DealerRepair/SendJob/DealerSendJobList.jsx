@@ -1,21 +1,22 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import { Head, router, useForm, usePage } from "@inertiajs/react";
 import {
-    Alert, Box, Button, Card, CardContent, Checkbox, Divider,
+    Alert, Autocomplete, Box, Button, Card, CardContent, Checkbox, Divider,
     Grid2, Paper, Stack, Table, TableBody, TableCell,
     TableHead, TableRow, TextField, Typography, useMediaQuery,
 } from "@mui/material";
-import { Search } from "@mui/icons-material";
+import { Search, Store } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { DateFormatTh } from "@/Components/DateFormat.jsx";
 import { AlertDialogQuestion } from "@/Components/AlertDialog.js";
 
-export default function DealerSendJobList({ jobs }) {
+export default function DealerSendJobList({ jobs, dealer_list = [], selected_dealer = null, is_sale = false }) {
     const isMobile = useMediaQuery("(max-width:600px)");
     const { flash } = usePage().props;
     const { data, setData, post, processing } = useForm({ selectedJobs: [] });
     const [searchSku, setSearchSku] = useState("");
     const [searchSn, setSearchSn] = useState("");
+    const [dealerCode, setDealerCode] = useState(selected_dealer || null);
 
     useEffect(() => {
         const saved = localStorage.getItem("dealer_selectedJobs");
@@ -46,7 +47,14 @@ export default function DealerSendJobList({ jobs }) {
     const handleSearch = (e) => {
         e.preventDefault();
         localStorage.setItem("dealer_selectedJobs", JSON.stringify(data.selectedJobs));
-        router.get(route("dealerRepair.send.list", { searchSku, searchSn }));
+        router.get(route("dealerRepair.send.list", { searchSku, searchSn, dealer_code: dealerCode }));
+    };
+
+    const handleDealerChange = (_, newValue) => {
+        const code = newValue?.is_code_cust_id || null;
+        setDealerCode(code);
+        setData("selectedJobs", []);
+        router.get(route("dealerRepair.send.list", { dealer_code: code }));
     };
 
     const handleSend = () => {
@@ -79,6 +87,26 @@ export default function DealerSendJobList({ jobs }) {
                             </Typography>
                             <Typography variant="body1">รายการทั้งหมด {jobs.length} รายการ</Typography>
                         </Stack>
+
+                        {is_sale && (
+                            <Paper variant="outlined" sx={{ p: 2, mt: 2 }}>
+                                <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                                    <Store fontSize="small" color="primary" />
+                                    <Typography variant="body2" fontWeight="bold" color="primary">
+                                        เลือกร้านค้า
+                                    </Typography>
+                                </Stack>
+                                <Autocomplete
+                                    options={dealer_list}
+                                    getOptionLabel={(o) => `${o.shop_name} (${o.is_code_cust_id})`}
+                                    value={dealer_list.find(d => d.is_code_cust_id === dealerCode) || null}
+                                    onChange={handleDealerChange}
+                                    renderInput={(params) => (
+                                        <TextField {...params} size="small" placeholder="ทั้งหมด (ไม่กรอง)" />
+                                    )}
+                                />
+                            </Paper>
+                        )}
 
                         <form onSubmit={handleSearch}>
                             <Stack direction={{ md: "row", sm: "column" }} gap={2} mt={2}>
@@ -137,6 +165,12 @@ export default function DealerSendJobList({ jobs }) {
                                                         JOB: {job.job_id}
                                                     </Typography>
                                                     <Stack spacing={1}>
+                                                        {is_sale && job.dealer_shop_name && (
+                                                            <Box>
+                                                                <Typography variant="body2" color="text.secondary">ร้านค้า</Typography>
+                                                                <Typography fontWeight="medium">{job.dealer_shop_name}</Typography>
+                                                            </Box>
+                                                        )}
                                                         <Box>
                                                             <Typography variant="body2" color="text.secondary">หมายเลขซีเรียล</Typography>
                                                             <Typography fontWeight="medium">{job.serial_id}</Typography>
@@ -176,6 +210,7 @@ export default function DealerSendJobList({ jobs }) {
                                                 />
                                             </TableCell>
                                             <TableCell>เลขที่ JOB</TableCell>
+                                            {is_sale && <TableCell>ร้านค้า</TableCell>}
                                             <TableCell>ข้อมูลเบื้องต้น</TableCell>
                                             <TableCell>สร้างเมื่อ</TableCell>
                                         </TableRow>
@@ -193,6 +228,7 @@ export default function DealerSendJobList({ jobs }) {
                                                     />
                                                 </TableCell>
                                                 <TableCell>{job.job_id}</TableCell>
+                                                {is_sale && <TableCell>{job.dealer_shop_name || "-"}</TableCell>}
                                                 <TableCell>
                                                     หมายเลขซีเรียล : {job.serial_id}<br />
                                                     รหัสสินค้า : {job.pid}<br />

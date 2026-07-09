@@ -45,44 +45,44 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
 
-    //    Route::middleware('menuAccess')->group(function (){
-    // จัดการ Jobs
-    require __DIR__ . '/jobs.php';
+    Route::middleware('menuAccess')->group(function () {
+        // จัดการ Jobs
+        require __DIR__ . '/jobs.php';
 
-    // จัดการเอกสารการเคลมอะไหล่
-    require __DIR__ . '/spareClaim.php';
+        // จัดการเอกสารการเคลมอะไหล่
+        require __DIR__ . '/spareClaim.php';
 
-    //จัดการรายงาน
-    require __DIR__ . '/report.php';
+        //จัดการรายงาน
+        require __DIR__ . '/report.php';
 
-    // ลงทะเบียนรับประกัน
-    Route::prefix('warranty')->group(function () {
-        Route::get('/index', [WarrantyProductController::class, 'index'])->name('warranty.index');
-        Route::post('/search', [WarrantyProductController::class, 'search'])->name('warranty.search');
-        Route::post('/store', [WarrantyProductController::class, 'store'])->name('warranty.store');
-        Route::put('/update', [WarrantyProductController::class, 'update'])->name('warranty.update');
-        Route::get('/fetchDataLocal/{serial_id}', [WarrantyProductController::class, 'fetchDataLocal'])->name('warranty.fetchDataLocal');
-    });
+        // ลงทะเบียนรับประกัน
+        Route::prefix('warranty')->group(function () {
+            Route::get('/index', [WarrantyProductController::class, 'index'])->name('warranty.index');
+            Route::post('/search', [WarrantyProductController::class, 'search'])->name('warranty.search');
+            Route::post('/store', [WarrantyProductController::class, 'store'])->name('warranty.store');
+            Route::put('/update', [WarrantyProductController::class, 'update'])->name('warranty.update');
+            Route::get('/fetchDataLocal/{serial_id}', [WarrantyProductController::class, 'fetchDataLocal'])->name('warranty.fetchDataLocal');
+        });
 
-    Route::prefix('warranty-history')->group(function () {
-        Route::post('/store', [TblHistoryProdController::class, 'store'])->name('warranty-history.store');
-    });
+        Route::prefix('warranty-history')->group(function () {
+            Route::post('/store', [TblHistoryProdController::class, 'store'])->name('warranty-history.store');
+        });
 
-    // สั่งซื้ออะไหล่
-    require __DIR__ . '/orders.php';
+        // สั่งซื้ออะไหล่
+        require __DIR__ . '/orders.php';
 
-    // จัดการ stock
-    require __DIR__ . '/stockSp.php';
+        // จัดการ stock
+        require __DIR__ . '/stockSp.php';
 
-    // แจ้งซ่อมสำหรับร้านค้าที่ไม่ใช่ศูนย์ซ่อม (Dealer)
-    require __DIR__ . '/dealerRepair.php';
+        // แจ้งซ่อมสำหรับร้านค้าที่ไม่ใช่ศูนย์ซ่อม (Dealer)
+        require __DIR__ . '/dealerRepair.php';
 
-
-    Route::prefix('history')->group(function () {
-        Route::get('/index', [HistoryRepairController::class, 'index'])->name('history.index');
-        Route::post('/search', [HistoryRepairController::class, 'search'])->name('history.search');
-        Route::get('/detail/{serial_id}', [HistoryRepairController::class, 'detail'])->name('history.detail');
-        Route::get('/export', [HistoryRepairController::class, 'exportExcel'])->name('history.export');
+        Route::prefix('history')->group(function () {
+            Route::get('/index', [HistoryRepairController::class, 'index'])->name('history.index');
+            Route::post('/search', [HistoryRepairController::class, 'search'])->name('history.search');
+            Route::get('/detail/{serial_id}', [HistoryRepairController::class, 'detail'])->name('history.detail');
+            Route::get('/export', [HistoryRepairController::class, 'exportExcel'])->name('history.export');
+        });
     });
 
     Route::middleware('AdminBranchAccess')->group(function () {

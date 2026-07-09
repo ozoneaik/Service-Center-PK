@@ -220,6 +220,7 @@ export default function DealerJobsForSales() {
                                             <TableCell>ชื่อสินค้า</TableCell>
                                             <TableCell>Ticket / ASS No.</TableCell>
                                             <TableCell>สถานะ</TableCell>
+                                            <TableCell>ASS Status</TableCell>
                                             <TableCell>วันที่ส่ง</TableCell>
                                             <TableCell>อัปเดทล่าสุด</TableCell>
                                         </TableRow>
@@ -227,7 +228,7 @@ export default function DealerJobsForSales() {
                                     <TableBody>
                                         {jobs.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={11} align="center" sx={{ py: 5, color: "text.secondary" }}>
+                                                <TableCell colSpan={12} align="center" sx={{ py: 5, color: "text.secondary" }}>
                                                     ไม่พบรายการ
                                                 </TableCell>
                                             </TableRow>
@@ -264,6 +265,11 @@ export default function DealerJobsForSales() {
                                                         color={STATUS_COLOR[job.status] ?? "default"}
                                                         size="small"
                                                     />
+                                                </TableCell>
+                                                <TableCell>
+                                                    {job.ass_status
+                                                        ? <Chip label={job.ass_status} size="small" />
+                                                        : <Typography variant="caption" color="text.disabled">-</Typography>}
                                                 </TableCell>
                                                 <TableCell>
                                                     {job.created_at

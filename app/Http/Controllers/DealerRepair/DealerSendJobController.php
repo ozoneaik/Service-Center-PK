@@ -22,9 +22,48 @@ class DealerSendJobController extends Controller
     use FetchesPkApi;
     public function sendJobList(Request $request): Response
     {
-        $dealerCode = Auth::user()->is_code_cust_id;
+        $user   = Auth::user();
+        $isSale = $user->role === 'sale';
 
-        $query = JobList::query()
+        if ($isSale) {
+            $custIds    = $this->fetchCustIds($user->user_code);
+            $dealerList = StoreInformation::whereIn('is_code_cust_id', $custIds)
+                ->where('shop_type', 'dealer')
+                ->select('is_code_cust_id', 'shop_name')
+                ->orderBy('shop_name')
+                ->get();
+            $dealerCodes    = $dealerList->pluck('is_code_cust_id')->toArray();
+            $selectedDealer = $request->dealer_code;
+
+            $query = JobList::query()
+                ->join('store_information as si', 'si.is_code_cust_id', '=', 'job_lists.dealer_code')
+                ->whereIn('job_lists.dealer_code', $dealerCodes)
+                ->where('job_lists.status', 'pending')
+                ->whereNull('job_lists.group_job')
+                ->when($selectedDealer, fn($q) => $q->where('job_lists.dealer_code', $selectedDealer));
+
+            if ($request->searchSku) {
+                $query->where('job_lists.pid', 'like', "%{$request->searchSku}%");
+            }
+            if ($request->searchSn) {
+                $query->where('job_lists.serial_id', 'like', "%{$request->searchSn}%");
+            }
+
+            $jobs = $query->select('job_lists.*', 'si.shop_name as dealer_shop_name')
+                ->orderBy('job_lists.dealer_code')
+                ->orderBy('job_lists.id', 'desc')
+                ->get();
+
+            return Inertia::render('DealerRepair/SendJob/DealerSendJobList', [
+                'jobs'            => $jobs,
+                'dealer_list'     => $dealerList,
+                'selected_dealer' => $selectedDealer,
+                'is_sale'         => true,
+            ]);
+        }
+
+        $dealerCode = $user->is_code_cust_id;
+        $query      = JobList::query()
             ->where('dealer_code', $dealerCode)
             ->where('status', 'pending')
             ->whereNull('group_job');
@@ -45,14 +84,14 @@ class DealerSendJobController extends Controller
 
     public function updateJobSelect(Request $request): RedirectResponse
     {
-        $user       = Auth::user();
-        $dealerCode = $user->is_code_cust_id;
-        $selected   = $request->selectedJobs;
+        $selected = $request->selectedJobs;
 
         try {
             if (empty($selected)) {
                 throw new \Exception('ไม่มีจ็อบที่ต้องการส่ง');
             }
+
+            [$dealerCodes] = $this->getAuthorizedDealerCodes();
 
             DB::beginTransaction();
 
@@ -61,8 +100,8 @@ class DealerSendJobController extends Controller
             $jobIds     = array_column($selected, 'job_id');
 
             $allowedJobs = JobList::whereIn('job_id', $jobIds)
-                ->where('dealer_code', $dealerCode)
-                ->get(['job_id', 'serial_id']);
+                ->whereIn('dealer_code', $dealerCodes)
+                ->get(['job_id', 'serial_id', 'dealer_code']);
 
             $allowedIds = $allowedJobs->pluck('job_id')->toArray();
 
@@ -79,19 +118,29 @@ class DealerSendJobController extends Controller
 
             DB::commit();
 
-            // แจ้ง Lark ของ sale ที่ดูแลร้านนี้
+            // แจ้ง Lark ของ sale แยกตาม dealer_code
             try {
-                $larkInfo = StoreInformation::query()
-                    ->leftJoin('sale_information', 'sale_information.sale_code', '=', 'store_information.sale_id')
-                    ->where('store_information.is_code_cust_id', $dealerCode)
-                    ->select('store_information.shop_name', 'sale_information.lark_token', 'store_information.is_code_cust_id')
-                    ->first();
+                $authResp = Http::post('https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal', [
+                    'app_id'     => env('VITE_LARK_APP_ID'),
+                    'app_secret' => env('VITE_LARK_APP_SECRET'),
+                ]);
+                $larkToken = $authResp->successful() ? $authResp->json()['tenant_access_token'] : null;
 
-                if ($larkInfo && !empty($larkInfo->lark_token)) {
-                    $jobCount  = count($allowedIds);
-                    $jobLines  = $allowedJobs->map(fn($j) => "job_id: {$j->job_id}  serial: {$j->serial_id}")->implode("\n");
-                    $pdfUrl    = route('dom-pdf.index', $group_job);
-                    $text      = "ร้านค้าส่งซ่อม PK\n"
+                $jobsByDealer = $allowedJobs->groupBy('dealer_code');
+
+                foreach ($jobsByDealer as $dc => $dealerJobs) {
+                    $larkInfo = StoreInformation::query()
+                        ->leftJoin('sale_information', 'sale_information.sale_code', '=', 'store_information.sale_id')
+                        ->where('store_information.is_code_cust_id', $dc)
+                        ->select('store_information.shop_name', 'sale_information.lark_token', 'store_information.is_code_cust_id')
+                        ->first();
+
+                    if (!$larkInfo || empty($larkInfo->lark_token) || !$larkToken) continue;
+
+                    $jobCount = $dealerJobs->count();
+                    $jobLines = $dealerJobs->map(fn($j) => "job_id: {$j->job_id}  serial: {$j->serial_id}")->implode("\n");
+                    $pdfUrl   = route('dom-pdf.index', $group_job);
+                    $text     = "ร้านค้าส่งซ่อม PK\n"
                         . "ร้าน : {$larkInfo->shop_name}\n"
                         . "รหัสร้าน: {$larkInfo->is_code_cust_id}\n"
                         . "เลขกลุ่มงาน : {$group_job}\n"
@@ -99,23 +148,15 @@ class DealerSendJobController extends Controller
                         . "รหัส Job และ Serial :\n{$jobLines}\n"
                         . "ใบรายงานส่ง : {$pdfUrl}";
 
-                    $authResp = Http::post('https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal', [
-                        'app_id'     => env('VITE_LARK_APP_ID'),
-                        'app_secret' => env('VITE_LARK_APP_SECRET'),
-                    ]);
-
-                    if ($authResp->successful()) {
-                        $token = $authResp->json()['tenant_access_token'];
-                        Http::withHeaders(['Authorization' => 'Bearer ' . $token])
-                            ->post('https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=open_id', [
-                                'receive_id' => $larkInfo->lark_token,
-                                'msg_type'   => 'text',
-                                'content'    => json_encode(['text' => $text], JSON_UNESCAPED_UNICODE),
-                            ]);
-                    }
+                    Http::withHeaders(['Authorization' => 'Bearer ' . $larkToken])
+                        ->post('https://open.larksuite.com/open-apis/im/v1/messages?receive_id_type=open_id', [
+                            'receive_id' => $larkInfo->lark_token,
+                            'msg_type'   => 'text',
+                            'content'    => json_encode(['text' => $text], JSON_UNESCAPED_UNICODE),
+                        ]);
                 }
             } catch (\Exception $larkException) {
-                Log::error("Lark Notify SendJob Exception dealer={$dealerCode} - " . $larkException->getMessage());
+                Log::error("Lark Notify SendJob Exception - " . $larkException->getMessage());
             }
 
             return redirect()->route('dealerRepair.send.doc')->with('success', 'ส่งไปยัง PK สำเร็จ');

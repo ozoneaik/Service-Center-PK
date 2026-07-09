@@ -238,7 +238,8 @@ export default function DealerSuccessSendJobs({ is_sale }) {
                                             <TableCell>รหัสสินค้า</TableCell>
                                             <TableCell>ชื่อสินค้า</TableCell>
                                             <TableCell>Ticket / ASS No.</TableCell>
-                                            <TableCell>สถานะ</TableCell>
+                                            <TableCell>สถานะเอกสาร JOB</TableCell>
+                                            <TableCell>สถานะงานซ่อม / ASS Status</TableCell>
                                             {view === "current" && <TableCell>ตรวจสอบ</TableCell>}
                                             <TableCell>{view === "history" ? "วันที่ปิดงาน" : "วันที่ส่ง"}</TableCell>
                                         </TableRow>
@@ -282,6 +283,11 @@ export default function DealerSuccessSendJobs({ is_sale }) {
                                                         color={STATUS_COLOR[job.status] ?? "default"}
                                                         size="small"
                                                     />
+                                                </TableCell>
+                                                <TableCell>
+                                                    {job.ass_status
+                                                        ? <Chip label={job.ass_status} size="small" />
+                                                        : "-"}
                                                 </TableCell>
                                                 {view === "current" && (
                                                     <TableCell>

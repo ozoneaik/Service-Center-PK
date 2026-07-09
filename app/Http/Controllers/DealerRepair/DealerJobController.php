@@ -8,6 +8,7 @@ use App\Models\CustomerInJob;
 use App\Models\FileUpload;
 use App\Models\JobList;
 use App\Models\Symptom;
+use App\Traits\FetchesPkApi;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
@@ -18,14 +19,17 @@ use Illuminate\Support\Facades\Log;
 
 class DealerJobController extends Controller
 {
+    use FetchesPkApi;
+
     public function searchJob(Request $request): JsonResponse
     {
         $serial_id = $request->serial_id;
         $pid = $request->pid;
         $job_id = $request->job_id ?? null;
-        $dealer_code = Auth::user()->is_code_cust_id;
 
         try {
+            $dealer_code = $this->resolveDealerCode($request);
+
             if (!empty($job_id)) {
                 $found = JobList::query()
                     ->where('job_id', $job_id)
@@ -74,7 +78,7 @@ class DealerJobController extends Controller
                         'found' => true,
                         'job' => ['job_detail' => $found],
                     ]);
-                }-
+                }
 
                 $status = 404;
                 throw new \Exception('<span>ยืนยันการแจ้งซ่อม</span>');
@@ -100,6 +104,12 @@ class DealerJobController extends Controller
             'dealer_name' => 'required|string',
             'dealer_phone' => 'required|string',
         ]);
+
+        try {
+            $dealer_code = $this->resolveDealerCode($request);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 403);
+        }
 
         $serial_id = $request->get('serial_id');
         if ($serial_id === '9999') {
@@ -129,8 +139,8 @@ class DealerJobController extends Controller
                 'status' => 'pending',
                 'warranty' => $product_detail['warranty'] ?? false,
                 'user_key' => $user->user_code,
-                'is_code_key' => $user->is_code_cust_id,
-                'dealer_code' => $user->is_code_cust_id,
+                'is_code_key' => $dealer_code,
+                'dealer_code' => $dealer_code,
                 'dealer_name' => $request->get('dealer_name'),
                 'dealer_phone' => $request->get('dealer_phone'),
                 'created_job_from' => 'dealer',
@@ -159,6 +169,7 @@ class DealerJobController extends Controller
         ]);
 
         try {
+            $dealer_code    = $this->resolveDealerCode($request);
             $serial_id = '9999-' . time() . rand(0, 99999);
             $job_id = 'JOB-' . time() . rand(0, 99999);
             $product_detail = $request->get('productDetail');
@@ -182,8 +193,8 @@ class DealerJobController extends Controller
                 'status' => 'pending',
                 'warranty' => $product_detail['warranty'] ?? false,
                 'user_key' => $user->user_code,
-                'is_code_key' => $user->is_code_cust_id,
-                'dealer_code' => $user->is_code_cust_id,
+                'is_code_key' => $dealer_code,
+                'dealer_code' => $dealer_code,
                 'dealer_name' => $request->get('dealer_name'),
                 'dealer_phone' => $request->get('dealer_phone'),
                 'created_job_from' => 'dealer',
@@ -208,11 +219,13 @@ class DealerJobController extends Controller
         $job_id = $request->get('job_id');
 
         try {
+            $dealer_code = $this->resolveDealerCode($request);
+
             DB::beginTransaction();
 
             $job = JobList::query()
                 ->where('job_id', $job_id)
-                ->where('dealer_code', Auth::user()->is_code_cust_id)
+                ->where('dealer_code', $dealer_code)
                 ->first();
 
             if (!$job || $job->status !== 'pending') {
@@ -237,5 +250,26 @@ class DealerJobController extends Controller
                 'error' => $e->getMessage(),
             ], 400);
         }
+    }
+
+    private function resolveDealerCode(Request $request): string
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'sale') {
+            return $user->is_code_cust_id;
+        }
+
+        $dealerCode = $request->input('dealer_code');
+        if (empty($dealerCode)) {
+            throw new \Exception('กรุณาเลือกร้านค้าก่อน');
+        }
+
+        $custIds = $this->fetchCustIds($user->user_code);
+        if (!in_array($dealerCode, $custIds)) {
+            throw new \Exception('ไม่มีสิทธิ์จัดการร้านค้านี้');
+        }
+
+        return $dealerCode;
     }
 }

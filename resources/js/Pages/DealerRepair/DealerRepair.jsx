@@ -1,16 +1,18 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import { Head, router } from "@inertiajs/react";
 import {
+    Autocomplete,
     Box,
     Button,
     Container,
     Grid2,
     InputAdornment,
+    Paper,
     Stack,
     TextField,
     Typography,
 } from "@mui/material";
-import { Search } from "@mui/icons-material";
+import { Search, Store } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { AlertDialog } from "@/Components/AlertDialog.js";
@@ -28,7 +30,10 @@ const menuNames = {
     2: "ดูประวัติการซ่อม",
 };
 
-export default function DealerRepair({ auto_sn, auto_pid, auto_job_sn }) {
+export default function DealerRepair({
+    auto_sn, auto_pid, auto_job_sn,
+    dealer_list = [], selected_dealer = null, is_sale = false,
+}) {
     const [SN, setSN] = useState("");
     const [PID, setPID] = useState("");
     const [loading, setLoading] = useState(false);
@@ -36,8 +41,11 @@ export default function DealerRepair({ auto_sn, auto_pid, auto_job_sn }) {
     const [menuSel, setMenuSel] = useState(0);
     const [showPidForm, setShowPidForm] = useState(false);
     const [miniSize, setMiniSize] = useState(false);
-    // เก็บ serial จริงจาก job (เช่น "9999-178..." หรือ S/N ปกติ) เพื่อส่งให้ DealerRpMain
     const [autoJobSn, setAutoJobSn] = useState(auto_job_sn || null);
+
+    // sale: ร้านที่เลือกอยู่
+    const [selectedDealerCode, setSelectedDealerCode] = useState(selected_dealer || null);
+    const selectedDealerInfo = dealer_list.find(d => d.is_code_cust_id === selectedDealerCode) || null;
 
     const [comboSets, setComboSets] = useState();
     const [openSelSku, setOpenSelSku] = useState(false);
@@ -51,7 +59,6 @@ export default function DealerRepair({ auto_sn, auto_pid, auto_job_sn }) {
     const scrollRef = useRef(null);
 
     useEffect(() => {
-        // มาจากหน้าประวัติ (Inertia props จาก controller)
         if (auto_sn) {
             const sn = auto_sn;
             const pid = auto_pid || "";
@@ -60,12 +67,10 @@ export default function DealerRepair({ auto_sn, auto_pid, auto_job_sn }) {
                 setPID(pid);
                 setShowPidForm(sn === "9999");
             }
-            // หลัง handleSearch เสร็จ (finally resets menuSel=0) ให้ auto-open แจ้งซ่อม
             handleSearch(null, sn, pid).then(() => setMenuSel(1));
             return;
         }
 
-        // fallback: URL params (เช่น ?sn=xxx&pid=xxx)
         const params = new URLSearchParams(window.location.search);
         const querySn = params.get("sn");
         const queryPid = params.get("pid");
@@ -91,7 +96,7 @@ export default function DealerRepair({ auto_sn, auto_pid, auto_job_sn }) {
     const handleSearch = async (e, autoSn = null, autoPid = null, selectedSkumain = null) => {
         if (e) {
             e.preventDefault();
-            setAutoJobSn(null); // user search ใหม่ → ล้าง auto job serial
+            setAutoJobSn(null);
         }
 
         const currentSn = autoSn || SN;
@@ -102,7 +107,9 @@ export default function DealerRepair({ auto_sn, auto_pid, auto_job_sn }) {
         setDetail(null);
 
         if (currentSn.startsWith("JOB-")) {
-            router.get(route("dealerRepair.index", { job_id: currentSn }));
+            const params = { job_id: currentSn };
+            if (is_sale && selectedDealerCode) params.dealer_code = selectedDealerCode;
+            router.get(route("dealerRepair.index", params));
             return;
         }
 
@@ -192,6 +199,16 @@ export default function DealerRepair({ auto_sn, auto_pid, auto_job_sn }) {
         handleSearch(null, pendingSearch.sn, pendingSearch.pid, option.skumain || option.pid);
     };
 
+    const handleDealerChange = (_, newValue) => {
+        setSelectedDealerCode(newValue?.is_code_cust_id || null);
+        setDetail(null);
+        setSN("");
+        setPID("");
+        setMenuSel(0);
+    };
+
+    const searchDisabled = is_sale && !selectedDealerCode;
+
     return (
         <AuthenticatedLayout>
             <Head title="แจ้งซ่อม (ร้านค้า)" />
@@ -213,6 +230,33 @@ export default function DealerRepair({ auto_sn, auto_pid, auto_job_sn }) {
                             แจ้งซ่อมสินค้า (ร้านค้า)
                         </Typography>
                     </Grid2>
+
+                    {is_sale && (
+                        <Grid2 size={12}>
+                            <Paper variant="outlined" sx={{ p: 2, bgcolor: "primary.50" }}>
+                                <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                                    <Store fontSize="small" color="primary" />
+                                    <Typography variant="body2" fontWeight="bold" color="primary">
+                                        เลือกร้านค้าที่ต้องการแจ้งซ่อมแทน
+                                    </Typography>
+                                </Stack>
+                                <Autocomplete
+                                    options={dealer_list}
+                                    getOptionLabel={(o) => `${o.shop_name} (${o.is_code_cust_id})`}
+                                    value={dealer_list.find(d => d.is_code_cust_id === selectedDealerCode) || null}
+                                    onChange={handleDealerChange}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            size="small"
+                                            placeholder="พิมพ์ชื่อร้านหรือรหัสร้านเพื่อค้นหา"
+                                        />
+                                    )}
+                                />
+                            </Paper>
+                        </Grid2>
+                    )}
+
                     <Grid2 size={12}>
                         <Box bgcolor="white">
                             <SearchSnComponent
@@ -222,6 +266,7 @@ export default function DealerRepair({ auto_sn, auto_pid, auto_job_sn }) {
                                 showPidForm={showPidForm}
                                 setShowPidForm={setShowPidForm}
                                 onPassed={(e) => handleSearch(e)}
+                                disabled={searchDisabled}
                             />
                         </Box>
                     </Grid2>
@@ -266,6 +311,8 @@ export default function DealerRepair({ auto_sn, auto_pid, auto_job_sn }) {
                                         <DealerRpMain
                                             productDetail={detail}
                                             serial_id={autoJobSn || detail.serial_id || detail.serial}
+                                            dealerCode={is_sale ? selectedDealerCode : null}
+                                            overrideDealerInfo={is_sale ? selectedDealerInfo : null}
                                         />
                                     )}
                                     {menuSel === 2 && (
@@ -283,7 +330,7 @@ export default function DealerRepair({ auto_sn, auto_pid, auto_job_sn }) {
     );
 }
 
-function SearchSnComponent({ SN, setSn, PID, setPID, loading, showPidForm, setShowPidForm, onPassed }) {
+function SearchSnComponent({ SN, setSn, PID, setPID, loading, showPidForm, setShowPidForm, onPassed, disabled }) {
     const handleChangeSN = (e) => {
         const value = e.target.value;
         setSn(value);
@@ -295,18 +342,18 @@ function SearchSnComponent({ SN, setSn, PID, setPID, loading, showPidForm, setSh
             <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
                 <Stack direction="column" spacing={2} width="100%">
                     <TextField
-                        disabled={loading}
+                        disabled={loading || disabled}
                         slotProps={{ input: { startAdornment: <InputAdornment position="start">S/N :</InputAdornment> } }}
                         value={SN || ""}
                         onChange={handleChangeSN}
-                        focused
-                        placeholder="ค้นหาหมายเลขซีเรียล หรือ หมายเลข Job หากไม่ทราบกรุณากรอก 9999 เพื่อระบุรหัสสินค้า"
+                        focused={!disabled}
+                        placeholder={disabled ? "กรุณาเลือกร้านค้าก่อน" : "ค้นหาหมายเลขซีเรียล หรือ หมายเลข Job หากไม่ทราบกรุณากรอก 9999 เพื่อระบุรหัสสินค้า"}
                         fullWidth
                         required
                     />
                     {showPidForm && (
                         <TextField
-                            disabled={loading}
+                            disabled={loading || disabled}
                             slotProps={{ input: { startAdornment: <InputAdornment position="start">PID</InputAdornment> } }}
                             value={PID || ""}
                             onChange={(e) => setPID(e.target.value)}
@@ -316,7 +363,7 @@ function SearchSnComponent({ SN, setSn, PID, setPID, loading, showPidForm, setSh
                         />
                     )}
                 </Stack>
-                <Button loading={loading} type="submit" startIcon={<Search />} variant="contained">
+                <Button disabled={disabled} loading={loading} type="submit" startIcon={<Search />} variant="contained">
                     ค้นหา
                 </Button>
             </Stack>

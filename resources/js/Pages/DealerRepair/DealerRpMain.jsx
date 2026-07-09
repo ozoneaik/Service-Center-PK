@@ -10,9 +10,14 @@ import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
 import RpTab1Form from "@/Pages/NewRepair/Tab1/RpTab1Form.jsx";
 import { usePage } from "@inertiajs/react";
 
-export default function DealerRpMain({ productDetail, serial_id }) {
+export default function DealerRpMain({ productDetail, serial_id, dealerCode = null, overrideDealerInfo = null }) {
     const { auth } = usePage().props;
     const storeInfo = auth?.user?.store_info;
+
+    // ถ้า sale ส่ง overrideDealerInfo มา ให้ใช้ข้อมูลร้านนั้นแทน
+    const effectiveInfo = overrideDealerInfo ?? storeInfo;
+    const dealerName    = effectiveInfo?.shop_name ?? "";
+    const dealerPhone   = effectiveInfo?.phone ?? "";
 
     const [message, setMessage] = useState("ไม่สามารถกระทำการใดๆ");
     const [searchingJob, setSearchingJob] = useState(true);
@@ -21,9 +26,6 @@ export default function DealerRpMain({ productDetail, serial_id }) {
     const [selectJobFromPid, setSelectJobFromPid] = useState({ job_id: null });
     const [form1Saved, setForm1Saved] = useState(false);
     const [propSn, setPropSn] = useState(serial_id);
-
-    const dealerName = storeInfo?.shop_name ?? "";
-    const dealerPhone = storeInfo?.phone ?? "";
     const [showDealerForm, setShowDealerForm] = useState(false);
 
     useEffect(() => {
@@ -33,11 +35,12 @@ export default function DealerRpMain({ productDetail, serial_id }) {
     const fetchData = async (sn) => {
         try {
             setSearchingJob(true);
-            const { data } = await axios.post(route("dealerRepair.search.job", {
+            const { data } = await axios.post(route("dealerRepair.search.job"), {
                 serial_id: sn,
                 pid: productDetail.pid,
                 job_id: productDetail.job_id || null,
-            }));
+                ...(dealerCode ? { dealer_code: dealerCode } : {}),
+            });
 
             if (data.search_by === "pid") {
                 setJobFromPids(data.jobs);
@@ -67,12 +70,13 @@ export default function DealerRpMain({ productDetail, serial_id }) {
                 if (!confirm) return;
                 try {
                     setSearchingJob(true);
-                    await axios.post(route("dealerRepair.store", {
+                    await axios.post(route("dealerRepair.store"), {
                         serial_id: propSn,
                         productDetail: productFormat(productDetail),
                         dealer_name: dealerName,
                         dealer_phone: dealerPhone,
-                    }));
+                        ...(dealerCode ? { dealer_code: dealerCode } : {}),
+                    });
                     setShowDealerForm(false);
                     fetchData(propSn).finally(() => setSearchingJob(false));
                 } catch (error) {
@@ -96,11 +100,12 @@ export default function DealerRpMain({ productDetail, serial_id }) {
                 if (!confirm) return;
                 try {
                     setSearchingJob(true);
-                    const { data } = await axios.post(route("dealerRepair.store.from.pid", {
+                    const { data } = await axios.post(route("dealerRepair.store.from.pid"), {
                         productDetail: productFormat(productDetail),
                         dealer_name: dealerName,
                         dealer_phone: dealerPhone,
-                    }));
+                        ...(dealerCode ? { dealer_code: dealerCode } : {}),
+                    });
                     setShowDealerForm(false);
                     fetchData(data.serial_id).finally(() => setSearchingJob(false));
                 } catch (error) {
@@ -128,7 +133,7 @@ export default function DealerRpMain({ productDetail, serial_id }) {
         insurance_expire: pd.expire_date || null,
     });
 
-    // --- กรณี SN = 9999 (ไม่ว่าจะมี job เดิมหรือไม่) ---
+    // --- กรณี SN = 9999 ---
     if (propSn === "9999") {
         return (
             <Grid2 container spacing={2}>
@@ -215,7 +220,7 @@ export default function DealerRpMain({ productDetail, serial_id }) {
                         JOB={JOB} setJOB={setJOB}
                         form1Saved={form1Saved} setForm1Saved={setForm1Saved}
                         setMainStep={() => {}} setTabValue={() => {}}
-                        dealerInfo={storeInfo}
+                        dealerInfo={effectiveInfo}
                     />
                 </Grid2>
             ) : (
