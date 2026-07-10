@@ -92,8 +92,8 @@ export default function CartList({ refreshCounter, onSuccess, onDataLoaded, onCa
         setLoading(true);
         try {
             const { data } = await axios.get(route('orders.carts.json'));
-            setGroups(data.groups);
-            setTotalSp(data.totalSp);
+            setGroups(data.groups ?? []);
+            setTotalSp(data.totalSp ?? 0);
             if (onDataLoaded) onDataLoaded(data.totalSp, data.groups);
         } catch (error) {
             console.error(error);
