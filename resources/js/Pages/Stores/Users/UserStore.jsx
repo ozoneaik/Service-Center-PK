@@ -404,7 +404,9 @@ export default function UserStore({list_menu}) {
                                                     {(() => {
                                                         const isAdminOnly = (item) =>
                                                             item.menu_name === 'เซลล์แจ้งซ่อม' || item.redirect_route === 'repair.sale.index' ||
-                                                            item.menu_name === 'บัญชีรับอะไหล่' || item.redirect_route === 'accounting.return.index';
+                                                            item.menu_name === 'บัญชีรับอะไหล่' || item.redirect_route === 'accounting.return.index' ||
+                                                            (item.redirect_route && item.redirect_route.startsWith('dealerRepair.')) ||
+                                                            item.redirect_route === 'sale.dealer.jobs.index';
 
                                                         const grouped = {};
                                                         list_menu.forEach(item => {

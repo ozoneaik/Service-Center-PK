@@ -9,7 +9,9 @@ import {AccountCircle, AlternateEmail, Password, Edit} from "@mui/icons-material
 
 const isAdminOnly = (item) =>
     item.menu_name === 'เซลล์แจ้งซ่อม' || item.redirect_route === 'repair.sale.index' ||
-    item.menu_name === 'บัญชีรับอะไหล่' || item.redirect_route === 'accounting.return.index';
+    item.menu_name === 'บัญชีรับอะไหล่' || item.redirect_route === 'accounting.return.index' ||
+    (item.redirect_route && item.redirect_route.startsWith('dealerRepair.')) ||
+    item.redirect_route === 'sale.dealer.jobs.index';
 
 export default function ModalEditUser({open, setOpen, user, onSave, listMenu}) {
     const { auth } = usePage().props;
