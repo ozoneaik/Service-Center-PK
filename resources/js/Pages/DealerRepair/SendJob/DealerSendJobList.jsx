@@ -47,6 +47,9 @@ export default function DealerSendJobList({ jobs, dealer_list = [], selected_dea
 
     const completeCount = jobs.filter(j => j.before_form_complete).length;
 
+    const selectedDealerCodes = [...new Set(data.selectedJobs.map(j => j.dealer_code))];
+    const isMixedDealers = is_sale && selectedDealerCodes.length > 1;
+
     const handleSearch = (e) => {
         e.preventDefault();
         localStorage.setItem("dealer_selectedJobs", JSON.stringify(data.selectedJobs));
@@ -278,13 +281,19 @@ export default function DealerSendJobList({ jobs, dealer_list = [], selected_dea
                         </Grid2>
                     )}
 
+                    {isMixedDealers && (
+                        <Grid2 size={12}>
+                            <Alert severity="error">ไม่สามารถส่งซ่อมข้ามร้านค้าได้ กรุณาเลือก Job ของร้านค้าเดียวกัน</Alert>
+                        </Grid2>
+                    )}
+
                     {!isMobile && (
                         <Grid2 size={12}>
                             <Stack direction="row-reverse">
                                 <Button
                                     variant="contained"
                                     onClick={handleSend}
-                                    disabled={data.selectedJobs.length === 0 || processing}
+                                    disabled={data.selectedJobs.length === 0 || processing || isMixedDealers}
                                 >
                                     ส่งไปยัง PK ({data.selectedJobs.length})
                                 </Button>
@@ -298,7 +307,7 @@ export default function DealerSendJobList({ jobs, dealer_list = [], selected_dea
                         <Button
                             variant="contained" fullWidth
                             onClick={handleSend}
-                            disabled={data.selectedJobs.length === 0 || processing}
+                            disabled={data.selectedJobs.length === 0 || processing || isMixedDealers}
                         >
                             ส่งไปยัง PK ({data.selectedJobs.length})
                         </Button>

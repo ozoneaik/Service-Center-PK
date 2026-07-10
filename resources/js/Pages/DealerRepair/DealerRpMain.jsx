@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { AlertDialog, AlertDialogQuestion } from "@/Components/AlertDialog.js";
 import RpTab1Form from "@/Pages/NewRepair/Tab1/RpTab1Form.jsx";
-import { usePage } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 
 export default function DealerRpMain({ productDetail, serial_id, dealerCode = null, overrideDealerInfo = null }) {
     const { auth } = usePage().props;
@@ -219,11 +219,10 @@ export default function DealerRpMain({ productDetail, serial_id, dealerCode = nu
                     <RpTab1Form
                         JOB={JOB} setJOB={setJOB}
                         form1Saved={form1Saved} setForm1Saved={setForm1Saved}
-                        setMainStep={() => {}} setTabValue={() => {}}
-                        dealerInfo={effectiveInfo}
+                        setMainStep={() => {}} setTabValue={() => router.visit(route('dealerRepair.send.list'))}
                         beforeIndexRoute="dealerRepair.before.index"
                         beforeStoreRoute="dealerRepair.before.store"
-                        checkPhoneRoute="dealerRepair.check.phone"
+                        checkPhoneRoute={null}
                         workReceiptRoute="dealerRepair.before.work.receipt"
                     />
                 </Grid2>

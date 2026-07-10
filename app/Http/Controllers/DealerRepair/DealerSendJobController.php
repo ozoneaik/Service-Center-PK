@@ -112,7 +112,7 @@ class DealerSendJobController extends Controller
                 );
             }
 
-            [$dealerCodes] = $this->getAuthorizedDealerCodes();
+            [$dealerCodes, $isSale] = $this->getAuthorizedDealerCodes();
 
             DB::beginTransaction();
 
@@ -123,6 +123,10 @@ class DealerSendJobController extends Controller
             $allowedJobs = JobList::whereIn('job_id', $jobIds)
                 ->whereIn('dealer_code', $dealerCodes)
                 ->get(['job_id', 'serial_id', 'dealer_code']);
+
+            if ($isSale && $allowedJobs->pluck('dealer_code')->unique()->count() > 1) {
+                throw new \Exception('ไม่สามารถส่งซ่อมข้ามร้านค้าได้ กรุณาเลือก Job ของร้านค้าเดียวกัน');
+            }
 
             $allowedIds = $allowedJobs->pluck('job_id')->toArray();
 

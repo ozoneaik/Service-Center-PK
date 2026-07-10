@@ -22,7 +22,7 @@ export default function RpCustomerForm({ data, setData, form1Saved, checkPhoneRo
         };
         setData('customer', newData);
 
-        if (name === 'phone' && value.length === 10) {
+        if (checkPhoneRoute && name === 'phone' && value.length === 10) {
             setLoadingPhone(true);
             try {
                 const res = await axios.get(route(checkPhoneRoute), {

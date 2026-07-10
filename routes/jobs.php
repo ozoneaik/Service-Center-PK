@@ -70,20 +70,23 @@ Route::prefix('repair')->group(function () {
 
 Route::prefix('repair-sale')->group(function () {
     Route::get('/', [SaleRepairController::class, 'index'])->name('repair.sale.index');
-    Route::get('/create', [SaleRepairController::class, 'create'])->name('repair.sale.create');
-    Route::post('/search', [SaleRepairController::class, 'search'])->name('repair.sale.search');
+    
+    Route::withoutMiddleware('menuAccess')->group(function () {
+        Route::get('/create', [SaleRepairController::class, 'create'])->name('repair.sale.create');
+        Route::post('/search', [SaleRepairController::class, 'search'])->name('repair.sale.search');
 
-    Route::post('/search-job', [JobForSaleController::class, 'searchJob'])->name('repair.sale.search.job');
-    Route::post('/store', [JobForSaleController::class, 'storeJob'])->name('repair.sale.store');
-    Route::post('/store-from-pid', [JobForSaleController::class, 'storeJobFromPid'])->name('repair.sale.store.from.pid');
-    Route::post('/get-customers', [JobForSaleController::class, 'getCustomersUnderSale'])->name('repair.sale.get.customers');
+        Route::post('/search-job', [JobForSaleController::class, 'searchJob'])->name('repair.sale.search.job');
+        Route::post('/store', [JobForSaleController::class, 'storeJob'])->name('repair.sale.store');
+        Route::post('/store-from-pid', [JobForSaleController::class, 'storeJobFromPid'])->name('repair.sale.store.from.pid');
+        Route::post('/get-customers', [JobForSaleController::class, 'getCustomersUnderSale'])->name('repair.sale.get.customers');
 
-    Route::post('/store-job', [JobForSaleController::class, 'storeDetail'])->name('repair.sale.store.detail');
+        Route::post('/store-job', [JobForSaleController::class, 'storeDetail'])->name('repair.sale.store.detail');
 
-    Route::post('/search-service-centers', [SaleRepairController::class, 'searchServiceCenters'])->name('repair.sale.search.service.centers');
+        Route::post('/search-service-centers', [SaleRepairController::class, 'searchServiceCenters'])->name('repair.sale.search.service.centers');
 
-    Route::post('/confirm-send', [JobForSaleController::class, 'confirmSendJob'])->name('repair.sale.confirm.send');
-    Route::post('/cancel', [JobForSaleController::class, 'cancelJob'])->name('repair.sale.cancel');
+        Route::post('/confirm-send', [JobForSaleController::class, 'confirmSendJob'])->name('repair.sale.confirm.send');
+        Route::post('/cancel', [JobForSaleController::class, 'cancelJob'])->name('repair.sale.cancel');
+    });
 });
 
 Route::prefix('sale-dealer-jobs')->group(function () {

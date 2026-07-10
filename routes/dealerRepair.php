@@ -15,19 +15,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('dealer-repair')->middleware(['dealerAccess'])->group(function () {
 
-    // หน้าหลัก + ประวัติ — ต้องผ่าน menuAccess ด้วย (เป็น menu item จริง)
+    // หน้าหลัก + ประวัติ
     Route::get('/', [DealerSearchController::class, 'index'])->name('dealerRepair.index');
     Route::get('/history', [DealerSearchController::class, 'history'])->name('dealerRepair.history');
+    Route::get('/dealer-list', [DealerSearchController::class, 'dealerList'])->name('dealerRepair.dealer.list')->withoutMiddleware(['dealerAccess', 'menuAccess']);
 
-    // ทุก endpoint ที่เหลือข้าม menuAccess (dealerAccess ยังทำงานอยู่)
     Route::withoutMiddleware('menuAccess')->group(function () {
 
-        // dealer-list ข้าม dealerAccess ด้วย (controller จัดการ role เอง)
-        Route::get('/dealer-list', [DealerSearchController::class, 'dealerList'])
-            ->name('dealerRepair.dealer.list')
-            ->withoutMiddleware('dealerAccess');
-
-        // ค้นหาสินค้า
+        // ค้นหาสินค้า — ใช้ endpoint เดิมได้เลย (logic เหมือนกัน)
         Route::post('/search', [SearchController::class, 'search'])->name('dealerRepair.search');
 
         // ค้นหา job ที่มีอยู่แล้ว (กรองตาม dealer_code)
@@ -52,7 +47,7 @@ Route::prefix('dealer-repair')->middleware(['dealerAccess'])->group(function () 
             Route::post('/store-from-pid', [DealerJobController::class, 'storeJobFromPid'])->name('dealerRepair.store.from.pid');
             Route::post('/cancel', [DealerJobController::class, 'cancelJob'])->name('dealerRepair.cancel');
 
-            // before-repair
+            // before-repair — reuse ของเดิม
             Route::prefix('/before-repair')->group(function () {
                 Route::get('/', [RpBfController::class, 'index'])->name('dealerRepair.before.index');
                 Route::post('/', [RpBfController::class, 'store'])->name('dealerRepair.before.store');
@@ -60,7 +55,7 @@ Route::prefix('dealer-repair')->middleware(['dealerAccess'])->group(function () 
                 Route::get('/check-phone', [RpBfController::class, 'checkPhone'])->name('dealerRepair.check.phone');
             });
 
-            // after-repair
+            // after-repair — reuse ของเดิม
             Route::prefix('/after-repair')->group(function () {
                 Route::get('/', [RpAfController::class, 'index'])->name('dealerRepair.after');
 
