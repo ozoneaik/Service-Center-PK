@@ -56,7 +56,8 @@ class SalesDealerJobController extends Controller
                         $q->orWhereIn('dealer_code', $dealerCodes);
                     }
                 })
-                ->whereIn('status', ['send', 'pending', 'success', 'canceled']);
+                ->whereIn('status', ['send', 'pending', 'success', 'canceled'])
+                ->where('created_job_from','=','dealer');
 
             if ($request->filled('dealer_code')) {
                 $query->where('dealer_code', $request->dealer_code);
