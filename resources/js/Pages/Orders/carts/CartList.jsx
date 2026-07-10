@@ -150,9 +150,21 @@ export default function CartList({ refreshCounter, onSuccess, onDataLoaded, onCa
         });
     };
 
+    // const totalPrice = useMemo(() => {
+    //     return groups.reduce((total, group) => {
+    //         return total + group.list.reduce((sum, sp) => {
+    //             const price = parseFloat(sp.price_per_unit) || 0;
+    //             const quantity = parseFloat(sp.qty) || 0;
+    //             return sum + (price * quantity);
+    //         }, 0);
+    //     }, 0);
+    // }, [groups]);
+
     const totalPrice = useMemo(() => {
-        return groups.reduce((total, group) => {
-            return total + group.list.reduce((sum, sp) => {
+        // 1. ดัก groups ด้วย (groups || [])
+        return (groups || []).reduce((total, group) => {
+            // 2. ดัก group.list ด้วย (group?.list || [])
+            return total + (group?.list || []).reduce((sum, sp) => {
                 const price = parseFloat(sp.price_per_unit) || 0;
                 const quantity = parseFloat(sp.qty) || 0;
                 return sum + (price * quantity);
