@@ -5,20 +5,20 @@ import {
     Grid2, Paper, Stack, Table, TableBody, TableCell,
     TableHead, TableRow, TextField, Typography,
 } from "@mui/material";
-import { Refresh } from "@mui/icons-material";
+import { OpenInNew, Refresh } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { AlertDialogQuestion } from "@/Components/AlertDialog.js";
 
 const STATUS_LABEL = {
-    send:    "ส่งซ่อมไปยัง PK",
+    send: "ส่งซ่อมไปยัง PK",
     pending: "รอดำเนินการ (PK)",
     success: "สำเร็จ",
     canceled: "ยกเลิก",
 };
 
 const STATUS_COLOR = {
-    send:    "warning",
+    send: "warning",
     pending: "info",
     success: "success",
     canceled: "error",
@@ -45,7 +45,7 @@ export default function DealerSuccessSendJobs({ is_sale }) {
         setSelectedIds([]);
         setLoading(true);
         try {
-            const url  = view === "history" ? route("dealerRepair.send.history") : route("dealerRepair.send.all");
+            const url = view === "history" ? route("dealerRepair.send.history") : route("dealerRepair.send.all");
             const { data } = await axios.post(url, f);
             setJobs(data.jobs || []);
             if (!data.jobs?.length) setAlert({ type: "info", message: data.message || "ไม่พบรายการ" });
@@ -240,6 +240,7 @@ export default function DealerSuccessSendJobs({ is_sale }) {
                                             <TableCell>Ticket / ASS No.</TableCell>
                                             <TableCell>สถานะเอกสาร JOB</TableCell>
                                             <TableCell>สถานะงานซ่อม / ASS Status</TableCell>
+                                            <TableCell>ใบเสนอราคา / qu</TableCell>
                                             {view === "current" && <TableCell>ตรวจสอบ</TableCell>}
                                             <TableCell>{view === "history" ? "วันที่ปิดงาน" : "วันที่ส่ง"}</TableCell>
                                         </TableRow>
@@ -287,6 +288,15 @@ export default function DealerSuccessSendJobs({ is_sale }) {
                                                 <TableCell>
                                                     {job.ass_status
                                                         ? <Chip label={job.ass_status} size="small" />
+                                                        : "-"}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {job.ass_qu
+                                                        ? <Button size="small" variant="outlined" color="primary"
+                                                            href={job.ass_qu} target="_blank" rel="noopener noreferrer"
+                                                            startIcon={<OpenInNew fontSize="small" />}>
+                                                            เปิดใบ QU
+                                                          </Button>
                                                         : "-"}
                                                 </TableCell>
                                                 {view === "current" && (

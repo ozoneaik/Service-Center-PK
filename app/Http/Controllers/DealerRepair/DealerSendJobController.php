@@ -370,8 +370,8 @@ class DealerSendJobController extends Controller
 
     public function checkJobStatus(Request $request): JsonResponse
     {
-        $jobId           = $request->input('job_id');
-        [$dealerCodes]   = $this->getAuthorizedDealerCodes();
+        $jobId         = $request->input('job_id');
+        [$dealerCodes] = $this->getAuthorizedDealerCodes();
 
         if (empty($jobId)) {
             return response()->json(['message' => 'กรุณากรอก Job ID', 'status' => false], 400);
@@ -386,8 +386,10 @@ class DealerSendJobController extends Controller
                 throw new \Exception("ไม่พบข้อมูล Job ID นี้ในระบบ");
             }
 
-            $response = Http::timeout(10)->post('https://afterservice-sv.pumpkin.tools/sv/callpsc.php', [
-                'ticketcode' => $jobId,
+            $ticketCode = $job->ticket_code ?: $jobId;
+
+            $response = Http::timeout(10)->post('http://192.168.9.13:1000/laststatus', [
+                'ticketcode' => $ticketCode,
             ]);
 
             if (!$response->successful()) {
@@ -399,8 +401,8 @@ class DealerSendJobController extends Controller
                 throw new \Exception("API ตอบกลับมาในรูปแบบที่ไม่ใช่ JSON");
             }
 
-            $externalStatus = $json['status'] ?? null;
-            $assNo          = $json['assno']  ?? null;
+            $externalStatus = $json['status']  ?? null;
+            $assQu          = $json['linequ']  ?? null;
 
             if (!$externalStatus) {
                 throw new \Exception("ไม่ได้รับสถานะที่ถูกต้อง");
@@ -408,17 +410,18 @@ class DealerSendJobController extends Controller
 
             $mappedStatus = $this->mapApiStatus($externalStatus);
             $now          = Carbon::now();
-            $updateData   = ['status' => $mappedStatus, 'ass_status' => $externalStatus, 'updated_at' => $now];
+            $updateData   = [
+                'ass_status' => $externalStatus,
+                'ass_qu'     => $assQu,
+                'updated_at' => $now,
+            ];
 
             if ($mappedStatus === 'success') {
+                $updateData['status']       = 'success';
                 $updateData['close_job_at'] = $now;
                 $updateData['close_job_by'] = 'API';
-            }
-
-            $ticketForResponse = $job->ticket_code;
-            if ($assNo) {
-                $updateData['ticket_code'] = $assNo;
-                $ticketForResponse         = $assNo;
+            } elseif ($mappedStatus === 'canceled') {
+                $updateData['status'] = 'canceled';
             }
 
             DB::beginTransaction();
@@ -428,7 +431,9 @@ class DealerSendJobController extends Controller
             return response()->json([
                 'status'      => 'success',
                 'api_status'  => $mappedStatus,
-                'ticket_code' => $ticketForResponse,
+                'ass_status'  => $externalStatus,
+                'ass_qu'      => $assQu,
+                'ticket_code' => $ticketCode,
                 'message'     => 'ดึงสถานะสำเร็จ',
             ]);
         } catch (\Exception $e) {
@@ -457,10 +462,17 @@ class DealerSendJobController extends Controller
         $updated = 0;
         $failed  = 0;
 
+        $jobRecords = JobList::whereIn('job_id', $jobIds)
+            ->whereIn('dealer_code', $dealerCodes)
+            ->get(['job_id', 'ticket_code'])
+            ->keyBy('job_id');
+
         foreach ($jobIds as $jobId) {
             try {
-                $response = Http::timeout(10)->post('https://afterservice-sv.pumpkin.tools/sv/callpsc.php', [
-                    'ticketcode' => $jobId,
+                $ticketCode = $jobRecords[$jobId]->ticket_code ?? $jobId;
+
+                $response = Http::timeout(10)->post('http://192.168.9.13:1000/laststatus', [
+                    'ticketcode' => $ticketCode,
                 ]);
 
                 if (!$response->successful()) { $failed++; continue; }
@@ -469,18 +481,24 @@ class DealerSendJobController extends Controller
                 if (!$json || !is_array($json)) { $failed++; continue; }
 
                 $externalStatus = $json['status'] ?? null;
-                $assNo          = $json['assno']  ?? null;
+                $assQu          = $json['linequ'] ?? null;
                 if (empty($externalStatus)) { $failed++; continue; }
 
                 $mappedStatus = $this->mapApiStatus($externalStatus);
                 $now          = Carbon::now();
-                $updateData   = ['status' => $mappedStatus, 'ass_status' => $externalStatus, 'updated_at' => $now];
+                $updateData   = [
+                    'ass_status' => $externalStatus,
+                    'ass_qu'     => $assQu,
+                    'updated_at' => $now,
+                ];
 
                 if ($mappedStatus === 'success') {
+                    $updateData['status']       = 'success';
                     $updateData['close_job_at'] = $now;
                     $updateData['close_job_by'] = 'API';
+                } elseif ($mappedStatus === 'canceled') {
+                    $updateData['status'] = 'canceled';
                 }
-                if ($assNo) $updateData['ticket_code'] = $assNo;
 
                 JobList::where('job_id', $jobId)->update($updateData);
                 $updated++;
@@ -512,7 +530,9 @@ class DealerSendJobController extends Controller
     {
         if (in_array($apiStatus, ['ไม่พบข้อมูล', 'send'], true)) return 'send';
         if (in_array($apiStatus, ['canceled', 'ยกเลิกคำสั่งซื้อ', 'ยกเลิก'], true)) return 'canceled';
-        if (in_array($apiStatus, ['บัญชีรับงานแล้ว', 'ส่งของแล้ว', 'จัดส่งสำเร็จ', 'ส่งสำเร็จ', 'จบงาน'], true)) return 'success';
-        return 'pending';
+        if (in_array($apiStatus, ['บัญชีรับงานแล้ว', 'ส่งของแล้ว', 'จัดส่งสำเร็จ', 'ส่งสำเร็จ', 'จบงาน', 'ซ่อมเสร็จ'], true)) return 'success';
+        // สถานะ in-progress จาก laststatus API (ยังไม่จบงาน)
+        if (in_array($apiStatus, ['รอรับงานซ่อม', 'รับงานซ่อมแล้ว', 'อยู่ระหว่างซ่อม', 'รอตรวจสอบ', 'รอชิ้นส่วน'], true)) return 'send';
+        return 'send';
     }
 }

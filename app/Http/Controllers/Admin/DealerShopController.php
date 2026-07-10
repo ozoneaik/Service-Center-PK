@@ -4,14 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ListMenu;
+                                                                                                                                                                                                                                                                 use App\Models\SaleInformation;
 use App\Models\StoreInformation;
 use App\Models\User;
 use App\Models\UserAccessMenu;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -35,7 +37,9 @@ class DealerShopController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Admin/DealerShops/DealerShopCreate');
+        return Inertia::render('Admin/DealerShops/DealerShopCreate', [
+            'sale_list' => SaleInformation::orderBy('name')->get(['sale_code', 'name']),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -45,9 +49,10 @@ class DealerShopController extends Controller
             'shop_name'        => 'required|string|max:255',
             'phone'            => 'required|string|max:20',
             'address'          => 'required|string',
+            'sale_id'          => 'nullable|string|exists:sale_information,sale_code',
             'user_code'        => 'required|string|max:100|unique:users,user_code',
             'name'             => 'required|string|max:255',
-            'email'            => 'required|email|max:255|unique:users,email',
+            'email'            => 'required|string|max:255|unique:users,email',
             'password'         => 'required|string|min:6|confirmed',
         ], [
             'is_code_cust_id.unique' => 'รหัสร้านค้านี้มีในระบบแล้ว',
@@ -65,6 +70,7 @@ class DealerShopController extends Controller
                 'shop_name'       => $request->shop_name,
                 'phone'           => $request->phone,
                 'address'         => $request->address,
+                'sale_id'         => $request->sale_id ?: null,
                 'digit_code'      => $this->generateDigitCode(),
                 'shop_type'       => 'dealer',
             ]);
@@ -95,6 +101,37 @@ class DealerShopController extends Controller
             DB::rollBack();
             Log::error('DealerShopController::store - ' . $e->getMessage());
             return back()->withErrors(['error' => 'เกิดข้อผิดพลาด: ' . $e->getMessage()])->withInput();
+        }
+    }
+
+    public function lookupCust(string $custId): JsonResponse
+    {
+        try {
+            $cust = DB::connection('dbctl')
+                ->table('cust_master')
+                ->where('CustID', $custId)
+                ->first();
+
+            if (!$cust) {
+                return response()->json(['found' => false]);
+            }
+
+            return response()->json([
+                'found'     => true,
+                'shop_name' => $cust->CustName ?? '',
+                'phone'     => $cust->ContactPhone ?? '',
+                'address'   => trim(
+                    collect([
+                        $cust->InvAddr1 ?? '',
+                        $cust->InvAddr2 ?? '',
+                        $cust->InvAddr3 ?? '',
+                        $cust->InvAddr4 ?? '',
+                    ])->filter()->implode(' ')
+                ),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('DealerShopController::lookupCust - ' . $e->getMessage());
+            return response()->json(['found' => false, 'error' => 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้'], 500);
         }
     }
 

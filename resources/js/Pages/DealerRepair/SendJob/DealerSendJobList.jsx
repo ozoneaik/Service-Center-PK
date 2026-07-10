@@ -238,7 +238,7 @@ export default function DealerSendJobList({ jobs, dealer_list = [], selected_dea
                                             <TableCell>เลขที่ JOB</TableCell>
                                             {is_sale && <TableCell>ร้านค้า</TableCell>}
                                             <TableCell>ข้อมูลเบื้องต้น</TableCell>
-                                            <TableCell>สถานะ</TableCell>
+                                            <TableCell>สถานะเอกสาร</TableCell>
                                             <TableCell>สร้างเมื่อ</TableCell>
                                         </TableRow>
                                     </TableHead>

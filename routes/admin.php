@@ -148,6 +148,7 @@ Route::middleware('adminPermission')->group(function () {
             Route::get('/', [DealerShopController::class, 'index'])->name('admin.dealer-shops.index');
             Route::get('/create', [DealerShopController::class, 'create'])->name('admin.dealer-shops.create');
             Route::post('/store', [DealerShopController::class, 'store'])->name('admin.dealer-shops.store');
+            Route::get('/lookup-cust/{custId}', [DealerShopController::class, 'lookupCust'])->name('admin.dealer-shops.lookup-cust');
         });
         // Route::prefix('manage-point')->group(function () {
         //     Route::get('/', [ManagePointController::class, 'index'])->name('admin.manage-point.index');

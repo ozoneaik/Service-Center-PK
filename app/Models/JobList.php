@@ -54,5 +54,6 @@ class JobList extends Model
         'dealer_code',
         'dealer_name',
         'dealer_phone',
+        'ass_qu'
     ];
 }

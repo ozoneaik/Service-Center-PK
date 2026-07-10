@@ -145,6 +145,20 @@ return [
             ] : [],
         ],
 
+        'dbctl' => [
+            'driver'         => 'pgsql',
+            'host'           => env('DB_HOST_DBCTL', '127.0.0.1'),
+            'port'           => env('DB_PORT_DBCTL', '5432'),
+            'database'       => env('DB_DATABASE_DBCTL', 'CT_sqlserver'),
+            'username'       => env('DB_USERNAME_DBCTL', 'postgres'),
+            'password'       => env('DB_PASSWORD_DBCTL', ''),
+            'charset'        => 'utf8',
+            'prefix'         => '',
+            'prefix_indexes' => true,
+            'search_path'    => 'public',
+            'sslmode'        => 'prefer',
+        ],
+
         'warranty' => [
             'driver' => 'mysql',
             'host' => env('DB_DIAGRAM_HOST', '127.0.0.1'),

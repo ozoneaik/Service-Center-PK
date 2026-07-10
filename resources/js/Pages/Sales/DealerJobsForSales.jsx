@@ -6,7 +6,7 @@ import {
     Select, Stack, Table, TableBody, TableCell,
     TableHead, TableRow, TextField, Typography,
 } from "@mui/material";
-import { Refresh, Search } from "@mui/icons-material";
+import { OpenInNew, Refresh, Search } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -238,6 +238,7 @@ export default function DealerJobsForSales() {
                                             <TableCell>Ticket / ASS No.</TableCell>
                                             <TableCell>สถานะ</TableCell>
                                             <TableCell>ASS Status</TableCell>
+                                            <TableCell>ใบเสนอราคา / QU</TableCell>
                                             <TableCell>วันที่ส่ง</TableCell>
                                             <TableCell>อัปเดทล่าสุด</TableCell>
                                         </TableRow>
@@ -245,7 +246,7 @@ export default function DealerJobsForSales() {
                                     <TableBody>
                                         {jobs.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={12} align="center" sx={{ py: 5, color: "text.secondary" }}>
+                                                <TableCell colSpan={13} align="center" sx={{ py: 5, color: "text.secondary" }}>
                                                     ไม่พบรายการ
                                                 </TableCell>
                                             </TableRow>
@@ -286,6 +287,15 @@ export default function DealerJobsForSales() {
                                                 <TableCell>
                                                     {job.ass_status
                                                         ? <Chip label={job.ass_status} size="small" />
+                                                        : <Typography variant="caption" color="text.disabled">-</Typography>}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {job.ass_qu
+                                                        ? <Button size="small" variant="outlined" color="primary"
+                                                            href={job.ass_qu} target="_blank" rel="noopener noreferrer"
+                                                            startIcon={<OpenInNew fontSize="small" />}>
+                                                            เปิดใบ QU
+                                                          </Button>
                                                         : <Typography variant="caption" color="text.disabled">-</Typography>}
                                                 </TableCell>
                                                 <TableCell>

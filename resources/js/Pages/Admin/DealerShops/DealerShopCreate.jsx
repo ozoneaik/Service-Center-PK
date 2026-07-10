@@ -2,6 +2,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import {Head, Link, useForm} from "@inertiajs/react";
 import {
     Alert,
+    Autocomplete,
     Box,
     Button,
     Card,
@@ -15,14 +16,21 @@ import {
     Paper,
     Stack,
     TextField,
+    Tooltip,
     Typography,
 } from "@mui/material";
+import { CheckCircle, HelpOutline, ErrorOutline } from "@mui/icons-material";
 import {AccountCircle, AlternateEmail, Key, Store, Visibility, VisibilityOff} from "@mui/icons-material";
-import {useState} from "react";
+import {useState, useRef} from "react";
+import axios from "axios";
 
-export default function DealerShopCreate() {
+export default function DealerShopCreate({ sale_list = [] }) {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+    const [lookupLoading, setLookupLoading] = useState(false);
+    const [lookupStatus, setLookupStatus] = useState(null); // 'found' | 'not_found' | 'error'
+    const lookupTimer = useRef(null);
+    const [emailPrefix, setEmailPrefix] = useState('');
 
     const {data, setData, post, processing, errors} = useForm({
         // ข้อมูลร้านค้า
@@ -30,6 +38,7 @@ export default function DealerShopCreate() {
         shop_name: '',
         phone: '',
         address: '',
+        sale_id: '',
         // ข้อมูลผู้ใช้แรก
         user_code: '',
         name: '',
@@ -37,6 +46,37 @@ export default function DealerShopCreate() {
         password: '',
         password_confirmation: '',
     });
+
+    const handleIsCodeChange = (e) => {
+        const value = e.target.value;
+        setData('is_code_cust_id', value);
+        setLookupStatus(null);
+
+        clearTimeout(lookupTimer.current);
+        if (!value.trim()) return;
+
+        lookupTimer.current = setTimeout(async () => {
+            setLookupLoading(true);
+            try {
+                const { data: res } = await axios.get(route('admin.dealer-shops.lookup-cust', value.trim()));
+                if (res.found) {
+                    setData(prev => ({
+                        ...prev,
+                        shop_name: res.shop_name || prev.shop_name,
+                        phone:     res.phone     || prev.phone,
+                        address:   res.address   || prev.address,
+                    }));
+                    setLookupStatus('found');
+                } else {
+                    setLookupStatus('not_found');
+                }
+            } catch {
+                setLookupStatus('error');
+            } finally {
+                setLookupLoading(false);
+            }
+        }, 600);
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -88,10 +128,39 @@ export default function DealerShopCreate() {
                                 <CardContent>
                                     <Grid2 container spacing={2}>
                                         <Grid2 size={{xs: 12, sm: 6}}>
-                                            {field('is_code_cust_id', 'รหัสร้านค้า (IS Code)', {
-                                                helperText: errors.is_code_cust_id || 'รหัสเฉพาะสำหรับร้านค้านี้ ห้ามซ้ำ',
-                                                inputProps: {maxLength: 50},
-                                            })}
+                                            <TextField
+                                                size="small" fullWidth required
+                                                label="รหัสร้านค้า (IS Code)"
+                                                value={data.is_code_cust_id}
+                                                onChange={handleIsCodeChange}
+                                                error={!!errors.is_code_cust_id}
+                                                helperText={errors.is_code_cust_id || 'ระบบจะดึงข้อมูลจากฐานข้อมูลให้อัตโนมัติ'}
+                                                slotProps={{
+                                                    htmlInput: {maxLength: 50},
+                                                    input: {
+                                                        endAdornment: (
+                                                            <InputAdornment position="end">
+                                                                {lookupLoading && <CircularProgress size={18} />}
+                                                                {!lookupLoading && lookupStatus === 'found' && (
+                                                                    <Tooltip title="พบข้อมูลและดึงมาแล้ว">
+                                                                        <CheckCircle color="success" fontSize="small" />
+                                                                    </Tooltip>
+                                                                )}
+                                                                {!lookupLoading && lookupStatus === 'not_found' && (
+                                                                    <Tooltip title="ไม่พบรหัสนี้ในระบบ DBCTL">
+                                                                        <HelpOutline color="warning" fontSize="small" />
+                                                                    </Tooltip>
+                                                                )}
+                                                                {!lookupLoading && lookupStatus === 'error' && (
+                                                                    <Tooltip title="ไม่สามารถเชื่อมต่อฐานข้อมูลได้">
+                                                                        <ErrorOutline color="error" fontSize="small" />
+                                                                    </Tooltip>
+                                                                )}
+                                                            </InputAdornment>
+                                                        ),
+                                                    }
+                                                }}
+                                            />
                                         </Grid2>
                                         <Grid2 size={{xs: 12, sm: 6}}>
                                             {field('shop_name', 'ชื่อร้านค้า')}
@@ -101,6 +170,23 @@ export default function DealerShopCreate() {
                                         </Grid2>
                                         <Grid2 size={12}>
                                             {field('address', 'ที่อยู่', {multiline: true, rows: 3})}
+                                        </Grid2>
+                                        <Grid2 size={{xs: 12, sm: 6}}>
+                                            <Autocomplete
+                                                options={sale_list}
+                                                getOptionLabel={(o) => `${o.name} (${o.sale_code})`}
+                                                value={sale_list.find(s => s.sale_code === data.sale_id) || null}
+                                                onChange={(_, v) => setData('sale_id', v?.sale_code || '')}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        size="small"
+                                                        label="เซลล์ประจำร้าน"
+                                                        error={!!errors.sale_id}
+                                                        helperText={errors.sale_id || 'ไม่บังคับ'}
+                                                    />
+                                                )}
+                                            />
                                         </Grid2>
                                     </Grid2>
                                 </CardContent>
@@ -139,12 +225,18 @@ export default function DealerShopCreate() {
                                             <TextField
                                                 size="small" fullWidth required
                                                 label="อีเมล"
-                                                type="email"
-                                                value={data.email}
-                                                onChange={(e) => setData('email', e.target.value)}
+                                                value={emailPrefix}
+                                                onChange={(e) => {
+                                                    const prefix = e.target.value.replace('@', '');
+                                                    setEmailPrefix(prefix);
+                                                    setData('email', prefix ? `${prefix}@dealers` : '');
+                                                }}
                                                 error={!!errors.email}
-                                                helperText={errors.email}
-                                                slotProps={{input: {startAdornment: <InputAdornment position="start"><AlternateEmail color="primary" fontSize="small"/></InputAdornment>}}}
+                                                helperText={errors.email || `อีเมลที่ได้: ${emailPrefix ? `${emailPrefix}@dealers` : '-'}`}
+                                                slotProps={{input: {
+                                                    startAdornment: <InputAdornment position="start"><AlternateEmail color="primary" fontSize="small"/></InputAdornment>,
+                                                    endAdornment: <InputAdornment position="end"><Typography variant="body2" color="text.secondary">@dealers</Typography></InputAdornment>,
+                                                }}}
                                             />
                                         </Grid2>
                                         <Grid2 size={{xs: 12, sm: 6}}>
