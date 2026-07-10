@@ -73,7 +73,7 @@ Route::prefix('repair-sale')->group(function () {
     
     Route::withoutMiddleware('menuAccess')->group(function () {
         Route::get('/create', [SaleRepairController::class, 'create'])->name('repair.sale.create');
-        Route::post('/search', [SaleRepairController::class, 'search'])->name('repair.sale.search');
+        Route::post('/search', [SearchController::class, 'search'])->name('repair.sale.search');
 
         Route::post('/search-job', [JobForSaleController::class, 'searchJob'])->name('repair.sale.search.job');
         Route::post('/store', [JobForSaleController::class, 'storeJob'])->name('repair.sale.store');

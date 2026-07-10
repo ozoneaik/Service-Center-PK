@@ -18,6 +18,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -467,17 +468,19 @@ class JobForSaleController extends Controller
     public function getCustomersUnderSale(Request $request)
     {
         try {
-            // 1. ส่วนการ Login และเรียก API จริง (คงไว้เหมือนเดิม)
-            $loginResponse = Http::post('https://pkapi.pumpkin.tools/api/auth/login', [
-                'username' => 'B63333',
-                'password' => '!Nut#63333'
-            ]);
+            // cache token 50 นาที เพื่อลด login request และหลีกเลี่ยง throttle
+            $token = Cache::remember('pkapi_access_token', 50 * 60, function () {
+                $loginResponse = Http::post('https://pkapi.pumpkin.tools/api/auth/login', [
+                    'username' => 'B63333',
+                    'password' => '!Nut#63333'
+                ]);
 
-            if ($loginResponse->failed()) {
-                throw new \Exception('API Login Failed: ' . $loginResponse->body());
-            }
+                if ($loginResponse->failed()) {
+                    throw new \Exception('API Login Failed: ' . $loginResponse->body());
+                }
 
-            $token = $loginResponse->json()['access_token'];
+                return $loginResponse->json()['access_token'];
+            });
             $saleCode = Auth::user()->user_code;
 
             $payload = ['sale_code' => $saleCode];
