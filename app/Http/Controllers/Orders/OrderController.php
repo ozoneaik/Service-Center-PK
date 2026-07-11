@@ -701,7 +701,22 @@ class OrderController extends Controller
                 $spData['cart_qty']   = $cart?->qty ?? 0;
             }
 
-            return response()->json(['sp' => $spMap]);
+            return response()->json([
+                'sp' => $spMap,
+                '_debug' => [
+                    'pid'          => $pid,
+                    'dm_requested' => $dm,
+                    'dm_found'     => ($dm && isset($spAll[$pid][$dm])) ? 'YES' : 'NO',
+                    'sp_count'     => count($spMap),
+                    'store_flags'  => [
+                        'use_disc_40p'  => $useDisc40p,
+                        'use_disc_20p'  => $useDisc20p,
+                        'use_std_price' => $useStdPrice,
+                        'store_info_exists' => $storeInfo !== null,
+                    ],
+                    'sample_raw_price' => collect($dmData)->flatten(1)->first(),
+                ],
+            ]);
         } catch (\Exception $e) {
             return response()->json(['sp' => [], 'error' => $e->getMessage()]);
         }
