@@ -22,6 +22,11 @@ class MenuAccess
         $permission = false;
         if (Auth::user()->admin_that_branch || Auth::user()->role === 'admin') {
             return $next($request);
+        }
+
+        // AJAX / JSON API calls (e.g. Axios) ผ่านได้ — auth ยังอยู่, controller scope ข้อมูลเอง
+        if ($request->expectsJson()) {
+            return $next($request);
         } else {
             $menu_access = UserAccessMenu::query()
                 ->leftJoin('list_menus', 'list_menus.id', '=', 'user_access_menus.menu_code')
