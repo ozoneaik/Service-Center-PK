@@ -652,9 +652,9 @@ class OrderController extends Controller
             $asset  = $assets[$pid]    ?? (reset($assets) ?: []);
 
             $storeInfo   = Auth::user()->store_info;
-            $useDisc40p  = $storeInfo->use_disc_40p  ?? false;
-            $useDisc20p  = $storeInfo->use_disc_20p  ?? false;
-            $useStdPrice = $storeInfo->use_std_price ?? false;
+            $useDisc40p  = $storeInfo?->use_disc_40p  ?? false;
+            $useDisc20p  = $storeInfo?->use_disc_20p  ?? false;
+            $useStdPrice = $storeInfo?->use_std_price ?? false;
 
             // กรองเฉพาะ DM ที่ระบุ ถ้าส่ง dm มา
             $dmData = ($dm && isset($spAll[$pid][$dm]))
