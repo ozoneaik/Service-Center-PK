@@ -104,6 +104,12 @@ export default function AdminMainPage() {
             icon: <StoreIcon />,
             path: route('admin.dealer-shops.index'),
             color: '#e65100',
+        },
+        {
+            text: "ประวัติซ่อมทุกร้านค้า (ไม่ใช่ศูนย์ซ่อม)",
+            icon: <HistoryIcon />,
+            path: route('admin.history-job-shop.index'),
+            color: '#25347a',
         }
     ];
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DealerShopController;
+use App\Http\Controllers\Admin\HistoryDealersController;
 use App\Http\Controllers\Admin\DiagramController;
 use App\Http\Controllers\Admin\JobFromServiceController;
 use App\Http\Controllers\Admin\ManagePointController;
@@ -150,6 +151,10 @@ Route::middleware('adminPermission')->group(function () {
             Route::post('/store', [DealerShopController::class, 'store'])->name('admin.dealer-shops.store');
             Route::get('/lookup-cust/{custId}', [DealerShopController::class, 'lookupCust'])->name('admin.dealer-shops.lookup-cust');
         });
+
+        Route::get('history-job-shop', [HistoryDealersController::class, 'index'])->name('admin.history-job-shop.index');
+        Route::get('history-job-shop/export', [HistoryDealersController::class, 'exportExcel'])->name('admin.history-job-shop.export');
+        
         // Route::prefix('manage-point')->group(function () {
         //     Route::get('/', [ManagePointController::class, 'index'])->name('admin.manage-point.index');
         //     Route::get('/create', [ManagePointController::class, 'create'])->name('admin.manage-point.create'); 

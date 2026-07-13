@@ -247,11 +247,11 @@ const FilterForm = ({
     searchJobs,
     stores = [],
 }) => {
-    const isMobile = useMediaQuery("(max-width:700px)");
     const { url } = usePage();
     const isAdmin = url.startsWith("/admin/history-job");
     return (
         <Grid2 container spacing={2}>
+            {/* แถว 1: Serial ID | Job ID | Phone */}
             <Grid2 size={{ md: 4, xs: 12 }}>
                 <TextField
                     fullWidth
@@ -312,7 +312,9 @@ const FilterForm = ({
                     }}
                 />
             </Grid2>
-            <Grid2 size={{ md: 2, xs: 12 }}>
+
+            {/* แถว 2: ชื่อลูกค้า | สถานะ | วันที่เริ่มต้น | วันที่สิ้นสุด */}
+            <Grid2 size={{ md: 3, xs: 12 }}>
                 <TextField
                     fullWidth
                     label="ค้นหาชื่อลูกค้า"
@@ -332,26 +334,31 @@ const FilterForm = ({
                     }}
                 />
             </Grid2>
-            <Grid2 size={{ md: 2, xs: 12 }}>
-                <Select
-                    variant="outlined"
-                    fullWidth={!isMobile}
-                    value={filters.status || "select"}
-                    onChange={handleFilterChange}
-                    name="status"
-                    size="small"
-                >
-                    <MenuItem disabled value={"select"}>
-                        เลือกสถานะการซ่อม
-                    </MenuItem>
-                    <MenuItem value={""}>ทั้งหมด</MenuItem>
-                    <MenuItem value={"pending"}>กำลังดำเนินการซ่อม</MenuItem>
-                    <MenuItem value={"send"}>ส่งไปยังศูนย์ซ่อม PK</MenuItem>
-                    <MenuItem value={"success"}>ปิดการซ่อมแล้ว</MenuItem>
-                    <MenuItem value={"canceled"}>ยกเลิกการซ่อมแล้ว</MenuItem>
-                </Select>
+            <Grid2 size={{ md: 3, xs: 12 }}>
+                <FormControl fullWidth size="small">
+                    <InputLabel shrink>สถานะการซ่อม</InputLabel>
+                    <Select
+                        fullWidth
+                        value={filters.status || ""}
+                        onChange={handleFilterChange}
+                        name="status"
+                        size="small"
+                        label="สถานะการซ่อม"
+                        notched
+                        displayEmpty
+                        renderValue={(val) =>
+                            val === "" ? <em style={{ color: "#aaa" }}>ทั้งหมด</em> : statusLabels[val] || val
+                        }
+                    >
+                        <MenuItem value="">ทั้งหมด</MenuItem>
+                        <MenuItem value="pending">กำลังดำเนินการซ่อม</MenuItem>
+                        <MenuItem value="send">ส่งไปยังศูนย์ซ่อม PK</MenuItem>
+                        <MenuItem value="success">ปิดการซ่อมแล้ว</MenuItem>
+                        <MenuItem value="canceled">ยกเลิกการซ่อมแล้ว</MenuItem>
+                    </Select>
+                </FormControl>
             </Grid2>
-            <Grid2 size={{ md: 2, xs: 12 }}>
+            <Grid2 size={{ md: 3, xs: 12 }}>
                 <TextField
                     fullWidth
                     size="small"
@@ -360,10 +367,10 @@ const FilterForm = ({
                     name="date_start"
                     value={filters.date_start}
                     onChange={handleFilterChange}
-                    InputLabelProps={{ shrink: true }}
+                    slotProps={{ inputLabel: { shrink: true } }}
                 />
             </Grid2>
-            <Grid2 size={{ md: 2, xs: 12 }}>
+            <Grid2 size={{ md: 3, xs: 12 }}>
                 <TextField
                     fullWidth
                     size="small"
@@ -372,29 +379,32 @@ const FilterForm = ({
                     name="date_end"
                     value={filters.date_end}
                     onChange={handleFilterChange}
-                    InputLabelProps={{ shrink: true }}
+                    slotProps={{ inputLabel: { shrink: true } }}
                 />
             </Grid2>
-            <Grid2 size={{ md: 1, xs: 12 }}>
-                <Select
-                    variant="outlined"
-                    fullWidth={!isMobile}
-                    value={filters.created_job_from || "select"}
-                    onChange={handleFilterChange}
-                    name="created_job_from"
-                    size="small"
-                >
-                    <MenuItem disabled value={"select"}>
-                        งานซ่อมจาก
-                    </MenuItem>
-                    <MenuItem value={""}>ทั้งหมด</MenuItem>
-                    <MenuItem value={"sale"}>เซลล์</MenuItem>
-                    {/* หากต้องการกรองงานทั่วไปด้วย */}
-                    {/* <MenuItem value={'admin'}>ศูนย์บริการ</MenuItem> */}
-                </Select>
-            </Grid2>
 
-            {/* ✅ Admin-only: กรองร้านค้า (เลือกได้หลายร้าน) */}
+            {/* แถว 3: งานซ่อมจาก | [ร้านค้า admin] | ปุ่ม */}
+            <Grid2 size={{ md: 3, xs: 12 }}>
+                <FormControl fullWidth size="small">
+                    <InputLabel shrink>งานซ่อมจาก</InputLabel>
+                    <Select
+                        fullWidth
+                        value={filters.created_job_from || ""}
+                        onChange={handleFilterChange}
+                        name="created_job_from"
+                        size="small"
+                        label="งานซ่อมจาก"
+                        notched
+                        displayEmpty
+                        renderValue={(val) =>
+                            val === "" ? <em style={{ color: "#aaa" }}>ทั้งหมด</em> : val === "sale" ? "เซลล์" : val
+                        }
+                    >
+                        <MenuItem value="">ทั้งหมด</MenuItem>
+                        <MenuItem value="sale">เซลล์</MenuItem>
+                    </Select>
+                </FormControl>
+            </Grid2>
             {isAdmin && (
                 <Grid2 size={{ md: 3, xs: 12 }}>
                     <FormControl fullWidth size="small">
@@ -414,14 +424,9 @@ const FilterForm = ({
                             }
                         >
                             {stores.map((store) => (
-                                <MenuItem
-                                    key={store.is_code_cust_id}
-                                    value={store.is_code_cust_id}
-                                >
+                                <MenuItem key={store.is_code_cust_id} value={store.is_code_cust_id}>
                                     <Checkbox
-                                        checked={(filters.shops || []).includes(
-                                            store.is_code_cust_id,
-                                        )}
+                                        checked={(filters.shops || []).includes(store.is_code_cust_id)}
                                         size="small"
                                     />
                                     <ListItemText
@@ -433,14 +438,9 @@ const FilterForm = ({
                     </FormControl>
                 </Grid2>
             )}
-
-            <Grid2 size={{ md: 1, xs: 12 }}>
-                <Stack direction="row" spacing={1}>
-                    <Button
-                        onClick={searchJobs}
-                        startIcon={<Search />}
-                        variant="contained"
-                    >
+            <Grid2 size={{ md: isAdmin ? 6 : 9, xs: 12 }}>
+                <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end" height="100%">
+                    <Button onClick={searchJobs} startIcon={<Search />} variant="contained">
                         ค้นหา
                     </Button>
                     <Button
@@ -458,57 +458,36 @@ const FilterForm = ({
                                 date_end: "",
                                 shops: [],
                             });
-                            const routeName =
-                                window.location.pathname.startsWith(
-                                    "/admin/history-job",
-                                )
-                                    ? "admin.history-job"
-                                    : "history.index";
-                            router.get(
-                                route(routeName),
-                                {},
-                                { preserveState: true },
-                            );
+                            const routeName = window.location.pathname.startsWith("/admin/history-job")
+                                ? "admin.history-job"
+                                : "history.index";
+                            router.get(route(routeName), {}, { preserveState: true });
                         }}
                     >
                         ล้างตัวกรอง
                     </Button>
-                </Stack>
-            </Grid2>
-
-            {/* เพื่มการ Export */}
-            <Grid2 size={{ md: 2, xs: 12 }}>
-                <Box display={"flex"} justifyContent={"flex-end"}>
                     <Button
                         startIcon={<FileUpload />}
                         variant="contained"
                         color="success"
                         onClick={() => {
-                            // สร้าง query string รองรับ array shops[]
                             const params = new URLSearchParams();
                             Object.entries(filters).forEach(([key, val]) => {
                                 if (Array.isArray(val)) {
-                                    val.forEach((v) =>
-                                        params.append(`${key}[]`, v),
-                                    );
+                                    val.forEach((v) => params.append(`${key}[]`, v));
                                 } else if (val !== "") {
                                     params.append(key, val);
                                 }
                             });
-                            const exportRoute = url.startsWith(
-                                "/admin/history-job",
-                            )
+                            const exportRoute = url.startsWith("/admin/history-job")
                                 ? route("admin.history.export")
                                 : route("history.export");
-                            window.open(
-                                exportRoute + "?" + params.toString(),
-                                "_blank",
-                            );
+                            window.open(exportRoute + "?" + params.toString(), "_blank");
                         }}
                     >
                         ส่งออก Excel
                     </Button>
-                </Box>
+                </Stack>
             </Grid2>
         </Grid2>
     );

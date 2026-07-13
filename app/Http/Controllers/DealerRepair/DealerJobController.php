@@ -256,6 +256,11 @@ class DealerJobController extends Controller
     {
         $user = Auth::user();
 
+        if ($user->role === 'admin') {
+            // admin ส่ง dealer_code มาจาก frontend ได้ตรงๆ
+            return $request->input('dealer_code', $user->is_code_cust_id);
+        }
+
         if ($user->role !== 'sale') {
             return $user->is_code_cust_id;
         }

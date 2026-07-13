@@ -31,7 +31,7 @@ const menuNames = {
 };
 
 export default function DealerRepair({
-    auto_sn, auto_pid, auto_job_sn,
+    auto_sn, auto_pid, auto_job_sn, auto_dealer_code = null,
     selected_dealer = null, is_sale = false,
 }) {
     const [SN, setSN] = useState("");
@@ -322,7 +322,7 @@ export default function DealerRepair({
                                         <DealerRpMain
                                             productDetail={detail}
                                             serial_id={autoJobSn || detail.serial_id || detail.serial}
-                                            dealerCode={is_sale ? selectedDealerCode : null}
+                                            dealerCode={is_sale ? selectedDealerCode : auto_dealer_code}
                                             overrideDealerInfo={is_sale ? selectedDealerInfo : null}
                                         />
                                     )}

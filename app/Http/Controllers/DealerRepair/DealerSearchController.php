@@ -54,10 +54,14 @@ class DealerSearchController extends Controller
         }
 
         if (isset($request->job_id)) {
-            $job = JobList::query()
-                ->where('job_id', $request->job_id)
-                ->where('dealer_code', $user->is_code_cust_id)
-                ->first();
+            $jobQuery = JobList::query()->where('job_id', $request->job_id);
+
+            // admin เข้าถึงได้ทุก job โดยไม่ต้องกรอง dealer_code
+            if ($user->role !== 'admin') {
+                $jobQuery->where('dealer_code', $user->is_code_cust_id);
+            }
+
+            $job = $jobQuery->first();
 
             if (!$job) {
                 abort(403, 'ไม่พบงานซ่อม หรือไม่มีสิทธิ์เข้าถึง');
@@ -69,6 +73,7 @@ class DealerSearchController extends Controller
                 'auto_sn'     => $autoSn,
                 'auto_pid'    => $job->pid,
                 'auto_job_sn' => $job->serial_id,
+                'auto_dealer_code' => $job->dealer_code,
             ]);
         }
 

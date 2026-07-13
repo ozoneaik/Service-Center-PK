@@ -23,6 +23,10 @@ class HistorySpController extends Controller
             ->leftJoin('store_information as store','store.is_code_cust_id','=','job_lists.is_code_key')
 //            ->whereMonth('job_lists.created_at', now()->month)
 //            ->whereYear('job_lists.created_at', now()->year)
+            ->where(function ($q) {
+                $q->whereNull('job_lists.created_job_from')
+                  ->orWhere('job_lists.created_job_from', '!=', 'dealer');
+            })
             ->select('job_lists.*', 'customer_in_jobs.name', 'customer_in_jobs.phone','store.shop_name');
 
         // ค้นหาตาม serial_id
@@ -77,6 +81,10 @@ class HistorySpController extends Controller
             ->leftJoin('customer_in_jobs', 'customer_in_jobs.job_id', '=', 'job_lists.job_id')
             ->leftJoin('store_information as store', 'store.is_code_cust_id', '=', 'job_lists.is_code_key')
             ->leftJoin('repair_men', 'job_lists.repair_man_id', '=', 'repair_men.id')
+            ->where(function ($q) {
+                $q->whereNull('job_lists.created_job_from')
+                  ->orWhere('job_lists.created_job_from', '!=', 'dealer');
+            })
             ->select(
                 'job_lists.*', // ดึงทุก field จาก job_lists เพื่อให้ได้ p_cat, print_at ฯลฯ ครบ
                 'customer_in_jobs.name as cust_name',
