@@ -24,8 +24,8 @@ class MenuAccess
             return $next($request);
         }
 
-        // AJAX / JSON API calls (e.g. Axios) ผ่านได้ — auth ยังอยู่, controller scope ข้อมูลเอง
-        if ($request->expectsJson()) {
+        // AJAX / JSON API calls หรือ form actions (POST/PUT/DELETE) ผ่านได้ — auth ยังอยู่, controller scope ข้อมูลเอง
+        if ($request->expectsJson() || !$request->isMethod('GET')) {
             return $next($request);
         } else {
             $menu_access = UserAccessMenu::query()
