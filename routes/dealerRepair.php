@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DealerRepair\DealerJobController;
+use App\Http\Controllers\DealerRepair\DealerOrderController;
 use App\Http\Controllers\DealerRepair\DealerSearchController;
 use App\Http\Controllers\DealerRepair\DealerSendJobController;
 use App\Http\Controllers\NewRepair\After\RpAfBehaviourController;
@@ -11,7 +12,9 @@ use App\Http\Controllers\NewRepair\After\RpAfSpSparePartController;
 use App\Http\Controllers\NewRepair\After\RpAfSummaryController;
 use App\Http\Controllers\NewRepair\Before\RpBfController;
 use App\Http\Controllers\NewRepair\SearchController;
+use App\Http\Controllers\Orders\OrderController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::prefix('dealer-repair')->middleware(['dealerAccess'])->group(function () {
 
@@ -21,6 +24,23 @@ Route::prefix('dealer-repair')->middleware(['dealerAccess'])->group(function () 
     Route::get('/dealer-list', [DealerSearchController::class, 'dealerList'])->name('dealerRepair.dealer.list')->withoutMiddleware(['dealerAccess', 'menuAccess']);
 
     Route::withoutMiddleware('menuAccess')->group(function () {
+
+        // สั่งซื้ออะไหล่สำหรับ dealer (ใช้ราคา disc40p)
+        Route::prefix('/orders')->group(function () {
+            Route::get('/', [DealerOrderController::class, 'index'])->name('dealerRepair.orders.diagram');
+            Route::get('/search-sp', [DealerOrderController::class, 'searchSpJson'])->name('dealerRepair.orders.searchSp');
+            Route::get('/carts/json', [DealerOrderController::class, 'cartListJson'])->name('dealerRepair.orders.carts.json');
+            Route::post('/carts/add-cart', [OrderController::class, 'addCart'])->name('dealerRepair.orders.addCart');
+            Route::post('/carts/add-remove/{condition}', [OrderController::class, 'AddOrRemoveQtySp'])->name('dealerRepair.orders.AddOrRemoveQtySp');
+            Route::delete('/carts/delete/{id}', [OrderController::class, 'deleteCart'])->name('dealerRepair.orders.deleteCart');
+            Route::post('/carts/store', [DealerOrderController::class, 'createOrder'])->name('dealerRepair.orders.createOrder');
+            Route::post('/carts/export-pdf', [OrderController::class, 'exportPdfFromCart'])->name('dealerRepair.orders.exportPdf');
+            Route::get('/history', [DealerOrderController::class, 'history'])->name('dealerRepair.orders.history');
+            Route::get('/history/{order_id}', [DealerOrderController::class, 'historyDetail'])->name('dealerRepair.orders.historyDetail');
+        });
+
+        // ตรวจสอบไดอะแกรม (ดูได้อย่างเดียว ไม่มีการสั่งซื้อ)
+        Route::get('/check-diagram', fn() => Inertia::render('Orders/CheckDiagram'))->name('dealerRepair.orders.checkDiagram');
 
         // ค้นหาสินค้า — ใช้ endpoint เดิมได้เลย (logic เหมือนกัน)
         Route::post('/search', [SearchController::class, 'search'])->name('dealerRepair.search');

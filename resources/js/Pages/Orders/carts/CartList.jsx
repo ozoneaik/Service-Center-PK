@@ -74,7 +74,7 @@ const ListSp = ({ sps, onUpdateQty, onRemove, operatingCartId, removingIds }) =>
     );
 }
 
-export default function CartList({ refreshCounter, onSuccess, onDataLoaded, onCartUpdate, operatingCartId, isLoading }) {
+export default function CartList({ refreshCounter, onSuccess, onDataLoaded, onCartUpdate, operatingCartId, isLoading, cartJsonUrl, diagramRoute, storeUrl }) {
     const [groups, setGroups] = useState([]);
     const [totalSp, setTotalSp] = useState(0);
     const [loading, setLoading] = useState(false);
@@ -91,7 +91,7 @@ export default function CartList({ refreshCounter, onSuccess, onDataLoaded, onCa
     const fetchCart = async () => {
         setLoading(true);
         try {
-            const { data } = await axios.get(route('orders.carts.json'));
+            const { data } = await axios.get(cartJsonUrl ?? route('orders.carts.json'));
             setGroups(data.groups ?? []);
             setTotalSp(data.totalSp ?? 0);
             if (onDataLoaded) onDataLoaded(data.totalSp, data.groups);
@@ -272,7 +272,7 @@ export default function CartList({ refreshCounter, onSuccess, onDataLoaded, onCa
     const onSubmit = async () => {
         try {
             setProcessing(true);
-            const URL = '/orders/carts/store'
+            const URL = storeUrl ?? '/orders/carts/store'
             const { data } = await axios.post(URL, {
                 groups: groups,
                 address: address,
@@ -333,7 +333,7 @@ export default function CartList({ refreshCounter, onSuccess, onDataLoaded, onCa
                                                     startIcon={<AddShoppingCart />}
                                                     onClick={(e) => {
                                                         e.preventDefault();
-                                                        router.visit(route('orders.diagram') + '?sku=' + group.sku_code + '&model=' + encodeURIComponent(group.sku_name));
+                                                        router.visit((diagramRoute ?? route('orders.diagram')) + '?sku=' + group.sku_code + '&model=' + encodeURIComponent(group.sku_name));
                                                     }}
                                                 >
                                                     เพิ่มอะไหล่
@@ -370,16 +370,20 @@ export default function CartList({ refreshCounter, onSuccess, onDataLoaded, onCa
                             </Typography>
                         </Grid2>
                         <Grid2 size={{ xs: 12, sm: 6 }} sx={{ textAlign: 'right' }}>
-                            <Button
-                                loading={processing}
-                                loadingPosition='start'
-                                startIcon={<FileUpload />} variant="contained"
-                                color="secondary"
-                                size="large"
-                                onClick={handleExportPdf}>
-                                ส่งออก PDF
-                            </Button>
-                            &nbsp;&nbsp;
+                            {!storeUrl && (
+                                <>
+                                    <Button
+                                        loading={processing}
+                                        loadingPosition='start'
+                                        startIcon={<FileUpload />} variant="contained"
+                                        color="secondary"
+                                        size="large"
+                                        onClick={handleExportPdf}>
+                                        ส่งออก PDF
+                                    </Button>
+                                    &nbsp;&nbsp;
+                                </>
+                            )}
                             <Button
                                 loading={processing}
                                 loadingPosition='start'

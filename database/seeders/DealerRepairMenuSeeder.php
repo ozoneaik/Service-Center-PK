@@ -11,13 +11,13 @@ class DealerRepairMenuSeeder extends Seeder
     {
         $menus = [
             [
-                'menu_name'       => 'แจ้งซ่อม (ร้านค้า)',
+                'menu_name'       => 'แจ้งซ่อม',
                 'group'           => 10,
                 'main_menu'       => true,
                 'redirect_route'  => null,
             ],
             [
-                'menu_name'       => 'แจ้งซ่อมสินค้า',
+                'menu_name'       => 'แจ้งซ่อมมายังพัมคิน',
                 'group'           => 10,
                 'main_menu'       => false,
                 'redirect_route'  => 'dealerRepair.index',
@@ -35,10 +35,22 @@ class DealerRepairMenuSeeder extends Seeder
                 'redirect_route'  => 'dealerRepair.send.list',
             ],
             [
-                'menu_name'       => 'ติดตามสถานะงานซ่อม',
+                'menu_name'       => 'ติดตามสถานะส่งซ่อมพัมคิน',
                 'group'           => 10,
                 'main_menu'       => false,
                 'redirect_route'  => 'dealerRepair.send.track',
+            ],
+            [
+                'menu_name'       => 'สั่งซื้ออะไหล่',
+                'group'           => 10,
+                'main_menu'       => false,
+                'redirect_route'  => 'dealerRepair.orders.diagram',
+            ],
+            [
+                'menu_name'       => 'ประวัติการสั่งซื้ออะไหล่',
+                'group'           => 10,
+                'main_menu'       => false,
+                'redirect_route'  => 'dealerRepair.orders.history',
             ],
         ];
 
