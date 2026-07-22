@@ -257,7 +257,7 @@ class HandleInertiaRequests extends Middleware
                     'user' => $user,
                     'sale_info' => $saleInfo,
                     // ส่งกลับไปเป็น array (values เพื่อเรียง index ใหม่)
-                    'access_menu' => $access_menu->values()->all()
+                    'access_menu' => $access_menu->sortBy('sort_order')->values()->all()
                 ],
             ];
         }
