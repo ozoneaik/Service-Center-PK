@@ -24,6 +24,10 @@ class MenuAccess
             return $next($request);
         }
 
+        if (str_starts_with(Route::currentRouteName(), 'report.')) {
+            return $next($request);
+        }
+
         // AJAX / JSON API calls หรือ form actions (POST/PUT/DELETE) ผ่านได้ — auth ยังอยู่, controller scope ข้อมูลเอง
         if ($request->expectsJson() || !$request->isMethod('GET')) {
             return $next($request);
