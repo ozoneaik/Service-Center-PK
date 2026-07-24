@@ -200,7 +200,7 @@ class HandleInertiaRequests extends Middleware
             $access_menu = collect($access_menu);
 
             // ซ่อน group 10 (dealer repair) สำหรับ service center หรือ role=service
-            if ($isServiceCenter && !$user->admin_that_branch && $user->role !== 'admin' && $user->role !== 'sale') {
+            if ($isServiceCenter && $user->role !== 'admin' && $user->role !== 'sale') {
                 $access_menu = $access_menu->reject(fn($menu) => $menu->group == 10);
             }
 
