@@ -177,6 +177,9 @@ class HandleInertiaRequests extends Middleware
                     ->first();
             }
 
+            $isServiceCenter = $user->role === 'service'
+                || ($store && $store->shop_type === 'service_center');
+
             if ($user->role === 'admin' || $user->admin_that_branch) {
                 $access_menu = ListMenu::all();
             } else {
@@ -195,6 +198,12 @@ class HandleInertiaRequests extends Middleware
             // [ส่วนที่เพิ่ม] Logic บังคับเมนู "เซลล์แจ้งซ่อม"
             // แปลงเป็น Collection เพื่อให้จัดการง่าย (เผื่อกรณีเป็น Array มา)
             $access_menu = collect($access_menu);
+
+            // ซ่อน group 10 (dealer repair) สำหรับ service center หรือ role=service
+            if ($isServiceCenter && !$user->admin_that_branch && $user->role !== 'admin' && $user->role !== 'sale') {
+                $access_menu = $access_menu->reject(fn($menu) => $menu->group == 10);
+            }
+
             $saleRouteName = 'repair.sale.index';
 
             if ($user->role === 'sale') {

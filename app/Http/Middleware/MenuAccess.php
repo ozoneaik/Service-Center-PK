@@ -28,6 +28,17 @@ class MenuAccess
             return $next($request);
         }
 
+        // บล็อก group 10 (dealer repair) สำหรับ service center หรือ role=service
+        $store = Auth::user()->store_info;
+        $isServiceCenter = Auth::user()->role === 'service'
+            || ($store && $store->shop_type === 'service_center');
+        if ($isServiceCenter && Auth::user()->role !== 'sale') {
+            $route = Route::currentRouteName();
+            if (str_starts_with($route, 'dealerRepair.') || $route === 'sale.dealer.jobs.index') {
+                return Redirect::route('unauthorized');
+            }
+        }
+
         // AJAX / JSON API calls หรือ form actions (POST/PUT/DELETE) ผ่านได้ — auth ยังอยู่, controller scope ข้อมูลเอง
         if ($request->expectsJson() || !$request->isMethod('GET')) {
             return $next($request);
