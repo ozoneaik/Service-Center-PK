@@ -13,21 +13,21 @@ return new class extends Migration
             $table->unsignedSmallInteger('sort_order')->default(99)->after('redirect_route');
         });
 
-        // กำหนดลำดับ group 10
+        // กำหนดลำดับ group 10 โดยใช้ redirect_route แทน id เพราะ id ต่างกันระหว่าง environment
         $orders = [
-            39 => 1,  // แจ้งซ่อมศูนย์บริการ (repair.sale.index)
-            29 => 2,  // แจ้งซ่อมมายังพัมคิน
-            30 => 3,  // ประวัติการแจ้งซ่อมมายังพัมคิน
-            31 => 4,  // ส่งซ่อมพัมคิน
-            33 => 5,  // เอกสารส่งซ่อมมายังพัมคิน
-            35 => 6,  // รายการงานส่งซ่อม (ร้านค้า)
-            32 => 7,  // ติดตามสถานะส่งซ่อมพัมคิน
-            36 => 8,  // สั่งซื้ออะไหล่
-            38 => 9,  // ประวัติการสั่งซื้ออะไหล่
+            'repair.sale.index'             => 1,
+            'dealerRepair.index'            => 2,
+            'dealerRepair.history'          => 3,
+            'dealerRepair.send.list'        => 4,
+            'dealerRepair.send.doc'         => 5,
+            'sale.dealer.jobs.index'        => 6,
+            'dealerRepair.send.track'       => 7,
+            'dealerRepair.orders.diagram'   => 8,
+            'dealerRepair.orders.history'   => 9,
         ];
 
-        foreach ($orders as $id => $order) {
-            DB::table('list_menus')->where('id', $id)->update(['sort_order' => $order]);
+        foreach ($orders as $route => $order) {
+            DB::table('list_menus')->where('redirect_route', $route)->update(['sort_order' => $order]);
         }
     }
 
