@@ -728,12 +728,12 @@ class OrderController extends Controller
             $cart = Cart::query()->create([
                 'is_code_cust_id' => Auth::user()->is_code_cust_id,
                 'user_code_key' => Auth::user()->user_code,
-                'sku_code' => $request->skufg,
-                'sku_name' => $request->pname,
-                'sp_code' => $request->spcode,
-                'sp_name' => $request->spname,
+                'sku_code' => $request->skufg ?? '',
+                'sku_name' => $request->pname ?? '',
+                'sp_code' => $request->spcode ?? '',
+                'sp_name' => $request->spname ?? '',
                 'price_per_unit' => floatval($request->price_per_unit),
-                'sp_unit' => $request->spunit,
+                'sp_unit' => $request->spunit ?? 'ชิ้น',
             ]);
             return response()->json([
                 'message' => 'success',
