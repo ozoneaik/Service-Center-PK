@@ -13,17 +13,29 @@ use App\Http\Controllers\NewRepair\After\RpAfSummaryController;
 use App\Http\Controllers\NewRepair\Before\RpBfController;
 use App\Http\Controllers\NewRepair\SearchController;
 use App\Http\Controllers\Orders\OrderController;
+use App\Http\Controllers\SaleRepair\SalesDealerJobController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::prefix('dealer-repair')->middleware(['dealerAccess'])->group(function () {
 
-    // หน้าหลัก + ประวัติ
-    Route::get('/', [DealerSearchController::class, 'index'])->name('dealerRepair.index');
-    Route::get('/history', [DealerSearchController::class, 'history'])->name('dealerRepair.history');
     Route::get('/dealer-list', [DealerSearchController::class, 'dealerList'])->name('dealerRepair.dealer.list')->withoutMiddleware(['dealerAccess', 'menuAccess']);
 
     Route::withoutMiddleware('menuAccess')->group(function () {
+
+        // หน้าหลัก + ประวัติ (dealerAccess จัดการสิทธิ์แล้ว ไม่ต้องผ่าน menuAccess)
+        Route::get('/', [DealerSearchController::class, 'index'])->name('dealerRepair.index');
+        Route::get('/history', [DealerSearchController::class, 'history'])->name('dealerRepair.history');
+
+        // Gateway รวม "ส่งงานซ่อม" dealer + sale ไว้ที่ route เดียว แยก view ตาม role
+        Route::get('/send-jobs', function (Request $request) {
+            if (Auth::user()->role === 'sale') {
+                return app(SalesDealerJobController::class)->index($request);
+            }
+            return app(DealerSendJobController::class)->trackPage($request);
+        })->name('sendWork.index');
 
         // สั่งซื้ออะไหล่สำหรับ dealer (ใช้ราคา disc40p)
         Route::prefix('/orders')->group(function () {

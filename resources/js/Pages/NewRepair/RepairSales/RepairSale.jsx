@@ -299,7 +299,7 @@ export default function RepairSale({ jobs, filters }) {
 
     return (
         <AuthenticatedLayout>
-            <Head title="แจ้งซ่อมสำหรับเซลล์" />
+            <Head title="แจ้งซ่อมศูนย์บริการ" />
 
             {error && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mx-auto max-w-7xl sm:px-6 lg:px-8 mt-4 mb-6 shadow-sm" role="alert">
@@ -307,7 +307,7 @@ export default function RepairSale({ jobs, filters }) {
                 </div>
             )}
             <h1 className="text-2xl font-semibold mx-auto max-w-7xl sm:px-6 lg:px-8 mt-8">
-                แจ้งซ่อมสำหรับเซลล์
+                แจ้งซ่อมศูนย์บริการ
             </h1>
             <div className="py-6">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">

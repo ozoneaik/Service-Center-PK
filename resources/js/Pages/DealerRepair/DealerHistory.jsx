@@ -69,12 +69,12 @@ export default function DealerHistory({ jobs, dealer_list = [], selected_dealer 
 
     return (
         <AuthenticatedLayout>
-            <Head title="ประวัติการแจ้งซ่อม (ร้านค้า)" />
+            <Head title="ประวัติการแจ้งซ่อม" />
             <Container maxWidth="l" sx={{ mt: 3, mb: 3 }}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
                         <Typography variant="h6" fontWeight="bold">
-                            ประวัติการแจ้งซ่อม (ร้านค้า)
+                            ประวัติการแจ้งซ่อม
                         </Typography>
                         <Stack direction="row" justifyContent="flex-end" alignItems="right">
                             <Button
@@ -84,13 +84,13 @@ export default function DealerHistory({ jobs, dealer_list = [], selected_dealer 
                             >
                                 แจ้งซ่อมใหม่
                             </Button>
-                            <Button
+                            {/* <Button
                                 variant="outlined"
                                 sx={{ marginLeft: 2 }}
                                 onClick={() => router.get(route("dealerRepair.send.list"))}
                             >
                                 ส่งซ่อมพัมคิน
-                            </Button>
+                            </Button> */}
                         </Stack>
                     </Grid2>
 

@@ -1,11 +1,11 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import { Head } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import {
     Alert, Box, Button, Card, Checkbox, Chip, CircularProgress,
     Grid2, Paper, Stack, Table, TableBody, TableCell,
     TableHead, TableRow, TextField, Typography,
 } from "@mui/material";
-import { OpenInNew, Refresh } from "@mui/icons-material";
+import { Description, OpenInNew, Refresh } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { AlertDialogQuestion } from "@/Components/AlertDialog.js";
@@ -130,7 +130,17 @@ export default function DealerSuccessSendJobs({ is_sale }) {
             <Paper sx={{ bgcolor: "white", p: 3 }}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
-                        <Typography variant="h6" fontWeight="bold">ติดตามสถานะส่งซ่อมพัมคินฯ (ร้านค้า)</Typography>
+                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                            <Typography variant="h6" fontWeight="bold">ติดตามสถานะและส่งซ่อมพัมคินฯ</Typography>
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<Description />}
+                                onClick={() => router.get(route("dealerRepair.send.list"))}
+                            >
+                                ออกเอกสารส่งซ่อมพัมคิน
+                            </Button>
+                        </Stack>
                     </Grid2>
 
                     {/* Tab Switch */}

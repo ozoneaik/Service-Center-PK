@@ -12,7 +12,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { Search, Store } from "@mui/icons-material";
+import { History, Search, Store } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { AlertDialog } from "@/Components/AlertDialog.js";
@@ -236,9 +236,24 @@ export default function DealerRepair({
             <Container sx={{ mt: 3 }}>
                 <Grid2 container spacing={2}>
                     <Grid2 size={12}>
-                        <Typography variant="h6" fontWeight="bold" gutterBottom>
-                            แจ้งซ่อมสินค้า (ร้านค้า)
-                        </Typography>
+                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                            <Typography variant="h6" fontWeight="bold">
+                                แจ้งซ่อมมายังพัมคิน
+                            </Typography>
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<History />}
+                                onClick={() => {
+                                    const params = is_sale && selectedDealerCode
+                                        ? { dealer_code: selectedDealerCode }
+                                        : {};
+                                    router.get(route("dealerRepair.history", params));
+                                }}
+                            >
+                                ประวัติการแจ้งซ่อม
+                            </Button>
+                        </Stack>
                     </Grid2>
 
                     {is_sale && (

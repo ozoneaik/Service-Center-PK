@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import { Head, usePage } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import {
     Alert, Box, Button, Card, CardContent, Chip, Divider,
     Grid2, Paper, Stack, Table, TableBody, TableCell,
@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import DescriptionIcon from "@mui/icons-material/Description";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
+import { ArrowBack } from "@mui/icons-material";
 import { useState } from "react";
 import { DateFormatTh } from "@/Components/DateFormat.jsx";
 import DealerModalDetail from "@/Pages/DealerRepair/SendJob/DealerModalDetail.jsx";
@@ -21,14 +22,24 @@ export default function DealerDocSendJob({ groups, is_sale }) {
         <>
             {open && <DealerModalDetail open={open} setOpen={setOpen} job_group={selectedGroup} />}
             <AuthenticatedLayout>
-                <Head title="เอกสารส่งซ่อม (ร้านค้า)" />
+                <Head title="เอกสารส่งซ่อม" />
                 <Paper sx={{ bgcolor: "white", p: 3 }}>
                     <Grid2 container spacing={2}>
                         <Grid2 size={12}>
                             <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                <Typography variant="h6" fontWeight="bold">
-                                    ออกเอกสารส่งซ่อม (ร้านค้า)
-                                </Typography>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        startIcon={<ArrowBack />}
+                                        onClick={() => router.get(route("dealerRepair.send.list"))}
+                                    >
+                                        ส่งซ่อมพัมคิน
+                                    </Button>
+                                    <Typography variant="h6" fontWeight="bold">
+                                        เอกสารส่งซ่อม
+                                    </Typography>
+                                </Stack>
                                 <Typography variant="body1">รายการทั้งหมด {groups.length} รายการ</Typography>
                             </Stack>
                         </Grid2>

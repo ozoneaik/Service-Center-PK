@@ -5,7 +5,7 @@ import {
     Grid2, Paper, Stack, Table, TableBody, TableCell,
     TableHead, TableRow, TextField, Tooltip, Typography, useMediaQuery,
 } from "@mui/material";
-import { Search, Store, Warning } from "@mui/icons-material";
+import { ArrowBack, Description, Search, Store, Warning } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { DateFormatTh } from "@/Components/DateFormat.jsx";
 import { AlertDialogQuestion } from "@/Components/AlertDialog.js";
@@ -88,10 +88,30 @@ export default function DealerSendJobList({ jobs, dealer_list = [], selected_dea
                 <Grid2 container spacing={2} mb={isMobile ? 10 : 0}>
                     <Grid2 size={12}>
                         <Stack direction="row" justifyContent="space-between" alignItems="center">
-                            <Typography variant="h6" fontWeight="bold">
-                                ส่งซ่อมพัมคินฯ (ร้านค้า)
-                            </Typography>
-                            <Typography variant="body1">รายการทั้งหมด {jobs.length} รายการ</Typography>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                                <Button
+                                    variant="outlined"
+                                    size="small"
+                                    startIcon={<ArrowBack />}
+                                    onClick={() => router.get(route("sendWork.index"))}
+                                >
+                                    กลับ
+                                </Button>
+                                <Typography variant="h6" fontWeight="bold">
+                                    ออกเอกสารส่งซ่อมพัมคิน
+                                </Typography>
+                            </Stack>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                                <Typography variant="body1">รายการทั้งหมด {jobs.length} รายการ</Typography>
+                                <Button
+                                    variant="outlined"
+                                    size="small"
+                                    startIcon={<Description />}
+                                    onClick={() => router.get(route("dealerRepair.send.doc"))}
+                                >
+                                    เอกสารส่งซ่อม
+                                </Button>
+                            </Stack>
                         </Stack>
 
                         {is_sale && (

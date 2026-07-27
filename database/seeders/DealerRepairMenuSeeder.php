@@ -11,7 +11,7 @@ class DealerRepairMenuSeeder extends Seeder
     {
         $menus = [
             [
-                'menu_name'       => 'แจ้งซ่อม',
+                'menu_name'       => 'ซ่อมสินค้า',
                 'group'           => 10,
                 'main_menu'       => true,
                 'redirect_route'  => null,
@@ -24,53 +24,38 @@ class DealerRepairMenuSeeder extends Seeder
                 'sort_order'      => 1,
             ],
             [
-                'menu_name'       => 'แจ้งซ่อมมายังพัมคิน',
+                'menu_name'       => 'แจ้งงานซ่อม',
                 'group'           => 10,
                 'main_menu'       => false,
                 'redirect_route'  => 'dealerRepair.index',
                 'sort_order'      => 2,
             ],
             [
-                'menu_name'       => 'ประวัติการแจ้งซ่อมมายังพัมคิน',
+                'menu_name'       => 'ส่งงานซ่อม',
                 'group'           => 10,
                 'main_menu'       => false,
-                'redirect_route'  => 'dealerRepair.history',
-                'sort_order'      => 3,
-            ],
-            [
-                'menu_name'       => 'ส่งซ่อมพัมคิน',
-                'group'           => 10,
-                'main_menu'       => false,
-                'redirect_route'  => 'dealerRepair.send.list',
-                'sort_order'      => 4,
-            ],
-            [
-                'menu_name'       => 'เอกสารส่งซ่อมมายังพัมคิน',
-                'group'           => 10,
-                'main_menu'       => false,
-                'redirect_route'  => 'dealerRepair.send.doc',
-                'sort_order'      => 5,
-            ],
-            [
-                'menu_name'       => 'ติดตามสถานะส่งซ่อมพัมคิน',
-                'group'           => 10,
-                'main_menu'       => false,
-                'redirect_route'  => 'dealerRepair.send.track',
+                'redirect_route'  => 'sendWork.index',
                 'sort_order'      => 7,
             ],
             [
                 'menu_name'       => 'สั่งซื้ออะไหล่',
-                'group'           => 10,
+                'group'           => 11,
+                'main_menu'       => true,
+                'redirect_route'  => null,
+            ],
+            [
+                'menu_name'       => 'สั่งซื้ออะไหล่',
+                'group'           => 11,
                 'main_menu'       => false,
                 'redirect_route'  => 'dealerRepair.orders.diagram',
-                'sort_order'      => 8,
+                'sort_order'      => 1,
             ],
             [
                 'menu_name'       => 'ประวัติการสั่งซื้ออะไหล่',
-                'group'           => 10,
+                'group'           => 11,
                 'main_menu'       => false,
                 'redirect_route'  => 'dealerRepair.orders.history',
-                'sort_order'      => 9,
+                'sort_order'      => 2,
             ],
         ];
 

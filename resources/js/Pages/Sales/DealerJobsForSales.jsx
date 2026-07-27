@@ -1,12 +1,12 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
-import { Head, usePage } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import {
     Alert, Box, Button, Card, Chip, CircularProgress,
     FormControl, Grid2, InputLabel, MenuItem, Paper,
     Select, Stack, Table, TableBody, TableCell,
     TableHead, TableRow, TextField, Typography,
 } from "@mui/material";
-import { OpenInNew, Refresh, Search } from "@mui/icons-material";
+import { Description, OpenInNew, Refresh, Search } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -91,7 +91,7 @@ export default function DealerJobsForSales() {
 
     return (
         <AuthenticatedLayout>
-            <Head title="รายการงานส่งซ่อม (ร้านค้า)" />
+            <Head title="ติดตามสถานะและส่งซ่อมพัมคินฯ" />
             <Paper sx={{ bgcolor: "white", p: 3 }}>
                 <Grid2 container spacing={2}>
 
@@ -100,20 +100,29 @@ export default function DealerJobsForSales() {
                         <Stack direction="row" justifyContent="space-between" alignItems="center">
                             <Box>
                                 <Typography variant="h6" fontWeight="bold">
-                                   รายการงานส่งซ่อม (ร้านค้า)
+                                    ติดตามสถานะและส่งซ่อมพัมคินฯ
                                 </Typography>
                                 <Typography variant="caption" color="text.secondary">
                                     Sale Code (PK): <strong>{sale_code}</strong>
                                 </Typography>
                             </Box>
-                            <Button
-                                variant="outlined"
-                                startIcon={loading ? <CircularProgress size={16} /> : <Refresh />}
-                                onClick={() => fetchJobs()}
-                                disabled={loading}
-                            >
-                                รีเฟรช
-                            </Button>
+                            <Stack direction="row" spacing={1}>
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<Description />}
+                                    onClick={() => router.get(route("dealerRepair.send.list"))}
+                                >
+                                    ออกเอกสารส่งซ่อมพัมคิน
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    startIcon={loading ? <CircularProgress size={16} /> : <Refresh />}
+                                    onClick={() => fetchJobs()}
+                                    disabled={loading}
+                                >
+                                    รีเฟรช
+                                </Button>
+                            </Stack>
                         </Stack>
                     </Grid2>
 
