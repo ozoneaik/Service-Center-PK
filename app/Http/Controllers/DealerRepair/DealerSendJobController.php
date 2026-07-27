@@ -37,16 +37,10 @@ class DealerSendJobController extends Controller
                 ->whereNull('group_job')
                 ->when($selectedDealer, fn($q) => $q->where('dealer_code', $selectedDealer));
 
-            if ($request->searchSku) {
-                $query->where('pid', 'like', "%{$request->searchSku}%");
-            }
-            if ($request->searchSn) {
-                $query->where('serial_id', 'like', "%{$request->searchSn}%");
-            }
+            if ($request->searchSku) $query->where('pid', 'like', "%{$request->searchSku}%");
+            if ($request->searchSn)  $query->where('serial_id', 'like', "%{$request->searchSn}%");
 
-            $jobs = $query->orderBy('dealer_code')
-                ->orderBy('id', 'desc')
-                ->get()
+            $jobs = $query->orderBy('dealer_code')->orderBy('id', 'desc')->get()
                 ->map(function ($job) use ($dealerNameMap) {
                     $job->dealer_shop_name = $dealerNameMap[$job->dealer_code] ?? $job->dealer_code;
                     return $job;
@@ -66,18 +60,15 @@ class DealerSendJobController extends Controller
             ]);
         }
 
-        $dealerCode = $user->is_code_cust_id;
+        $isAdmin    = $user->role === 'admin' || $user->admin_that_branch;
+        $dealerCode = $isAdmin ? '1' : $user->is_code_cust_id;
         $query      = JobList::query()
             ->where('dealer_code', $dealerCode)
             ->where('status', 'pending')
             ->whereNull('group_job');
 
-        if ($request->searchSku) {
-            $query->where('pid', 'like', "%{$request->searchSku}%");
-        }
-        if ($request->searchSn) {
-            $query->where('serial_id', 'like', "%{$request->searchSn}%");
-        }
+        if ($request->searchSku) $query->where('pid', 'like', "%{$request->searchSku}%");
+        if ($request->searchSn)  $query->where('serial_id', 'like', "%{$request->searchSn}%");
 
         $jobs = $query->orderBy('id', 'desc')->get();
 
@@ -516,8 +507,13 @@ class DealerSendJobController extends Controller
 
     private function getAuthorizedDealerCodes(): array
     {
-        $user   = Auth::user();
-        $isSale = $user->role === 'sale';
+        $user    = Auth::user();
+        $isSale  = $user->role === 'sale';
+        $isAdmin = $user->role === 'admin' || $user->admin_that_branch;
+
+        if ($isAdmin) {
+            return [['1'], false];
+        }
 
         $dealerCodes = $isSale
             ? $this->fetchCustIds($user->user_code)

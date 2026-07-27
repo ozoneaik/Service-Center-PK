@@ -20,6 +20,7 @@ class DealerSearchController extends Controller
     {
         $user   = Auth::user();
         $isSale = $user->role === 'sale';
+        $isAdmin = $user->role === 'admin' || $user->admin_that_branch;
 
         if ($isSale) {
             $selectedDealer = $request->dealer_code;
@@ -53,11 +54,11 @@ class DealerSearchController extends Controller
             ]);
         }
 
+        // job_id navigation สำหรับ dealer / admin (ดูงานโดยตรง ไม่ผ่าน mock mode)
         if (isset($request->job_id)) {
             $jobQuery = JobList::query()->where('job_id', $request->job_id);
 
-            // admin เข้าถึงได้ทุก job โดยไม่ต้องกรอง dealer_code
-            if ($user->role !== 'admin') {
+            if (!$isAdmin) {
                 $jobQuery->where('dealer_code', $user->is_code_cust_id);
             }
 
@@ -77,7 +78,9 @@ class DealerSearchController extends Controller
             ]);
         }
 
-        return Inertia::render('DealerRepair/DealerRepair');
+        return Inertia::render('DealerRepair/DealerRepair', [
+            'is_admin' => $isAdmin,
+        ]);
     }
 
     public function history(Request $request): Response
@@ -138,6 +141,16 @@ class DealerSearchController extends Controller
     public function dealerList(): JsonResponse
     {
         $user = Auth::user();
+        $isAdmin = $user->role === 'admin' || $user->admin_that_branch;
+
+        if ($isAdmin) {
+            $dealers = StoreInformation::where('is_code_cust_id', '1')
+                ->select('is_code_cust_id', 'shop_name', 'phone', 'address', 'address_sub',
+                    'province', 'district', 'sub_district', 'sale_id', 'digit_code', 'line_id', 'shop_type')
+                ->get();
+            return response()->json(['dealers' => $dealers]);
+        }
+
         if ($user->role !== 'sale') {
             return response()->json(['dealers' => []]);
         }

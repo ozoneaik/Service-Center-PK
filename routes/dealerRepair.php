@@ -29,9 +29,12 @@ Route::prefix('dealer-repair')->middleware(['dealerAccess'])->group(function () 
         Route::get('/', [DealerSearchController::class, 'index'])->name('dealerRepair.index');
         Route::get('/history', [DealerSearchController::class, 'history'])->name('dealerRepair.history');
 
-        // Gateway รวม "ส่งงานซ่อม" dealer + sale ไว้ที่ route เดียว แยก view ตาม role
+        // Gateway รวม "ส่งงานซ่อม" dealer + sale + admin ไว้ที่ route เดียว แยก view ตาม role
         Route::get('/send-jobs', function (Request $request) {
-            if (Auth::user()->role === 'sale') {
+            $user    = Auth::user();
+            $isAdmin = $user->role === 'admin' || $user->admin_that_branch;
+
+            if ($isAdmin || $user->role === 'sale') {
                 return app(SalesDealerJobController::class)->index($request);
             }
             return app(DealerSendJobController::class)->trackPage($request);

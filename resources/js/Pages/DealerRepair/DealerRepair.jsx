@@ -32,7 +32,7 @@ const menuNames = {
 
 export default function DealerRepair({
     auto_sn, auto_pid, auto_job_sn, auto_dealer_code = null,
-    selected_dealer = null, is_sale = false,
+    selected_dealer = null, is_sale = false, is_admin = false,
 }) {
     const [SN, setSN] = useState("");
     const [PID, setPID] = useState("");
@@ -61,7 +61,7 @@ export default function DealerRepair({
     const scrollRef = useRef(null);
 
     useEffect(() => {
-        if (!is_sale) return;
+        if (!is_sale && !is_admin) return;
         setDealerListLoading(true);
         axios.get(route("dealerRepair.dealer.list"))
             .then(({ data }) => setDealerList(data.dealers || []))
@@ -217,7 +217,7 @@ export default function DealerRepair({
         setMenuSel(0);
     };
 
-    const searchDisabled = is_sale && !selectedDealerCode;
+    const searchDisabled = (is_sale || is_admin) && !selectedDealerCode;
 
     return (
         <AuthenticatedLayout>
@@ -256,7 +256,7 @@ export default function DealerRepair({
                         </Stack>
                     </Grid2>
 
-                    {is_sale && (
+                    {(is_sale || is_admin) && (
                         <Grid2 size={12}>
                             <Paper variant="outlined" sx={{ p: 2, bgcolor: "primary.50" }}>
                                 <Stack direction="row" spacing={1} alignItems="center" mb={1}>
@@ -337,8 +337,8 @@ export default function DealerRepair({
                                         <DealerRpMain
                                             productDetail={detail}
                                             serial_id={autoJobSn || detail.serial_id || detail.serial}
-                                            dealerCode={is_sale ? selectedDealerCode : auto_dealer_code}
-                                            overrideDealerInfo={is_sale ? selectedDealerInfo : null}
+                                            dealerCode={(is_sale || is_admin) ? selectedDealerCode : auto_dealer_code}
+                                            overrideDealerInfo={(is_sale || is_admin) ? selectedDealerInfo : null}
                                         />
                                     )}
                                     {menuSel === 2 && (
