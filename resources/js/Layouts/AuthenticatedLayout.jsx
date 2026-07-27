@@ -71,7 +71,7 @@ export default function AuthenticatedLayout({ header, children }) {
             <nav className="fixed w-full z-50 border-b border-gray-100 bg-orange/75 backdrop-blur-sm">
                 <div className="px-3 bg-black/75">
                     <div className="flex h-16 justify-between">
-                        <div className="flex">
+                        <div className="flex flex-1 min-w-0">
                             <div
                                 onClick={() => router.get(route("dashboard"))}
                                 className="flex shrink-0 items-center gap-2 text-white font-bold cursor-pointer"
@@ -79,11 +79,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <Avatar src={icon || ""} />
                                 <Typography>บริการศูนย์ซ่อม</Typography>
                             </div>
-                            <div className="hidden space-x-2 lg:-my-px lg:ms-5 lg:flex">
+                            <div className="hidden lg:-my-px lg:ms-2 lg:flex overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                                 <NavBar user={user} accessMenu={formatedMenu} />
                             </div>
                         </div>
-                        <div className="hidden lg:ms-6 lg:flex lg:items-center">
+                        <div className="hidden shrink-0 lg:ms-2 lg:flex lg:items-center">
                             <div className="relative ms-3">
                                 <Dropdown>
                                     <Dropdown.Trigger>
