@@ -10,6 +10,7 @@ import {AccountCircle, AlternateEmail, Password, Edit} from "@mui/icons-material
 const isAdminOnly = (item) =>
     item.menu_name === 'เซลล์แจ้งซ่อม' || item.redirect_route === 'repair.sale.index' ||
     item.menu_name === 'บัญชีรับอะไหล่' || item.redirect_route === 'accounting.return.index' ||
+    item.menu_name === 'ซ่อมสินค้า' || item.redirect_route === 'sendWork.index' ||
     (item.redirect_route && item.redirect_route.startsWith('dealerRepair.')) ||
     item.redirect_route === 'sale.dealer.jobs.index';
 
