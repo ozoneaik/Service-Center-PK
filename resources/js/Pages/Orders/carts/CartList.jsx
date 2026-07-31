@@ -8,6 +8,8 @@ import { Check, Delete, Add, Remove, FileUpload, AddShoppingCart } from "@mui/ic
 import SpPreviewImage from "@/Components/SpPreviewImage.jsx";
 import Swal from "sweetalert2";
 
+const CACHE_TS = Date.now();
+
 const ListSp = ({ sps, onUpdateQty, onRemove, operatingCartId, removingIds }) => {
     const [SpPreview, setSpPreview] = useState(false);
     const [SpImage, setSpImage] = useState('');
@@ -41,7 +43,7 @@ const ListSp = ({ sps, onUpdateQty, onRemove, operatingCartId, removingIds }) =>
         <>
             {SpPreview && <SpPreviewImage open={SpPreview} setOpen={setSpPreview} imagePath={SpImage} />}
             {sps.map((sp) => {
-                const sp_image = `${import.meta.env.VITE_IMAGE_SP_NEW}/${sp.sp_code}.jpg`;
+                const sp_image = `${import.meta.env.VITE_IMAGE_SP_NEW}/${sp.sp_code}.jpg?v=${CACHE_TS}`;
                 return (
                     <React.Fragment key={sp.id ?? sp.sp_code}>
                         <Stack direction='row' width='100%' justifyContent='space-between' alignItems='center'>
