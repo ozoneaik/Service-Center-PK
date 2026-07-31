@@ -23,7 +23,8 @@ import CartDrawer from "./carts/CartList.jsx";
 
 // ─── Pumpkin API ──────────────────────────────────────────────────────────────
 const EXT_API = "https://warranty-sn.pumpkin.tools/api/diagram";
-const SP_IMG = (c) => `https://warranty-sn.pumpkin.tools/storage/uploads/sp_images/${c}.jpg`;
+const CACHE_TS = Date.now();
+const SP_IMG = (c) => `https://warranty-sn.pumpkin.tools/storage/uploads/sp_images/${c}.jpg?v=${CACHE_TS}`;
 const SP_FALL = "https://images.dcpumpkin.com/images/product/500/default.jpg";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
