@@ -68,16 +68,7 @@ export function getMenuHeaders(_user) {
         },
         {
             name: 'แจ้งซ่อม (ร้านค้า)',
-            childs: [
-                {
-                    name: 'แจ้งซ่อมสินค้า',
-                    routeUrl: 'dealerRepair.index'
-                },
-                {
-                    name: 'ประวัติการแจ้งซ่อม',
-                    routeUrl: 'dealerRepair.history'
-                }
-            ]
+            routeUrl: 'dealerRepair.history'
         },
     ];
 }

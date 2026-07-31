@@ -219,7 +219,7 @@ export default function DealerRpMain({ productDetail, serial_id, dealerCode = nu
                     <RpTab1Form
                         JOB={JOB} setJOB={setJOB}
                         form1Saved={form1Saved} setForm1Saved={setForm1Saved}
-                        setMainStep={() => {}} setTabValue={() => router.visit(route('dealerRepair.send.list'))}
+                        setMainStep={() => {}} setTabValue={() => router.visit(route('dealerRepair.history'))}
                         beforeIndexRoute="dealerRepair.before.index"
                         beforeStoreRoute="dealerRepair.before.store"
                         checkPhoneRoute={null}

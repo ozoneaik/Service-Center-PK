@@ -1,11 +1,11 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {
-    Box, Button, Card, CardContent, Chip, CircularProgress,
+    Autocomplete, Box, Button, Card, CardContent, Chip, CircularProgress,
     Container, Divider, Grid2, IconButton, Stack, Table,
-    TableBody, TableCell, TableHead, TableRow, Typography, useMediaQuery,
+    TableBody, TableCell, TableHead, TableRow, TextField, Typography, useMediaQuery,
 } from "@mui/material";
-import { Head, Link } from "@inertiajs/react";
-import { Refresh, RemoveRedEye, History } from "@mui/icons-material";
+import { Head, Link, router } from "@inertiajs/react";
+import { Check, ContentCopy, Refresh, RemoveRedEye, History } from "@mui/icons-material";
 import { useState } from "react";
 import axios from "axios";
 import { AlertDialog } from "@/Components/AlertDialog";
@@ -50,12 +50,31 @@ const COLOR_MAP = {
 };
 
 const getStatusDisplay = (s) => STATUS_MAP[s] ?? s;
-const getStatusColor = (s) => COLOR_MAP[getStatusDisplay(s)] ?? "default";
+const getStatusColor   = (s) => COLOR_MAP[getStatusDisplay(s)] ?? "default";
 
-export default function DealerOrderHistory({ history }) {
+export default function DealerOrderHistory({ history, dealer_list = [], is_sale = false, selected_dealer = null, start_date = null, end_date = null }) {
     const isMobile = useMediaQuery("(max-width:600px)");
     const [historyList, setHistoryList] = useState(history.data);
-    const [loadingId, setLoadingId] = useState(null);
+    const [loadingId, setLoadingId]     = useState(null);
+    const [dealerCode, setDealerCode]   = useState(selected_dealer || null);
+    const [copiedId, setCopiedId]       = useState(null);
+    const [startDate, setStartDate]     = useState(start_date || "");
+    const [endDate, setEndDate]         = useState(end_date || "");
+
+    const copyOrderId = (order_id) => {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(order_id);
+        } else {
+            const el = document.createElement("textarea");
+            el.value = order_id;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand("copy");
+            document.body.removeChild(el);
+        }
+        setCopiedId(order_id);
+        setTimeout(() => setCopiedId(null), 1500);
+    };
 
     const checkStatus = async (order_id) => {
         try {
@@ -72,14 +91,79 @@ export default function DealerOrderHistory({ history }) {
         }
     };
 
+    const applyFilters = ({ code = dealerCode, sd = startDate, ed = endDate } = {}) => {
+        const params = {};
+        if (code)  params.dealer_code  = code;
+        if (sd)    params.start_date   = sd;
+        if (ed)    params.end_date     = ed;
+        router.get(route("dealerRepair.orders.history"), params, {
+            preserveState: true,
+            onSuccess: (page) => setHistoryList(page.props.history.data),
+        });
+    };
+
+    const handleDealerFilter = (newCode) => {
+        setDealerCode(newCode);
+        applyFilters({ code: newCode });
+    };
+
+    const handleDateFilter = (e) => {
+        e.preventDefault();
+        applyFilters();
+    };
+
+    const handleClearDates = () => {
+        setStartDate("");
+        setEndDate("");
+        applyFilters({ sd: "", ed: "" });
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title="ประวัติการสั่งซื้ออะไหล่" />
             <Container maxWidth={false} sx={{ mt: 4, bgcolor: "white", p: 3 }}>
-                <Stack direction="row" alignItems="center" spacing={1} mb={2}>
-                    <History color="action" />
-                    <Typography variant="h5" fontWeight="bold">ประวัติการสั่งซื้ออะไหล่</Typography>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                        <History color="action" />
+                        <Typography variant="h5" fontWeight="bold">ประวัติการสั่งซื้ออะไหล่</Typography>
+                    </Stack>
+                    <IconButton onClick={() => router.reload()} title="รีเฟรช">
+                        <Refresh />
+                    </IconButton>
                 </Stack>
+
+                <Box component="form" onSubmit={handleDateFilter} mb={3}>
+                    <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="flex-end" flexWrap="wrap">
+                        {is_sale && (
+                            <Autocomplete
+                                options={dealer_list}
+                                getOptionLabel={(o) => `${o.shop_name} (${o.is_code_cust_id})`}
+                                value={dealer_list.find((d) => d.is_code_cust_id === dealerCode) || null}
+                                onChange={(_, newVal) => handleDealerFilter(newVal?.is_code_cust_id || null)}
+                                renderInput={(params) => (
+                                    <TextField {...params} size="small" label="ร้านค้า" placeholder="ค้นหาร้านค้า" />
+                                )}
+                                sx={{ minWidth: 280 }}
+                            />
+                        )}
+                        <TextField
+                            size="small" type="date" label="ตั้งแต่วันที่"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            slotProps={{ inputLabel: { shrink: true } }}
+                        />
+                        <TextField
+                            size="small" type="date" label="ถึงวันที่"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            slotProps={{ inputLabel: { shrink: true } }}
+                        />
+                        <Button type="submit" variant="contained" size="small">ค้นหา</Button>
+                        {(startDate || endDate) && (
+                            <Button variant="outlined" size="small" onClick={handleClearDates}>ล้างวันที่</Button>
+                        )}
+                    </Stack>
+                </Box>
 
                 {historyList.length === 0 ? (
                     <Box textAlign="center" py={8} color="text.secondary">
@@ -89,7 +173,7 @@ export default function DealerOrderHistory({ history }) {
                     <Stack spacing={2}>
                         {historyList.map((item, idx) => {
                             const display = getStatusDisplay(item.status);
-                            const color = getStatusColor(item.status);
+                            const color   = getStatusColor(item.status);
                             const loading = loadingId === item.order_id;
                             return (
                                 <Card variant="outlined" key={item.order_id}>
@@ -102,9 +186,17 @@ export default function DealerOrderHistory({ history }) {
                                                 </IconButton>
                                             </Box>
                                             <Divider />
-                                            <Typography variant="body2"><b>หมายเลขคำสั่งซื้อ:</b> {item.order_id}</Typography>
+                                            {is_sale && item.dealer_shop_name && (
+                                                <Typography variant="body2"><b>ร้านค้า:</b> {item.dealer_shop_name}</Typography>
+                                            )}
+                                            <Stack direction="row" alignItems="center" spacing={1}>
+                                                <Typography variant="body2"><b>หมายเลขคำสั่งซื้อ:</b> {item.order_id}</Typography>
+                                                <IconButton size="small" onClick={() => copyOrderId(item.order_id)} color={copiedId === item.order_id ? "success" : "default"}>
+                                                    {copiedId === item.order_id ? <Check fontSize="inherit" /> : <ContentCopy fontSize="inherit" />}
+                                                </IconButton>
+                                            </Stack>
                                             <Typography variant="body2"><b>วันที่สั่งซื้อ:</b> {new Date(item.buy_at).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" })}</Typography>
-                                            <Typography variant="body2"><b>ที่อยู่:</b> {item.address || "-"}</Typography>
+                                            {/* <Typography variant="body2"><b>ที่อยู่:</b> {item.address || "-"}</Typography> */}
                                             <Stack direction="row" spacing={1} alignItems="center">
                                                 <Typography variant="body2" fontWeight="bold">สถานะ:</Typography>
                                                 <Chip label={display} color={color} size="small" />
@@ -130,9 +222,10 @@ export default function DealerOrderHistory({ history }) {
                                 <TableHead>
                                     <TableRow>
                                         <TableCell>#</TableCell>
+                                        {is_sale && <TableCell>ร้านค้า</TableCell>}
                                         <TableCell>หมายเลขคำสั่งซื้อ</TableCell>
                                         <TableCell>วันที่สั่งซื้อ</TableCell>
-                                        <TableCell>ที่อยู่</TableCell>
+                                        {/* <TableCell>ที่อยู่</TableCell> */}
                                         <TableCell align="center">สถานะ</TableCell>
                                         <TableCell>รายละเอียด</TableCell>
                                     </TableRow>
@@ -140,14 +233,27 @@ export default function DealerOrderHistory({ history }) {
                                 <TableBody>
                                     {historyList.map((item, idx) => {
                                         const display = getStatusDisplay(item.status);
-                                        const color = getStatusColor(item.status);
+                                        const color   = getStatusColor(item.status);
                                         const loading = loadingId === item.order_id;
                                         return (
                                             <TableRow key={item.order_id} hover>
                                                 <TableCell>{idx + 1}</TableCell>
-                                                <TableCell>{item.order_id}</TableCell>
+                                                {is_sale && (
+                                                    <TableCell>
+                                                        <Typography variant="body2" fontWeight="medium">{item.dealer_shop_name}</Typography>
+                                                        <Typography variant="caption" color="text.secondary">{item.is_code_key}</Typography>
+                                                    </TableCell>
+                                                )}
+                                                <TableCell>
+                                                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                                                        <Typography variant="body2">{item.order_id}</Typography>
+                                                        <IconButton size="small" onClick={() => copyOrderId(item.order_id)} color={copiedId === item.order_id ? "success" : "default"}>
+                                                            {copiedId === item.order_id ? <Check fontSize="inherit" /> : <ContentCopy fontSize="inherit" />}
+                                                        </IconButton>
+                                                    </Stack>
+                                                </TableCell>
                                                 <TableCell>{new Date(item.buy_at).toLocaleString()}</TableCell>
-                                                <TableCell>{item.address || "-"}</TableCell>
+                                                {/* <TableCell>{item.address || "-"}</TableCell> */}
                                                 <TableCell>
                                                     <Box display="flex" justifyContent="center" alignItems="center" gap={1.5}>
                                                         <Button

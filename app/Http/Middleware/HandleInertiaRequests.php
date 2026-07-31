@@ -225,11 +225,13 @@ class HandleInertiaRequests extends Middleware
                     }
                 }
 
-                // ถ้า sale มีเมนู "ส่งงานซ่อม" (sendWork.index) ให้ได้รับ "เอกสารส่งซ่อม" อัตโนมัติ
+                // ถ้า sale มีสิทธิ์เมนูดีลเลอร์ ให้ได้รับ "เอกสารส่งซ่อม" และ "ประวัติการสั่งซื้ออะไหล่" อัตโนมัติ
                 if ($access_menu->contains('redirect_route', 'sale.dealer.jobs.index')
-                    || $access_menu->contains('redirect_route', 'sendWork.index')) {
+                    || $access_menu->contains('redirect_route', 'sendWork.index')
+                    || $access_menu->contains('redirect_route', 'dealerRepair.history')
+                    || $access_menu->contains('redirect_route', 'dealerRepair.index')) {
                     // $autoRoutes = ['dealerRepair.send.doc', 'dealerRepair.send.track'];
-                    $autoRoutes = ['dealerRepair.send.doc'];
+                    $autoRoutes = ['dealerRepair.send.doc', 'dealerRepair.orders.history'];
                     foreach ($autoRoutes as $autoRoute) {
                         if (!$access_menu->contains('redirect_route', $autoRoute)) {
                             $menu = ListMenu::where('redirect_route', $autoRoute)->first();

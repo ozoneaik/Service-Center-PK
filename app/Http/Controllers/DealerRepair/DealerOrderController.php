@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\OrderSpList;
 use App\Models\StoreInformation;
 use App\Models\User;
+use App\Traits\FetchesPkApi;
 use Illuminate\Http\RedirectResponse;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +22,7 @@ use Inertia\Response;
 
 class DealerOrderController extends Controller
 {
+    use FetchesPkApi;
     public function index(): Response
     {
         return Inertia::render('DealerPage/Orders/DealerOrderDiagram');
@@ -262,25 +264,70 @@ class DealerOrderController extends Controller
         }
     }
 
-    public function history(): Response
+    public function history(Request $request): Response
     {
+        $user   = Auth::user();
+        $isSale = $user->role === 'sale';
+
+        if ($isSale) {
+            $dealerList  = $this->getManagedDealerList($user->user_code);
+            $dealerCodes = $dealerList->pluck('is_code_cust_id')->toArray();
+
+            $history = Order::query()
+                ->leftJoin('store_information', 'store_information.is_code_cust_id', '=', 'orders.is_code_key')
+                ->whereIn('orders.is_code_key', $dealerCodes)
+                ->when($request->dealer_code, fn($q, $dc) => $q->where('orders.is_code_key', $dc))
+                ->when($request->start_date,  fn($q, $d)  => $q->whereDate('orders.buy_at', '>=', $d))
+                ->when($request->end_date,    fn($q, $d)  => $q->whereDate('orders.buy_at', '<=', $d))
+                ->select('orders.*', 'store_information.shop_name as dealer_shop_name')
+                ->orderBy('orders.id', 'desc')
+                ->paginate(50)
+                ->withQueryString();
+
+            return Inertia::render('DealerPage/Orders/DealerOrderHistory', [
+                'history'         => $history,
+                'dealer_list'     => $dealerList,
+                'is_sale'         => true,
+                'selected_dealer' => $request->dealer_code,
+                'start_date'      => $request->start_date,
+                'end_date'        => $request->end_date,
+            ]);
+        }
+
         $history = Order::query()
-            ->where('is_code_key', Auth::user()->is_code_cust_id)
+            ->where('is_code_key', $user->is_code_cust_id)
+            ->when($request->start_date, fn($q, $d) => $q->whereDate('buy_at', '>=', $d))
+            ->when($request->end_date,   fn($q, $d) => $q->whereDate('buy_at', '<=', $d))
             ->orderBy('id', 'desc')
-            ->paginate(100);
-        return Inertia::render('DealerPage/Orders/DealerOrderHistory', ['history' => $history]);
+            ->paginate(100)
+            ->withQueryString();
+
+        return Inertia::render('DealerPage/Orders/DealerOrderHistory', [
+            'history'    => $history,
+            'start_date' => $request->start_date,
+            'end_date'   => $request->end_date,
+        ]);
     }
 
     public function historyDetail($order_id): Response|RedirectResponse
     {
-        $order = Order::query()
-            ->where('order_id', $order_id)
-            ->where('is_code_key', Auth::user()->is_code_cust_id)
-            ->first();
+        $user   = Auth::user();
+        $isSale = $user->role === 'sale';
+
+        $query = Order::query()->where('order_id', $order_id);
+
+        if ($isSale) {
+            $dealerCodes = $this->getManagedDealerList($user->user_code)->pluck('is_code_cust_id')->toArray();
+            $query->whereIn('is_code_key', $dealerCodes);
+        } else {
+            $query->where('is_code_key', $user->is_code_cust_id);
+        }
+
+        $order = $query->first();
 
         if (!$order) return redirect()->route('dealerRepair.orders.history');
 
-        $listSp = OrderSpList::query()->where('order_id', $order_id)->get();
+        $listSp     = OrderSpList::query()->where('order_id', $order_id)->get();
         $totalPrice = $listSp->sum(fn($sp) => $sp->price_per_unit * $sp->qty);
         $order['totalPrice'] = round($totalPrice, 2);
 

@@ -152,13 +152,13 @@ export default function DealerSuccessSendJobs({ is_sale }) {
                             >
                                 งานที่ส่งแล้ว (กำลังดำเนินการ)
                             </Button>
-                            <Button
+                            {/* <Button
                                 variant={view === "history" ? "contained" : "outlined"}
                                 color="success"
                                 onClick={() => setView("history")}
                             >
                                 ประวัติการปิดงาน (สำเร็จ)
-                            </Button>
+                            </Button> */}
                         </Stack>
                     </Grid2>
 
@@ -209,14 +209,14 @@ export default function DealerSuccessSendJobs({ is_sale }) {
                                 >
                                     เช็คสถานะทั้งหมด ({jobs.length})
                                 </Button>
-                                <Button
+                                {/* <Button
                                     variant="contained"
                                     color="success"
                                     onClick={handleFinish}
                                     disabled={selectedIds.length === 0 || loading}
                                 >
                                     ปิดงาน ({selectedIds.length})
-                                </Button>
+                                </Button> */}
                             </Stack>
                         </Grid2>
                     )}
@@ -232,7 +232,7 @@ export default function DealerSuccessSendJobs({ is_sale }) {
                                 <Table>
                                     <TableHead>
                                         <TableRow sx={HEADER_STYLE}>
-                                            {view === "current" && (
+                                            {/* {view === "current" && (
                                                 <TableCell>
                                                     <Checkbox
                                                         checked={selectedIds.length === jobs.length && jobs.length > 0}
@@ -240,7 +240,7 @@ export default function DealerSuccessSendJobs({ is_sale }) {
                                                         onChange={toggleSelectAll}
                                                     />
                                                 </TableCell>
-                                            )}
+                                            )} */}
                                             {is_sale && <TableCell>ร้านค้า</TableCell>}
                                             <TableCell>Group Job</TableCell>
                                             <TableCell>Job ID</TableCell>
@@ -264,14 +264,14 @@ export default function DealerSuccessSendJobs({ is_sale }) {
                                             </TableRow>
                                         ) : jobs.map((job, i) => (
                                             <TableRow key={i} hover>
-                                                {view === "current" && (
+                                                {/* {view === "current" && (
                                                     <TableCell>
                                                         <Checkbox
                                                             checked={selectedIds.includes(job.job_id)}
                                                             onChange={() => toggleSelect(job.job_id)}
                                                         />
                                                     </TableCell>
-                                                )}
+                                                )} */}
                                                 {is_sale && (
                                                     <TableCell>
                                                         <Typography variant="body2" fontWeight="medium">{job.dealer_shop_name}</Typography>

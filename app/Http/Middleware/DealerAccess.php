@@ -24,7 +24,7 @@ class DealerAccess
         // sale ที่มีสิทธิ์เมนูร้านค้าให้ผ่านได้
         if ($user->role === 'sale') {
             $hasDealerAccess = ListMenu::whereIn('id', $menuIds)
-                ->whereIn('redirect_route', ['dealerRepair.index', 'sale.dealer.jobs.index', 'sendWork.index'])
+                ->whereIn('redirect_route', ['dealerRepair.index', 'dealerRepair.history', 'sale.dealer.jobs.index', 'sendWork.index'])
                 ->exists();
 
             if ($hasDealerAccess) {
@@ -33,7 +33,7 @@ class DealerAccess
         }
 
         $hasAccess = ListMenu::whereIn('id', $menuIds)
-            ->where('redirect_route', 'dealerRepair.index')
+            ->whereIn('redirect_route', ['dealerRepair.index', 'dealerRepair.history'])
             ->exists();
 
         if (!$hasAccess) {

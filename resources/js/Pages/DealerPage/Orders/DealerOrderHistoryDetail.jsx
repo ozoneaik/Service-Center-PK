@@ -6,7 +6,7 @@ import {
     TableContainer, TableRow, Typography,
 } from "@mui/material";
 import { Head, Link } from "@inertiajs/react";
-import { ArrowBack, LocalShipping, Receipt, Refresh, Store } from "@mui/icons-material";
+import { ArrowBack, Check, ContentCopy, LocalShipping, Receipt, Refresh, Store } from "@mui/icons-material";
 import axios from "axios";
 import { AlertDialog } from "@/Components/AlertDialog";
 
@@ -60,7 +60,27 @@ const getStep = (s) => STEP_INDEX[getDisplay(s)] ?? -1;
 
 export default function DealerOrderHistoryDetail({ order, listSp }) {
     const [orderDetail, setOrderDetail] = useState(order);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading]   = useState(false);
+    const [copied, setCopied]     = useState(false);
+
+    const copyAllItems = () => {
+        const text = listSp
+            .map((item) => `${item.sp_code}*${item.qty}*${parseFloat(item.price_per_unit).toFixed(2)}`)
+            .join("\n");
+
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text);
+        } else {
+            const el = document.createElement("textarea");
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand("copy");
+            document.body.removeChild(el);
+        }
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+    };
 
     const checkStatus = async () => {
         try {
@@ -137,9 +157,20 @@ export default function DealerOrderHistoryDetail({ order, listSp }) {
 
                 {/* Items */}
                 <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-                    <Box display="flex" alignItems="center" mb={1}>
-                        <Store sx={{ mr: 1 }} color="primary" />
-                        <Typography variant="subtitle1" fontWeight="bold">รายการสินค้า</Typography>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                        <Box display="flex" alignItems="center">
+                            <Store sx={{ mr: 1 }} color="primary" />
+                            <Typography variant="subtitle1" fontWeight="bold">รายการสินค้า</Typography>
+                        </Box>
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            color={copied ? "success" : "inherit"}
+                            startIcon={copied ? <Check /> : <ContentCopy />}
+                            onClick={copyAllItems}
+                        >
+                            {copied ? "คัดลอกแล้ว" : "คัดลอกรายการ"}
+                        </Button>
                     </Box>
                     <Divider sx={{ mb: 2 }} />
 

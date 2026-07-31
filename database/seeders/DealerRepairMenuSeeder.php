@@ -27,7 +27,7 @@ class DealerRepairMenuSeeder extends Seeder
                 'menu_name'       => 'แจ้งงานซ่อม',
                 'group'           => 10,
                 'main_menu'       => false,
-                'redirect_route'  => 'dealerRepair.index',
+                'redirect_route'  => 'dealerRepair.history',
                 'sort_order'      => 2,
             ],
             [
