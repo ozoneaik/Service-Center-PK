@@ -9,7 +9,7 @@ import { Backdrop, Box, CircularProgress, ThemeProvider, Typography } from "@mui
 import { Theme } from "@/Layouts/themeCustom.jsx";
 import '@fortawesome/fontawesome-svg-core/styles.css'
 import { useEffect, useState } from 'react';
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'Service Center';
 
 function LoadingPage() {
     const [loading, setLoading] = useState(false);
