@@ -4,6 +4,7 @@ use App\Http\Middleware\AdminBranchAccess;
 use App\Http\Middleware\DealerAccess;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\MenuAccess;
+use App\Http\Middleware\RedirectAdminFromReport;
 use App\Http\Middleware\UserAccess;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -27,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'AdminBranchAccess' => AdminBranchAccess::class,
             'menuAccess' => MenuAccess::class,
             'dealerAccess' => DealerAccess::class,
+            'redirectAdminFromReport' => RedirectAdminFromReport::class,
         ]);
 
         //
