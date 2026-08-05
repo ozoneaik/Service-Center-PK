@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Response;
 
 class RedirectAdminFromReport
@@ -15,8 +16,16 @@ class RedirectAdminFromReport
             $path = $request->path();
             $newPath = preg_replace('#^report/#', 'admin/', $path);
             if ($newPath !== $path) {
-                $query = $request->getQueryString();
-                return redirect('/' . $newPath . ($query ? '?' . $query : ''));
+                try {
+                    // Check if a route exists for the new admin path before redirecting
+                    $fakeRequest = Request::create('/' . $newPath, $request->method());
+                    Route::getRoutes()->match($fakeRequest);
+
+                    $query = $request->getQueryString();
+                    return redirect('/' . $newPath . ($query ? '?' . $query : ''));
+                } catch (\Throwable $e) {
+                    // Route does not exist, so proceed without redirecting
+                }
             }
         }
 
