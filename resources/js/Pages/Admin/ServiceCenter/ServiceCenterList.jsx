@@ -1,5 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
+import axios from "axios";
 import {
     Avatar,
     Box,
@@ -8,6 +9,7 @@ import {
     Container,
     Paper,
     Stack,
+    Switch,
     Table,
     TableBody,
     TableCell,
@@ -18,6 +20,7 @@ import {
     Typography,
 } from "@mui/material";
 import { Download, Store } from "@mui/icons-material";
+import { useState } from "react";
 
 const thStyle = {
     fontWeight: 700,
@@ -29,10 +32,35 @@ const thStyle = {
     py: 1.5,
 };
 
-export default function ServiceCenterList({ shops }) {
+export default function ServiceCenterList({ shops: initialShops }) {
+    const [shops, setShops] = useState(initialShops);
+    const [loadingId, setLoadingId] = useState(null);
+
     const handleExport = () => {
         window.open(route("admin.service-centers.export"), "_blank");
     };
+
+    const handleToggle = (shop) => {
+        setLoadingId(shop.is_code_cust_id);
+        axios
+            .patch(
+                route("admin.service-centers.toggle-filter", {
+                    is_code_cust_id: shop.is_code_cust_id,
+                })
+            )
+            .then(() => {
+                setShops((prev) =>
+                    prev.map((s) =>
+                        s.is_code_cust_id === shop.is_code_cust_id
+                            ? { ...s, show_in_report_filter: !s.show_in_report_filter }
+                            : s
+                    )
+                );
+            })
+            .finally(() => setLoadingId(null));
+    };
+
+    const visibleCount = shops.filter((s) => s.show_in_report_filter).length;
 
     return (
         <AuthenticatedLayout>
@@ -58,11 +86,19 @@ export default function ServiceCenterList({ shops }) {
                                 <Typography variant="h6" fontWeight={700} lineHeight={1.2}>
                                     ข้อมูลร้านศูนย์ซ่อม
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                    ทั้งหมด{" "}
-                                    <strong style={{ color: "#00796b" }}>{shops.length}</strong>{" "}
-                                    ร้าน
-                                </Typography>
+                                <Stack direction="row" spacing={1} alignItems="center" mt={0.3}>
+                                    <Typography variant="caption" color="text.secondary">
+                                        ทั้งหมด{" "}
+                                        <strong style={{ color: "#00796b" }}>{shops.length}</strong>{" "}
+                                        ร้าน
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">·</Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                        แสดงใน Report{" "}
+                                        <strong style={{ color: "#1976d2" }}>{visibleCount}</strong>{" "}
+                                        ร้าน
+                                    </Typography>
+                                </Stack>
                             </Box>
                         </Stack>
                         <Button
@@ -92,12 +128,20 @@ export default function ServiceCenterList({ shops }) {
                                     <TableCell sx={{ ...thStyle, minWidth: 260 }}>ที่อยู่</TableCell>
                                     <TableCell sx={{ ...thStyle, width: 160 }}>เซลล์ที่ดูแล</TableCell>
                                     <TableCell sx={{ ...thStyle, width: 120 }}>สถานะ</TableCell>
+                                    <TableCell sx={{ ...thStyle, width: 160 }}>
+                                        <Tooltip
+                                            title="เปิด/ปิด เพื่อกำหนดว่าร้านนี้จะโผล่ในตัวกรองของหน้า Report หรือไม่"
+                                            placement="top"
+                                        >
+                                            <span>แสดงใน Report</span>
+                                        </Tooltip>
+                                    </TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {shops.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                                        <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
                                             <Typography color="text.secondary">
                                                 ไม่พบข้อมูลศูนย์ซ่อม
                                             </Typography>
@@ -111,6 +155,7 @@ export default function ServiceCenterList({ shops }) {
                                             sx={{
                                                 "&:nth-of-type(even)": { bgcolor: "#fafafa" },
                                                 "&:hover": { bgcolor: "#e0f2f1 !important" },
+                                                opacity: shop.show_in_report_filter ? 1 : 0.55,
                                             }}
                                         >
                                             <TableCell sx={{ color: "text.secondary", fontSize: 13 }}>
@@ -182,6 +227,40 @@ export default function ServiceCenterList({ shops }) {
                                                         border: `1px solid ${shop.is_active === "Y" ? "#a5d6a7" : "#e0e0e0"}`,
                                                     }}
                                                 />
+                                            </TableCell>
+                                            <TableCell>
+                                                <Tooltip
+                                                    title={
+                                                        shop.show_in_report_filter
+                                                            ? "คลิกเพื่อซ่อนออกจากตัวกรอง Report"
+                                                            : "คลิกเพื่อแสดงในตัวกรอง Report"
+                                                    }
+                                                    placement="left"
+                                                >
+                                                    <Stack direction="row" spacing={0.5} alignItems="center">
+                                                        <Switch
+                                                            size="small"
+                                                            checked={!!shop.show_in_report_filter}
+                                                            disabled={loadingId === shop.is_code_cust_id}
+                                                            onChange={() => handleToggle(shop)}
+                                                            sx={{
+                                                                "& .MuiSwitch-switchBase.Mui-checked": {
+                                                                    color: "#00796b",
+                                                                },
+                                                                "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                                                                    bgcolor: "#00796b",
+                                                                },
+                                                            }}
+                                                        />
+                                                        <Typography
+                                                            fontSize={11}
+                                                            color={shop.show_in_report_filter ? "#00796b" : "text.disabled"}
+                                                            fontWeight={600}
+                                                        >
+                                                            {shop.show_in_report_filter ? "แสดง" : "ซ่อน"}
+                                                        </Typography>
+                                                    </Stack>
+                                                </Tooltip>
                                             </TableCell>
                                         </TableRow>
                                     ))

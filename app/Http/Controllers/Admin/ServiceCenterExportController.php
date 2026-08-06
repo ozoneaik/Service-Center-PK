@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SaleInformation;
 use App\Models\StoreInformation;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -33,6 +34,18 @@ class ServiceCenterExportController extends Controller
         ]);
     }
 
+    public function toggleFilter(string $is_code_cust_id): JsonResponse
+    {
+        $shop = StoreInformation::where('is_code_cust_id', $is_code_cust_id)->firstOrFail();
+        $shop->show_in_report_filter = !$shop->show_in_report_filter;
+        $shop->save();
+
+        return response()->json([
+            'is_code_cust_id'      => $shop->is_code_cust_id,
+            'show_in_report_filter' => $shop->show_in_report_filter,
+        ]);
+    }
+
     public function exportExcel(): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
         $shops = StoreInformation::where('shop_type', 'service_center')
@@ -47,6 +60,7 @@ class ServiceCenterExportController extends Controller
             'ที่อยู่',
             'เซลล์ที่ดูแล',
             'สถานะศูนย์ซ่อม',
+            'แสดงในตัวกรอง Report',
         ]];
 
         foreach ($shops as $shop) {
@@ -56,6 +70,7 @@ class ServiceCenterExportController extends Controller
                 $shop->address,
                 $shop->sale_id ? ($saleMap[$shop->sale_id] ?? $shop->sale_id) : '-',
                 $shop->is_active === 'Y' ? 'เปิดใช้งาน' : 'ปิดใช้งาน',
+                $shop->show_in_report_filter ? 'แสดง' : 'ซ่อน',
             ];
         }
 
@@ -68,7 +83,6 @@ class ServiceCenterExportController extends Controller
                 $colLetter = Coordinate::stringFromColumnIndex($colIndex + 1);
                 $cell = $colLetter . ($rowIndex + 1);
 
-                // รหัสร้านค้า → บังคับเป็น text
                 if ($colIndex === 1) {
                     $sheet->setCellValueExplicit($cell, (string) $value, DataType::TYPE_STRING);
                 } else {
@@ -77,8 +91,7 @@ class ServiceCenterExportController extends Controller
             }
         }
 
-        // ปรับความกว้างคอลัมน์
-        foreach (range('A', 'E') as $col) {
+        foreach (range('A', 'F') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 

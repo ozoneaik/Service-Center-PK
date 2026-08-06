@@ -20,8 +20,9 @@ class SummaryUsedSparePartsController extends Controller
     //
     public function index(Request $request)
     {
-        $exclude_shops = ['67132'];
-        $shops = StoreInformation::whereNotIn('is_code_cust_id', $exclude_shops)
+        $shops = StoreInformation::where('shop_type', 'service_center')
+            ->where('show_in_report_filter', true)
+            ->where('is_active', 'Y')
             ->select('is_code_cust_id', 'shop_name')
             ->orderBy('shop_name', 'asc')->get();
         $defaultShop = Auth::user()->is_code_cust_id;

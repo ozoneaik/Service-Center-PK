@@ -25,7 +25,12 @@ class StoreInformation extends Model
         'shop_type',
         'use_disc_40p',
         'use_disc_20p',
-        'use_std_price'
+        'use_std_price',
+        'show_in_report_filter',
+    ];
+
+    protected $casts = [
+        'show_in_report_filter' => 'boolean',
     ];
 
     public function gp(): HasOne

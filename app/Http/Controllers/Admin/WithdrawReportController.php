@@ -15,8 +15,9 @@ class WithdrawReportController extends Controller
     //Admin User
     public function index(Request $request)
     {
-        // $shop = StoreInformation::orderBy('shop_name', 'asc')->get();
-        $shop = StoreInformation::where('is_active', 'Y')
+        $shop = StoreInformation::where('shop_type', 'service_center')
+            ->where('show_in_report_filter', true)
+            ->where('is_active', 'Y')
             ->orderBy('shop_name', 'asc')
             ->get();
         $defaultShop = Auth::user()->is_code_cust_id;

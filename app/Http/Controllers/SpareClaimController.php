@@ -44,7 +44,9 @@ class SpareClaimController extends Controller
             //     ->get();
 
             $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
-                ->whereNotIn('is_code_cust_id', ['68263', '2760801005', '67132', 'How', '1760201010-V', '3062027-Q'])
+                ->where('shop_type', 'service_center')
+                ->where('show_in_report_filter', true)
+                ->where('is_active', 'Y')
                 ->orderBy('shop_name')
                 ->get();
 
@@ -378,7 +380,9 @@ class SpareClaimController extends Controller
             //     ->orderBy('shop_name')
             //     ->get();
             $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
-                ->whereNotIn('is_code_cust_id', ['68263', '2760801005', '67132', 'How', '1760201010-V', '3062027-Q'])
+                ->where('shop_type', 'service_center')
+                ->where('show_in_report_filter', true)
+                ->where('is_active', 'Y')
                 ->orderBy('shop_name')
                 ->get();
 
@@ -416,7 +420,9 @@ class SpareClaimController extends Controller
             $specialAccCodes = ['68091', '65002', '66504', '67465', '62169', '67487', '68263_ACC', '69024'];
             if (in_array($user->user_code, $specialAccCodes)) {
                 $shops = StoreInformation::select('is_code_cust_id', 'shop_name')
-                    ->whereNotIn('is_code_cust_id', ['68263', '2760801005', '67132', 'How', '1760201010-V', '3062027-Q'])
+                    ->where('shop_type', 'service_center')
+                    ->where('show_in_report_filter', true)
+                    ->where('is_active', 'Y')
                     ->orderBy('shop_name')
                     ->get();
                 $selectedShops = array_values(array_filter((array) $request->query('shops', [])));
