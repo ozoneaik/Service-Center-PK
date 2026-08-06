@@ -41,14 +41,27 @@ class ServiceCenterExportController extends Controller
         $shop->save();
 
         return response()->json([
-            'is_code_cust_id'      => $shop->is_code_cust_id,
+            'is_code_cust_id'       => $shop->is_code_cust_id,
             'show_in_report_filter' => $shop->show_in_report_filter,
+        ]);
+    }
+
+    public function toggleActive(string $is_code_cust_id): JsonResponse
+    {
+        $shop = StoreInformation::where('is_code_cust_id', $is_code_cust_id)->firstOrFail();
+        $shop->is_active = $shop->is_active === 'Y' ? 'N' : 'Y';
+        $shop->save();
+
+        return response()->json([
+            'is_code_cust_id' => $shop->is_code_cust_id,
+            'is_active'       => $shop->is_active,
         ]);
     }
 
     public function exportExcel(): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
         $shops = StoreInformation::where('shop_type', 'service_center')
+            ->where('is_active', 'Y')
             ->orderBy('shop_name')
             ->get();
 

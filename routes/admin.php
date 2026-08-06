@@ -160,6 +160,7 @@ Route::middleware('adminPermission')->group(function () {
             Route::get('/', [ServiceCenterExportController::class, 'index'])->name('admin.service-centers.index');
             Route::get('/export', [ServiceCenterExportController::class, 'exportExcel'])->name('admin.service-centers.export');
             Route::patch('/{is_code_cust_id}/toggle-filter', [ServiceCenterExportController::class, 'toggleFilter'])->name('admin.service-centers.toggle-filter');
+            Route::patch('/{is_code_cust_id}/toggle-active', [ServiceCenterExportController::class, 'toggleActive'])->name('admin.service-centers.toggle-active');
         });
         
         // Route::prefix('manage-point')->group(function () {
