@@ -110,6 +110,12 @@ export default function AdminMainPage() {
             icon: <HistoryIcon />,
             path: route('admin.history-job-shop.index'),
             color: '#25347a',
+        },
+        {
+            text: "Export ข้อมูลร้านศูนย์ซ่อม",
+            icon: <StoreIcon />,
+            path: route('admin.service-centers.index'),
+            color: '#00796b',
         }
     ];
 

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DealerShopController;
 use App\Http\Controllers\Admin\HistoryDealersController;
 use App\Http\Controllers\Admin\DiagramController;
+use App\Http\Controllers\Admin\ServiceCenterExportController;
 use App\Http\Controllers\Admin\JobFromServiceController;
 use App\Http\Controllers\Admin\ManagePointController;
 use App\Http\Controllers\Admin\SaleController;
@@ -154,6 +155,11 @@ Route::middleware('adminPermission')->group(function () {
 
         Route::get('history-job-shop', [HistoryDealersController::class, 'index'])->name('admin.history-job-shop.index');
         Route::get('history-job-shop/export', [HistoryDealersController::class, 'exportExcel'])->name('admin.history-job-shop.export');
+
+        Route::prefix('service-centers')->group(function () {
+            Route::get('/', [ServiceCenterExportController::class, 'index'])->name('admin.service-centers.index');
+            Route::get('/export', [ServiceCenterExportController::class, 'exportExcel'])->name('admin.service-centers.export');
+        });
         
         // Route::prefix('manage-point')->group(function () {
         //     Route::get('/', [ManagePointController::class, 'index'])->name('admin.manage-point.index');
