@@ -181,11 +181,11 @@ export default function ServiceCenterList({ shops: initialShops }) {
                                             <span>สถานะร้าน</span>
                                         </Tooltip>
                                     </TableCell>
-                                    <TableCell sx={{ ...thStyle, width: 160 }}>
+                                    {/* <TableCell sx={{ ...thStyle, width: 160 }}>
                                         <Tooltip title="เปิด/ปิด เพื่อกำหนดว่าร้านนี้จะโผล่ในตัวกรองของหน้า Report หรือไม่" placement="top">
                                             <span>แสดงใน Report</span>
                                         </Tooltip>
-                                    </TableCell>
+                                    </TableCell> */}
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -262,7 +262,7 @@ export default function ServiceCenterList({ shops: initialShops }) {
                                                         color="#2e7d32"
                                                     />
                                                 </TableCell>
-                                                <TableCell>
+                                                {/* <TableCell>
                                                     <ToggleSwitch
                                                         checked={!!shop.show_in_report_filter}
                                                         disabled={isLoading}
@@ -271,7 +271,7 @@ export default function ServiceCenterList({ shops: initialShops }) {
                                                         offLabel="ซ่อน"
                                                         color="#00796b"
                                                     />
-                                                </TableCell>
+                                                </TableCell> */}
                                             </TableRow>
                                         );
                                     })
