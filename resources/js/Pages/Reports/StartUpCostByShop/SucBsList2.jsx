@@ -302,7 +302,7 @@ export default function SucBsList2({
                                         </TableCell>
                                         <TableCell align="center">
                                             <Typography variant="body2">
-                                                {new Date(job.updated_at).toLocaleDateString('th-TH')}
+                                                {job.close_job_at ? new Date(job.close_job_at).toLocaleDateString('th-TH') : '-'}
                                             </Typography>
                                         </TableCell>
                                         <TableCell align="center">
@@ -337,7 +337,7 @@ export default function SucBsList2({
                             <Chip label='Success' color="success" size="small" />
                         </Stack>
                         <Typography variant="caption" color="text.secondary">
-                            {new Date(job.updated_at).toLocaleDateString('th-TH')}
+                            {job.close_job_at ? new Date(job.close_job_at).toLocaleDateString('th-TH') : '-'}
                         </Typography>
                     </Stack>
                     <Divider />

@@ -120,7 +120,7 @@ export default function SucBsList({ jobs, total_start_up_cost, shops, selected_s
                                 </TableCell>
                                 <TableCell align="center">
                                     <Typography variant="body2">
-                                        {new Date(job.updated_at).toLocaleDateString('th-TH')}
+                                        {job.close_job_at ? new Date(job.close_job_at).toLocaleDateString('th-TH') : '-'}
                                     </Typography>
                                 </TableCell>
                                 <TableCell align="center">

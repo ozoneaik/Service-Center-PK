@@ -158,7 +158,7 @@ class StartUpCostByShopController extends Controller
             'ค่าเปิดเครื่อง (บาท)',
             'สถานะ',
             'วันที่เปิดเครื่อง',
-            'วันที่อัพเดท',
+            'วันที่ปิดงาน',
         ];
 
         foreach ($jobs as $index => $job) {
@@ -180,7 +180,7 @@ class StartUpCostByShopController extends Controller
                 $start_up_cost,
                 $statusText,
                 $job->created_at,
-                $job->updated_at
+                $job->close_job_at
             ];
         }
 

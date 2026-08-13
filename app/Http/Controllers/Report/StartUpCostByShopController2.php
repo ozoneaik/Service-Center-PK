@@ -339,7 +339,7 @@ class StartUpCostByShopController2 extends Controller
             'เอกสาร CT',
             'เอกสาร CN',
             'วันที่เปิดเครื่อง',
-            'วันที่อัพเดท',
+            'วันที่ปิดงาน',
         ];
 
         foreach ($jobs as $index => $job) {
@@ -367,7 +367,7 @@ class StartUpCostByShopController2 extends Controller
                 $job->stuc_doc_no, // เพิ่มเลข CT ใน Excel
                 $job->cn_doc,      // เพิ่มเลข CN ใน Excel
                 $job->created_at,
-                $job->updated_at
+                $job->close_job_at
             ];
         }
 
