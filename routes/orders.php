@@ -10,8 +10,8 @@ Route::prefix('orders')->group(function () {
     Route::get('/search-sp', [OrderController::class, 'searchSpJson'])->name('orders.searchSp');
     Route::get('/diagram', fn() => Inertia::render('Orders/OrderDiagram'))->name('orders.diagram');
     // Route::get('/search', [OrderController::class, 'search'])->name('orders.search');
-    Route::get('/history', [OrderController::class, 'history'])->name('orders.history');
-    // หน้าย่อยของ orders.history ไม่มีในเมนู — ข้าม menuAccess, controller เช็คความเป็นเจ้าของออเดอร์เอง
+    // ประวัติการสั่งซื้อ: เข้าจากปุ่มในหน้าสั่งซื้อ ไม่มีในเมนู — ข้าม menuAccess, controller กรองเฉพาะออเดอร์ของร้านตัวเอง
+    Route::get('/history', [OrderController::class, 'history'])->name('orders.history')->withoutMiddleware('menuAccess');
     Route::get('/history-detail/{order_id}', [OrderController::class, 'historyDetail'])->name('orders.historyDetail')->withoutMiddleware('menuAccess');
     Route::get('/success/{message}', [OrderController::class, 'orderSuccess'])->name('orders.success');
 
