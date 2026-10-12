@@ -87,6 +87,7 @@ export default function CheckDiagram() {
             const skuKey = Object.keys(data).find((k) => !reserved.has(k));
             const result = skuKey ? data[skuKey] : null;
             if (!result) throw new Error("ไม่พบข้อมูลสำหรับคำค้นนี้");
+            if (result.status && result.status !== "SUCCESS") throw new Error(result.message || "ไม่พบข้อมูลสินค้า");
 
             const sku = data.skumain || result.skumain || skuKey;
             setSearchError("");

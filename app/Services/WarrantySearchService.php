@@ -109,10 +109,16 @@ class WarrantySearchService
 
         // Keep only entries that are skumain result objects, discarding any meta keys
         // (e.g. "status", "message") the API might mix into the same response.
-        $skumainData = array_filter($data, fn($v) => is_array($v) && isset($v['skumain']));
+        // Also drop entries the API flags as NOT_FOUND (serial mapped to a skumain missing from product DB).
+        $skumainData = array_filter(
+            $data,
+            fn($v) => is_array($v) && isset($v['skumain']) && ($v['status'] ?? 'SUCCESS') !== 'NOT_FOUND'
+        );
 
         if (empty($skumainData)) {
-            throw new \Exception($data['message'] ?? 'ไม่พบหมายเลขซีเรียลในระบบ');
+            // Prefer the inner entry's message (e.g. "ไม่พบข้อมูลสินค้าในฐานข้อมูล")
+            $inner = collect($data)->first(fn($v) => is_array($v) && isset($v['message']));
+            throw new \Exception($inner['message'] ?? $data['message'] ?? 'ไม่พบหมายเลขซีเรียลในระบบ');
         }
 
         return $skumainData;
