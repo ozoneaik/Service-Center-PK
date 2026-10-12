@@ -423,9 +423,17 @@ class OrderController extends Controller
 
     public function historyDetail($order_id): Response|RedirectResponse
     {
-        $order = Order::query()->where('order_id', $order_id)->first();
-        $listSp = OrderSpList::query()->where('order_id', $order_id)->get();
+        // admin ดูได้ทุกออเดอร์ ส่วน user อื่นดูได้เฉพาะออเดอร์ของร้านตัวเอง
+        $user = Auth::user();
+        $order = Order::query()
+            ->where('order_id', $order_id)
+            ->when(
+                !($user->role === 'admin' || $user->admin_that_branch),
+                fn($q) => $q->where('is_code_key', $user->is_code_cust_id)
+            )
+            ->first();
         if (!$order) return redirect()->route('unauthorized');
+        $listSp = OrderSpList::query()->where('order_id', $order_id)->get();
         $customer = User::query()->where('is_code_cust_id', $order->is_code_key)->first();
         $totalPrice = 0;
         foreach ($listSp as $sp) {
